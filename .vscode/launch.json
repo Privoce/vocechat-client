@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "vocechat_client",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "vocechat_client (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "sdk",
+            "cwd": "apis/sdk",
+            "request": "launch",
+            "type": "dart"
+        }
+    ]
+}

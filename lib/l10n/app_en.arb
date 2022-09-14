@@ -1,0 +1,98 @@
+{   
+    "serverPageWelcomeFirstLine":"Welcome to",
+    "serverPageWelcomeSecondLine":"VoceChat.",
+    "serverPageHostServer": "Host Server",
+    "serverPageHistory": "History",
+    "serverPageClearData": "Clear Local Data",
+
+    "loginPageTitle": "Login to",
+    "loginPageEmail": "Email",
+    "loginPagePassword": "Password",
+    "loginPageLogin": "Log In",
+    "loginPageLoggingin": "Logging In",
+    "loginPageNoAccount": "Don't have an account?",
+    "loginPageSignUp": "Sign Up",
+
+    "chatsPageSearchHint":"Search for messages or users",
+    "contactsPageSearchHint": "Search for users",
+    
+    "tabChats": "Chats",
+    "tabContacts": "Contacts",
+    "tabSettings": "Settings",
+
+    "titleContacts": "Contacts",
+
+    "contactDetailPageMessage" : "Send Message",
+    "contactDetailPageRemove" : "Remove from server",
+
+    "chatTextFieldHint": "Message",
+
+    "settingsPageTitle": "Settings",
+    "settingsPageEdit": "Edit",
+    "settingsPageServer": "Server",
+    "settingsPageServerOverview": "Overview",
+    "settingsPageServerFooter": "Please use web client for member settings.",
+    "settingsPageConfig": "Configuration",
+    "settingsPageConfigFirebase": "Firebase",
+    "settingsPageConfigFooter": "Please use web client for SMTP, Login Methods and Third-party App Settings.",
+    "settingsPageAbout": "About",
+    "settingsPageAboutVersion": "Version",
+    "settingsPageLogout": "Log Out",
+    "settingsPageClearData": "Clear Local Data",
+
+    "edit": "Edit",
+    "call" : "Call",
+    "cancel": "Cancel",
+    "continueStr": "Continue",
+    "deleteChannel": "Delete Channel",
+    "deleteChannelWarningDes": "This channel will be dismissed. All members will have no access to its data.",
+    "done": "Done",
+    "video" : "Video",
+    "voice" : "Voice",
+    "mute" : "Mute",
+    "next": "Next",
+    "unmute": "Unmute",
+    "savedItems": "Saved Items",
+    "setNewAvatar": "Set a new avatar",
+    "send": "Send",
+    "message": "Message",
+    "members":"Members",
+    "pin": "Pin",
+    "leaveChannel": "Leave Channel",
+    "leaveChannelWarningDes": "This channel and its messages will be deleted from all your devices.",
+    "leaveChannelTransferOwnerDes": "As Owner, you have to transfer ownership before leaving.",
+    
+    "chatsBarNewChannel": "New Channel",
+    "chatsBarNewDm": "New Direct Message",
+
+    "newChannelPageTitle": "Create Channel",
+    "newChannelPageName": "Channel Name",
+    "newChannelPageDes": "Description",
+    "newChannelPagePrivateChannel": "Private Channel",
+    "newChannelPagePrivateEnableDes": "Only selected members will be able to view this channel.",
+    "newChannelPagePrivateDisableDes": "All members in this server will be able to view this channel.",
+    "newChannelPagePrivateDes":"Only admins are allowed to create public channels.",
+
+    "newPrivateChannelSelectTitle": "Create Private Channel",
+
+    "newDmPageTitle": "New Direct Message",
+
+    "serverInfoSettingTitle": "Server Overview",
+    "serverInfoSettingNameHint": "Server Name",
+    "serverInfoSettingDesHint": "Server Description",
+
+    "firebaseEnable": "Enable",
+
+    "savedItemEmptyChatDes": "This chat doesn't have any saved item.",
+    "savedItemEmptyChannelDes": "This channel doesn't have any saved item.",
+
+    "pinnedMsgPageEmptyChannelDes": "This channel doesn't have any pinned message.",
+
+    "memberAddPageTitle": "Add Members",
+    "memberAddPageAdd": "Add",
+    "memberAddPageAddMembers": "Add Members",
+    "memberAddPageInvitationLink": "Invitation Link",
+
+    "memberRemovePageTitle": "Remove Members",
+    "memberRemovePageRemove": "Remove"
+}

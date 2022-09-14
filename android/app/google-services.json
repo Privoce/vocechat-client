@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "526613312184",
+    "project_id": "vocechatdev",
+    "storage_bucket": "vocechatdev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:526613312184:android:4ec9dc2559a6a11c487a4d",
+        "android_client_info": {
+          "package_name": "com.privoce.vocechatclient"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "526613312184-412l4v5p2hk09cd0lsh4sma52jr0a2q5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQwY4WDqoAxmP9wOX1vjHySpEkwMPR1N0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "526613312184-412l4v5p2hk09cd0lsh4sma52jr0a2q5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "526613312184-311lgn5nsdu2t3enh68j2nuv19b7mm1a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.privoce.vocechatclient"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

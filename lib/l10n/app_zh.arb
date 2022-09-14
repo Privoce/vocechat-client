@@ -1,0 +1,98 @@
+{   
+    "serverPageWelcomeFirstLine":"欢迎使用",
+    "serverPageWelcomeSecondLine":"VoceChat.",
+    "serverPageHostServer": "服务器地址",
+    "serverPageHistory": "历史",
+    "serverPageClearData": "清空本地数据",
+
+    "loginPageTitle": "登入",
+    "loginPageEmail": "邮箱",
+    "loginPagePassword": "密码",
+    "loginPageLogin": "登入",
+    "loginPageLoggingin": "正在登入",
+    "loginPageNoAccount": "还没有账号？",
+    "loginPageSignUp": "注册",
+
+    "chatsPageSearchHint":"搜索消息及用户",
+    "contactsPageSearchHint": "搜索用户",
+    
+    "tabChats": "聊天",
+    "tabContacts": "联系人",
+    "tabSettings": "设置",
+
+    "titleContacts": "联系人",
+
+    "contactDetailPageMessage" : "发送消息",
+    "contactDetailPageRemove" : "从服务器移除用户",
+
+    "chatTextFieldHint": "发消息",
+
+    "settingsPageTitle": "设置",
+    "settingsPageEdit": "编辑",
+    "settingsPageServer": "服务器资料设置",
+    "settingsPageServerOverview": "概览",
+    "settingsPageServerFooter": "请使用网页端管理成员。",
+    "settingsPageConfig": "配置",
+    "settingsPageConfigFirebase": "Firebase",
+    "settingsPageConfigFooter": "请使用网页端来设置 SMTP、登录方式及第三方App接入。",
+    "settingsPageAbout": "关于",
+    "settingsPageAboutVersion": "版本",
+    "settingsPageLogout": "登出",
+    "settingsPageClearData": "清空本地数据",
+
+    "edit": "编辑",
+    "call" : "语音通话",
+    "cancel": "取消",
+    "continueStr": "继续",
+    "deleteChannel": "删除频道",
+    "deleteChannelWarningDes": "此频道将被删除。所有成员都将被移除，且不再可以看到其中的数据。",
+    "done": "完成",
+    "video" : "视频通话",
+    "voice" : "语音通话",
+    "mute" : "静音",
+    "next": "下一步",
+    "unmute": "取消静音",
+    "savedItems": "保存的消息",
+    "setNewAvatar": "设置新头像",
+    "send": "发送",
+    "message": "发消息",
+    "members":"成员",
+    "pin": "钉选",
+    "leaveChannel": "离开频道",
+    "leaveChannelWarningDes": "此频道及其所有消息都将从您的设备中删除。",
+    "leaveChannelTransferOwnerDes": "作为频道所有者，您需要在离开前转让频道所有权。",
+    
+    "chatsBarNewChannel": "新频道",
+    "chatsBarNewDm": "新私聊",
+
+    "newChannelPageTitle": "创建频道",
+    "newChannelPageName": "频道名",
+    "newChannelPageDes": "描述",
+    "newChannelPagePrivateChannel": "私有频道",
+    "newChannelPagePrivateEnableDes": "只有指定用户能查看此频道。",
+    "newChannelPagePrivateDisableDes": "所有用户都查看此频道。",
+    "newChannelPagePrivateDes":"只有管理员能创建公共频道。",
+
+    "newPrivateChannelSelectTitle": "创建新私有频道",
+
+    "newDmPageTitle": "创建新私聊",
+
+    "serverInfoSettingTitle": "服务器概览",
+    "serverInfoSettingNameHint": "服务器名",
+    "serverInfoSettingDesHint": "服务器描述",
+
+    "firebaseEnable": "启用",
+
+    "savedItemEmptyChatDes": "此会话暂无保存的信息。",
+    "savedItemEmptyChannelDes": "此频道暂无保存的信息。",
+
+    "pinnedMsgPageEmptyChannelDes": "此频道暂无钉选的信息。",
+
+    "memberAddPageTitle": "添加频道成员",
+    "memberAddPageAdd": "添加",
+    "memberAddPageAddMembers": "添加频道成员",
+    "memberAddPageInvitationLink": "邀请链接",
+
+    "memberRemovePageTitle": "移除频道成员",
+    "memberRemovePageRemove": "移除"
+}

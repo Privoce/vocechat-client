@@ -1,0 +1,104 @@
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new FileNotFoundException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+apply plugin: 'com.android.application'
+// START: FlutterFire Configuration
+apply plugin: 'com.google.gms.google-services'
+// END: FlutterFire Configuration
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+   
+
+
+android {
+    compileSdkVersion flutter.compileSdkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId "com.privoce.vocechatclient"
+        //minSdkVersion flutter.minSdkVersion
+        multiDexEnabled true
+        // manifestPlaceholders += [pdftronLicenseKey:PDFTRON_LICENSE_KEY]
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+         minSdkVersion 21
+
+        // @Author by andy
+        // @Date 2022/05/21
+        // @Solve the problem "Cannot fit requested classes in a single dex file"
+        multiDexEnabled true
+    }
+
+    signingConfigs {
+       release {
+           keyAlias keystoreProperties['keyAlias']
+           keyPassword keystoreProperties['keyPassword']
+           storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+           storePassword keystoreProperties['storePassword']
+       }
+   }
+   buildTypes {
+       release {
+           signingConfig signingConfigs.release
+       }
+   }
+
+
+    lintOptions { 
+      checkReleaseBuilds false 
+    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    // @Author by andy
+    // @Date 2022/05/21
+    // @Solve the problem "Cannot fit requested classes in a single dex file"
+    implementation 'com.android.support:multidex:1.0.3'
+}
