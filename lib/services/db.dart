@@ -26,8 +26,28 @@ Future<void> initDb({String? dbFileName}) async {
       String path = p.join(databasesPath, dbFileName ?? _orgDbName);
       await Directory(databasesPath)
           .create(recursive: true); // App will terminate if create fails.
-      orgDb = await databaseFactory.openDatabase(path,
-          options: OpenDatabaseOptions(version: 1));
+      orgDb = await databaseFactory.openDatabase(
+        path,
+        options: OpenDatabaseOptions(
+          version: 2,
+          onUpgrade: (db, oldVersion, newVersion) {
+            if (oldVersion < newVersion && oldVersion < 2) {
+              try {
+                db.execute(
+                    "ALTER TABLE user_db ADD COLUMN avatar_bytes BLOB NOT NULL DEFAULT (x'')");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+
+              try {
+                db.execute("ALTER TABLE user_db DROP COLUMN max_mid");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+          },
+        ),
+      );
 
       // Check if db table has been created.
       int? count = firstIntValue(await orgDb.query('sqlite_master',

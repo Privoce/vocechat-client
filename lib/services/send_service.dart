@@ -12,8 +12,6 @@ import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
-import 'package:vocechat_client/api/models/msg/msg_reaction.dart';
-import 'package:vocechat_client/api/models/msg/msg_reaction_edit.dart';
 import 'package:vocechat_client/api/models/msg/msg_reply.dart';
 import 'package:vocechat_client/api/models/msg/msg_target_group.dart';
 import 'package:vocechat_client/api/models/msg/msg_target_user.dart';
@@ -136,6 +134,10 @@ abstract class AbstractSend {
       int? uid,
       int? targetMid,
       void Function(double progress)? progress});
+
+  static Future<int> getFakeMid() async {
+    return (await ChatMsgDao().getMaxMid()) + 1;
+  }
 }
 
 class SendText implements AbstractSend {
@@ -171,18 +173,21 @@ class SendText implements AbstractSend {
         content: msg);
     ChatMsg message = ChatMsg(
         target: MsgTargetGroup(gid).toJson(),
-        mid: -1,
+        mid: await AbstractSend.getFakeMid(),
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
 
     // Update local database and UI
+    // Database execution happens first to ensure index and [msgCount] in
+    // ChatPage, which is read from database, are correct.
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-    App.app.chatService.fireMsg(msgM, localMid, null);
-    App.app.chatService.fireSnippet(msgM);
-
-    await ChatMsgDao().addOrUpdate(chatMsgM);
+    App.app.chatService.taskQueue
+        .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+              App.app.chatService.fireMsg(msgM, localMid, null);
+              App.app.chatService.fireSnippet(msgM);
+            }));
 
     // Send to server.
     GroupApi api = GroupApi(App.app.chatServerM.fullUrl);
@@ -193,10 +198,11 @@ class SendText implements AbstractSend {
 
         message.mid = mid;
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        await ChatMsgDao().addOrUpdate(msgM);
-
-        App.app.chatService.fireMsg(msgM, localMid, null);
-        App.app.chatService.fireSnippet(msgM);
+        App.app.chatService.taskQueue
+            .add(() => ChatMsgDao().addOrUpdate(msgM).then((value) {
+                  App.app.chatService.fireMsg(msgM, localMid, null);
+                  App.app.chatService.fireSnippet(msgM);
+                }));
 
         return true;
       } else {
@@ -220,18 +226,20 @@ class SendText implements AbstractSend {
         properties: {"cid": localMid}, contentType: typeText, content: msg);
     final message = ChatMsg(
         target: MsgTargetUser(uid).toJson(),
-        mid: -1,
+        mid: await AbstractSend.getFakeMid(),
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
 
     // Update local database and UI
-    final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-    App.app.chatService.fireMsg(msgM, localMid, null);
-    App.app.chatService.fireSnippet(msgM);
-
-    await ChatMsgDao().addOrUpdate(chatMsgM);
+    App.app.chatService.taskQueue
+        .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+              final msgM =
+                  ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
+              App.app.chatService.fireMsg(msgM, localMid, null);
+              App.app.chatService.fireSnippet(msgM);
+            }));
 
     // Send to server.
     UserApi api = UserApi(App.app.chatServerM.fullUrl);
@@ -242,10 +250,11 @@ class SendText implements AbstractSend {
 
         message.mid = mid;
         chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        await ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-          App.app.chatService.fireMsg(chatMsgM, localMid, null);
-          App.app.chatService.fireSnippet(chatMsgM);
-        });
+        App.app.chatService.taskQueue
+            .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+                  App.app.chatService.fireMsg(chatMsgM, localMid, null);
+                  App.app.chatService.fireSnippet(chatMsgM);
+                }));
         return true;
       } else {
         App.logger.severe(res.statusCode);
@@ -351,7 +360,7 @@ class SendReply implements AbstractSend {
         properties: {"cid": localMid, 'mentions': mentions});
 
     final message = ChatMsg(
-        mid: -1,
+        mid: await AbstractSend.getFakeMid(),
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         target: MsgTargetGroup(gid).toJson(),
@@ -362,10 +371,11 @@ class SendReply implements AbstractSend {
 
     // Update local database and UI
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-    App.app.chatService.fireMsg(msgM, localMid, null);
-    App.app.chatService.fireSnippet(msgM);
-
-    await ChatMsgDao().addOrUpdate(chatMsgM);
+    App.app.chatService.taskQueue
+        .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+              App.app.chatService.fireMsg(msgM, localMid, null);
+              App.app.chatService.fireSnippet(msgM);
+            }));
 
     // Send to server.
     MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
@@ -376,10 +386,11 @@ class SendReply implements AbstractSend {
 
         message.mid = mid;
         chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        await ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-          App.app.chatService.fireMsg(chatMsgM, localMid, null);
-          App.app.chatService.fireSnippet(chatMsgM);
-        });
+        App.app.chatService.taskQueue
+            .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+                  App.app.chatService.fireMsg(chatMsgM, localMid, null);
+                  App.app.chatService.fireSnippet(chatMsgM);
+                }));
         return true;
       } else {
         App.logger.severe(res.statusCode);
@@ -406,7 +417,7 @@ class SendReply implements AbstractSend {
         mid: targetMid);
     final message = ChatMsg(
         target: MsgTargetUser(uid).toJson(),
-        mid: -1,
+        mid: await AbstractSend.getFakeMid(),
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
@@ -415,10 +426,12 @@ class SendReply implements AbstractSend {
 
     // Update local database and UI
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-    App.app.chatService.fireMsg(msgM, localMid, null);
-    App.app.chatService.fireSnippet(msgM);
 
-    await ChatMsgDao().addOrUpdate(chatMsgM);
+    App.app.chatService.taskQueue
+        .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+              App.app.chatService.fireMsg(msgM, localMid, null);
+              App.app.chatService.fireSnippet(msgM);
+            }));
 
     // Send to server.
     MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
@@ -429,10 +442,11 @@ class SendReply implements AbstractSend {
 
         message.mid = mid;
         chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        await ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-          App.app.chatService.fireMsg(chatMsgM, localMid, null);
-          App.app.chatService.fireSnippet(chatMsgM);
-        });
+        App.app.chatService.taskQueue
+            .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+                  App.app.chatService.fireMsg(chatMsgM, localMid, null);
+                  App.app.chatService.fireSnippet(chatMsgM);
+                }));
         return true;
       } else {
         App.logger.severe(res.statusCode);
@@ -486,21 +500,21 @@ class SendFile implements AbstractSend {
     if (gid != null && gid != -1) {
       message = ChatMsg(
           target: MsgTargetGroup(gid).toJson(),
-          mid: -1,
+          mid: await AbstractSend.getFakeMid(),
           fromUid: App.app.userDb!.uid,
           createdAt: DateTime.now().millisecondsSinceEpoch,
           detail: detail.toJson());
     } else {
       message = ChatMsg(
           target: MsgTargetUser(uid!).toJson(),
-          mid: -1,
+          mid: await AbstractSend.getFakeMid(),
           fromUid: App.app.userDb!.uid,
           createdAt: DateTime.now().millisecondsSinceEpoch,
           detail: detail.toJson());
     }
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-    await ChatMsgDao().addOrUpdate(chatMsgM);
+    App.app.chatService.taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM));
 
     Uint8List fileBytes = File(path).readAsBytesSync();
 

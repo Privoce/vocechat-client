@@ -34,6 +34,8 @@ class TaskQueue {
   bool enableStatusDisplay;
 
   void cancel() {
+    nextCycle.clear();
+    currentCycle.clear();
     isCancelled = true;
   }
 

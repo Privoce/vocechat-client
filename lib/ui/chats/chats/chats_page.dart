@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -45,10 +46,6 @@ class _ChatsPageState extends State<ChatsPage>
 
   ValueNotifier<int> memberCountNotifier = ValueNotifier(0);
 
-  final double _avatarSize = 48;
-  final double _channelIconSize = 30;
-  final double _avatarSizeCompact = 24;
-
   int count = 0;
 
   @override
@@ -65,6 +62,12 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.subscribeUsers(_onUser);
     App.app.chatService.subscribeUserStatus(_onUserStatus);
     App.app.chatService.subscribeReady(_onReady);
+
+    eventBus.on<UserChangeEvent>().listen((event) {
+      clearChats();
+      prepareChats();
+      getMemberCount();
+    });
   }
 
   @override
@@ -85,6 +88,7 @@ class _ChatsPageState extends State<ChatsPage>
       backgroundColor: Colors.white,
       appBar: ChatsBar(
         memberCountNotifier: memberCountNotifier,
+        showDrawer: () => Scaffold.of(context).openDrawer(),
         onCreateChannel: (groupInfoM) {
           final uiChat = UiChat(
               avatar: groupInfoM.avatar,
@@ -424,9 +428,8 @@ class _ChatsPageState extends State<ChatsPage>
           break;
         default:
       }
-      // if (mounted) {
-      //   setState(() {});
-      // }
+
+      getMemberCount();
     });
   }
 
@@ -446,7 +449,7 @@ class _ChatsPageState extends State<ChatsPage>
 
         if (userInfoM != null && groupInfoM != null) {
           // If the edited message is not the latest, do not update snippet.
-          final maxMid = await ChatMsgDao().getLatestMidInGroup(groupInfoM.gid);
+          final maxMid = await ChatMsgDao().getChannelMaxMid(groupInfoM.gid);
           if (chatMsgM.edited == 1 && maxMid != -1 && chatMsgM.mid < maxMid) {
             return;
           }
@@ -480,7 +483,7 @@ class _ChatsPageState extends State<ChatsPage>
         }
       } else {
         if (userInfoM != null) {
-          final maxMid = await ChatMsgDao().getLatestMidInDm(userInfoM.uid);
+          final maxMid = await ChatMsgDao().getDmMaxMid(userInfoM.uid);
           if (chatMsgM.edited == 1 && maxMid != -1 && chatMsgM.mid < maxMid) {
             return;
           }
@@ -597,6 +600,10 @@ class _ChatsPageState extends State<ChatsPage>
         setState(() {});
       }
     });
+  }
+
+  void clearChats() {
+    _uiChats.clear();
   }
 
   Future<void> prepareChats() async {

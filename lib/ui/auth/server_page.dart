@@ -20,7 +20,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ServerPage extends StatefulWidget {
-  static const route = '/auth/server';
+  // static const route = '/auth/server';
 
   late final BoxDecoration _bgDeco;
 
@@ -312,6 +312,7 @@ class _ServerPageState extends State<ServerPage> {
             SizedBox(height: 10),
             Container(
               // constraints: BoxConstraints(maxHeight: 300),
+              clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(_outerRadius)),
@@ -464,7 +465,8 @@ class _ServerPageState extends State<ServerPage> {
                 text: "Copy Url",
                 action: () {
                   Navigator.of(context).pop();
-                  final url = "${App.app.chatServerM.fullUrl}/#/onboarding";
+
+                  final url = "${chatServerM.fullUrl}/#/onboarding";
                   Clipboard.setData(ClipboardData(text: url));
                 })
           ]);
@@ -536,10 +538,12 @@ class _ServerPageState extends State<ServerPage> {
 
     _urlFocusNode.requestFocus();
 
-    Navigator.pushNamed(context, LoginPage.route, arguments: chatServerM)
-        .then((_) {
-      _resetServerList();
-    });
+    // Navigator.pushNamed(context, LoginPage.route, arguments: chatServerM)
+    //     .then((_) {
+    //   _resetServerList();
+    // });
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => LoginPage(chatServerM: chatServerM)));
 
     return true;
   }

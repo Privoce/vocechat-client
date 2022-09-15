@@ -329,7 +329,9 @@ class ChatMsgDao extends Dao<ChatMsgM> {
         where: '${ChatMsgM.F_localMid} = ?', whereArgs: [m.localMid]);
     if (old != null) {
       m.id = old.id;
-      // m.createdAt = max(old.createdAt, m.createdAt);
+      // print("Old ${old.createdAt}");
+      // print("new ${m.createdAt}");
+      m.createdAt = max(old.createdAt, m.createdAt);
 
       await super.update(m);
       App.logger.info("Chat Msg updated. m: ${m.values}");
@@ -513,6 +515,19 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       }
     }
     return 0;
+  }
+
+  Future<int> getMinMidInChannel(int gid) async {
+    String sqlStr =
+        'SELECT MIN(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid} = $gid';
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+    if (records.isNotEmpty) {
+      final maxMid = records.first["MIN(${ChatMsgM.F_mid})"];
+      if (maxMid != null) {
+        return maxMid as int;
+      }
+    }
+    return -1;
   }
 
   Future<ChatMsgM?> getMsgByMid(int mid) async {

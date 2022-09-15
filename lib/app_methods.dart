@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
@@ -99,6 +100,8 @@ SendType getSendType(ChatMsgM chatMsgM) {
   }
   return SendType.normal;
 }
+
+EventBus eventBus = EventBus();
 
 extension StringExt on String {
   // url RegEx strings in app_consts.dart

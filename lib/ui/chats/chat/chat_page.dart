@@ -85,7 +85,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final PageMeta _pageMeta = PageMeta()
     ..pageSize = defaultPageSize
-    ..pageNumber = 1;
+    ..pageNumber = 0;
 
   bool _isLoadingHistory = false;
   late int _initReadIndex;
@@ -114,11 +114,6 @@ class _ChatPageState extends State<ChatPage> {
   final taskQueue = TaskQueue(enableStatusDisplay: false);
 
   double progressPercent = 0;
-  // final MessageFactory _messageFactory = MessageFactory();
-  // late Future<bool> onSendMessage;
-  // final MessageStatusController _messageStatusController =
-  //     MessageStatusController();
-  //scroll to first unread message
   final scrollDirection = Axis.vertical;
   ScrollController _scrollController = ScrollController();
 
@@ -166,13 +161,6 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
-  // Future _scrollToCounter(counter) async {
-  //   _loadHistory();
-  //   await _scrollController.scrollToIndex(counter,
-  //       preferPosition: AutoScrollPosition.end);
-  //   _scrollController.highlight(counter);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,11 +195,6 @@ class _ChatPageState extends State<ChatPage> {
           ],
         )),
       ),
-      // floatingActionButton: _buildPromptButton(widget.unreadCount),
-      // floatingActionButtonLocation: FloatingButtonCustomLocation(
-      //     FloatingActionButtonLocation.miniEndTop,
-      //     offsetY: 180,
-      //     offsetX: 50)
     );
   }
 
@@ -394,16 +377,6 @@ class _ChatPageState extends State<ChatPage> {
           case MsgContentType.markdown:
             if (!_localMidSet.contains(localMid)) {
               _localMidSet.add(localMid);
-              // final content = json.decode(chatMsgM.detail)['content'];
-              // if (RegExp(urlRegEx).hasMatch(content)) {
-              //   final openGraphic = await App.app.chatService
-              //       .createOpenGraphicThumbnail(
-              //           chatMsgM.msgNormal?.content ??
-              //               chatMsgM.msgReply!.content,
-              //           localMid,
-              //           chatMsgM);
-              // }
-
               if (frontInsert) {
                 _uiMsgList.insert(0, UiMsg(chatMsgM: chatMsgM));
               } else {
@@ -560,11 +533,19 @@ class _ChatPageState extends State<ChatPage> {
         break;
     }
 
-    _uiMsgList
-        .sort((a, b) => b.chatMsgM.createdAt.compareTo(a.chatMsgM.createdAt));
-    // if (mounted) {
-    setState(() {});
-    // }
+    sortUiMsgList();
+
+    // _uiMsgList
+    //     .sort((a, b) => b.chatMsgM.createdAt.compareTo(a.chatMsgM.createdAt));
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void sortUiMsgList() {
+    // sort success messages by mid (from server);
+    // sort remaining local unsuccessful messages by timestamps.
   }
 
   Future<void> _onReaction(ReactionTypes type, int mid,
@@ -1024,6 +1005,7 @@ class _ChatPageState extends State<ChatPage> {
               child: Row(
                 children: [
                   MessageTile(
+                    key: Key(uiMsg.chatMsgM.localMid),
                     avatarSize: AvatarSize.s42,
                     isFollowing: false,
                     chatMsgM: uiMsg.chatMsgM,
@@ -1040,7 +1022,6 @@ class _ChatPageState extends State<ChatPage> {
                     selectNotifier: selectedMsgMList,
                     pinnedBy: pinnedBy,
                     onChanged: (selected) {
-                      // print(selected);
                       if (selected) {
                         selectedMsgMList.value =
                             List.from(selectedMsgMList.value)
@@ -1363,6 +1344,7 @@ class _ChatPageState extends State<ChatPage> {
       page = await ChatMsgDao().paginateLastByDmUid(
           _pageMeta..pageNumber += 1, '', widget.userInfoNotifier!.value.uid);
     }
+
     if (page.records.isNotEmpty) {
       for (ChatMsgM m in page.records.reversed) {
         switch (m.type) {
@@ -1408,10 +1390,34 @@ class _ChatPageState extends State<ChatPage> {
         }
       }
     }
+
+    if (page.records.length <= _pageMeta.pageSize) {
+      // load from server
+      _loadServerHistory();
+    }
+
     if (mounted) {
       setState(() {
         _isLoadingHistory = false;
       });
+    }
+  }
+
+  Future<void> _loadServerHistory() async {
+    if (!widget._isGroup) return;
+
+    final gid = widget.groupInfoNotifier?.value.gid;
+    if (gid == null) return;
+
+    final minMid = await ChatMsgDao().getMinMidInChannel(gid);
+
+    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final res = await groupApi.getHistory(gid, minMid);
+
+    if (res.data == null) return;
+
+    for (var each in res.data) {
+      App.app.chatService.handleHistoryChatMsg(each);
     }
   }
 

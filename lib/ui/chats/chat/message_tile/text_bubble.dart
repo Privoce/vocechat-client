@@ -217,6 +217,13 @@ class _TextBubbleState extends State<TextBubble> {
             color: AppColors.coolGrey700,
             fontWeight: FontWeight.w400),
       ),
+      // TextSpan(
+      //   text: "| " + (widget.chatMsgM?.createdAt.toString() ?? ""),
+      //   style: TextStyle(
+      //       fontSize: 16,
+      //       color: AppColors.coolGrey700,
+      //       fontWeight: FontWeight.w400),
+      // ),
       if (widget.edited && !widget.enableCopy)
         TextSpan(
             text: "(edited)",

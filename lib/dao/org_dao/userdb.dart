@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/dao/dao.dart';
@@ -40,7 +41,7 @@ class UserDbM with M {
 
   int usersVersion = -1;
 
-  int maxMid = -1;
+  Uint8List avatarBytes = Uint8List(0);
 
   String _properties = "";
 
@@ -70,7 +71,7 @@ class UserDbM with M {
       this.expiredIn,
       this.loggedIn,
       this.usersVersion,
-      this.maxMid,
+      this.avatarBytes,
       this._properties);
 
   static UserDbM fromMap(Map<String, dynamic> map) {
@@ -111,8 +112,8 @@ class UserDbM with M {
     if (map.containsKey(F_usersVersion)) {
       m.usersVersion = map[F_usersVersion];
     }
-    if (map.containsKey(F_maxMid)) {
-      m.maxMid = map[F_maxMid];
+    if (map.containsKey(F_avatarBytes)) {
+      m.avatarBytes = map[F_avatarBytes];
     }
     if (map.containsKey(F_properties)) {
       m._properties = map[F_properties];
@@ -132,7 +133,7 @@ class UserDbM with M {
   static const F_expiredIn = "expired_in";
   static const F_loggedIn = "logged_in";
   static const F_usersVersion = "users_version";
-  static const F_maxMid = "max_mid";
+  static const F_avatarBytes = "avatar_bytes";
   static const F_properties = "properties";
 
   @override
@@ -148,7 +149,7 @@ class UserDbM with M {
         UserDbM.F_expiredIn: expiredIn,
         UserDbM.F_loggedIn: loggedIn,
         UserDbM.F_usersVersion: usersVersion,
-        UserDbM.F_maxMid: maxMid,
+        UserDbM.F_avatarBytes: avatarBytes,
         UserDbM.F_properties: _properties
       };
 
@@ -175,7 +176,6 @@ class UserDbMDao extends OrgDao<UserDbM> {
       m.uid = old.uid;
       m.createdAt = old.createdAt;
       m.usersVersion = old.usersVersion;
-      m.maxMid = old.maxMid;
       await super.update(m);
     } else {
       await super.add(m);
@@ -225,22 +225,6 @@ class UserDbMDao extends OrgDao<UserDbM> {
       old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
       _logger.config("UserDb UsersVersion updated. Version:$version");
-    } else {
-      throw Exception("No matching UserDb found");
-    }
-    return old;
-  }
-
-  Future<UserDbM> updateMaxMid(String id, int maxMid) async {
-    UserDbM? old = await get(id);
-    if (old != null) {
-      if (old.maxMid >= maxMid) {
-        return old;
-      }
-      old.maxMid = maxMid;
-      old.updatedAt = DateTime.now().millisecondsSinceEpoch;
-      await super.update(old);
-      _logger.config("UserDb maxMid updated. maxMid:$maxMid");
     } else {
       throw Exception("No matching UserDb found");
     }

@@ -1,8 +1,10 @@
 library flutter_mentions;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 
 /// A custom implementation of [TextEditingController] to support @ mention or other
 /// trigger based mentions.
@@ -686,8 +688,18 @@ class OptionList extends StatelessWidget {
     return data.isNotEmpty
         ? Container(
             width: double.infinity,
-            decoration:
-                suggestionListDecoration ?? BoxDecoration(color: Colors.white),
+            // margin: EdgeInsets.only(top: 30),
+            decoration: suggestionListDecoration ??
+                BoxDecoration(
+                  color: AppColors.grey100,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 4,
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
             constraints: BoxConstraints(
               maxHeight: suggestionListHeight,
               minHeight: 0,
@@ -696,8 +708,9 @@ class OptionList extends StatelessWidget {
               itemCount: data.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () {
+                return CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
                     onTap(data[index]);
                   },
                   child: suggestionBuilder != null

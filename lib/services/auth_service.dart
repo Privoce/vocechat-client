@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
+import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
 import 'package:vocechat_client/api/models/token/token_renew_request.dart';
@@ -61,6 +64,10 @@ class AuthService {
     });
   }
 
+  void dispose() {
+    disableTimer();
+  }
+
   void disableTimer() {
     if (_timer != null) {
       _timer!.cancel();
@@ -68,10 +75,10 @@ class AuthService {
   }
 
   Future<bool> renewAuthToken() async {
-    App.app.statusService.fireTokenLoading(LoadingStatus.loading);
+    App.app.statusService.fireTokenLoading(TokenStatus.loading);
     try {
       if (App.app.userDb == null) {
-        App.app.statusService.fireTokenLoading(LoadingStatus.disconnected);
+        App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
         return false;
       }
       final req = TokenRenewRequest(
@@ -92,7 +99,22 @@ class AuthService {
         setTimer(expiredIn);
         await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
 
+        // if (Sse.sse.isClosed()) {
+        //   Sse.sse.connect();
+        // }
+
         return true;
+      } else {
+        if (res.statusCode == 401 || res.statusCode == 403) {
+          _expiredIn = threshold + renewBase * renewFactor;
+          renewFactor += 1;
+          if (renewFactor > 4) {
+            renewFactor = 4;
+          }
+
+          App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+          return false;
+        }
       }
       App.logger.severe("Renew Token Failed, Status code: ${res.statusCode}");
     } catch (e) {
@@ -104,7 +126,7 @@ class AuthService {
     if (renewFactor > 4) {
       renewFactor = 4;
     }
-    App.app.statusService.fireTokenLoading(LoadingStatus.disconnected);
+    App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
     return false;
   }
 
@@ -119,7 +141,7 @@ class AuthService {
     final newUserDbM = await UserDbMDao.dao
         .updateAuth(status.userDbId, token, refreshToken, expiredIn);
     App.app.userDb = newUserDbM;
-    App.app.statusService.fireTokenLoading(LoadingStatus.success);
+    App.app.statusService.fireTokenLoading(TokenStatus.success);
   }
 
   ///
@@ -185,6 +207,13 @@ class AuthService {
     final userInfoJson = json.encode(userInfo.toJson());
     final dbName = "${serverId}_${userInfo.uid}";
 
+    final avatarBytes = userInfo.avatarUpdatedAt == 0
+        ? Uint8List(0)
+        : (await ResourceApi(App.app.chatServerM.fullUrl)
+                    .getUserAvatar(userInfo.uid))
+                .data ??
+            Uint8List(0);
+
     final chatServerId = App.app.chatServerM.id;
 
     final old = await UserDbMDao.dao.first(
@@ -205,7 +234,7 @@ class AuthService {
           expiredIn,
           1,
           -1,
-          -1,
+          avatarBytes,
           "");
       newUserDb = await UserDbMDao.dao.addOrUpdate(m);
     } else {
@@ -221,7 +250,7 @@ class AuthService {
           expiredIn,
           1,
           old.usersVersion,
-          old.maxMid,
+          avatarBytes,
           "");
       newUserDb = await UserDbMDao.dao.addOrUpdate(m);
     }
@@ -238,24 +267,19 @@ class AuthService {
     return true;
   }
 
-  Future<bool> logout() async {
+  Future<bool> logout({bool markLogout = true}) async {
     try {
       Sse.sse.close();
 
-      if (App.app.userDb == null) {
-        if (_timer != null) {
-          _timer!.cancel();
-        }
-        _timer = null;
-        return false;
-      }
       final curUserDb = App.app.userDb!;
-      App.app.userDb = await UserDbMDao.dao.updateWhenLogout(curUserDb.id);
-      App.app.chatService = ChatService();
 
-      if (_timer != null) {
-        _timer!.cancel();
+      if (markLogout) {
+        App.app.userDb = await UserDbMDao.dao.updateWhenLogout(curUserDb.id);
       }
+
+      dispose();
+      App.app.chatService.dispose();
+      App.app.statusService.dispose();
 
       await closeUserDb();
 
@@ -276,7 +300,6 @@ class AuthService {
 
       final path =
           "${(await getApplicationDocumentsDirectory()).path}/${App.app.userDb!.dbName}";
-      print(path);
 
       await Directory(path).delete(recursive: true);
 

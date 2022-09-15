@@ -10,11 +10,18 @@ import 'package:vocechat_client/ui/widgets/banner_button.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
-  static const route = '/auth/login';
+  // static const route = '/auth/login';
+
+  final ChatServerM chatServerM;
+
+  final String? email;
 
   late final BoxDecoration _bgDeco;
 
-  LoginPage({Key? key}) : super(key: key) {
+  late final bool isRelogin;
+
+  LoginPage({required this.chatServerM, this.email, Key? key})
+      : super(key: key) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
@@ -29,6 +36,8 @@ class LoginPage extends StatefulWidget {
           0.6,
           1
         ]));
+
+    isRelogin = email != null && email!.trim().isNotEmpty;
   }
 
   @override
@@ -36,7 +45,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late ChatServerM _chatServer;
+  // late ChatServerM _chatServer;
   final ValueNotifier<LoginType> _loginTypeNotifier =
       ValueNotifier(LoginType.password);
 
@@ -47,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    _chatServer = ModalRoute.of(context)!.settings.arguments as ChatServerM;
+    // _chatServer = ModalRoute.of(context)!.settings.arguments as ChatServerM;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -82,26 +91,27 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildLoginBlock() {
-    return ValueListenableBuilder(
+    return ValueListenableBuilder<LoginType>(
         valueListenable: _loginTypeNotifier,
         builder: (context, loginType, _) {
           switch (loginType) {
             case LoginType.password:
-              return PasswordLogin(chatServer: _chatServer);
+              return PasswordLogin(
+                  chatServer: widget.chatServerM, email: widget.email);
             case LoginType.magiclink:
-              return MagiclinkLogin(chatServer: _chatServer);
+              return MagiclinkLogin(chatServer: widget.chatServerM);
             default:
-              return PasswordLogin(chatServer: _chatServer);
+              return PasswordLogin(chatServer: widget.chatServerM);
           }
         });
   }
 
   Widget _buildRegister() {
-    if (_chatServer.properties.config == null) {
+    if (widget.chatServerM.properties.config == null) {
       return SizedBox.shrink();
     }
 
-    if (_chatServer.properties.config?.whoCanSignUp != "EveryOne") {
+    if (widget.chatServerM.properties.config?.whoCanSignUp != "EveryOne") {
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Text(
@@ -173,50 +183,69 @@ class _LoginPageState extends State<LoginPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: FittedBox(
-        child: VoceButton(
-          height: 32,
-          width: 32,
-          decoration: BoxDecoration(
-              color: Colors.blue, borderRadius: BorderRadius.circular(16)),
-          contentPadding: EdgeInsets.zero,
-          normal: Center(
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          action: () async {
-            Navigator.pop(context);
-            return true;
-          },
-        ),
-      ),
+          child: !widget.isRelogin
+              ? VoceButton(
+                  height: 32,
+                  width: 32,
+                  decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(16)),
+                  contentPadding: EdgeInsets.zero,
+                  normal: Center(
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  action: () async {
+                    Navigator.pop(context);
+                    return true;
+                  },
+                )
+              : VoceButton(
+                  height: 32,
+                  width: 32,
+                  decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(16)),
+                  contentPadding: EdgeInsets.zero,
+                  normal: Center(
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  action: () async {
+                    Navigator.pop(context);
+                    return true;
+                  },
+                )),
     );
   }
 
   Widget _buildTitle() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Wrap(
-        crossAxisAlignment: WrapCrossAlignment.center,
+      RichText(
+          text: TextSpan(
         children: [
-          Text(
-            AppLocalizations.of(context)!.loginPageTitle + " ",
-            style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cyan500),
-          ),
-          Text(
-            _chatServer.properties.serverName,
+          TextSpan(
+              text: AppLocalizations.of(context)!.loginPageTitle + " ",
+              style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cyan500)),
+          TextSpan(
+            text: widget.chatServerM.properties.serverName,
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
                 color: Colors.blue.shade700),
           ),
         ],
-      ),
-      Text(_chatServer.fullUrlWithoutPort,
+      )),
+      Text(widget.chatServerM.fullUrlWithoutPort,
           style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
