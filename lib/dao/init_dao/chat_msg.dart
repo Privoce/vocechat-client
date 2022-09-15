@@ -472,7 +472,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return super.query(
         where: "${ChatMsgM.F_dmUid} = ?",
         whereArgs: [dmUid],
-        orderBy: "${ChatMsgM.F_createdAt} ASC");
+        orderBy: "${ChatMsgM.F_mid} ASC");
   }
 
   /// Get a list of DM messages by dmUid (uid).
@@ -482,7 +482,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return super.query(
         where: "${ChatMsgM.F_gid} = ?",
         whereArgs: [-1],
-        orderBy: "${ChatMsgM.F_createdAt} ASC");
+        orderBy: "${ChatMsgM.F_mid} ASC");
   }
 
   /// Get a list of group messages by group Id (gid).
@@ -492,7 +492,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return super.query(
         where: "${ChatMsgM.F_gid} = ?",
         whereArgs: [gid],
-        orderBy: "${ChatMsgM.F_createdAt} ASC");
+        orderBy: "${ChatMsgM.F_mid} ASC");
   }
 
   /// Get the number of messages in a chat using gid for channels and uid for dms.
@@ -794,7 +794,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   @override
   Future<PageData<ChatMsgM>> paginate(PageMeta pageMeta,
       {String? where, List<Object?>? whereArgs, String? orderBy}) async {
-    orderBy ??= '${ChatMsgM.F_createdAt} ASC';
+    orderBy ??= '${ChatMsgM.F_mid} ASC';
     return await super.paginate(pageMeta,
         where: where, whereArgs: whereArgs, orderBy: orderBy);
   }
@@ -802,7 +802,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   @override
   Future<PageData<ChatMsgM>> paginateLast(PageMeta pageMeta, String orderBy,
       {String? where, List<Object?>? whereArgs}) async {
-    String order = orderBy.isNotEmpty ? orderBy : '${ChatMsgM.F_createdAt} ASC';
+    String order = orderBy.isNotEmpty ? orderBy : '${ChatMsgM.F_mid} ASC';
     return await super
         .paginateLast(pageMeta, order, where: where, whereArgs: whereArgs);
   }
