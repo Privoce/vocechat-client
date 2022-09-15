@@ -448,9 +448,8 @@ class _ChatsPageState extends State<ChatsPage>
         final groupInfoM = await GroupInfoDao().getGroupByGid(chatMsgM.gid);
 
         if (userInfoM != null && groupInfoM != null) {
-          // If the edited message is not the latest, do not update snippet.
           final maxMid = await ChatMsgDao().getChannelMaxMid(groupInfoM.gid);
-          if (chatMsgM.edited == 1 && maxMid != -1 && chatMsgM.mid < maxMid) {
+          if (maxMid != -1 && chatMsgM.mid < maxMid) {
             return;
           }
 

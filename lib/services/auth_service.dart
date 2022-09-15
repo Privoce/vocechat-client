@@ -58,7 +58,11 @@ class AuthService {
         _timer.cancel();
       }
       if (_expiredIn <= threshold && _expiredIn >= threshold - 5) {
-        renewAuthToken();
+        if (await renewAuthToken()) {
+          if (Sse.sse.isClosed()) {
+            Sse.sse.connect();
+          }
+        }
       }
       _expiredIn -= interval;
     });
