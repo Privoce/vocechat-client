@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
@@ -12,7 +11,7 @@ class UserAvatar extends StatefulWidget {
 
   /// If uid is set to null, it will not response to tap gesture, hence app not
   /// be pushed to ContactDetailPage.
-  final int uid;
+  final int? uid;
   final bool isSelf;
   final Uint8List? avatarBytes;
   final bool enableOnlineStatus;
@@ -22,7 +21,7 @@ class UserAvatar extends StatefulWidget {
       {Key? key,
       required this.avatarSize,
       this.isSelf = false,
-      required this.uid,
+      this.uid,
       required this.name,
       required this.avatarBytes,
       this.enableOnlineStatus = false})
@@ -121,7 +120,9 @@ class _UserAvatarState extends State<UserAvatar> {
         alignment: Alignment.bottomRight,
         children: [
           avatar,
-          if (widget.enableOnlineStatus && widget.uid > -1)
+          if (widget.enableOnlineStatus &&
+              widget.uid != null &&
+              widget.uid! > -1)
             Positioned(
               right: -1,
               bottom: -1,

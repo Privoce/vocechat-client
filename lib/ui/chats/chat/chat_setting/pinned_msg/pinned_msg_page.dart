@@ -55,25 +55,36 @@ class PinnedMsgPage extends StatelessWidget {
                           future: UserInfoDao().getUserByUid(msg.createdBy),
                           builder: (futureContext, snapshot) {
                             if (snapshot.hasData && snapshot.data != null) {
-                              return Slidable(
-                                endActionPane: ActionPane(
-                                    extentRatio: 0.3,
-                                    motion: DrawerMotion(),
-                                    children: [
-                                      SlidableAction(
-                                        onPressed: (context) {
-                                          _onTapUnpin(listViewContext, msg.mid);
-                                        },
-                                        icon: AppIcons.delete,
-                                        label: "Unpin",
-                                        backgroundColor: Colors.red,
-                                        foregroundColor: Colors.white,
-                                      )
-                                    ]),
-                                child: PinnedMsgTile(
-                                    gid: groupInfoMNotifier.value.gid,
-                                    msg: msg,
-                                    userInfoM: snapshot.data!),
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 8, top: 8, right: 8),
+                                child: Container(
+                                  clipBehavior: Clip.hardEdge,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.white),
+                                  child: Slidable(
+                                    endActionPane: ActionPane(
+                                        extentRatio: 0.3,
+                                        motion: DrawerMotion(),
+                                        children: [
+                                          SlidableAction(
+                                            onPressed: (context) {
+                                              _onTapUnpin(
+                                                  listViewContext, msg.mid);
+                                            },
+                                            icon: AppIcons.delete,
+                                            label: "Unpin",
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                          )
+                                        ]),
+                                    child: PinnedMsgTile(
+                                        gid: groupInfoMNotifier.value.gid,
+                                        msg: msg,
+                                        userInfoM: snapshot.data!),
+                                  ),
+                                ),
                               );
                             }
                             return SizedBox.shrink();

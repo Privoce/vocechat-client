@@ -6,13 +6,16 @@ import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_channel_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_dm_page.dart';
 import 'package:vocechat_client/ui/widgets/search/app_search_field.dart';
@@ -24,6 +27,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
   late final Widget _avatar;
   late final bool _isAdmin;
   late final String _serverDescription;
+  final VoidCallback showDrawer;
 
   // If enabled, Server description will be displayed, instead of member count.
   final bool enableDescription = true;
@@ -40,6 +44,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
       {required this.onCreateChannel,
       required this.onCreateDm,
       required this.memberCountNotifier,
+      required this.showDrawer,
       Key? key})
       : super(key: key) {
     if (App.app.chatServerM.logo.isEmpty) {
@@ -70,18 +75,24 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
 class _ChatsBarState extends State<ChatsBar> {
   final double _tileHeight = 50;
   late LoadingStatus _sseStatus;
-  late LoadingStatus _tokenStatus;
+  late TokenStatus _tokenStatus;
   late LoadingStatus _taskStatus;
+
+  final GlobalKey<ScaffoldState> _key = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _sseStatus = LoadingStatus.success;
-    _tokenStatus = LoadingStatus.success;
+    _tokenStatus = TokenStatus.success;
     _taskStatus = LoadingStatus.success;
     App.app.statusService.subscribeSseLoading(_onSse);
     App.app.statusService.subscribeTokenLoading(_onToken);
     App.app.statusService.subscribeTaskLoading(_onTask);
+
+    eventBus.on<UserChangeEvent>().listen((event) {
+      resubscribe();
+    });
   }
 
   @override
@@ -92,22 +103,41 @@ class _ChatsBarState extends State<ChatsBar> {
     super.dispose();
   }
 
-  Future<void> _onSse(LoadingStatus status) async {
-    setState(() {
-      _sseStatus = status;
-    });
+  void resubscribe() {
+    App.app.statusService.unsubscribeSseLoading(_onSse);
+    App.app.statusService.unsubscribeTokenLoading(_onToken);
+    App.app.statusService.unsubscribeTaskLoading(_onTask);
+
+    _sseStatus = LoadingStatus.success;
+    _tokenStatus = TokenStatus.success;
+    _taskStatus = LoadingStatus.success;
+    App.app.statusService.subscribeSseLoading(_onSse);
+    App.app.statusService.subscribeTokenLoading(_onToken);
+    App.app.statusService.subscribeTaskLoading(_onTask);
   }
 
-  Future<void> _onToken(LoadingStatus status) async {
-    setState(() {
-      _tokenStatus = status;
-    });
+  Future<void> _onSse(LoadingStatus status) async {
+    if (mounted) {
+      setState(() {
+        _sseStatus = status;
+      });
+    }
+  }
+
+  Future<void> _onToken(TokenStatus status) async {
+    if (mounted) {
+      setState(() {
+        _tokenStatus = status;
+      });
+    }
   }
 
   Future<void> _onTask(LoadingStatus status) async {
-    setState(() {
-      _taskStatus = status;
-    });
+    if (mounted) {
+      setState(() {
+        _taskStatus = status;
+      });
+    }
   }
 
   @override
@@ -118,7 +148,10 @@ class _ChatsBarState extends State<ChatsBar> {
       leadingWidth: 47,
       leading: Padding(
         padding: const EdgeInsets.only(left: 15),
-        child: widget._avatar,
+        child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => widget.showDrawer(),
+            child: widget._avatar),
       ),
       title: Row(
         children: [
@@ -132,7 +165,8 @@ class _ChatsBarState extends State<ChatsBar> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (widget.enableDescription)
+                if (widget.enableDescription &&
+                    widget._serverDescription.isNotEmpty)
                   Text(
                     widget._serverDescription,
                     style: AppTextStyles.labelSmall(),
@@ -260,29 +294,49 @@ class _ChatsBarState extends State<ChatsBar> {
     // print("TOKEN: $_tokenStatus");
     // print("TASK: $_taskStatus");
     if (_sseStatus == LoadingStatus.success &&
-        _tokenStatus == LoadingStatus.success &&
+        _tokenStatus == TokenStatus.success &&
         _taskStatus == LoadingStatus.success) {
       return SizedBox.shrink();
-    }
-
-    if (_sseStatus == LoadingStatus.loading ||
-        _tokenStatus == LoadingStatus.loading ||
+    } else if (_tokenStatus == TokenStatus.unauthorized) {
+      return CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            showAppAlert(
+                context: context,
+                title: "Login Status Expired",
+                content: "Please login again.",
+                actions: [
+                  AppAlertDialogAction(
+                      text: "Cancel",
+                      action: (() async {
+                        Navigator.of(context).pop();
+                      })),
+                  AppAlertDialogAction(
+                      text: "OK",
+                      action: (() async {
+                        Navigator.of(context).pop();
+                        // Call login page
+                        _reLogin();
+                      }))
+                ]);
+          },
+          child: Icon(Icons.error, color: Colors.red.shade600));
+    } else if (_sseStatus == LoadingStatus.loading ||
+        _tokenStatus == TokenStatus.loading ||
         _taskStatus == LoadingStatus.loading) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: CupertinoActivityIndicator(color: AppColors.coolGrey700),
       );
-    }
-
-    if (_sseStatus == LoadingStatus.disconnected ||
-        _tokenStatus == LoadingStatus.disconnected ||
+    } else if (_sseStatus == LoadingStatus.disconnected ||
+        _tokenStatus == TokenStatus.disconnected ||
         _taskStatus == LoadingStatus.disconnected) {
       return CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () {
             showAppAlert(
                 context: context,
-                title: "Netword Error",
+                title: "Network Error",
                 content:
                     "Please check your network settings, or try to log in again.",
                 actions: [
@@ -299,6 +353,28 @@ class _ChatsBarState extends State<ChatsBar> {
     }
 
     return SizedBox.shrink();
+  }
+
+  void _reLogin() async {
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
+          chatServerM: App.app.chatServerM,
+          email: App.app.userDb!.userInfo.email),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+    Navigator.of(context).push(route);
   }
 
   PopupMenuItem _buildItem(Widget leading, String title, AddActions action) {

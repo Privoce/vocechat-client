@@ -10,6 +10,7 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
@@ -39,12 +40,19 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage> {
   ValueNotifier<UserInfoM?> userInfoNotifier = ValueNotifier(null);
+  ValueNotifier<bool> isBusy = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
     getUserInfoM();
     App.app.chatService.subscribeUsers(_onUser);
+
+    eventBus.on<UserChangeEvent>().listen((event) {
+      getUserInfoM();
+      // App.app.chatService.subscribeUsers(_onUser);
+      if (mounted) setState(() {});
+    });
   }
 
   @override
@@ -55,20 +63,28 @@ class _SettingPageState extends State<SettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: SettingBar(),
-      body: SafeArea(
-          child: ListView(
-        children: [
-          _buildUserInfo(),
-          _buildServer(context),
-          if (App.app.userDb?.userInfo.isAdmin ?? false) _buildConfigs(context),
-          _buildAbout(),
-          SizedBox(height: 8),
-          _buildButtons(context)
-        ],
-      )),
-    );
+    return ValueListenableBuilder<bool>(
+        valueListenable: isBusy,
+        builder: (context, busy, _) {
+          return AbsorbPointer(
+            absorbing: busy,
+            child: Scaffold(
+              appBar: SettingBar(),
+              body: SafeArea(
+                  child: ListView(
+                children: [
+                  _buildUserInfo(),
+                  _buildServer(context),
+                  if (App.app.userDb?.userInfo.isAdmin ?? false)
+                    _buildConfigs(context),
+                  _buildAbout(),
+                  SizedBox(height: 8),
+                  _buildButtons(context)
+                ],
+              )),
+            ),
+          );
+        });
   }
 
   Widget _buildUserInfo() {
@@ -159,10 +175,11 @@ class _SettingPageState extends State<SettingPage> {
       children: [
         SizedBox(height: 8),
         AppBannerButton(
-            onTap: () {
-              _onResetDbTapped(context);
-            },
-            title: AppLocalizations.of(context)!.settingsPageClearData),
+          title: "Switch Server",
+          onTap: () {
+            _onSwitchServerTapped();
+          },
+        ),
         SizedBox(height: 8),
         AppBannerButton(
           title: AppLocalizations.of(context)!.settingsPageLogout,
@@ -172,11 +189,21 @@ class _SettingPageState extends State<SettingPage> {
         ),
         SizedBox(height: 8),
         AppBannerButton(
+            onTap: () {
+              _onResetDbTapped(context);
+            },
+            title: AppLocalizations.of(context)!.settingsPageClearData),
+        SizedBox(height: 8),
+        AppBannerButton(
           onTap: () => _onDeleteAccountTapped(context),
           title: "Delete Account",
         )
       ],
     );
+  }
+
+  void _onSwitchServerTapped() {
+    Scaffold.of(context).openDrawer();
   }
 
   void _onLogoutTapped(BuildContext context) async {
@@ -187,15 +214,13 @@ class _SettingPageState extends State<SettingPage> {
         primaryAction: AppAlertDialogAction(
             text: 'Log Out',
             isDangerAction: true,
-            action: () {
-              App.app.authService!.logout().then((value) {
-                try {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                      ServerPage.route, (route) => false);
-                } catch (e) {
-                  App.logger.severe(e);
-                }
+            action: () async {
+              isBusy.value = true;
+              await App.app.authService?.logout().then((value) async {
+                await App.app.changeUserAfterLogOut();
               });
+              Navigator.of(context).pop();
+              isBusy.value = false;
             }),
         actions: [
           AppAlertDialogAction(
@@ -232,8 +257,11 @@ class _SettingPageState extends State<SettingPage> {
               if (res.statusCode == 200) {
                 App.app.authService!.selfDelete().then((value) {
                   try {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        ServerPage.route, (route) => false);
+                    navigatorKey.currentState!.pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => ServerPage(),
+                        ),
+                        (route) => false);
                   } catch (e) {
                     App.logger.severe(e);
                   }

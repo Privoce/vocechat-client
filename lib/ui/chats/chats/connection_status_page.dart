@@ -14,8 +14,8 @@ class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
   final ValueNotifier<LoadingStatus> sseNotifier =
       ValueNotifier(LoadingStatus.success);
 
-  final ValueNotifier<LoadingStatus> tokenNotifier =
-      ValueNotifier(LoadingStatus.success);
+  final ValueNotifier<TokenStatus> tokenNotifier =
+      ValueNotifier(TokenStatus.success);
 
   @override
   void initState() {
@@ -70,7 +70,7 @@ class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("Token Status:"),
-              ValueListenableBuilder<LoadingStatus>(
+              ValueListenableBuilder<TokenStatus>(
                   valueListenable: tokenNotifier,
                   builder: (context, status, _) {
                     return Text(status.name);
@@ -87,7 +87,7 @@ class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
     sseNotifier.value = status;
   }
 
-  Future<void> _onTokenStatus(LoadingStatus status) async {
+  Future<void> _onTokenStatus(TokenStatus status) async {
     tokenNotifier.value = status;
   }
 }

@@ -92,7 +92,7 @@ Future<void> main() async {
     _defaultHome = ServerPage();
   } else {
     final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
-    if (userDb == null || userDb.loggedIn != 1) {
+    if (userDb == null) {
       _defaultHome = ServerPage();
     } else {
       App.app.userDb = userDb;
@@ -128,14 +128,6 @@ Future<void> main() async {
           App.app.chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
           await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
         }
-
-        // Temp solution to 'WidgetsBinding' not called.
-        // reason: WidgetsBinding.instance.addObserver(this) not called in init launch.
-        // if (!await App.app.authService!.renewAuthToken() &&
-        //     userDb.loggedIn != 1) {
-        // } else {
-        //   App.app.chatService.initSse();
-        // }
       } catch (e) {
         App.logger.severe(e);
       }
@@ -224,8 +216,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         title: 'VoceChat',
         routes: {
           // Auth
-          ServerPage.route: (context) => ServerPage(),
-          LoginPage.route: (context) => LoginPage(),
+          // ServerPage.route: (context) => ServerPage(),
+          // LoginPage.route: (context) => LoginPage(),
           // Chats
           ChatsMainPage.route: (context) => ChatsMainPage(),
           ChatsPage.route: (context) => ChatsPage(),
@@ -290,11 +282,17 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
       App.app.authService!.logout().then((value) {
         if (value) {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil(ServerPage.route, (route) => false);
+          navigatorKey.currentState!.pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => ServerPage(),
+              ),
+              (route) => false);
         } else {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil(ServerPage.route, (route) => false);
+          navigatorKey.currentState!.pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => ServerPage(),
+              ),
+              (route) => false);
         }
       });
     }
@@ -323,14 +321,17 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     final status = await StatusMDao.dao.getStatus();
     if (status == null) return;
     final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
-    if (userDb == null || userDb.loggedIn != 1) {
+    if (userDb == null) {
       return;
     }
 
     if (App.app.authService != null) {
-      await App.app.authService!.renewAuthToken();
-      if (Sse.sse.isClosed()) {
-        App.app.chatService.initSse();
+      if (await App.app.authService!.renewAuthToken()) {
+        if (Sse.sse.isClosed()) {
+          App.app.chatService.initSse();
+        }
+      } else {
+        Sse.sse.close();
       }
     }
 
