@@ -19,9 +19,10 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/services/sp_utils.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
-import 'mentions_event.dart';
 
 class ChatTextField extends StatefulWidget {
   final GroupInfoM? groupInfoM;
@@ -65,37 +66,17 @@ class ChatTextField extends StatefulWidget {
 class _ChatTextFieldState extends State<ChatTextField> {
   late ValueNotifier<Set<UserInfoM>> memberSetNotifier = ValueNotifier({});
   final selectedMention = ValueNotifier<LengthMap?>(null);
-  late final List<Map<String, dynamic>> memberList = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> memberList = <Map<String, dynamic>>[];
 
   Set markupSet = {};
   @override
   void initState() {
     super.initState();
-    eventBus.on<MentionsEvent>().listen((event) {
-      widget.mentionsKey.currentState!.controller!.text +=
-          '@${event.mentionsMarkupText} ';
-      widget.mentionsKey.currentState!.controller!.selection =
-          TextSelection.fromPosition(TextPosition(
-              offset:
-                  widget.mentionsKey.currentState!.controller!.text.length));
-      markupSet.add(event.mentionsMarkupText);
-    });
   }
 
   @override
   void deactivate() {
     super.deactivate();
-    // String id = '';
-    // if (widget.userInfoM == null) {
-    //   id = widget.groupInfoM!.gid.toString();
-    // } else {
-    //   id = 'u${widget.userInfoM!.uid}';
-    // }
-    // eventBus.fire(
-    //     MentionsTextEvent(mentionsKey.currentState!.controller!.text, id));
-    // if (mentionsKey.currentState!.controller!.text.isEmpty) {
-    //   eventBus.fire(MentionsTextEvent('', id));
-    // }
   }
 
   @override
@@ -106,12 +87,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
 
   @override
   Widget build(BuildContext context) {
-    // final ValueNotifier<SendType> _sendTypeNotifier =
-    //     ValueNotifier(SendType.normal);
-    // eventBus.on<ChangeSendTypeEvent>().listen((event) {
-    //   _sendTypeNotifier.value = event.type;
-    //   setState(() {});
-    // });
+
     return Column(
       children: [
         _buildReply(context),
@@ -124,85 +100,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: widget._height,
-                  height: widget._height,
-                  child: CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: _sendImage,
-                      child: Icon(Icons.image, color: AppColors.grey800)),
-                ),
-                SizedBox(
-                  width: widget._height,
-                  height: widget._height,
-                  child: CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: _sendFile,
-                      child: Icon(Icons.folder, color: AppColors.grey800)),
-                ),
                 Expanded(
                   child: _buildTextField(),
                 ),
-                ValueListenableBuilder<SendType>(
-                    valueListenable: widget.sendBtnType,
-                    builder: (context, value, child) {
-                      switch (value) {
-                        case SendType.normal:
-                          return SizedBox(
-                            height: widget._height,
-                            width: widget._height,
-                            child: CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: _sendTxt,
-                                child:
-                                    Icon(Icons.send, color: AppColors.grey800)),
-                          );
-                        case SendType.reply:
-                          return SizedBox(
-                            height: widget._height,
-                            width: widget._height,
-                            child: CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: _sendReply,
-                                child:
-                                    Icon(Icons.send, color: AppColors.grey800)),
-                          );
-                        case SendType.edit:
-                          return SizedBox(
-                            height: widget._height,
-                            width: widget._height * 2,
-                            child: Row(
-                              children: [
-                                FittedBox(
-                                  child: CupertinoButton(
-                                      padding: EdgeInsets.zero,
-                                      onPressed: () {
-                                        _cancelEdit();
-                                      },
-                                      child: Icon(Icons.close,
-                                          color: AppColors.grey800)),
-                                ),
-                                FittedBox(
-                                  child: CupertinoButton(
-                                      padding: EdgeInsets.zero,
-                                      onPressed: _sendEdit,
-                                      child: Icon(Icons.check_circle,
-                                          color: AppColors.grey800)),
-                                ),
-                              ],
-                            ),
-                          );
-                        default:
-                          return SizedBox(
-                            height: widget._height,
-                            width: widget._height,
-                            child: CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: _sendTxt,
-                                child: Icon(Icons.send)),
-                          );
-                      }
-                    })
               ],
             ),
           ),
@@ -218,6 +118,84 @@ class _ChatTextFieldState extends State<ChatTextField> {
         return AppMentions(
           defaultText: widget.draft,
           key: widget.mentionsKey,
+          leading: [
+            SizedBox(
+              width: widget._height,
+              height: widget._height,
+              child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: _sendImage,
+                  child: Icon(Icons.image, color: AppColors.grey800)),
+            ),
+            SizedBox(
+              width: widget._height,
+              height: widget._height,
+              child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: _sendFile,
+                  child: Icon(Icons.folder, color: AppColors.grey800)),
+            ),
+          ],
+          trailing: [
+            ValueListenableBuilder<SendType>(
+                valueListenable: widget.sendBtnType,
+                builder: (context, value, child) {
+                  switch (value) {
+                    case SendType.normal:
+                      return SizedBox(
+                        height: widget._height,
+                        width: widget._height,
+                        child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: _sendTxt,
+                            child: Icon(Icons.send, color: AppColors.grey800)),
+                      );
+                    case SendType.reply:
+                      return SizedBox(
+                        height: widget._height,
+                        width: widget._height,
+                        child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: _sendReply,
+                            child: Icon(Icons.send, color: AppColors.grey800)),
+                      );
+                    case SendType.edit:
+                      return SizedBox(
+                        height: widget._height,
+                        width: widget._height * 2,
+                        child: Row(
+                          children: [
+                            FittedBox(
+                              child: CupertinoButton(
+                                  padding: EdgeInsets.zero,
+                                  onPressed: () {
+                                    _cancelEdit();
+                                  },
+                                  child: Icon(Icons.close,
+                                      color: AppColors.grey800)),
+                            ),
+                            FittedBox(
+                              child: CupertinoButton(
+                                  padding: EdgeInsets.zero,
+                                  onPressed: _sendEdit,
+                                  child: Icon(Icons.check_circle,
+                                      color: AppColors.grey800)),
+                            ),
+                          ],
+                        ),
+                      );
+                    default:
+                      return SizedBox(
+                        height: widget._height,
+                        width: widget._height,
+                        child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: _sendTxt,
+                            child: Icon(Icons.send)),
+                      );
+                  }
+                })
+          ],
           onChanged: (text) {},
           enabled: true,
           suggestionPosition: SuggestionPosition.Top,
@@ -256,73 +234,58 @@ class _ChatTextFieldState extends State<ChatTextField> {
             Mention(
                 trigger: '@',
                 style: const TextStyle(
-                  color: Colors.amber,
+                  color: Colors.blue,
                 ),
                 data: memberList,
                 matchAll: false,
                 suggestionBuilder: (data) {
                   return Container(
+                    color: AppColors.grey100,
                     width: double.infinity,
-                    padding: EdgeInsets.all(10.0),
+                    height: 60,
+                    padding: EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        SizedBox(
-                          width: 25,
-                          height: 25,
-                          child: Stack(
-                            alignment: Alignment.bottomRight,
-                            children: [
-                              data['photo'].length == 1
-                                  ? SizedBox(
-                                      height: 25,
-                                      width: 25,
-                                      child: CircleAvatar(
-                                          child: Text('${data['photo']}')))
-                                  : Container(
-                                      height: 25,
-                                      width: 25,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          image: DecorationImage(
-                                              fit: BoxFit.fill,
-                                              image:
-                                                  MemoryImage(data['photo'])))),
-                            ],
-                          ),
+                        UserAvatar(
+                            avatarSize: AvatarSize.s36,
+                            uid: data['uid'] ?? -1,
+                            name: data['display'] ?? "",
+                            avatarBytes: data["photo"]),
+                        SizedBox(width: 16),
+                        Flexible(
+                          child: Text(data['display'],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.black)),
                         ),
-                        SizedBox(
-                          width: 20.0,
-                        ),
-                        Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: <Widget>[
-                            // Text(data['email']),
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                Text('@${data['display']}'),
-                                SizedBox(
-                                  width: 7,
-                                ),
-                                data['is_admin']
-                                    ? Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(3, 2, 3, 2),
-                                        decoration: BoxDecoration(
-                                          color: Colors.green[300],
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(5.0)),
-                                        ),
-                                        child: Text(
-                                          'admin',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      )
-                                    : Text('                              '),
-                              ],
+                        if (data['is_admin'] == true) SizedBox(width: 16),
+                        if (data['is_admin'] == true)
+                          Container(
+                            padding: EdgeInsets.fromLTRB(3, 2, 3, 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green[300],
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
                             ),
-                          ],
-                        )
+                            child: Text('Admin',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 14)),
+                          ),
+                        if (data['is_owner'] == true) SizedBox(width: 16),
+                        if (data['is_owner'] == true)
+                          Container(
+                            padding: EdgeInsets.fromLTRB(3, 2, 3, 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green[300],
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(5.0)),
+                            ),
+                            child: Text('Owner',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 14)),
+                          )
                       ],
                     ),
                   );
@@ -423,41 +386,30 @@ class _ChatTextFieldState extends State<ChatTextField> {
         ));
   }
 
-  //Change the list structure to accommodate mentions data
+  // Change the list structure to accommodate mentions data
   Future<List<Map<String, dynamic>>> memberListProcess() async {
-    final memberSet = await getMemberList();
-    List<Map<String, dynamic>> getMemberInstance = <Map<String, dynamic>>[];
-    for (var item in memberSet.toList()) {
-      getMemberInstance.add(item.toJson());
+    if (widget.groupInfoM == null) return [];
+
+    final userInfoList = await getMemberList();
+    List<Map<String, dynamic>> userInfoMapList = [];
+
+    for (final userInfoM in userInfoList) {
+      Map<String, dynamic> userInfoMap = {};
+      userInfoMap.addAll({"uid": userInfoM.uid});
+      userInfoMap.addAll({"photo": userInfoM.avatarBytes});
+      userInfoMap.addAll({"display": userInfoM.userInfo.name});
+      userInfoMap.addAll({"is_admin": userInfoM.userInfo.isAdmin});
+      userInfoMap.addAll(
+          {"is_owner": widget.groupInfoM?.groupInfo.owner == userInfoM.uid});
+
+      userInfoMapList.add(userInfoMap);
     }
-    getMemberInstance.forEach((element) {
-      Map<String, dynamic> memberListReset = <String, dynamic>{};
-      element.forEach((key, value) {
-        if (key == 'photo') {
-          if (value.isNotEmpty) {
-            memberListReset['photo'] = value;
-          }
-        } else {
-          json.decode(value).forEach((key, value) {
-            if (key == 'uid') {
-              memberListReset['uid'] = value;
-            } else if (key == 'name') {
-              memberListReset['photo'] = value.substring(0, 1);
-              memberListReset['display'] = value;
-            } else if (key == 'is_admin') {
-              memberListReset['is_admin'] = value;
-            }
-          });
-          if (memberList.length < memberSetNotifier.value.length) {
-            memberList.add(memberListReset);
-          }
-        }
-      });
-    });
+
+    memberList = userInfoMapList;
     return memberList;
   }
 
-  getMemberList() async {
+  Future<List<UserInfoM>> getMemberList() async {
     final members = (await GroupInfoDao().getUserListByGid(
             widget.groupInfoM!.gid,
             widget.groupInfoM!.groupInfo.isPublic,
@@ -491,18 +443,6 @@ class _ChatTextFieldState extends State<ChatTextField> {
       return true;
     }
     return false;
-  }
-
-  void _sendImageTest() async {
-    ImagePicker _picker = ImagePicker();
-    List<XFile>? images = await _picker.pickMultiImage();
-
-    if (images != null) {
-      if (images.length > 9) {
-        // showAppAlert(context: "Too many ", title: title, content: content, actions: actions)
-      }
-      for (XFile image in images) {}
-    }
   }
 
   void _sendImage() async {
@@ -550,7 +490,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
                       context: context,
                       title: "VoceChat needs camera and microphone permissions",
                       content:
-                          "Please go to settings -> VoceChat for permission settings.",
+                          "Grant camera and microphone permissions for sending image and video messages.",
                       actions: [
                         AppAlertDialogAction(
                             text: "OK",

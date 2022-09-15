@@ -98,6 +98,7 @@ class _SavedItemPageState extends State<SavedItemPage> {
                     return Padding(
                       padding: const EdgeInsets.only(left: 8, top: 8, right: 8),
                       child: Container(
+                        clipBehavior: Clip.hardEdge,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
                             color: Colors.white),

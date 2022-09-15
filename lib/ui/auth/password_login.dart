@@ -17,11 +17,14 @@ import 'package:voce_widgets/voce_widgets.dart';
 class PasswordLogin extends StatefulWidget {
   final ChatServerM chatServer;
 
-  // TODO: add afterLogin() method when both login types are completed.
+  final String? email;
 
-  const PasswordLogin({Key? key, required this.chatServer}) : super(key: key);
+  late final bool _isRelogin;
 
-  final _cornerRadius = 10.0;
+  PasswordLogin({Key? key, required this.chatServer, this.email})
+      : super(key: key) {
+    _isRelogin = email != null && email!.trim().isNotEmpty;
+  }
 
   @override
   State<PasswordLogin> createState() => _PasswordLoginState();
@@ -42,6 +45,11 @@ class _PasswordLoginState extends State<PasswordLogin> {
   @override
   void initState() {
     super.initState();
+
+    if (widget._isRelogin) {
+      emailController.text = widget.email!;
+      isEmailValid = true;
+    }
   }
 
   @override
@@ -51,6 +59,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       SizedBox(height: 4),
       VoceTextField.filled(
         emailController,
+        enabled: !widget._isRelogin,
         title: Text(
           AppLocalizations.of(context)!.loginPageEmail,
           style: TextStyle(fontSize: 16),
@@ -132,7 +141,13 @@ class _PasswordLoginState extends State<PasswordLogin> {
         style: TextStyle(color: Colors.white),
       ),
       action: () async {
-        return await _onLogin();
+        if (await _onLogin()) {
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
+          return true;
+        } else {
+          return false;
+        }
       },
       enabled: enableLogin,
     );
@@ -184,9 +199,6 @@ class _PasswordLoginState extends State<PasswordLogin> {
       } else {
         // App.logger.config(req.toJson().toString());
       }
-
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
 
       // await App.app.chatService.preSseDataFetch();
       App.app.chatService.initSse();

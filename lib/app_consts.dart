@@ -22,6 +22,10 @@ enum LoadingStatus { loading, success, disconnected }
 
 typedef LoadingAware = Future<void> Function(LoadingStatus status);
 
+typedef TokenAware = Future<void> Function(TokenStatus status);
+
+enum TokenStatus { loading, success, unauthorized, disconnected }
+
 /// [MsgContentType] is consistant with server definition.
 /// Original String consts are defined separately.
 enum MsgContentType { text, markdown, file, archive }

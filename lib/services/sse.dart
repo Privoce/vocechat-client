@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:universal_html/html.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 
 typedef SseEventAware = void Function(dynamic);
 
@@ -21,16 +23,17 @@ class Sse {
 
   Timer? _reconnectTimer;
 
-  void connect() {
+  void connect() async {
     if (isConnecting) return;
 
     isConnecting = true;
 
     close();
-    App.logger.info("Connecting SSE: ${prepareUrl()}");
+    App.logger.info("Connecting SSE: ${await prepareUrl()}");
     App.app.statusService.fireSseLoading(LoadingStatus.loading);
 
-    final eventSource = html.EventSource(Uri.parse(prepareUrl()).toString());
+    final eventSource =
+        html.EventSource(Uri.parse(await prepareUrl()).toString());
 
     try {
       eventSource.onMessage.listen((event) {
@@ -51,7 +54,7 @@ class Sse {
         App.app.statusService.fireSseLoading(LoadingStatus.disconnected);
         App.logger.severe(event);
         eventSource.close();
-        handleError();
+        handleError(event);
         isConnecting = false;
       });
     } catch (e) {
@@ -85,10 +88,10 @@ class Sse {
     }
   }
 
-  String prepareUrl() {
+  Future<String> prepareUrl() async {
     String url = App.app.chatServerM.fullUrl + "/api/user/events?";
 
-    final afterMid = App.app.userDb!.maxMid;
+    final afterMid = await ChatMsgDao().getMaxMid();
     if (afterMid > -1) {
       url += "after_mid=$afterMid";
     }
@@ -103,7 +106,7 @@ class Sse {
     return url;
   }
 
-  void handleError() async {
+  void handleError(Event event) async {
     _reconnectTimer = Timer(Duration(seconds: reconnectSec), () {
       connect();
       reconnectSec *= 2;
@@ -128,6 +131,8 @@ class Sse {
   void close() {
     eventSource?.close();
     eventSource = null;
+    isConnecting = false;
+    _reconnectTimer?.cancel();
     App.logger.info("SSE Closed.");
   }
 }

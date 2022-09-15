@@ -6,7 +6,7 @@ part 'chat_msg.g.dart';
 class ChatMsg {
   int mid;
   final int fromUid;
-  final int createdAt;
+  int createdAt;
 
   /// MsgTargetGroup or MsgTargetUser
   final Map<String, dynamic> target;

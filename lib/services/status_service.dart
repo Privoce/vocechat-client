@@ -2,23 +2,29 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 
 class StatusService {
-  final Set<LoadingAware> _tokenListeners = {};
+  final Set<TokenAware> _tokenListeners = {};
   final Set<LoadingAware> _sseListeners = {};
   final Set<LoadingAware> _taskListeners = {};
 
-  void subscribeTokenLoading(LoadingAware loadingAware) {
-    unsubscribeTokenLoading(loadingAware);
-    _tokenListeners.add(loadingAware);
+  void dispose() {
+    _tokenListeners.clear();
+    _sseListeners.clear();
+    _taskListeners.clear();
   }
 
-  void unsubscribeTokenLoading(LoadingAware loadingAware) {
-    _tokenListeners.remove(loadingAware);
+  void subscribeTokenLoading(TokenAware tokenAware) {
+    unsubscribeTokenLoading(tokenAware);
+    _tokenListeners.add(tokenAware);
   }
 
-  void fireTokenLoading(LoadingStatus status) {
-    for (LoadingAware loadingAware in _tokenListeners) {
+  void unsubscribeTokenLoading(TokenAware tokenAware) {
+    _tokenListeners.remove(tokenAware);
+  }
+
+  void fireTokenLoading(TokenStatus status) {
+    for (TokenAware tokenAware in _tokenListeners) {
       try {
-        loadingAware(status);
+        tokenAware(status);
       } catch (e) {
         App.logger.severe(e);
       }

@@ -23,19 +23,13 @@ class ChatsMainPage extends StatefulWidget {
 }
 
 class _ChatsMainPageState extends State<ChatsMainPage> {
-  int _selectedIndex = 0;
-
   final List<Widget> _pageOptions = <Widget>[
     ChatsPage(),
     ContactsPage(),
     SettingPage(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  ValueNotifier<bool> disableGesture = ValueNotifier(false);
 
   @override
   void initState() {
@@ -44,29 +38,43 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-        tabBar: CupertinoTabBar(
-            height: 60,
-            activeColor: widget._activeColor,
-            inactiveColor: widget._defaultColor,
-            items: [
-              _buildChatsIcon(),
-              BottomNavigationBarItem(
-                icon: Padding(
-                  padding: const EdgeInsets.only(top: 8, left: 4, right: 4),
-                  child: Icon(AppIcons.contact, size: widget._iconsize),
-                ),
-                label: AppLocalizations.of(context)!.tabContacts,
-              ),
-              BottomNavigationBarItem(
-                icon: Padding(
-                    padding: const EdgeInsets.only(top: 8, left: 4, right: 4),
-                    child: Icon(AppIcons.setting, size: widget._iconsize)),
-                label: AppLocalizations.of(context)!.tabSettings,
-              ),
-            ]),
-        tabBuilder: (context, index) {
-          return _pageOptions[index];
+    return ValueListenableBuilder<bool>(
+        valueListenable: disableGesture,
+        builder: (context, disableGesture, _) {
+          return AbsorbPointer(
+            absorbing: disableGesture,
+            child: Scaffold(
+              drawer: _buildServerSwitchDrawer(),
+              body: CupertinoTabScaffold(
+                  tabBar: CupertinoTabBar(
+                      height: 60,
+                      activeColor: widget._activeColor,
+                      inactiveColor: widget._defaultColor,
+                      items: [
+                        _buildChatsIcon(),
+                        BottomNavigationBarItem(
+                          icon: Padding(
+                            padding: const EdgeInsets.only(
+                                top: 8, left: 4, right: 4),
+                            child:
+                                Icon(AppIcons.contact, size: widget._iconsize),
+                          ),
+                          label: AppLocalizations.of(context)!.tabContacts,
+                        ),
+                        BottomNavigationBarItem(
+                          icon: Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 8, left: 4, right: 4),
+                              child: Icon(AppIcons.setting,
+                                  size: widget._iconsize)),
+                          label: AppLocalizations.of(context)!.tabSettings,
+                        ),
+                      ]),
+                  tabBuilder: (context, index) {
+                    return _pageOptions[index];
+                  }),
+            ),
+          );
         });
   }
 
@@ -128,7 +136,9 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
     );
   }
 
-  Widget _buildDrawer() {
-    return ChatsDrawer();
+  Widget _buildServerSwitchDrawer() {
+    return ChatsDrawer(
+      disableGesture: (isBusy) => disableGesture.value = isBusy,
+    );
   }
 }

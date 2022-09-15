@@ -58,6 +58,12 @@ class ChatService {
     taskQueue = TaskQueue();
   }
 
+  void dispose() {
+    readIndexTimer.cancel();
+    Sse.sse.close();
+    taskQueue.cancel();
+  }
+
   late Stream _chatStream;
 
   final Set<UsersAware> _userListeners = {};
@@ -133,6 +139,7 @@ class ChatService {
   }
 
   void initSse() async {
+    Sse.sse.close();
     App.app.statusService.fireSseLoading(LoadingStatus.loading);
 
     if (App.app.userDb == null) {
@@ -295,9 +302,7 @@ class ChatService {
       // Following methods listed in alphabetical order.
       switch (type) {
         case "kick":
-          App.app.authService?.logout();
-          navigatorKey.currentState!
-              .pushNamedAndRemoveUntil(ServerPage.route, (route) => false);
+          App.app.authService?.logout(markLogout: false);
           break;
 
         case "heartbeat":
@@ -399,8 +404,12 @@ class ChatService {
 
     // Do filtering if SSE pushes duplicated messages.
     // (Due to SSE reconnection error.)
-    if (chatMsg.mid < 0 ||
-        (await ChatMsgDao().getMsgByMid(chatMsg.mid)) != null) {
+    if (chatMsg.mid < 0) {
+      return;
+    }
+
+    final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
+    if (msg != null && msg.status == MsgSendStatus.success.name) {
       return;
     }
 
@@ -420,10 +429,41 @@ class ChatService {
               "MsgDetail format error. msg: ${chatJson.toString()}";
           App.logger.severe(errorMsg);
       }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
 
-      App.app.userDb?.maxMid = max(App.app.userDb!.maxMid, chatMsg.mid);
-      await UserDbMDao.dao
-          .updateMaxMid(App.app.userDb!.id, App.app.userDb!.maxMid);
+  Future<void> handleHistoryChatMsg(Map<String, dynamic> chatJson) async {
+    ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
+
+    // Do filtering if SSE pushes duplicated messages.
+    // (Due to SSE reconnection error.)
+    if (chatMsg.mid < 0) {
+      return;
+    }
+
+    final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
+    if (msg != null && msg.status == MsgSendStatus.success.name) {
+      return;
+    }
+
+    try {
+      switch (chatMsg.detail["type"]) {
+        case "normal":
+          await _handleMsgNormal(chatMsg);
+          break;
+        case "reaction":
+          await _handleMsgReaction(chatMsg);
+          break;
+        case "reply":
+          await _handleReply(chatMsg);
+          break;
+        default:
+          final errorMsg =
+              "MsgDetail format error. msg: ${chatJson.toString()}";
+          App.logger.severe(errorMsg);
+      }
     } catch (e) {
       App.logger.severe(e);
     }
@@ -675,6 +715,10 @@ class ChatService {
                 await UserInfoDao()
                     .addOrUpdate(m)
                     .then((value) => fireUser(value, EventActions.update));
+                if (m.uid == App.app.userDb?.uid) {
+                  App.app.userDb?.avatarBytes = avatarRes.data!;
+                  await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
+                }
               } else {
                 App.logger.warning("UID ${m.uid} Avatar null");
               }
@@ -704,6 +748,10 @@ class ChatService {
                   await UserInfoDao()
                       .addOrUpdate(m)
                       .then((value) => fireUser(value, EventActions.update));
+                  if (m.uid == App.app.userDb?.uid) {
+                    App.app.userDb?.avatarBytes = avatarRes.data!;
+                    await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
+                  }
                 } else {
                   App.logger.warning("UID ${m.uid} Avatar null");
                 }
@@ -969,6 +1017,11 @@ class ChatService {
                 await UserInfoDao()
                     .addOrUpdate(m)
                     .then((value) => fireUser(value, EventActions.update));
+
+                if (m.uid == App.app.userDb?.uid) {
+                  App.app.userDb?.avatarBytes = avatarRes.data!;
+                  await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
+                }
               } else {
                 App.logger.warning("UID ${m.uid} Avatar null");
               }
@@ -1045,12 +1098,14 @@ class ChatService {
               createdAt: chatMsg.createdAt,
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-          await ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
-            String s =
-                value.msgNormal?.content ?? value.msgReply?.content ?? "";
-            fireSnippet(value);
-            fireMsg(value, localMid, s);
-          });
+          taskQueue
+              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
+                    String s = value.msgNormal?.content ??
+                        value.msgReply?.content ??
+                        "";
+                    fireSnippet(value);
+                    fireMsg(value, localMid, s);
+                  }));
 
           break;
         case typeMarkdown:
@@ -1062,10 +1117,10 @@ class ChatService {
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
 
-          await ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-            fireSnippet(value);
-            fireMsg(value, localMid, detail.content);
-          });
+          taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+                fireSnippet(value);
+                fireMsg(value, localMid, detail.content);
+              }));
 
           break;
 
@@ -1077,9 +1132,9 @@ class ChatService {
               createdAt: chatMsg.createdAt,
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-          await ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-            fireSnippet(chatMsgM);
-          });
+          taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+                fireSnippet(chatMsgM);
+              }));
 
           // thumb will only be downloaded if file is an image.
           try {
@@ -1110,9 +1165,10 @@ class ChatService {
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
 
-          await ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
-            fireSnippet(value);
-          });
+          taskQueue
+              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
+                    fireSnippet(value);
+                  }));
 
           getArchive(chatMsgM).catchError((e) {
             App.logger.severe(e);
@@ -1159,8 +1215,8 @@ class ChatService {
           final reaction = detailJson["action"] as String;
 
           await ChatMsgDao()
-              .reactMsgByMid(
-                  targetMid, chatMsg.fromUid, reaction, chatMsg.createdAt)
+              .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
+                  DateTime.now().millisecondsSinceEpoch)
               .then((newMsgM) {
             if (newMsgM != null) {
               fireReaction(ReactionTypes.like, targetMid, newMsgM);
@@ -1235,12 +1291,14 @@ class ChatService {
     }
 
     try {
+      chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgSendStatus.success);
-      await ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
-        fireSnippet(value);
-        fireMsg(value, localMid, msgReplyJson['content']);
-      });
+      taskQueue
+          .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
+                fireSnippet(value);
+                fireMsg(value, localMid, msgReplyJson['content']);
+              }));
     } catch (e) {
       App.logger.severe(e);
     }

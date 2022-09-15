@@ -86,8 +86,13 @@ class MsgTileFrame extends StatelessWidget {
               }
             },
             onLongPress: () {
-              if (enableAvatarMention) {
-                mentionsKey?.currentState?.controller?.text = ' @$username ';
+              if (enableAvatarMention && uid != -1) {
+                mentionsKey?.currentState?.controller?.text += ' @$username ';
+                mentionsKey?.currentState?.controller?.selection =
+                    TextSelection.fromPosition(TextPosition(
+                        offset: mentionsKey
+                                ?.currentState?.controller?.text.length ??
+                            0));
               }
             },
             child: uid == -1

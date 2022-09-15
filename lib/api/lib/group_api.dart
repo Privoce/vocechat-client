@@ -7,6 +7,7 @@ import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/group/group_create_request.dart';
 import 'package:vocechat_client/api/models/group/group_update_request.dart';
+import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 
@@ -196,5 +197,10 @@ class GroupApi {
   Future<Response> leaveGroup(int gid) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     return dio.get("/$gid/leave");
+  }
+
+  Future<Response> getHistory(int gid, int beforeMid, {int limit = 20}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+    return dio.get("/$gid/history?before=$beforeMid&limit=$limit");
   }
 }
