@@ -116,7 +116,7 @@ class AppSearchPage extends StatelessWidget {
       padding: EdgeInsets.only(left: 16, right: 16, top: 48),
       child: Text(
         text,
-        style: AppTextStyles.labelLarge(),
+        style: AppTextStyles.labelLarge,
         textAlign: TextAlign.center,
       ),
     );

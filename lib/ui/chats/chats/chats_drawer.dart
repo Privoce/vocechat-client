@@ -62,7 +62,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                     Flexible(
                       child: Text(
                         titleStr,
-                        style: AppTextStyles.titleLarge(),
+                        style: AppTextStyles.titleLarge,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -307,11 +307,11 @@ class _ServerDrawerTileState extends State<ServerDrawerTile> {
       Text(serverName,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.titleLarge()),
+          style: AppTextStyles.titleLarge),
       Text(serverUrl,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.labelSmall()),
+          style: AppTextStyles.labelSmall),
       Padding(
           padding: EdgeInsets.only(left: 0, top: 4),
           child: Column(
@@ -320,11 +320,11 @@ class _ServerDrawerTileState extends State<ServerDrawerTile> {
               Text(username,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.titleMedium()),
+                  style: AppTextStyles.titleMedium),
               Text(userEmail,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelSmall())
+                  style: AppTextStyles.labelSmall)
             ],
           ))
     ]);

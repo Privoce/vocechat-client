@@ -161,7 +161,7 @@ class _ChatsBarState extends State<ChatsBar> {
               children: [
                 Text(
                   App.app.chatServerM.properties.serverName,
-                  style: AppTextStyles.titleLarge(),
+                  style: AppTextStyles.titleLarge,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -169,7 +169,7 @@ class _ChatsBarState extends State<ChatsBar> {
                     widget._serverDescription.isNotEmpty)
                   Text(
                     widget._serverDescription,
-                    style: AppTextStyles.labelSmall(),
+                    style: AppTextStyles.labelSmall,
                   )
                 else
                   ValueListenableBuilder<int>(
@@ -184,7 +184,7 @@ class _ChatsBarState extends State<ChatsBar> {
 
                         return Text(
                           subtitle,
-                          style: AppTextStyles.labelSmall(),
+                          style: AppTextStyles.labelSmall,
                         );
                       })
               ],
@@ -391,7 +391,7 @@ class _ChatsBarState extends State<ChatsBar> {
                 title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.titleLarge(),
+                style: AppTextStyles.titleLarge,
               ),
             )
           ],

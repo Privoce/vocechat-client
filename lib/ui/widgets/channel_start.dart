@@ -32,12 +32,12 @@ class ChannelStart extends StatelessWidget {
         children: [
           RichText(
               text: TextSpan(children: [
-            TextSpan(text: "Welcome to ", style: AppTextStyles.titleLarge()),
-            TextSpan(text: "#$_title", style: AppTextStyles.titleLarge())
+            TextSpan(text: "Welcome to ", style: AppTextStyles.titleLarge),
+            TextSpan(text: "#$_title", style: AppTextStyles.titleLarge)
           ])),
           SizedBox(height: 8),
           Text("This is the start of the #$_title channel.",
-              style: AppTextStyles.snippet()),
+              style: AppTextStyles.snippet),
           SizedBox(height: 10),
           if (isOwner || isAdmin)
             CupertinoButton(

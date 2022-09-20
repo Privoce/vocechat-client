@@ -51,7 +51,7 @@ class _ForwardSheetState extends State<ForwardSheet> {
               SheetAppBar(
                   title: Text(
                     "Forward to ",
-                    style: AppTextStyles.titleLarge(),
+                    style: AppTextStyles.titleLarge,
                   ),
                   leading: CupertinoButton(
                       onPressed: () {

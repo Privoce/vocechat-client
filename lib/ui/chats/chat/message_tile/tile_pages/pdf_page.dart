@@ -20,7 +20,7 @@ class PdfPage extends StatelessWidget {
         backgroundColor: AppColors.barBg,
         title: Text(
           "File",
-          style: AppTextStyles.titleLarge(),
+          style: AppTextStyles.titleLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

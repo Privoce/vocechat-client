@@ -22,7 +22,7 @@ class ContactsBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: AppColors.barBg,
       title: Text(
         AppLocalizations.of(context)!.titleContacts,
-        style: AppTextStyles.titleLarge(),
+        style: AppTextStyles.titleLarge,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),

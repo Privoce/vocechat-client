@@ -49,7 +49,7 @@ class _ServerInfoSettingsPageState extends State<ServerInfoSettingsPage> {
         backgroundColor: AppColors.barBg,
         title: Text(
           AppLocalizations.of(context)!.serverInfoSettingTitle,
-          style: AppTextStyles.titleLarge(),
+          style: AppTextStyles.titleLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

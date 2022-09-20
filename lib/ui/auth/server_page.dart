@@ -118,7 +118,7 @@ class _ServerPageState extends State<ServerPage> {
                     if (snapshot.hasData) {
                       return Text(
                         "Version: ${snapshot.data}",
-                        style: AppTextStyles.labelSmall(),
+                        style: AppTextStyles.labelSmall,
                       );
                     } else {
                       return SizedBox.shrink();

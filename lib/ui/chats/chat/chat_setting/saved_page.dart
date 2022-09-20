@@ -60,7 +60,7 @@ class _SavedItemPageState extends State<SavedItemPage> {
               child: Text(AppLocalizations.of(context)!.savedItems,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.titleLarge()),
+                  style: AppTextStyles.titleLarge),
             ),
             ValueListenableBuilder<bool>(
                 valueListenable: isLoading,

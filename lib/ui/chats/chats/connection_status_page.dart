@@ -38,7 +38,7 @@ class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
       backgroundColor: AppColors.pageBg,
       appBar: AppBar(
         title: Text("Connection Status",
-            style: AppTextStyles.titleLarge(),
+            style: AppTextStyles.titleLarge,
             overflow: TextOverflow.ellipsis,
             maxLines: 1),
         toolbarHeight: barHeight,

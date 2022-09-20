@@ -61,7 +61,7 @@ class _FilePageState extends State<FilePage> {
         backgroundColor: AppColors.barBg,
         title: Text(
           "File",
-          style: AppTextStyles.titleLarge(),
+          style: AppTextStyles.titleLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -92,14 +92,14 @@ class _FilePageState extends State<FilePage> {
               child: Text(
                 widget.fileName + "." + widget.extension,
                 maxLines: 3,
-                style: AppTextStyles.titleLarge(),
+                style: AppTextStyles.titleLarge,
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 _getFileSizeString(widget.size),
-                style: AppTextStyles.labelMedium(),
+                style: AppTextStyles.labelMedium,
               ),
             ),
             ConstrainedBox(
