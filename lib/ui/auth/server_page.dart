@@ -132,8 +132,9 @@ class _ServerPageState extends State<ServerPage> {
   Future<String> _getVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
-    String buildNumber = packageInfo.buildNumber;
-    return version + "($buildNumber)";
+    // String buildNumber = packageInfo.buildNumber;
+    // return version + "($buildNumber)";
+    return version;
   }
 
   void _onResetDb(BuildContext context) async {
