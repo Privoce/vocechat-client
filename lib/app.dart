@@ -88,14 +88,12 @@ class App {
         (await UserDbMDao.dao.getList())?.where((e) => e.loggedIn == 1) ?? [];
 
     if (loggedInUserDbList.isEmpty) {
-      if (navigatorKey.currentContext != null) {
-        navigatorKey.currentState!.pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (context) => ServerPage(),
-            ),
-            (route) => false);
-        return;
-      }
+      navigatorKey.currentState?.pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (context) => ServerPage(),
+          ),
+          (route) => false);
+      return;
     } else {
       final next = loggedInUserDbList.first;
       await changeUser(next);

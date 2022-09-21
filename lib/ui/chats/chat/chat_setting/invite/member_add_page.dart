@@ -79,7 +79,7 @@ class _MemberAddPageState extends State<MemberAddPage>
           SheetAppBar(
             title: Text(
               AppLocalizations.of(context)!.memberAddPageTitle,
-              style: AppTextStyles.titleLarge(),
+              style: AppTextStyles.titleLarge,
             ),
             leading: CupertinoButton(
                 onPressed: () {
@@ -101,7 +101,7 @@ class _MemberAddPageState extends State<MemberAddPage>
   //     backgroundColor: Colors.white,
   //     title: Text(
   //       AppLocalizations.of(context)!.memberAddPageTitle,
-  //       style: AppTextStyles.titleLarge(),
+  //       style: AppTextStyles.titleLarge,
   //     ),
   //     leading: CupertinoButton(
   //         onPressed: () {

@@ -44,7 +44,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
         SheetAppBar(
           title: Text(
             AppLocalizations.of(context)!.memberRemovePageTitle,
-            style: AppTextStyles.titleLarge(),
+            style: AppTextStyles.titleLarge,
           ),
           leading: CupertinoButton(
               onPressed: () {
@@ -96,7 +96,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
     //       backgroundColor: Colors.white,
     //       title: Text(
     //         AppLocalizations.of(context)!.memberRemovePageTitle,
-    //         style: AppTextStyles.titleLarge(),
+    //         style: AppTextStyles.titleLarge,
     //       ),
     //       leading: CupertinoButton(
     //           onPressed: () {

@@ -58,7 +58,7 @@ class _ServerPageState extends State<ServerPage> {
   // UI params
   final double _outerRadius = 10;
 
-  final ValueNotifier<bool> _isUrlValid = ValueNotifier(false);
+  final ValueNotifier<bool> _isUrlValid = ValueNotifier(true);
   final ValueNotifier<bool> _showUrlWarning = ValueNotifier(false);
 
   @override
@@ -118,7 +118,7 @@ class _ServerPageState extends State<ServerPage> {
                     if (snapshot.hasData) {
                       return Text(
                         "Version: ${snapshot.data}",
-                        style: AppTextStyles.labelSmall(),
+                        style: AppTextStyles.labelSmall,
                       );
                     } else {
                       return SizedBox.shrink();
@@ -132,8 +132,9 @@ class _ServerPageState extends State<ServerPage> {
   Future<String> _getVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
-    String buildNumber = packageInfo.buildNumber;
-    return version + "($buildNumber)";
+    // String buildNumber = packageInfo.buildNumber;
+    // return version + "($buildNumber)";
+    return version;
   }
 
   void _onResetDb(BuildContext context) async {
@@ -239,8 +240,8 @@ class _ServerPageState extends State<ServerPage> {
                 textInputAction: TextInputAction.go,
                 scrollPadding: EdgeInsets.only(bottom: 100),
                 onChanged: (url) {
-                  _isUrlValid.value = isUrlValid(url);
-                  _showUrlWarning.value = shouldShowUrlAlert(url);
+                  // _isUrlValid.value = isUrlValid(url);
+                  // _showUrlWarning.value = shouldShowUrlAlert(url);
                 },
               ),
             ),
@@ -438,15 +439,34 @@ class _ServerPageState extends State<ServerPage> {
   /// Server information will be saved into App object.
   /// Only successful server visits will be saved.
   Future<bool> _onUrlSubmit() async {
-    final url = _urlController.text + "/api";
+    String url = _urlController.text + "/api";
+
+    if (!url.startsWith("https://") || !url.startsWith("http://")) {
+      url = "https://" + url;
+    }
 
     // Update server record in database
     ChatServerM chatServerM = ChatServerM();
 
     if (!chatServerM.setByUrl(url)) {
       App.logger.severe("ChatServer setup failed.");
+      await showAppAlert(
+          context: context,
+          title: "Server Connection Error",
+          content:
+              "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or contact server owner for help.",
+          actions: [
+            AppAlertDialogAction(
+              text: "OK",
+              action: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ]);
       return false;
     }
+
+    _urlController.text = chatServerM.fullUrl;
 
     // try {
     final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);

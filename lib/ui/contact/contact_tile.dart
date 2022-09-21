@@ -58,7 +58,7 @@ class _ContactTileState extends State<ContactTile> {
             Expanded(
               child: RichText(
                   text: TextSpan(
-                style: AppTextStyles.listTileTitle(),
+                style: AppTextStyles.listTileTitle,
                 children: [
                   TextSpan(text: widget.userInfoM.userInfo.name),
                   // TextSpan(text: "ashdgoasdghsadgsdsdjkasdghsadgsdsdjkgaods"),
@@ -90,7 +90,7 @@ class _ContactTileState extends State<ContactTile> {
             ? (widget.userInfoM.userInfo.email?.isNotEmpty ?? false)
                 ? Text(
                     widget.userInfoM.userInfo.email!,
-                    style: AppTextStyles.labelMedium(),
+                    style: AppTextStyles.labelMedium,
                   )
                 : null
             : null);

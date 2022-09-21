@@ -43,7 +43,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
       backgroundColor: AppColors.pageBg,
       appBar: AppBar(
         title: Text("Firebase",
-            style: AppTextStyles.titleLarge(),
+            style: AppTextStyles.titleLarge,
             overflow: TextOverflow.ellipsis,
             maxLines: 1),
         toolbarHeight: barHeight,

@@ -69,7 +69,7 @@ class AvatarInfoTile extends StatelessWidget {
                       : title != null
                           ? Text(title!,
                               textAlign: TextAlign.center,
-                              style: AppTextStyles.titleLarge())
+                              style: AppTextStyles.titleLarge)
                           : SizedBox.shrink(),
                 ),
                 if (subtitle != null && subtitle!.isNotEmpty)
@@ -77,7 +77,7 @@ class AvatarInfoTile extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(subtitle!,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.labelMedium()),
+                        style: AppTextStyles.labelMedium),
                   ),
                 if (subtitleWidget != null) subtitleWidget!
               ],

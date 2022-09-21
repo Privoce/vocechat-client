@@ -166,8 +166,9 @@ class _SettingPageState extends State<SettingPage> {
   Future<String> _getVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
-    String buildNumber = packageInfo.buildNumber;
-    return version + "($buildNumber)";
+    // String buildNumber = packageInfo.buildNumber;
+    // return version + "($buildNumber)";
+    return version;
   }
 
   Widget _buildButtons(BuildContext context) {
@@ -219,7 +220,7 @@ class _SettingPageState extends State<SettingPage> {
               await App.app.authService?.logout().then((value) async {
                 await App.app.changeUserAfterLogOut();
               });
-              Navigator.of(context).pop();
+              // Navigator.of(context).pop();
               isBusy.value = false;
             }),
         actions: [

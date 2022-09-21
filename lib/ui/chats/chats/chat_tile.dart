@@ -80,7 +80,7 @@ class _ChatTileState extends State<ChatTile> {
                           name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.titleMedium(),
+                          style: AppTextStyles.titleMedium,
                           strutStyle: StrutStyle(fontSize: 16, height: 1.3),
                         );
                       }),
@@ -104,7 +104,7 @@ class _ChatTileState extends State<ChatTile> {
                         DateTime.fromMillisecondsSinceEpoch(updatedAt)
                             .toTime24StringEn(),
                         strutStyle: StrutStyle(forceStrutHeight: true),
-                        style: AppTextStyles.labelSmall()),
+                        style: AppTextStyles.labelSmall),
                   );
                 })
           ],
@@ -141,7 +141,7 @@ class _ChatTileState extends State<ChatTile> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             strutStyle: StrutStyle(forceStrutHeight: true),
-                            style: AppTextStyles.snippet(),
+                            style: AppTextStyles.snippet,
                           );
                         }));
                 // snippet
