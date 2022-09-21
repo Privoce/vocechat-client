@@ -125,7 +125,7 @@ class ChatServerM with M {
     // name = url;
     this.url = uri.host;
     if (url.isEmpty) {
-      url = '127.0.0.1'; //InternetAddress.anyIPv4.host;//IN_ADDR_ANY; //本机地
+      url = '127.0.0.1';
     }
     port = uri.port;
     if (uri.scheme == 'https') {
@@ -134,7 +134,7 @@ class ChatServerM with M {
       tls = 0;
     }
     // id = url;
-    createdAt = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+    createdAt = DateTime.now().millisecondsSinceEpoch;
     return true;
   }
 }
