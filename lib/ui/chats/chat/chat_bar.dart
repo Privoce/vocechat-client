@@ -158,7 +158,7 @@ class _ChatBarState extends State<ChatBar> {
                         groupInfo.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.titleLarge(),
+                        style: AppTextStyles.titleLarge,
                       ),
                     ),
                     if (widget._isGroup && !groupInfoM.groupInfo.isPublic)
@@ -192,7 +192,7 @@ class _ChatBarState extends State<ChatBar> {
                   userInfoM.userInfo.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.titleLarge(),
+                  style: AppTextStyles.titleLarge,
                 ),
               ],
             );

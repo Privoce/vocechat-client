@@ -27,7 +27,7 @@ class FullTextPage extends StatelessWidget {
         backgroundColor: AppColors.barBg,
         title: Text(
           "Message Detail",
-          style: AppTextStyles.titleLarge(),
+          style: AppTextStyles.titleLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

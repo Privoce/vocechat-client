@@ -62,7 +62,7 @@ class BannerTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   if (keepTitle)
-                    Text(title, style: AppTextStyles.listTileTitle()),
+                    Text(title, style: AppTextStyles.listTileTitle),
                   if (titleWidget != null)
                     Padding(
                       padding: const EdgeInsets.only(left: 8),

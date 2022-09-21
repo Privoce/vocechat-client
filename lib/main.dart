@@ -253,9 +253,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         ],
         supportedLocales: const [
           Locale('en', ''), // English, no country code
-          // Locale('es', ''), // Spanish, no country code
-          // Locale.fromSubtags(languageCode: 'zh'),
-          // Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
         ],
         home: _defaultHome,
       ),

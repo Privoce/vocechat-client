@@ -37,7 +37,7 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
                 Navigator.pop(context);
               },
               child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
-          title: Text("Transfer Owner", style: AppTextStyles.titleLarge()),
+          title: Text("Transfer Owner", style: AppTextStyles.titleLarge),
           backgroundColor: AppColors.barBg,
           elevation: 0,
           actions: [

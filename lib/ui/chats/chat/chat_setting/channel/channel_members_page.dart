@@ -23,7 +23,7 @@ class ChannelMembersPage extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         title: Text(AppLocalizations.of(context)!.members,
-            style: AppTextStyles.titleLarge()),
+            style: AppTextStyles.titleLarge),
         centerTitle: true,
         leading: CupertinoButton(
             onPressed: () {

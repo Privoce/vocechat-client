@@ -58,7 +58,7 @@ class _NewChannelPageState extends State<NewChannelPage> {
           elevation: 0,
           backgroundColor: AppColors.coolGrey200,
           title: Text(AppLocalizations.of(context)!.newChannelPageTitle,
-              style: AppTextStyles.titleLarge(),
+              style: AppTextStyles.titleLarge,
               overflow: TextOverflow.ellipsis,
               maxLines: 1),
           leading: CupertinoButton(

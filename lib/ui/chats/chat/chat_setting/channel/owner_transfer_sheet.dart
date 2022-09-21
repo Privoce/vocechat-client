@@ -39,7 +39,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
         child: Column(
       children: [
         SheetAppBar(
-          title: Text("Transfer Owner", style: AppTextStyles.titleLarge()),
+          title: Text("Transfer Owner", style: AppTextStyles.titleLarge),
           leading: CupertinoButton(
               onPressed: () {
                 Navigator.pop(context);
