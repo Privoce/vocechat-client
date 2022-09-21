@@ -94,7 +94,6 @@ class App {
           ),
           (route) => false);
       return;
-      // }
     } else {
       final next = loggedInUserDbList.first;
       await changeUser(next);

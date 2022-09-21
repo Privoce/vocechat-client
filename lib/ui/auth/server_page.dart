@@ -438,7 +438,11 @@ class _ServerPageState extends State<ServerPage> {
   /// Server information will be saved into App object.
   /// Only successful server visits will be saved.
   Future<bool> _onUrlSubmit() async {
-    final url = _urlController.text + "/api";
+    String url = _urlController.text + "/api";
+
+    if (!url.startsWith("https://") || !url.startsWith("http://")) {
+      url = "https://" + url;
+    }
 
     // Update server record in database
     ChatServerM chatServerM = ChatServerM();
@@ -461,7 +465,7 @@ class _ServerPageState extends State<ServerPage> {
       return false;
     }
 
-    print(chatServerM.fullUrl);
+    _urlController.text = chatServerM.fullUrl;
 
     // try {
     final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
