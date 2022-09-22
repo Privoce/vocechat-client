@@ -20,6 +20,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/video_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 
 enum ImageType { thumb, original }
@@ -249,6 +250,8 @@ class _MessageTileState extends State<MessageTile> {
                     }
                     return null;
                   });
+            } else if (widget.chatMsgM.isVideoMsg) {
+              return VideoBubble();
             } else {
               final msgNormal = widget.chatMsgM.msgNormal!;
               final name = msgNormal.properties?["name"] ?? "";
