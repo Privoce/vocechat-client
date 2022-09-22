@@ -515,6 +515,10 @@ class _ChatsPageState extends State<ChatsPage>
         }
       }
       globals.unreadCountSum.value = calUnreadCountSum();
+
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -664,9 +668,8 @@ class _ChatsPageState extends State<ChatsPage>
           addOrReplaceChannel(uiChat);
         }
       }
-      // setState(() {
+
       globals.unreadCountSum.value = calUnreadCountSum();
-      // });
     }
   }
 
@@ -714,9 +717,8 @@ class _ChatsPageState extends State<ChatsPage>
           App.logger.warning("Can't find userInfo in ui. uid: ${dm.dmUid}");
         }
       }
-      // setState(() {
+
       globals.unreadCountSum.value = calUnreadCountSum();
-      // });
     }
   }
 
