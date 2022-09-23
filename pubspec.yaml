@@ -82,6 +82,7 @@ dependencies:
   scroll_to_index: ^3.0.1
   sqflite_common_ffi: ^2.1.1+1
   sqlite3_flutter_libs: ^0.5.8
+  video_thumbnail: ^0.5.3
   
   # for debug use.
   # azlistview: 
@@ -96,7 +97,7 @@ dependency_overrides:
   
   azlistview:
     git: 
-      url: https://github.com/shuotwang/azlistview.git
+      url: https://github.com/shuotwang/azlistview
       ref: master
   
   # for debug use

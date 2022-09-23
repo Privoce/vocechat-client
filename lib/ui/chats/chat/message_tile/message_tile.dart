@@ -1,11 +1,9 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler.dart';
@@ -19,7 +17,6 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart'
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/video_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 
@@ -93,7 +90,11 @@ class _MessageTileState extends State<MessageTile> {
     // left padding + avatar      + gap + right padding + status
     // 16           + avatarSize  + 8   + 16            + 50
     double contentWidth =
-        MediaQuery.of(context).size.width - 90 - widget.avatarSize;
+        (MediaQuery.of(context).orientation == Orientation.portrait
+                ? MediaQuery.of(context).size.width
+                : MediaQuery.of(context).size.height) -
+            90 -
+            widget.avatarSize;
 
     if (widget.isSelecting.value) contentWidth -= 30;
     Widget child = Container(
@@ -250,9 +251,16 @@ class _MessageTileState extends State<MessageTile> {
                     }
                     return null;
                   });
-            } else if (widget.chatMsgM.isVideoMsg) {
-              return VideoBubble();
-            } else {
+            }
+            // else if (widget.chatMsgM.isVideoMsg) {
+            //   return VideoBubble(
+            //     chatMsgM: widget.chatMsgM,
+            //     getVideoFile: (_) async {
+            //       return null;
+            //     },
+            //   );
+            // }
+            else {
               final msgNormal = widget.chatMsgM.msgNormal!;
               final name = msgNormal.properties?["name"] ?? "";
               final size = msgNormal.properties?["size"] ?? 0;
