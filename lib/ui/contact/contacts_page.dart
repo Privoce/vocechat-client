@@ -1,18 +1,11 @@
-import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:azlistview/azlistview.dart';
-import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
-import 'package:vocechat_client/services/chat_service.dart';
-import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
-import 'package:vocechat_client/ui/contact/contact_tile.dart';
 import 'package:vocechat_client/ui/contact/contacts_bar.dart';
 
 class ContactsPage extends StatefulWidget {

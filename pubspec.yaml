@@ -97,7 +97,7 @@ dependency_overrides:
   
   azlistview:
     git: 
-      url: https://github.com/shuotwang/azlistview
+      url: https://github.com/shuotwang/azlistview.git
       ref: master
   
   # for debug use
