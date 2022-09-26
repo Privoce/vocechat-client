@@ -2,13 +2,14 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 
-enum FileType { file, image, thumb }
+enum FileType { file, image, thumb, videoThumb }
 
 class FileHandler {
   /// This singleton class handles file saving to and retrieving from local data
@@ -31,6 +32,11 @@ class FileHandler {
   Future<String> _imageNormalPath(
       String chatId, String localMid, String fileName) async {
     return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/image_normal/$localMid/$fileName";
+  }
+
+  Future<String> videoThumbPath(
+      String chatId, String localMid, String fileName) async {
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/video_thumb/$localMid/$fileName";
   }
 
   Future<String> _filePath(
@@ -56,6 +62,11 @@ class FileHandler {
   Future<bool> imageNormalExists(
       String chatId, String localMid, String fileName) async {
     return File(await _imageNormalPath(chatId, localMid, fileName)).exists();
+  }
+
+  Future<bool> videoThumbExists(
+      String chatId, String localMid, String fileName) async {
+    return File(await videoThumbPath(chatId, localMid, fileName)).exists();
   }
 
   Future<bool> fileExists(
@@ -162,6 +173,10 @@ class FileHandler {
     return _read(chatId, localMid, fileName, FileType.file);
   }
 
+  Future<File?> readVideoThumb(String chatId, localMid, String fileName) async {
+    return _read(chatId, localMid, fileName, FileType.videoThumb);
+  }
+
   Future<File?> readArchiveFile(
       String archiveId, int attachmentId, String fileName) async {
     try {
@@ -204,6 +219,9 @@ class FileHandler {
           break;
         case FileType.thumb:
           path = await imageThumbPath(chatId, localMid, fileName);
+          break;
+        case FileType.videoThumb:
+          path = await videoThumbPath(chatId, localMid, fileName);
           break;
         default:
           path = await _filePath(chatId, localMid, fileName);
@@ -430,6 +448,54 @@ class FileHandler {
       App.logger.severe(e);
     }
     return null;
+  }
+
+  Future<File?> getVideoThumb(ChatMsgM chatMsgM) async {
+    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    if (chatId == null) {
+      App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+      return null;
+    }
+
+    String filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply!.content;
+    String localMid = chatMsgM.localMid;
+    String fileName = chatMsgM.msgNormal?.properties?["name"];
+
+    if (await videoThumbExists(chatId, localMid, fileName)) {
+      final file = await readVideoThumb(chatId, localMid, fileName);
+      return file;
+    }
+
+    if (await fileExists(chatId, localMid, fileName)) {
+      final file = await readFile(chatId, localMid, fileName);
+      if (file != null) {
+        final videoThumbName = await VideoThumbnail.thumbnailFile(
+            video: file.path,
+            thumbnailPath: await videoThumbPath(chatId, localMid, ""),
+            maxHeight: 200,
+            quality: 75);
+        if (videoThumbName != null) {
+          return readVideoThumb(chatId, localMid, videoThumbName);
+        }
+      }
+    }
+
+    final videoUrl =
+        "${App.app.chatServerM.fullUrl}/api/resource/file?file_path=$filePath&thumbnail=false";
+    // final videoUrl = "https://www.youtube.com/watch?v=48G5uuAoWXQ";
+    // print(videoUrl);
+
+    final videoThumbName = await VideoThumbnail.thumbnailFile(
+        video: videoUrl,
+        thumbnailPath: await videoThumbPath(chatId, localMid, ""),
+        maxHeight: 200,
+        quality: 75);
+
+    if (videoThumbName != null) {
+      return readVideoThumb(chatId, localMid, videoThumbName);
+    } else {
+      return null;
+    }
   }
 
   /// Retrieve original image file from local document storage.
