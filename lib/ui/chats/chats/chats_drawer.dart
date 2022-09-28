@@ -1,31 +1,26 @@
-import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
-import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/app_text_styles.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
-import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
-import 'package:vocechat_client/ui/chats/chat/chat_setting/settings_action_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 
 class ChatsDrawer extends StatefulWidget {
-  const ChatsDrawer({required this.disableGesture, Key? key}) : super(key: key);
+  const ChatsDrawer(
+      {required this.disableGesture, Key? key, this.afterDrawerPop})
+      : super(key: key);
 
   final void Function(bool isBusy) disableGesture;
+  final VoidCallback? afterDrawerPop;
 
   @override
   State<ChatsDrawer> createState() => _ChatsDrawerState();
@@ -152,7 +147,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
     final status = await StatusMDao.dao.getStatus();
 
     if (status?.userDbId == accountData.userDbM.id) {
-      Navigator.pop(context);
+      _jumpToMainPage();
       return;
     }
 
@@ -169,7 +164,15 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
     widget.disableGesture(false);
     isBusy.value = false;
 
+    _jumpToMainPage();
+  }
+
+  void _jumpToMainPage() async {
     Navigator.pop(context);
+    if (widget.afterDrawerPop != null) {
+      await Future.delayed(Duration(milliseconds: 300));
+      widget.afterDrawerPop!();
+    }
   }
 
   Future<void> _getServerData() async {
