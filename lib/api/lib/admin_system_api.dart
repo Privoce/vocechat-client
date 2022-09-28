@@ -72,6 +72,7 @@ class AdminSystemApi {
 
   Future<Response<bool>> getInitialized() async {
     final dio = DioUtil(baseUrl: _baseUrl);
+    // print();
     return dio.get("/initialized");
   }
 }

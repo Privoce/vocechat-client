@@ -21,12 +21,12 @@ class TokenApi {
 
     // Special handling for Privoce dev.
     dio.options.headers = {'referer': App.app.chatServerM.fullUrl};
-    // if (App.app.chatServerM.url == "dev.voce.chat") {
-    //   dio.options.headers = {'referer': "https://privoce.voce.chat"};
-    // }
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      dio.options.headers = {'referer': "https://privoce.voce.chat"};
+    }
 
     dio.options.validateStatus = (status) {
-      return [200, 401, 403, 404, 409, 423].contains(status);
+      return [200, 401, 403, 404, 409, 423, 451].contains(status);
     };
 
     final res = await dio.post("/login", data: req.toJson());

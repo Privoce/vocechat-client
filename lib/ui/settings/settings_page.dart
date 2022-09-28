@@ -220,7 +220,12 @@ class _SettingPageState extends State<SettingPage> {
               await App.app.authService?.logout().then((value) async {
                 await App.app.changeUserAfterLogOut();
               });
-              // Navigator.of(context).pop();
+
+              // try {
+              //   Navigator.of(context).pop();
+              // } catch (e) {
+              //   App.logger.warning(e);
+              // }
               isBusy.value = false;
             }),
         actions: [

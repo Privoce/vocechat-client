@@ -167,6 +167,10 @@ class AuthService {
         case 423:
           content = "User has been frozen.";
           break;
+        case 451:
+          content =
+              "License has an issue. Please contact server admin for help.";
+          break;
         default:
           App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
           content = "An error occured during login.";

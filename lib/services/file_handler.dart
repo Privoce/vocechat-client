@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
+// import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/app.dart';
@@ -64,10 +64,10 @@ class FileHandler {
     return File(await _imageNormalPath(chatId, localMid, fileName)).exists();
   }
 
-  Future<bool> videoThumbExists(
-      String chatId, String localMid, String fileName) async {
-    return File(await videoThumbPath(chatId, localMid, fileName)).exists();
-  }
+  // Future<bool> videoThumbExists(
+  //     String chatId, String localMid, String fileName) async {
+  //   return File(await videoThumbPath(chatId, localMid, fileName)).exists();
+  // }
 
   Future<bool> fileExists(
       String chatId, String localMid, String fileName) async {
@@ -450,53 +450,53 @@ class FileHandler {
     return null;
   }
 
-  Future<File?> getVideoThumb(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
-    if (chatId == null) {
-      App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
-      return null;
-    }
+  // Future<File?> getVideoThumb(ChatMsgM chatMsgM) async {
+  //   final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+  //   if (chatId == null) {
+  //     App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+  //     return null;
+  //   }
 
-    String filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply!.content;
-    String localMid = chatMsgM.localMid;
-    String fileName = chatMsgM.msgNormal?.properties?["name"];
+  //   String filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply!.content;
+  //   String localMid = chatMsgM.localMid;
+  //   String fileName = chatMsgM.msgNormal?.properties?["name"];
 
-    if (await videoThumbExists(chatId, localMid, fileName)) {
-      final file = await readVideoThumb(chatId, localMid, fileName);
-      return file;
-    }
+  //   if (await videoThumbExists(chatId, localMid, fileName)) {
+  //     final file = await readVideoThumb(chatId, localMid, fileName);
+  //     return file;
+  //   }
 
-    if (await fileExists(chatId, localMid, fileName)) {
-      final file = await readFile(chatId, localMid, fileName);
-      if (file != null) {
-        final videoThumbName = await VideoThumbnail.thumbnailFile(
-            video: file.path,
-            thumbnailPath: await videoThumbPath(chatId, localMid, ""),
-            maxHeight: 200,
-            quality: 75);
-        if (videoThumbName != null) {
-          return readVideoThumb(chatId, localMid, videoThumbName);
-        }
-      }
-    }
+  //   if (await fileExists(chatId, localMid, fileName)) {
+  //     final file = await readFile(chatId, localMid, fileName);
+  //     if (file != null) {
+  //       final videoThumbName = await VideoThumbnail.thumbnailFile(
+  //           video: file.path,
+  //           thumbnailPath: await videoThumbPath(chatId, localMid, ""),
+  //           maxHeight: 200,
+  //           quality: 75);
+  //       if (videoThumbName != null) {
+  //         return readVideoThumb(chatId, localMid, videoThumbName);
+  //       }
+  //     }
+  //   }
 
-    final videoUrl =
-        "${App.app.chatServerM.fullUrl}/api/resource/file?file_path=$filePath&thumbnail=false";
-    // final videoUrl = "https://www.youtube.com/watch?v=48G5uuAoWXQ";
-    // print(videoUrl);
+  //   final videoUrl =
+  //       "${App.app.chatServerM.fullUrl}/api/resource/file?file_path=$filePath&thumbnail=false";
+  //   // final videoUrl = "https://www.youtube.com/watch?v=48G5uuAoWXQ";
+  //   // print(videoUrl);
 
-    final videoThumbName = await VideoThumbnail.thumbnailFile(
-        video: videoUrl,
-        thumbnailPath: await videoThumbPath(chatId, localMid, ""),
-        maxHeight: 200,
-        quality: 75);
+  //   final videoThumbName = await VideoThumbnail.thumbnailFile(
+  //       video: videoUrl,
+  //       thumbnailPath: await videoThumbPath(chatId, localMid, ""),
+  //       maxHeight: 200,
+  //       quality: 75);
 
-    if (videoThumbName != null) {
-      return readVideoThumb(chatId, localMid, videoThumbName);
-    } else {
-      return null;
-    }
-  }
+  //   if (videoThumbName != null) {
+  //     return readVideoThumb(chatId, localMid, videoThumbName);
+  //   } else {
+  //     return null;
+  //   }
+  // }
 
   /// Retrieve original image file from local document storage.
   Future<File?> getLocalFile(ChatMsgM chatMsgM) async {

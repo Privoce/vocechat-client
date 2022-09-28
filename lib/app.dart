@@ -97,6 +97,7 @@ class App {
     } else {
       final next = loggedInUserDbList.first;
       await changeUser(next);
+      navigatorKey.currentState?.pop();
     }
   }
 

@@ -17,7 +17,6 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart'
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/video_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 
 enum ImageType { thumb, original }
