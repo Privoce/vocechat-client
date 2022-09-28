@@ -67,6 +67,13 @@ class _ChatsPageState extends State<ChatsPage>
       clearChats();
       prepareChats();
       getMemberCount();
+
+      globals.unreadCountSum.value = calUnreadCountSum();
+      App.app.chatService.subscribeGroups(_onChannel);
+      App.app.chatService.subscribeSnippet(_onSnippet);
+      App.app.chatService.subscribeUsers(_onUser);
+      App.app.chatService.subscribeUserStatus(_onUserStatus);
+      App.app.chatService.subscribeReady(_onReady);
     });
   }
 

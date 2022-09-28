@@ -50,7 +50,7 @@ class _SettingPageState extends State<SettingPage> {
 
     eventBus.on<UserChangeEvent>().listen((event) {
       getUserInfoM();
-      // App.app.chatService.subscribeUsers(_onUser);
+      App.app.chatService.subscribeUsers(_onUser);
       if (mounted) setState(() {});
     });
   }
