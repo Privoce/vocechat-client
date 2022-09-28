@@ -157,7 +157,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         ),
         SizedBox(height: 8),
         Text(
-          "Enter a name so people know how you'd like to be called. Your name will only be visible to Your name will only be visible to others in spaces you joined.",
+          "Enter a name so people know how you'd like to be called. Your name will only be visible to others in spaces you joined.",
           style: TextStyle(
               fontWeight: FontWeight.w400,
               fontSize: 14,
