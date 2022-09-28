@@ -149,6 +149,13 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
   }
 
   void _switchUser(ServerSwitchData accountData) async {
+    final status = await StatusMDao.dao.getStatus();
+
+    if (status?.userDbId == accountData.userDbM.id) {
+      Navigator.pop(context);
+      return;
+    }
+
     widget.disableGesture(true);
     isBusy.value = true;
 
@@ -161,6 +168,8 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
     }
     widget.disableGesture(false);
     isBusy.value = false;
+
+    Navigator.pop(context);
   }
 
   Future<void> _getServerData() async {
