@@ -139,6 +139,15 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
   Widget _buildServerSwitchDrawer() {
     return ChatsDrawer(
       disableGesture: (isBusy) => disableGesture.value = isBusy,
+      afterDrawerPop: () {
+          Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ChatsMainPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero));
+      },
     );
   }
 }

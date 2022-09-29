@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:vocechat_client/api/models/user/user_info.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/userdb_properties.dart';
@@ -182,6 +183,28 @@ class UserDbMDao extends OrgDao<UserDbM> {
     }
     _logger.info("UserDb saved. Id: ${m.id}");
     return m;
+  }
+
+  /// Use both chat_server_id and uid to define a user.
+  Future<UserDbM?> updateUserInfo(UserInfo userInfo,
+      [Uint8List? avatarBytes]) async {
+    if (userInfo.uid != App.app.userDb?.uid) {
+      return null;
+    }
+    final chatServerId = App.app.chatServerM.id;
+    final uid = App.app.userDb!.uid;
+    UserDbM? old = await first(
+        where: '${UserDbM.F_chatServerId} = ? AND ${UserDbM.F_uid} = ?',
+        whereArgs: [chatServerId, uid]);
+    if (old != null) {
+      old.info = jsonEncode(userInfo.toJson());
+      if (avatarBytes != null) {
+        old.avatarBytes = avatarBytes;
+      }
+      old.updatedAt = DateTime.now().millisecondsSinceEpoch;
+      await super.update(old);
+    }
+    return old;
   }
 
   /// Get a list of current users

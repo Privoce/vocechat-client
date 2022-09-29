@@ -441,131 +441,153 @@ class _ServerPageState extends State<ServerPage> {
   Future<bool> _onUrlSubmit() async {
     String url = _urlController.text + "/api";
 
-    if (!url.startsWith("https://") || !url.startsWith("http://")) {
-      url = "https://" + url;
-    }
-
     // Update server record in database
     ChatServerM chatServerM = ChatServerM();
+    ServerStatusWithChatServerM s;
 
-    if (!chatServerM.setByUrl(url)) {
-      App.logger.severe("ChatServer setup failed.");
-      await showAppAlert(
-          context: context,
-          title: "Server Connection Error",
-          content:
-              "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or contact server owner for help.",
-          actions: [
-            AppAlertDialogAction(
-              text: "OK",
-              action: () {
-                Navigator.of(context).pop();
-              },
-            )
-          ]);
-      return false;
+    if (!url.startsWith("https://") && !url.startsWith("http://")) {
+      final httpsUrl = "https://" + url;
+
+      s = await _checkServerAvailability(httpsUrl);
+      if (s.status == ServerStatus.uninitialized) {
+        await _showServerUninitializedError(s.chatServerM);
+        return false;
+      } else if (s.status == ServerStatus.available) {
+        chatServerM = s.chatServerM;
+      } else if (s.status == ServerStatus.error) {
+        // test http
+        final httpUrl = "http://" + url;
+        s = await _checkServerAvailability(httpUrl);
+        if (s.status == ServerStatus.uninitialized) {
+          await _showServerUninitializedError(s.chatServerM);
+          return false;
+        } else if (s.status == ServerStatus.available) {
+          chatServerM = s.chatServerM;
+        } else if (s.status == ServerStatus.error) {
+          await _showConnectionError();
+          return false;
+        }
+      }
+    } else {
+      s = await _checkServerAvailability(url);
+      if (s.status == ServerStatus.uninitialized) {
+        await _showServerUninitializedError(s.chatServerM);
+        return false;
+      } else if (s.status == ServerStatus.available) {
+        chatServerM = s.chatServerM;
+      } else if (s.status == ServerStatus.error) {
+        await _showConnectionError();
+        return false;
+      }
     }
 
     _urlController.text = chatServerM.fullUrl;
 
-    // try {
-    final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+    try {
+      final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
 
-    // Check if server has been initialized
-    final initializedRes = await adminSystemApi.getInitialized();
-    if (initializedRes.statusCode != 200 || initializedRes.data != true) {
-      await showAppAlert(
-          context: context,
-          title: "Server Not Initialized",
-          content: "Please user web client for initialization.",
-          actions: [
-            AppAlertDialogAction(
-                text: "Cancel", action: () => Navigator.of(context).pop()),
-            AppAlertDialogAction(
-                text: "Copy Url",
-                action: () {
-                  Navigator.of(context).pop();
-
-                  final url = "${chatServerM.fullUrl}/#/onboarding";
-                  Clipboard.setData(ClipboardData(text: url));
-                })
-          ]);
-      return false;
-    }
-
-    final orgInfoRes = await adminSystemApi.getOrgInfo();
-    if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
-      App.logger.info(orgInfoRes.data!.toJson().toString());
-      final orgInfo = orgInfoRes.data!;
-      chatServerM.properties = ChatServerProperties(
-          serverName: orgInfo.name, description: orgInfo.description ?? "");
-
-      final resourceApi = ResourceApi(chatServerM.fullUrl);
-      final logoRes = await resourceApi.getOrgLogo();
-      if (logoRes.statusCode == 200 && logoRes.data != null) {
-        chatServerM.logo = logoRes.data!;
-      }
-
-      final AdminLoginApi adminLoginApi = AdminLoginApi(chatServerM.fullUrl);
-      final adminLoginRes = await adminLoginApi.getConfig();
-      if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
+      final orgInfoRes = await adminSystemApi.getOrgInfo();
+      if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
+        App.logger.info(orgInfoRes.data!.toJson().toString());
+        final orgInfo = orgInfoRes.data!;
         chatServerM.properties = ChatServerProperties(
-            serverName: orgInfo.name,
-            description: orgInfo.description ?? "",
-            config: adminLoginRes.data);
-      }
+            serverName: orgInfo.name, description: orgInfo.description ?? "");
 
-      chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
-      await ChatServerDao.dao.addOrUpdate(chatServerM);
-    } else {
-      await showAppAlert(
-          context: context,
-          title: "Server Connection Error",
-          content:
-              "VoceChat can't retrieve server info. Please contact server owner for help.",
-          actions: [
-            AppAlertDialogAction(
-              text: "OK",
-              action: () {
-                Navigator.of(context).pop();
-              },
-            )
-          ]);
+        final resourceApi = ResourceApi(chatServerM.fullUrl);
+        final logoRes = await resourceApi.getOrgLogo();
+        if (logoRes.statusCode == 200 && logoRes.data != null) {
+          chatServerM.logo = logoRes.data!;
+        }
+
+        final AdminLoginApi adminLoginApi = AdminLoginApi(chatServerM.fullUrl);
+        final adminLoginRes = await adminLoginApi.getConfig();
+        if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
+          chatServerM.properties = ChatServerProperties(
+              serverName: orgInfo.name,
+              description: orgInfo.description ?? "",
+              config: adminLoginRes.data);
+        }
+
+        chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
+        await ChatServerDao.dao.addOrUpdate(chatServerM);
+      } else {
+        await _showConnectionError();
+        return false;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+      await _showConnectionError();
       return false;
     }
-    // } catch (e) {
-    //   App.logger.severe(e);
-
-    //   await showAppAlert(
-    //       context: context,
-    //       title: "Server Connection Error",
-    //       content:
-    //           "VoceChat can't retrieve server info. Please contact server owner for help.",
-    //       actions: [
-    //         AppAlertDialogAction(
-    //           text: "OK",
-    //           action: () {
-    //             Navigator.of(context).pop();
-    //           },
-    //         )
-    //       ]);
-
-    //   return false;
-    // }
 
     // Set server in App singleton.
     App.app.chatServerM = chatServerM;
 
     _urlFocusNode.requestFocus();
 
-    // Navigator.pushNamed(context, LoginPage.route, arguments: chatServerM)
-    //     .then((_) {
-    //   _resetServerList();
-    // });
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LoginPage(chatServerM: chatServerM)));
 
     return true;
+  }
+
+  Future<ServerStatusWithChatServerM> _checkServerAvailability(
+      String url) async {
+    ChatServerM chatServerM = ChatServerM();
+    if (!chatServerM.setByUrl(url)) {
+      return ServerStatusWithChatServerM(
+          status: ServerStatus.error, chatServerM: chatServerM);
+    }
+
+    final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+
+    // Check if server has been initialized
+    final initializedRes = await adminSystemApi.getInitialized();
+    if (initializedRes.statusCode == 200 && initializedRes.data != true) {
+      return ServerStatusWithChatServerM(
+          status: ServerStatus.uninitialized, chatServerM: chatServerM);
+    } else if (initializedRes.statusCode != 200) {
+      return ServerStatusWithChatServerM(
+          status: ServerStatus.error, chatServerM: chatServerM);
+    }
+
+    return ServerStatusWithChatServerM(
+        status: ServerStatus.available, chatServerM: chatServerM);
+  }
+
+  Future<void> _showServerUninitializedError(ChatServerM chatServerM) async {
+    return showAppAlert(
+        context: context,
+        title: "Server Not Initialized",
+        content: "Please use web client for initialization.",
+        actions: [
+          AppAlertDialogAction(
+              text: "Cancel", action: () => Navigator.of(context).pop()),
+          AppAlertDialogAction(
+              text: "Copy Url",
+              action: () {
+                Navigator.of(context).pop();
+
+                final url = "${chatServerM.fullUrl}/#/onboarding";
+                Clipboard.setData(ClipboardData(text: url));
+              })
+        ]);
+  }
+
+  Future<void> _showConnectionError() async {
+    return showAppAlert(
+        context: context,
+        title: "Server Connection Error",
+        content:
+            "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
+        actions: [
+          AppAlertDialogAction(
+            text: "OK",
+            action: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ]);
   }
 
   void _resetServerList() {
@@ -598,4 +620,14 @@ class _ServerPageState extends State<ServerPage> {
   //     App.logger.severe(e);
   //   }
   // }
+}
+
+enum ServerStatus { available, uninitialized, error }
+
+class ServerStatusWithChatServerM {
+  ServerStatus status;
+  ChatServerM chatServerM;
+
+  ServerStatusWithChatServerM(
+      {required this.status, required this.chatServerM});
 }

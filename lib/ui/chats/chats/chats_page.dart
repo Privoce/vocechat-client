@@ -67,6 +67,13 @@ class _ChatsPageState extends State<ChatsPage>
       clearChats();
       prepareChats();
       getMemberCount();
+
+      globals.unreadCountSum.value = calUnreadCountSum();
+      App.app.chatService.subscribeGroups(_onChannel);
+      App.app.chatService.subscribeSnippet(_onSnippet);
+      App.app.chatService.subscribeUsers(_onUser);
+      App.app.chatService.subscribeUserStatus(_onUserStatus);
+      App.app.chatService.subscribeReady(_onReady);
     });
   }
 
@@ -515,6 +522,10 @@ class _ChatsPageState extends State<ChatsPage>
         }
       }
       globals.unreadCountSum.value = calUnreadCountSum();
+
+      if (mounted) {
+        setState(() {});
+      }
     });
   }
 
@@ -664,9 +675,8 @@ class _ChatsPageState extends State<ChatsPage>
           addOrReplaceChannel(uiChat);
         }
       }
-      // setState(() {
+
       globals.unreadCountSum.value = calUnreadCountSum();
-      // });
     }
   }
 
@@ -714,9 +724,8 @@ class _ChatsPageState extends State<ChatsPage>
           App.logger.warning("Can't find userInfo in ui. uid: ${dm.dmUid}");
         }
       }
-      // setState(() {
+
       globals.unreadCountSum.value = calUnreadCountSum();
-      // });
     }
   }
 

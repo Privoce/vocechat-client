@@ -57,7 +57,6 @@ class _NewDmPageState extends State<NewDmPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // TextField(),
             Expanded(
                 child: ContactList(
                     userList: _contactList,

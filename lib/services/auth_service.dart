@@ -103,10 +103,6 @@ class AuthService {
         setTimer(expiredIn);
         await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
 
-        // if (Sse.sse.isClosed()) {
-        //   Sse.sse.connect();
-        // }
-
         return true;
       } else {
         if (res.statusCode == 401 || res.statusCode == 403) {
@@ -148,7 +144,6 @@ class AuthService {
     App.app.statusService.fireTokenLoading(TokenStatus.success);
   }
 
-  ///
   Future<bool> login(TokenLoginRequest req) async {
     final _tokenApi = TokenApi(chatServerM.fullUrl);
     final res = await _tokenApi.tokenLoginPost(req);
@@ -170,9 +165,14 @@ class AuthService {
           content = "Email collision.";
           break;
         case 423:
-          content = "User has been frozed.";
+          content = "User has been frozen.";
+          break;
+        case 451:
+          content =
+              "License has an issue. Please contact server admin for help.";
           break;
         default:
+          App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
           content = "An error occured during login.";
       }
 

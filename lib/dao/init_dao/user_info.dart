@@ -12,6 +12,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/init_dao/properties_models/user_properties.dart';
 import 'package:sqflite/utils/utils.dart';
+import 'package:vocechat_client/dao/org_dao/userdb.dart';
 
 class UserInfoM extends ISuspensionBean with M {
   int uid = -1;
@@ -135,6 +136,7 @@ class UserInfoDao extends Dao<UserInfoM> {
       }
       // m.avatar = old.avatar;
       await super.update(m);
+
       App.logger.info("UserInfoM updated. ${m.uid}");
     } else {
       await super.add(m);

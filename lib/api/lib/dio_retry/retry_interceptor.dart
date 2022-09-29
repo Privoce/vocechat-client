@@ -40,10 +40,12 @@ class RetryInterceptor extends Interceptor {
             queryParameters: err.requestOptions.queryParameters,
             options: extra.toOptions()));
       } catch (e) {
+        App.logger.severe(e);
         return handler.resolve(
             Response(requestOptions: err.requestOptions, statusCode: 599));
       }
     } else {
+      App.logger.severe(err);
       return handler.resolve(
           Response(requestOptions: err.requestOptions, statusCode: 599));
     }
