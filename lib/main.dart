@@ -100,42 +100,43 @@ Future<void> main() async {
 
       if (userDb.loggedIn != 1) {
         Sse.sse.close();
-      }
-
-      final chatServerM =
-          await ChatServerDao.dao.getServerById(userDb.chatServerId);
-      if (chatServerM == null) {
         _defaultHome = ServerPage();
       } else {
-        App.app.chatServerM = chatServerM;
+        final chatServerM =
+            await ChatServerDao.dao.getServerById(userDb.chatServerId);
+        if (chatServerM == null) {
+          _defaultHome = ServerPage();
+        } else {
+          App.app.chatServerM = chatServerM;
 
-        App.app.statusService = StatusService();
-        App.app.authService = AuthService(chatServerM: App.app.chatServerM);
+          App.app.statusService = StatusService();
+          App.app.authService = AuthService(chatServerM: App.app.chatServerM);
 
-        App.app.chatService = ChatService();
+          App.app.chatService = ChatService();
 
-        // Get / update org info.
-        try {
-          final orgInfoRes =
-              await App.app.authService!.adminSystemApi.getOrgInfo();
-          if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
-            final orgInfo = orgInfoRes.data!;
-            App.app.chatServerM.properties = ChatServerProperties(
-                serverName: orgInfo.name,
-                description: orgInfo.description ?? "");
+          // Get / update org info.
+          try {
+            final orgInfoRes =
+                await App.app.authService!.adminSystemApi.getOrgInfo();
+            if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
+              final orgInfo = orgInfoRes.data!;
+              App.app.chatServerM.properties = ChatServerProperties(
+                  serverName: orgInfo.name,
+                  description: orgInfo.description ?? "");
 
-            final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
-            final logoRes = await resourceApi.getOrgLogo();
-            if (logoRes.statusCode == 200 && logoRes.data != null) {
-              App.app.chatServerM.logo = logoRes.data!;
+              final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+              final logoRes = await resourceApi.getOrgLogo();
+              if (logoRes.statusCode == 200 && logoRes.data != null) {
+                App.app.chatServerM.logo = logoRes.data!;
+              }
+
+              App.app.chatServerM.updatedAt =
+                  DateTime.now().millisecondsSinceEpoch;
+              await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
             }
-
-            App.app.chatServerM.updatedAt =
-                DateTime.now().millisecondsSinceEpoch;
-            await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
+          } catch (e) {
+            App.logger.severe(e);
           }
-        } catch (e) {
-          App.logger.severe(e);
         }
       }
     }

@@ -704,6 +704,7 @@ class ChatService {
             await UserInfoDao()
                 .addOrUpdate(m)
                 .then((value) => fireUser(value, EventActions.create));
+            await UserDbMDao.dao.updateUserInfo(userInfo);
 
             if (userInfo.avatarUpdatedAt != 0) {
               final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
@@ -715,6 +716,7 @@ class ChatService {
                 await UserInfoDao()
                     .addOrUpdate(m)
                     .then((value) => fireUser(value, EventActions.update));
+                await UserDbMDao.dao.updateUserInfo(userInfo, avatarRes.data!);
                 if (m.uid == App.app.userDb?.uid) {
                   App.app.userDb?.avatarBytes = avatarRes.data!;
                   await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
@@ -736,6 +738,7 @@ class ChatService {
               await UserInfoDao()
                   .addOrUpdate(m)
                   .then((value) => fireUser(value, EventActions.update));
+              await UserDbMDao.dao.updateUserInfo(newInfo);
 
               if (newInfo.avatarUpdatedAt != 0 &&
                   update.avatarUpdatedAt != null) {
@@ -748,6 +751,7 @@ class ChatService {
                   await UserInfoDao()
                       .addOrUpdate(m)
                       .then((value) => fireUser(value, EventActions.update));
+                  await UserDbMDao.dao.updateUserInfo(newInfo, avatarRes.data!);
                   if (m.uid == App.app.userDb?.uid) {
                     App.app.userDb?.avatarBytes = avatarRes.data!;
                     await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
@@ -1007,6 +1011,7 @@ class ChatService {
           await UserInfoDao()
               .addOrUpdate(m)
               .then((value) => fireUser(value, EventActions.create));
+          await UserDbMDao.dao.updateUserInfo(userInfo);
 
           if (userInfo.avatarUpdatedAt != 0) {
             final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
@@ -1017,6 +1022,7 @@ class ChatService {
                 await UserInfoDao()
                     .addOrUpdate(m)
                     .then((value) => fireUser(value, EventActions.update));
+                await UserDbMDao.dao.updateUserInfo(userInfo, avatarRes.data!);
 
                 if (m.uid == App.app.userDb?.uid) {
                   App.app.userDb?.avatarBytes = avatarRes.data!;
