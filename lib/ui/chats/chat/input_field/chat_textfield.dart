@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -87,7 +85,6 @@ class _ChatTextFieldState extends State<ChatTextField> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       children: [
         _buildReply(context),

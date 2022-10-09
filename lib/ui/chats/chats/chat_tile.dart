@@ -117,25 +117,31 @@ class _ChatTileState extends State<ChatTile> {
               valueListenable: widget.draft,
               builder: (context, draft, _) {
                 if (draft.isNotEmpty) {
-                  return Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: Icon(Icons.create, color: Colors.red, size: 18),
-                      ),
-                      Text(draft,
-                          style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.red,
-                              fontWeight: FontWeight.w400))
-                    ],
+                  return Expanded(
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child:
+                              Icon(Icons.create, color: Colors.red, size: 18),
+                        ),
+                        Flexible(
+                          child: Text(draft,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w400)),
+                        )
+                      ],
+                    ),
                   );
                 }
                 return Expanded(
                     child: ValueListenableBuilder<String>(
                         valueListenable: widget.snippet,
                         builder: (context, snippet, _) {
-                          // print('the last chat message is $snippet');
                           return Text(
                             snippet,
                             maxLines: 1,

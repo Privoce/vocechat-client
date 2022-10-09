@@ -7,8 +7,8 @@ import Flutter
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-      
-      let clipboardChannel = FlutterMethodchannel(name: "clipboard/image",
+      let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
+      let clipboardChannel = FlutterMethodChannel(name: "clipboard/image",
                                                   binaryMessenger: controller.binaryMessenger)
       clipboardChannel.setMethodCallHandler({
                 (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
