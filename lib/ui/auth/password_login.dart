@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/token/credential.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
@@ -99,6 +98,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
           style: TextStyle(fontSize: 16),
         ),
         obscureText: true,
+        enableVisibleObscureText: true,
         textInputAction: TextInputAction.go,
         onSubmitted: (_) => _onLogin,
         scrollPadding: EdgeInsets.only(bottom: 100),
