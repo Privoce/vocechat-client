@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -11,6 +12,7 @@ import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/api/models/token/credential.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
 import 'package:vocechat_client/api/models/token/token_renew_request.dart';
@@ -145,52 +147,94 @@ class AuthService {
     App.app.statusService.fireTokenLoading(TokenStatus.success);
   }
 
-  Future<bool> login(TokenLoginRequest req, bool rememberPswd) async {
+  Future<bool> tryReLogin() async {
+    final userdb = App.app.userDb;
+    if (userdb == null) return false;
+
+    final dbName = App.app.userDb?.dbName;
+    if (dbName == null || dbName.isEmpty) return false;
+
+    final storage = FlutterSecureStorage();
+    final pswd = await storage.read(key: dbName);
+
+    if (pswd == null || pswd.isEmpty) return false;
+
+    String deviceToken = "";
+
+    try {
+      deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+    } catch (e) {
+      App.logger.warning(e);
+      // TODO: alert firebase not working, no notification.
+      deviceToken = "";
+    }
+
+    String device = "";
+    if (Platform.isIOS) {
+      device = "iOS";
+    } else if (Platform.isAndroid) {
+      device = "Android";
+    } else {
+      device = "Others";
+    }
+
+    final credential = Credential(userdb.userInfo.email!, pswd, "password");
+
+    final req = TokenLoginRequest(
+        device: device, credential: credential, deviceToken: deviceToken);
+
+    return login(req, true);
+  }
+
+  Future<bool> login(TokenLoginRequest req, bool rememberPswd,
+      [bool isReLogin = false]) async {
     final _tokenApi = TokenApi(chatServerM.fullUrl);
     final res = await _tokenApi.tokenLoginPost(req);
 
     String content = "";
 
-    if (res.statusCode != 200) {
-      switch (res.statusCode) {
-        case 401:
-          content = "Invalid account or password.";
-          break;
-        case 403:
-          content = "Login method is not supported.";
-          break;
-        case 404:
-          content = "User does not exist.";
-          break;
-        case 409:
-          content = "Email collision.";
-          break;
-        case 423:
-          content = "User has been frozen.";
-          break;
-        case 451:
-          content =
-              "License has an issue. Please contact server admin for help.";
-          break;
-        default:
-          App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
-          content = "An error occured during login.";
+    if (!isReLogin) {
+      if (res.statusCode != 200) {
+        switch (res.statusCode) {
+          case 401:
+            content = "Invalid account or password.";
+            break;
+          case 403:
+            content = "Login method is not supported.";
+            break;
+          case 404:
+            content = "User does not exist.";
+            break;
+          case 409:
+            content = "Email collision.";
+            break;
+          case 423:
+            content = "User has been frozen.";
+            break;
+          case 451:
+            content =
+                "License has an issue. Please contact server admin for help.";
+            break;
+          default:
+            App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
+            content = "An error occured during login.";
+        }
+
+        await showAppAlert(
+            context: navigatorKey.currentContext!,
+            title: "Login Error",
+            content: content,
+            actions: [
+              AppAlertDialogAction(
+                text: "OK",
+                action: () {
+                  Navigator.pop(navigatorKey.currentContext!);
+                },
+              )
+            ]);
+
+        return false;
       }
-
-      await showAppAlert(
-          context: navigatorKey.currentContext!,
-          title: "Login Error",
-          content: content,
-          actions: [
-            AppAlertDialogAction(
-              text: "OK",
-              action: () {
-                Navigator.pop(navigatorKey.currentContext!);
-              },
-            )
-          ]);
-
-      return false;
     }
 
     if (res.statusCode == 200 && res.data != null) {
@@ -298,6 +342,7 @@ class AuthService {
 
       final _tokenApi = TokenApi(chatServerM.fullUrl);
       final res = await _tokenApi.getLogout();
+
       if (res.statusCode == 200) {
         return true;
       }

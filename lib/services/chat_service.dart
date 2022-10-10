@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
@@ -12,12 +13,14 @@ import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/globals.dart';
+import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/sse.dart';
@@ -298,6 +301,21 @@ class ChatService {
       // Following methods listed in alphabetical order.
       switch (type) {
         case "kick":
+          App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            showAppAlert(
+                context: context,
+                title: "Login Session Expires",
+                content:
+                    "If you didn't login from another device, please change password immediately, or contact server admins for help.",
+                actions: [
+                  AppAlertDialogAction(
+                      text: "OK", action: () => Navigator.pop(context))
+                ]);
+          }
+
           App.app.authService?.logout(markLogout: false, isKicked: true);
           break;
 
