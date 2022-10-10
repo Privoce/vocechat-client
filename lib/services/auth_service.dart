@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
@@ -144,7 +145,7 @@ class AuthService {
     App.app.statusService.fireTokenLoading(TokenStatus.success);
   }
 
-  Future<bool> login(TokenLoginRequest req) async {
+  Future<bool> login(TokenLoginRequest req, bool rememberPswd) async {
     final _tokenApi = TokenApi(chatServerM.fullUrl);
     final res = await _tokenApi.tokenLoginPost(req);
 
@@ -194,7 +195,7 @@ class AuthService {
 
     if (res.statusCode == 200 && res.data != null) {
       final data = res.data!;
-      await initServices(data);
+      await initServices(data, rememberPswd ? req.credential.password : null);
 
       return true;
     }
@@ -202,7 +203,7 @@ class AuthService {
     return false;
   }
 
-  Future<bool> initServices(LoginResponse res) async {
+  Future<bool> initServices(LoginResponse res, [String? password]) async {
     final String serverId = res.serverId;
     final token = res.token;
     final refreshToken = res.refreshToken;
@@ -210,6 +211,12 @@ class AuthService {
     final userInfo = res.user;
     final userInfoJson = json.encode(userInfo.toJson());
     final dbName = "${serverId}_${userInfo.uid}";
+
+    // Save password to secure storage.
+    if (password != null && password.isNotEmpty) {
+      final storage = FlutterSecureStorage();
+      await storage.write(key: dbName, value: password);
+    }
 
     final avatarBytes = userInfo.avatarUpdatedAt == 0
         ? Uint8List(0)
@@ -271,7 +278,7 @@ class AuthService {
     return true;
   }
 
-  Future<bool> logout({bool markLogout = true}) async {
+  Future<bool> logout({bool markLogout = true, bool isKicked = false}) async {
     try {
       Sse.sse.close();
 
@@ -285,7 +292,9 @@ class AuthService {
       App.app.chatService.dispose();
       App.app.statusService.dispose();
 
-      await closeUserDb();
+      if (!isKicked) {
+        await closeUserDb();
+      }
 
       final _tokenApi = TokenApi(chatServerM.fullUrl);
       final res = await _tokenApi.getLogout();

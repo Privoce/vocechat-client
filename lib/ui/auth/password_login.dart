@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/api/models/token/credential.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
 import 'package:vocechat_client/app.dart';
@@ -9,6 +11,7 @@ import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/status_service.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:voce_widgets/voce_widgets.dart';
@@ -38,6 +41,8 @@ class _PasswordLoginState extends State<PasswordLogin> {
   ValueNotifier<bool> showEmailAlert = ValueNotifier(false);
   // ValueNotifier<bool> showInvalidPswdWarning = ValueNotifier(false);
   ValueNotifier<bool> enableLogin = ValueNotifier(false);
+  // ValueNotifier<bool> rememberMe = ValueNotifier(true);
+  bool rememberMe = false;
 
   late bool isLoggingIn;
 
@@ -48,6 +53,8 @@ class _PasswordLoginState extends State<PasswordLogin> {
     if (widget._isRelogin) {
       emailController.text = widget.email!;
       isEmailValid = true;
+
+      _fillPassword();
     }
   }
 
@@ -110,19 +117,22 @@ class _PasswordLoginState extends State<PasswordLogin> {
           enableLogin.value = isEmailValid && isPswdValid;
         },
       ),
+      SizedBox(height: 24),
       SizedBox(
-        height: 36,
-        // child: ValueListenableBuilder<bool>(
-        //   valueListenable: showInvalidPswdWarning,
-        //   builder: (context, showInvalidPswdWarning, child) {
-        //     if (showInvalidPswdWarning) {
-        //       return Text("Password invalid");
-        //     } else {
-        //       return SizedBox.shrink();
-        //     }
-        //   },
-        // )
-      ),
+          height: 24,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text("Remember me", style: TextStyle(fontSize: 16)),
+              Spacer(),
+              CupertinoSwitch(
+                  value: rememberMe,
+                  onChanged: (value) => setState(() {
+                        rememberMe = value;
+                      }))
+            ],
+          )),
+      SizedBox(height: 24),
       _buildLoginButton(),
     ]);
   }
@@ -151,6 +161,27 @@ class _PasswordLoginState extends State<PasswordLogin> {
       },
       enabled: enableLogin,
     );
+  }
+
+  Future<void> _fillPassword() async {
+    final dbName = App.app.userDb?.dbName;
+
+    if (dbName == null) return;
+
+    final storage = FlutterSecureStorage();
+    final password = await storage.read(key: dbName);
+
+    if (password == null || password.isEmpty) return;
+
+    setState(() {
+      rememberMe = true;
+    });
+    pswdController.text = password;
+    pswdController.selection =
+        TextSelection.collapsed(offset: pswdController.text.length);
+
+    isPswdValid = password.isValidPswd;
+    enableLogin.value = isEmailValid && isPswdValid;
   }
 
   /// Called when login button is pressed
@@ -193,7 +224,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       App.app.statusService = StatusService();
       App.app.authService = AuthService(chatServerM: widget.chatServer);
 
-      if (!await App.app.authService!.login(req)) {
+      if (!await App.app.authService!.login(req, rememberMe)) {
         App.logger.severe("Login Failed");
         return false;
       } else {
