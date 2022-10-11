@@ -47,6 +47,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
         children: [
+          /*
           VoceButton(
             width: double.maxFinite,
             contentColor: Colors.white,
@@ -82,6 +83,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
             },
           ),
           SizedBox(height: 18),
+          */
           VoceButton(
             width: double.maxFinite,
             contentColor: Colors.white,
@@ -94,10 +96,12 @@ class _InviteUserPageState extends State<InviteUserPage> {
             ),
             action: () async {
               _shareInvitationLink();
-
               return true;
             },
-          )
+          ),
+          SizedBox(height: 4),
+          Text("Link expires in 1 hour. For single use only.",
+              style: AppTextStyles.labelMedium)
         ],
       ),
     );

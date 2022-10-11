@@ -280,7 +280,7 @@ class _ChatsBarState extends State<ChatsBar> {
                                 topRight: Radius.circular(8))),
                         builder: (sheetContext) {
                           return FractionallySizedBox(
-                            heightFactor: 0.4,
+                            heightFactor: 0.3,
                             child: InviteUserPage(),
                           );
                         });

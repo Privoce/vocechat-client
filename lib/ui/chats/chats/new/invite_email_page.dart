@@ -20,6 +20,7 @@ class _InviteEmailPageState extends State<InviteEmailPage> {
 
   ValueNotifier<bool> enableEmailButton = ValueNotifier(false);
   ValueNotifier<bool> smtpEnabled = ValueNotifier(false);
+  ValueNotifier<bool> emailValid = ValueNotifier(false);
 
   @override
   void initState() {
@@ -66,10 +67,8 @@ class _InviteEmailPageState extends State<InviteEmailPage> {
         ],
       ),
       body: SafeArea(
-          child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
         child: _buildEmailInvitation(),
-      )),
+      ),
     );
   }
 
@@ -81,38 +80,42 @@ class _InviteEmailPageState extends State<InviteEmailPage> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(height: 8),
               AppTextField(
                 controller: emailController,
                 hintText: hintText,
                 enabled: enabled,
                 onChanged: (email) => validateEmail(email, enabled),
               ),
-              SizedBox(height: 18),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: VoceButton(
-                  width: double.maxFinite,
-                  contentColor: Colors.white,
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(8)),
-                  normal: Text(
-                    "Send",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  enabled: enableEmailButton,
-                  action: () async {
-                    return true;
-                  },
+              if (true)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                      height: 28.0,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: emailValid,
+                          builder: (context, emailValid, child) {
+                            if (!emailValid) {
+                              return Text(
+                                "Invalid Email Format",
+                                style:
+                                    TextStyle(fontSize: 12, color: Colors.red),
+                              );
+                            }
+                            return SizedBox.shrink();
+                          },
+                        ),
+                      )),
                 ),
-              ),
             ],
           );
         });
   }
 
   void validateEmail(String email, bool smtpEnabled) {
+    emailValid.value = email.isEmail;
     enableEmailButton.value = smtpEnabled && email.isEmail;
   }
 
