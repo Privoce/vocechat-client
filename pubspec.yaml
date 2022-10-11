@@ -108,7 +108,7 @@ dependency_overrides:
   # for example: https://domain.com.git/ -> https://domain.com/, and run pub get.
   voce_widgets:
     git:
-      url: https://github.com/Privoce/voce_widgets
+      url: https://github.com/Privoce/voce_widgets.git
       ref: master
 
 dev_dependencies:

@@ -1,7 +1,4 @@
 // UI constants
-import 'package:flutter/material.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
-
 const double barHeight = 56;
 
 // Enums

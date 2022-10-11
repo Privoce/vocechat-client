@@ -16,12 +16,13 @@ import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
+import 'package:vocechat_client/ui/chats/chats/new/invite_user_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_channel_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_dm_page.dart';
 import 'package:vocechat_client/ui/widgets/search/app_search_field.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-enum AddActions { channel, private, dm }
+enum AddActions { channel, private, dm, user }
 
 class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
   late final Widget _avatar;
@@ -35,6 +36,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
   final ValueNotifier<int> memberCountNotifier;
   final void Function(GroupInfoM groupInfoM) onCreateChannel;
   final void Function(UserInfoM userInfoM) onCreateDm;
+  // final void Function() onInviteUser;
 
   @override
   // Size get preferredSize => Size(double.maxFinite, 98);
@@ -43,6 +45,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
   ChatsBar(
       {required this.onCreateChannel,
       required this.onCreateDm,
+      // required this.onInviteUser,
       required this.memberCountNotifier,
       required this.showDrawer,
       Key? key})
@@ -267,6 +270,23 @@ class _ChatsBarState extends State<ChatsBar> {
                       widget.onCreateDm(userInfoM);
                     }
                     break;
+                  case AddActions.user:
+                    showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                topRight: Radius.circular(8))),
+                        builder: (sheetContext) {
+                          return FractionallySizedBox(
+                            heightFactor: 0.4,
+                            child: InviteUserPage(),
+                          );
+                        });
+
+                    break;
+
                   default:
                 }
               },
@@ -279,7 +299,9 @@ class _ChatsBarState extends State<ChatsBar> {
                   _buildItem(
                       Icon(AppIcons.dm, color: AppColors.grey97),
                       AppLocalizations.of(context)!.chatsBarNewDm,
-                      AddActions.dm)
+                      AddActions.dm),
+                  _buildItem(Icon(AppIcons.member_add, color: AppColors.grey97),
+                      "Invite People", AddActions.user)
                 ];
               },
             ))
