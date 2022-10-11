@@ -82,6 +82,7 @@ dependencies:
   scroll_to_index: ^3.0.1
   sqflite_common_ffi: ^2.1.1+1
   sqlite3_flutter_libs: ^0.5.8
+  flutter_secure_storage: ^6.0.0
   
   # for debug use.
   # azlistview: 
@@ -107,7 +108,7 @@ dependency_overrides:
   # for example: https://domain.com.git/ -> https://domain.com/, and run pub get.
   voce_widgets:
     git:
-      url: https://github.com/Privoce/voce_widgets
+      url: https://github.com/Privoce/voce_widgets.git
       ref: master
 
 dev_dependencies:

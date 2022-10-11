@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
@@ -14,6 +13,7 @@ import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -27,7 +27,6 @@ import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/sse_queue.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/task_queue.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
 import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
 
@@ -302,7 +301,22 @@ class ChatService {
       // Following methods listed in alphabetical order.
       switch (type) {
         case "kick":
-          App.app.authService?.logout(markLogout: false);
+          App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            showAppAlert(
+                context: context,
+                title: "Login Session Expires",
+                content:
+                    "If you didn't login from another device, please change password immediately, or contact server admins for help.",
+                actions: [
+                  AppAlertDialogAction(
+                      text: "OK", action: () => Navigator.pop(context))
+                ]);
+          }
+
+          App.app.authService?.logout(markLogout: false, isKicked: true);
           break;
 
         case "heartbeat":
