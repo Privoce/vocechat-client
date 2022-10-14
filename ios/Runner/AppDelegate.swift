@@ -13,11 +13,12 @@ import Flutter
       clipboardChannel.setMethodCallHandler({
                 (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
                 // Note: this method is invoked on the UI thread.
-                  guard call.method == "getClipboardImage" else {
-                    result(FlutterMethodNotImplemented)
-                    return
-                  }
-                  self.getClipboardImage(result: result)
+                print("setMethodCallHandler")
+                guard call.method == "getClipboardImage" else {
+                  result(FlutterMethodNotImplemented)
+                  return
+                }
+                self.getClipboardImage(result: result)
               })
       
     GeneratedPluginRegistrant.register(with: self)
@@ -30,17 +31,16 @@ import Flutter
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
     
-    private func getClipboardImage(result: FlutterResult) {
-          
-            let image = UIPasteboard.general.image;
-            
-            if (image == nil) {
-                print("no image in clipboard")
-                return
-            }
-            
-            let data = image!.jpegData(compressionQuality: 1)
-            result(data)
-            
-        }
+  private func getClipboardImage(result: FlutterResult) {
+        
+    let image = UIPasteboard.general.image;
+    
+    if (image == nil) {
+        print("no image in clipboard")
+        result(nil)
+    }else {
+        let data = image!.jpegData(compressionQuality: 1)
+        result(data)
+    }
+  }
 }

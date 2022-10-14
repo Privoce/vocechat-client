@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:mime/mime.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/message_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
@@ -45,7 +46,7 @@ class SendService {
   }
 
   void sendMessage(String localMid, String msg, SendType type,
-      {int? gid, int? uid, int? targetMid}) async {
+      {int? gid, int? uid, int? targetMid, Uint8List? blob}) async {
     if (sendTaskQueue.map((e) => e.localMid).contains(localMid)) return;
     Future<bool> function;
     ValueNotifier<double> _progress = ValueNotifier(0);
@@ -65,7 +66,10 @@ class SendService {
         break;
       case SendType.file:
         function = SendFile().sendMessage(localMid, msg, type,
-            gid: gid, uid: uid, targetMid: targetMid, progress: (progress) {
+            gid: gid,
+            uid: uid,
+            targetMid: targetMid,
+            blob: blob, progress: (progress) {
           _progress.value = progress;
         });
         break;
@@ -133,6 +137,7 @@ abstract class AbstractSend {
       {int? gid,
       int? uid,
       int? targetMid,
+      Uint8List? blob,
       void Function(double progress)? progress});
 
   static Future<int> getFakeMid() async {
@@ -146,6 +151,7 @@ class SendText implements AbstractSend {
       {int? gid,
       int? uid,
       int? targetMid,
+      Uint8List? blob,
       void Function(double progress)? progress}) async {
     if (gid != null && gid != -1) {
       return _sendGroupText(msg, gid, localMid);
@@ -279,6 +285,7 @@ class SendEdit implements AbstractSend {
       {int? gid,
       int? uid,
       int? targetMid,
+      Uint8List? blob,
       void Function(double progress)? progress}) async {
     assert(targetMid != null);
 
@@ -330,6 +337,7 @@ class SendReply implements AbstractSend {
       {int? gid,
       int? uid,
       int? targetMid,
+      Uint8List? blob,
       void Function(double progress)? progress}) async {
     assert(targetMid != null);
 
@@ -471,12 +479,27 @@ class SendFile implements AbstractSend {
       {int? gid,
       int? uid,
       int? targetMid,
+      Uint8List? blob,
       void Function(double progress)? progress}) async {
-    final headerBytes = _getHeaderBytes(path);
-    final contentType = lookupMimeType(path, headerBytes: headerBytes) ?? "";
-    final filename = p.basename(path);
-    File file = File(path);
-    final size = file.lengthSync();
+    List<int> headerBytes;
+    String contentType;
+    String filename;
+    File file;
+    int size;
+    if (blob != null && blob.isNotEmpty) {
+      contentType = lookupMimeType("", headerBytes: blob) ?? "image/jpg";
+      filename = "image.jpg";
+      final tempPath = (await getTemporaryDirectory()).path + "/$filename";
+      file = File(tempPath);
+      await file.writeAsBytes(blob);
+      size = file.lengthSync();
+    } else {
+      headerBytes = _getHeaderBytesFromPath(path);
+      contentType = lookupMimeType(path, headerBytes: headerBytes) ?? "";
+      filename = p.basename(path);
+      file = File(path);
+      size = file.lengthSync();
+    }
 
     final isImage = contentType.startsWith("image/");
 
@@ -516,7 +539,7 @@ class SendFile implements AbstractSend {
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
     App.app.chatService.taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM));
 
-    Uint8List fileBytes = File(path).readAsBytesSync();
+    Uint8List fileBytes = file.readAsBytesSync();
 
     // Compress and save thumb if is image.
     if (isImage) {
@@ -617,9 +640,19 @@ class SendFile implements AbstractSend {
     return true;
   }
 
-  List<int> _getHeaderBytes(String path) {
+  List<int> _getHeaderBytesFromPath(String path) {
     List<int> fileBytes = File(path).readAsBytesSync().toList();
+    List<int> header = [];
 
+    for (var element in fileBytes) {
+      if (element == 0) return [];
+      header.add(element);
+    }
+    return header;
+  }
+
+  List<int> _getHeaderBytesFromBytes(Uint8List bytes) {
+    List<int> fileBytes = bytes.toList();
     List<int> header = [];
 
     for (var element in fileBytes) {

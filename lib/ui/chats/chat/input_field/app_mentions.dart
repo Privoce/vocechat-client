@@ -151,7 +151,8 @@ class AppMentions extends StatefulWidget {
       this.appendSpaceOnAdd = true,
       this.hideSuggestionList = false,
       this.onSuggestionVisibleChanged,
-      this.inputFormatters})
+      this.inputFormatters,
+      this.selectionControls})
       : super(key: key);
 
   final bool hideSuggestionList;
@@ -345,6 +346,8 @@ class AppMentions extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.inputFormatters}
   List<TextInputFormatter>? inputFormatters;
+
+  final TextSelectionControls? selectionControls;
 
   @override
   AppMentionsState createState() => AppMentionsState();
@@ -549,6 +552,7 @@ class AppMentionsState extends State<AppMentions> {
             ...widget.leading,
             Expanded(
               child: TextField(
+                selectionControls: widget.selectionControls,
                 maxLines: widget.maxLines,
                 minLines: widget.minLines,
                 maxLength: widget.maxLength,

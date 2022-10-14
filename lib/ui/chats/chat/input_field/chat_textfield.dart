@@ -17,6 +17,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/services/sp_utils.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/ui/chats/chat/input_field/app_text_selection_controls.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -65,11 +66,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
   late ValueNotifier<Set<UserInfoM>> memberSetNotifier = ValueNotifier({});
   final selectedMention = ValueNotifier<LengthMap?>(null);
   List<Map<String, dynamic>> memberList = <Map<String, dynamic>>[];
+  AppTextSelectionControls controls = AppTextSelectionControls();
 
   Set markupSet = {};
   @override
   void initState() {
     super.initState();
+    controls.setChatInfo(widget.userInfoM?.uid, widget.groupInfoM?.gid);
   }
 
   @override
@@ -115,6 +118,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
         return AppMentions(
           defaultText: widget.draft,
           key: widget.mentionsKey,
+          selectionControls: controls,
           leading: [
             SizedBox(
               width: widget._height,
