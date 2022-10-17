@@ -91,7 +91,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
                 color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(8)),
             normal: Text(
-              "Copy Invitation Link",
+              "Share Invitation Link",
               style: TextStyle(color: Colors.white),
             ),
             action: () async {
@@ -129,7 +129,10 @@ class _InviteUserPageState extends State<InviteUserPage> {
     final groupApi = GroupApi(App.app.chatServerM.fullUrl);
     final res = await groupApi.getRegMagicLink();
 
+    print("here $res");
+
     if (res.statusCode == 200) {
+      print(res.data);
       return res.data as String;
     }
     return null;

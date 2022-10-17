@@ -336,6 +336,8 @@ class _ServerPageState extends State<ServerPage> {
                 SizedBox(height: 10),
                 Container(
                     clipBehavior: Clip.hardEdge,
+                    constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.4),
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(_outerRadius)),
@@ -427,90 +429,6 @@ class _ServerPageState extends State<ServerPage> {
 
     return null;
   }
-
-  // Widget _buildHistoryList() {
-  //   return ValueListenableBuilder<List<ChatServerM>>(
-  //     valueListenable: _serverListNotifier,
-  //     builder: (_, serverList, __) {
-  //       if (serverList.isEmpty) {
-  //         return SizedBox.shrink();
-  //       }
-  //       return Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           Text(
-  //             AppLocalizations.of(context)!.serverPageHistory,
-  //             style: TextStyle(fontSize: 16),
-  //           ),
-  //           SizedBox(height: 10),
-  //           Container(
-  //             // constraints: BoxConstraints(maxHeight: 300),
-  //             clipBehavior: Clip.hardEdge,
-  //             decoration: BoxDecoration(
-  //                 color: Colors.white,
-  //                 borderRadius: BorderRadius.circular(_outerRadius)),
-  //             child: ListView.separated(
-  //                 separatorBuilder: (context, index) {
-  //                   return const Divider();
-  //                 },
-  //                 shrinkWrap: true,
-  //                 itemCount: serverList.length,
-  //                 itemBuilder: (context, index) {
-  //                   final item = serverList[index];
-  //                   String tls = 'http://';
-  //                   if (item.tls == 1) {
-  //                     tls = 'https://';
-  //                   }
-  //                   return Slidable(
-  //                     endActionPane: ActionPane(
-  //                       extentRatio: 0.3,
-  //                       motion: DrawerMotion(),
-  //                       children: [
-  //                         SlidableAction(
-  //                           onPressed: (context) {
-  //                             _onDeleteHistory(context, index);
-  //                           },
-  //                           backgroundColor: Colors.red,
-  //                           foregroundColor: Colors.white,
-  //                           icon: Icons.delete,
-  //                           label: 'Delete',
-  //                         ),
-  //                       ],
-  //                     ),
-  //                     child: ListTile(
-  //                       dense: true,
-  //                       leading: item.logo.isNotEmpty
-  //                           ? SizedBox(
-  //                               height: 36,
-  //                               child: Image.memory(item.logo,
-  //                                   fit: BoxFit.contain))
-  //                           : Icon(Icons.desktop_mac),
-  //                       onTap: () async {
-  //                         await ChatServerDao.dao.updateUpdatedAt(
-  //                             item, DateTime.now().millisecondsSinceEpoch);
-  //                         _urlController.text = item.fullUrl;
-  //                       },
-  //                       title: Text(
-  //                         prepareServerTitle(item),
-  //                         maxLines: 1,
-  //                         overflow: TextOverflow.ellipsis,
-  //                         style: TextStyle(fontSize: 16),
-  //                       ),
-  //                       subtitle: Text(
-  //                         "$tls${item.url}:${item.port}",
-  //                         maxLines: 1,
-  //                         overflow: TextOverflow.ellipsis,
-  //                         style: TextStyle(fontSize: 14),
-  //                       ),
-  //                     ),
-  //                   );
-  //                 }),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   String prepareServerTitle(ChatServerM chatServerM) {
     try {
