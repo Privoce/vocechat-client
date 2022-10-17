@@ -151,7 +151,8 @@ class _PasswordLoginState extends State<PasswordLogin> {
         style: TextStyle(color: Colors.white),
       ),
       action: () async {
-        if (await _onLogin()) {
+        if (await _onLogin(
+            emailController.text, pswdController.text, widget.chatServer)) {
           Navigator.of(context)
               .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
           return true;
@@ -189,50 +190,19 @@ class _PasswordLoginState extends State<PasswordLogin> {
   /// The following will be done in sequence:
   /// 1. Save [LoginResponse] to user_db and in memory;
   /// 2. Update related db. Create a new if not exist.
-  Future<bool> _onLogin() async {
+  Future<bool> _onLogin(
+      String email, String pswd, ChatServerM chatServerM) async {
     // String pswd = "";
     // Uint8List content = Utf8Encoder().convert(widget._pswdController.text);
     // Digest digest = md5.convert(content);
     // pswd = hex.encode(digest.bytes);
-
-    String device;
-
     try {
-      String deviceToken = "";
-      try {
-        deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
-      } catch (e) {
-        App.logger.warning(e);
-        // TODO: alert firebase not working, no notification.
-        deviceToken = "";
-      }
+      App.app.authService = AuthService(chatServerM: chatServerM);
 
-      if (Platform.isIOS) {
-        device = "iOS";
-      } else if (Platform.isAndroid) {
-        device = "Android";
-      } else {
-        device = "Others";
-      }
-
-      final credential = Credential(
-          emailController.value.text, pswdController.value.text, "password");
-
-      final req = TokenLoginRequest(
-          device: device, credential: credential, deviceToken: deviceToken);
-
-      App.app.statusService = StatusService();
-      App.app.authService = AuthService(chatServerM: widget.chatServer);
-
-      if (!await App.app.authService!.login(req, rememberMe)) {
+      if (!await App.app.authService!.login(email, pswd, rememberMe)) {
         App.logger.severe("Login Failed");
         return false;
-      } else {
-        // App.logger.config(req.toJson().toString());
       }
-
-      // await App.app.chatService.preSseDataFetch();
-      App.app.chatService.initSse();
     } catch (e) {
       App.logger.severe(e);
       return false;
