@@ -21,11 +21,18 @@ class PasswordLogin extends StatefulWidget {
 
   final String? email;
 
-  late final bool _isRelogin;
+  final String? password;
 
-  PasswordLogin({Key? key, required this.chatServer, this.email})
+  final bool isRelogin;
+
+  PasswordLogin(
+      {Key? key,
+      required this.chatServer,
+      this.email,
+      this.password,
+      this.isRelogin = false})
       : super(key: key) {
-    _isRelogin = email != null && email!.trim().isNotEmpty;
+    // _isRelogin = email != null && email!.trim().isNotEmpty;
   }
 
   @override
@@ -41,8 +48,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
   ValueNotifier<bool> showEmailAlert = ValueNotifier(false);
   // ValueNotifier<bool> showInvalidPswdWarning = ValueNotifier(false);
   ValueNotifier<bool> enableLogin = ValueNotifier(false);
-  // ValueNotifier<bool> rememberMe = ValueNotifier(true);
-  bool rememberMe = false;
+  bool rememberMe = true;
 
   late bool isLoggingIn;
 
@@ -50,12 +56,18 @@ class _PasswordLoginState extends State<PasswordLogin> {
   void initState() {
     super.initState();
 
-    if (widget._isRelogin) {
+    if (widget.email != null && widget.email!.isNotEmpty) {
       emailController.text = widget.email!;
-      isEmailValid = true;
-
-      _fillPassword();
+      isEmailValid = emailController.text.isEmail;
     }
+
+    if (widget.password != null && widget.password!.isNotEmpty) {
+      pswdController.text = widget.password!;
+      isPswdValid = pswdController.text.isValidPswd;
+      rememberMe = true;
+    }
+
+    enableLogin.value = isEmailValid && isPswdValid;
   }
 
   @override
@@ -65,7 +77,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       SizedBox(height: 4),
       VoceTextField.filled(
         emailController,
-        enabled: !widget._isRelogin,
+        enabled: !widget.isRelogin,
         title: Text(
           AppLocalizations.of(context)!.loginPageEmail,
           style: TextStyle(fontSize: 16),

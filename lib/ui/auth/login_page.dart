@@ -16,11 +16,18 @@ class LoginPage extends StatefulWidget {
 
   final String? email;
 
+  final String? password;
+
   late final BoxDecoration _bgDeco;
 
-  late final bool isRelogin;
+  final bool isRelogin;
 
-  LoginPage({required this.chatServerM, this.email, Key? key})
+  LoginPage(
+      {required this.chatServerM,
+      this.email,
+      this.password,
+      this.isRelogin = false,
+      Key? key})
       : super(key: key) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
@@ -37,7 +44,7 @@ class LoginPage extends StatefulWidget {
           1
         ]));
 
-    isRelogin = email != null && email!.trim().isNotEmpty;
+    // isRelogin = email != null && email!.trim().isNotEmpty;
   }
 
   @override
@@ -97,7 +104,10 @@ class _LoginPageState extends State<LoginPage> {
           switch (loginType) {
             case LoginType.password:
               return PasswordLogin(
-                  chatServer: widget.chatServerM, email: widget.email);
+                  chatServer: widget.chatServerM,
+                  email: widget.email,
+                  password: widget.password,
+                  isRelogin: widget.isRelogin);
             case LoginType.magiclink:
               return MagiclinkLogin(chatServer: widget.chatServerM);
             default:

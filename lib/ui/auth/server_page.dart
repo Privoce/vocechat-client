@@ -381,7 +381,10 @@ class _ServerPageState extends State<ServerPage> {
     );
   }
 
-  void _onHistoryDeleted(ServerAccountData data) async {}
+  void _onHistoryDeleted(ServerAccountData data) async {
+    await UserDbMDao.dao.remove(data.userDbM.id);
+    setState(() {});
+  }
 
   void _serverAccountTileOnPressed(ServerAccountData data) async {
     _pushPageBusy.value = true;
@@ -393,29 +396,17 @@ class _ServerPageState extends State<ServerPage> {
     final storage = FlutterSecureStorage();
     final password = await storage.read(key: dbName);
 
-    if (password == null || password.isEmpty) {
-      await _onUrlSubmit(data.serverUrl);
-    } else {
-      var chatServerM = await ChatServerDao.dao.getServerByUrl(data.serverUrl);
-      if (chatServerM == null) {
-        chatServerM = ChatServerM();
-        chatServerM.setByUrl(data.serverUrl);
-      }
+    final chatServerM = await _prepareChatServerM(data.serverUrl);
 
-      // Navigator.of(context).push(MaterialPageRoute(
-      //     builder: (context) =>
-      //         LoginPage(chatServerM: chatServerM!, email: data.userEmail)));
+    print(chatServerM?.properties == null);
 
-      App.app.authService = AuthService(chatServerM: chatServerM);
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => LoginPage(
+              chatServerM: chatServerM!,
+              email: data.userEmail,
+              password: password,
+            )));
 
-      if (await App.app.authService!.login(data.userEmail, password, true)) {
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
-      } else {
-        App.logger.severe("Login Failed");
-        return;
-      }
-    }
     _pushPageBusy.value = false;
   }
 
@@ -507,14 +498,7 @@ class _ServerPageState extends State<ServerPage> {
     }
   }
 
-  /// Called when forward (->) button is pressed.
-  ///
-  /// Server information will be saved into App object.
-  /// Only successful server visits will be saved.
-  Future<bool> _onUrlSubmit(String url) async {
-    // String url = _urlController.text + "/api";
-
-    // Update server record in database
+  Future<ChatServerM?> _prepareChatServerM(String url) async {
     ChatServerM chatServerM = ChatServerM();
     ServerStatusWithChatServerM s;
 
@@ -524,7 +508,7 @@ class _ServerPageState extends State<ServerPage> {
       s = await _checkServerAvailability(httpsUrl);
       if (s.status == ServerStatus.uninitialized) {
         await _showServerUninitializedError(s.chatServerM);
-        return false;
+        return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
@@ -533,27 +517,28 @@ class _ServerPageState extends State<ServerPage> {
         s = await _checkServerAvailability(httpUrl);
         if (s.status == ServerStatus.uninitialized) {
           await _showServerUninitializedError(s.chatServerM);
-          return false;
+          return null;
         } else if (s.status == ServerStatus.available) {
           chatServerM = s.chatServerM;
         } else if (s.status == ServerStatus.error) {
           await _showConnectionError();
-          return false;
+          return null;
         }
       }
     } else {
       s = await _checkServerAvailability(url);
       if (s.status == ServerStatus.uninitialized) {
         await _showServerUninitializedError(s.chatServerM);
-        return false;
+        return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
         await _showConnectionError();
-        return false;
+        return null;
       }
     }
 
+    // Update server record in database
     _urlController.text = chatServerM.fullUrl;
 
     try {
@@ -585,15 +570,26 @@ class _ServerPageState extends State<ServerPage> {
         await ChatServerDao.dao.addOrUpdate(chatServerM);
       } else {
         await _showConnectionError();
-        return false;
+        return null;
       }
     } catch (e) {
       App.logger.severe(e);
       await _showConnectionError();
-      return false;
+      return null;
     }
+    return chatServerM;
+  }
+
+  /// Called when forward (->) button is pressed.
+  ///
+  /// Server information will be saved into App object.
+  /// Only successful server visits will be saved.
+  Future<bool> _onUrlSubmit(String url) async {
+    // String url = _urlController.text + "/api";
 
     // Set server in App singleton.
+    final chatServerM = await _prepareChatServerM(url);
+    if (chatServerM == null) return false;
     App.app.chatServerM = chatServerM;
 
     _urlFocusNode.requestFocus();
