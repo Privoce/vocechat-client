@@ -255,7 +255,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       if (res.statusCode == 200 && res.data != null) {
         final registerResponse = res.data!;
         await App.app.authService
-            ?.initServices(registerResponse, widget.req.password);
+            ?.initServices(registerResponse, false, widget.req.password);
         Navigator.of(context)
             .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
         App.app.chatService.initSse();

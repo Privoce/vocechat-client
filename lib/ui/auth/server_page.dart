@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:universal_html/html.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
@@ -382,6 +383,10 @@ class _ServerPageState extends State<ServerPage> {
 
   void _onHistoryDeleted(ServerAccountData data) async {
     await UserDbMDao.dao.remove(data.userDbM.id);
+
+    final storage = FlutterSecureStorage();
+    await storage.delete(key: data.userDbM.dbName);
+
     setState(() {});
   }
 
@@ -655,25 +660,6 @@ class _ServerPageState extends State<ServerPage> {
             },
           )
         ]);
-  }
-
-  void _resetServerList() {
-    _serverListNotifier.value = [];
-    _serverIdSet = {};
-
-    _getServerList();
-  }
-
-  void _onDeleteHistory(BuildContext context, int index) async {
-    try {
-      final id = _serverListNotifier.value[index].id;
-      _serverListNotifier.value.removeAt(index);
-      _serverIdSet.remove(id);
-      await ChatServerDao.dao.remove(id);
-      setState(() {});
-    } catch (e) {
-      App.logger.severe(e);
-    }
   }
 
   // void _onPinHistory(BuildContext context, int index) async {
