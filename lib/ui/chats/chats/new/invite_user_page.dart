@@ -91,7 +91,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
                 color: Theme.of(context).primaryColor,
                 borderRadius: BorderRadius.circular(8)),
             normal: Text(
-              "Copy Invitation Link",
+              "Share Invitation Link",
               style: TextStyle(color: Colors.white),
             ),
             action: () async {
@@ -130,8 +130,21 @@ class _InviteUserPageState extends State<InviteUserPage> {
     final res = await groupApi.getRegMagicLink();
 
     if (res.statusCode == 200) {
-      return res.data as String;
+      return _tempChangeInvitationLinkDomian(res.data as String);
     }
     return null;
+  }
+
+  /// Temp function to replace server default domain for invitation link.
+  /// Should be deleted after the issue resolves.
+  String _tempChangeInvitationLinkDomian(String originalDomain) {
+    const pattern = "http://1.2.3.4:4000";
+
+    if (originalDomain.startsWith(pattern)) {
+      originalDomain =
+          originalDomain.replaceFirst(pattern, App.app.chatServerM.fullUrl);
+    }
+
+    return originalDomain;
   }
 }

@@ -4,15 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 
 class ChatsDrawer extends StatefulWidget {
   const ChatsDrawer(
@@ -27,7 +24,7 @@ class ChatsDrawer extends StatefulWidget {
 }
 
 class _ChatsDrawerState extends State<ChatsDrawer> {
-  List<ValueNotifier<ServerSwitchData>> accountList = [];
+  List<ValueNotifier<ServerAccountData>> accountList = [];
 
   ValueNotifier<bool> isBusy = ValueNotifier(false);
 
@@ -109,7 +106,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                       return CupertinoButton(
                           padding: EdgeInsets.zero,
                           onPressed: () => _switchUser(accountData.value),
-                          child: ServerDrawerTile(
+                          child: ServerAccountTile(
                             accountData: accountData,
                             onLogoutTapped: _onLogoutTapped,
                           ));
@@ -143,7 +140,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
     Navigator.of(context).push(route);
   }
 
-  void _switchUser(ServerSwitchData accountData) async {
+  void _switchUser(ServerAccountData accountData) async {
     final status = await StatusMDao.dao.getStatus();
 
     if (status?.userDbId == accountData.userDbM.id) {
@@ -191,7 +188,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
         continue;
       }
 
-      accountList.add(ValueNotifier<ServerSwitchData>(ServerSwitchData(
+      accountList.add(ValueNotifier<ServerAccountData>(ServerAccountData(
           serverAvatarBytes: chatServer.logo,
           userAvatarBytes: userDb.avatarBytes,
           serverName: chatServer.properties.serverName,
@@ -224,7 +221,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
   }
 }
 
-class ServerSwitchData {
+class ServerAccountData {
   final Uint8List serverAvatarBytes;
   final Uint8List userAvatarBytes;
   final String serverName;
@@ -235,7 +232,7 @@ class ServerSwitchData {
 
   final UserDbM userDbM;
 
-  ServerSwitchData(
+  ServerAccountData(
       {required this.serverAvatarBytes,
       required this.userAvatarBytes,
       required this.serverName,
@@ -244,156 +241,4 @@ class ServerSwitchData {
       required this.userEmail,
       required this.selected,
       required this.userDbM});
-}
-
-class ServerDrawerTile extends StatefulWidget {
-  ValueNotifier<ServerSwitchData> accountData;
-  final VoidCallback onLogoutTapped;
-
-  ServerDrawerTile({required this.accountData, required this.onLogoutTapped});
-
-  @override
-  State<ServerDrawerTile> createState() => _ServerDrawerTileState();
-}
-
-class _ServerDrawerTileState extends State<ServerDrawerTile> {
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<ServerSwitchData>(
-        valueListenable: widget.accountData,
-        builder: (context, account, _) {
-          return Container(
-              color: account.selected ? AppColors.cyan100 : Colors.white,
-              padding: EdgeInsets.only(left: 16, right: 8, top: 8, bottom: 8),
-              child: Row(
-                children: [
-                  Flexible(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _buildAvatar(account.serverAvatarBytes,
-                            account.userAvatarBytes, account.username),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: _buildInfo(
-                              account.serverName,
-                              account.serverUrl,
-                              account.username,
-                              account.userEmail),
-                        ),
-                        SizedBox(width: 8),
-                      ],
-                    ),
-                  ),
-                  _buildMore()
-                ],
-              ));
-        });
-  }
-
-  Widget _buildAvatar(
-      Uint8List serverAvatarBytes, Uint8List userAvatarBytes, String username) {
-    final serverAvatar = CircleAvatar(
-        foregroundImage: MemoryImage(serverAvatarBytes),
-        backgroundColor: Colors.white,
-        radius: 24);
-    final userAvatar = UserAvatar(
-        avatarSize: AvatarSize.s36,
-        uid: -1,
-        name: username,
-        avatarBytes: userAvatarBytes);
-
-    return SizedBox(
-      height: 66,
-      width: 66,
-      child: Stack(children: [
-        Positioned(top: 0, left: 0, child: serverAvatar),
-        Positioned(right: 0, bottom: 0, child: userAvatar)
-      ]),
-    );
-  }
-
-  Widget _buildInfo(
-      String serverName, String serverUrl, String username, String userEmail) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(serverName,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.titleLarge),
-      Text(serverUrl,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.labelSmall),
-      Padding(
-          padding: EdgeInsets.only(left: 0, top: 4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(username,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.titleMedium),
-              Text(userEmail,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.labelSmall)
-            ],
-          ))
-    ]);
-  }
-
-  Widget _buildMore() {
-    return CupertinoButton(
-        padding: EdgeInsets.zero,
-        child: SizedBox(width: 32, height: 32, child: Icon(Icons.more_horiz)),
-        onPressed: () {
-          // logout
-          showCupertinoModalPopup(
-              context: context,
-              builder: (context) {
-                return CupertinoActionSheet(
-                  actions: [
-                    CupertinoActionSheetAction(
-                        onPressed: () {
-                          showAppAlert(
-                            context: context,
-                            title: "Log Out",
-                            content:
-                                "Are you sure to log out \"${widget.accountData.value.serverName}\"?",
-                            actions: [
-                              AppAlertDialogAction(
-                                  text: "Cancel",
-                                  action: () {
-                                    Navigator.of(context).pop();
-                                    Navigator.of(context).pop();
-                                  }),
-                            ],
-                            primaryAction: AppAlertDialogAction(
-                                text: "Log Out",
-                                action: () {
-                                  Navigator.of(context).pop();
-                                  Navigator.of(context).pop();
-                                  _onTapLogOut();
-                                },
-                                isDangerAction: true),
-                          );
-                        },
-                        child: Text(
-                          "Log Out",
-                          style: TextStyle(color: AppColors.systemRed),
-                        )),
-                  ],
-                  cancelButton: CupertinoActionSheetAction(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text("Cancel")),
-                );
-              });
-        });
-  }
-
-  Future<void> _onTapLogOut() async {
-    widget.onLogoutTapped();
-  }
 }

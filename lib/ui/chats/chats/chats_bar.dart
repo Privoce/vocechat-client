@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
@@ -312,9 +313,9 @@ class _ChatsBarState extends State<ChatsBar> {
   }
 
   Widget _buildStatus() {
-    // print("SSE: $_sseStatus");
-    // print("TOKEN: $_tokenStatus");
-    // print("TASK: $_taskStatus");
+    print("SSE: $_sseStatus");
+    print("TOKEN: $_tokenStatus");
+    print("TASK: $_taskStatus");
     if (_sseStatus == LoadingStatus.success &&
         _tokenStatus == TokenStatus.success &&
         _taskStatus == LoadingStatus.success) {
@@ -378,10 +379,18 @@ class _ChatsBarState extends State<ChatsBar> {
   }
 
   void _reLogin() async {
+    final userDb = App.app.userDb;
+    if (userDb == null) return;
+
+    final storage = FlutterSecureStorage();
+    final password = await storage.read(key: userDb.dbName);
+
     final route = PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
           chatServerM: App.app.chatServerM,
-          email: App.app.userDb!.userInfo.email),
+          email: App.app.userDb!.userInfo.email,
+          password: password,
+          isRelogin: true),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;

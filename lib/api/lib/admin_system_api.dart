@@ -53,7 +53,7 @@ class AdminSystemApi {
 
   Future<Response> uploadOrgLogo(Uint8List avatarBytes) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "image/png";
+    dio.options.headers["content-type"] = "image/png";
     dio.options.validateStatus = (status) {
       return [200, 413].contains(status);
     };

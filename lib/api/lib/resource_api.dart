@@ -117,7 +117,7 @@ class ResourceApi {
 
   Future<Response<String>> prepareFile(FilePrepareRequest req) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     final res = await dio.post("/file/prepare", data: req.toJson());
 
@@ -139,7 +139,7 @@ class ResourceApi {
   Future<Response<FileUploadResponse>> uploadFile(
       String fileId, Uint8List chunkData, bool chunkIsLast, String path) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "multipart/form-data";
+    dio.options.headers["content-type"] = "multipart/form-data";
 
     int maxChunkSize = 1024 * 1024;
 
@@ -219,7 +219,7 @@ class ResourceApi {
 
   Future<Response<String>> archive(List<int> midList) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     final res =
         await dio.post("/archive", data: json.encode({"mid_list": midList}));
@@ -291,7 +291,7 @@ class ResourceApi {
   Future<Response<OpenGraphicParseResponse>> getOpenGraphicParse(
       String url) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
     final res = await dio.get(
       "/open_graphic_parse?url=$url",
     );
