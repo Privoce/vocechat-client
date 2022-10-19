@@ -281,6 +281,7 @@ class AuthService {
                     .getUserAvatar(userInfo.uid))
                 .data ??
             Uint8List(0);
+    // App.app.chatServerM
 
     final chatServerId = App.app.chatServerM.id;
 

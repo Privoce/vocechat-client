@@ -16,7 +16,6 @@ import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
@@ -25,7 +24,6 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_drawer.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 
 class ServerPage extends StatefulWidget {
   // static const route = '/auth/server';
@@ -398,8 +396,6 @@ class _ServerPageState extends State<ServerPage> {
 
     final chatServerM = await _prepareChatServerM(data.serverUrl);
 
-    print(chatServerM?.properties == null);
-
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LoginPage(
               chatServerM: chatServerM!,
@@ -577,6 +573,8 @@ class _ServerPageState extends State<ServerPage> {
       await _showConnectionError();
       return null;
     }
+
+    App.app.chatServerM = chatServerM;
     return chatServerM;
   }
 
@@ -590,7 +588,6 @@ class _ServerPageState extends State<ServerPage> {
     // Set server in App singleton.
     final chatServerM = await _prepareChatServerM(url);
     if (chatServerM == null) return false;
-    App.app.chatServerM = chatServerM;
 
     _urlFocusNode.requestFocus();
 

@@ -313,9 +313,9 @@ class _ChatsBarState extends State<ChatsBar> {
   }
 
   Widget _buildStatus() {
-    print("SSE: $_sseStatus");
-    print("TOKEN: $_tokenStatus");
-    print("TASK: $_taskStatus");
+    // print("SSE: $_sseStatus");
+    // print("TOKEN: $_tokenStatus");
+    // print("TASK: $_taskStatus");
     if (_sseStatus == LoadingStatus.success &&
         _tokenStatus == TokenStatus.success &&
         _taskStatus == LoadingStatus.success) {
@@ -367,8 +367,6 @@ class _ChatsBarState extends State<ChatsBar> {
                       text: "OK",
                       action: (() async {
                         Navigator.of(context).pop();
-                        // await App.app.authService?.renewAuthToken();
-                        // Sse.sse.connect();
                       }))
                 ]);
           },
