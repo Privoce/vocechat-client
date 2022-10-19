@@ -24,6 +24,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_drawer.dart';
+import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 
 class ServerPage extends StatefulWidget {
   // static const route = '/auth/server';

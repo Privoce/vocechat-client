@@ -10,6 +10,7 @@ import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 
 class ChatsDrawer extends StatefulWidget {
   const ChatsDrawer(
@@ -219,26 +220,4 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
 
     return;
   }
-}
-
-class ServerAccountData {
-  final Uint8List serverAvatarBytes;
-  final Uint8List userAvatarBytes;
-  final String serverName;
-  final String serverUrl;
-  final String username;
-  final String userEmail;
-  final bool selected;
-
-  final UserDbM userDbM;
-
-  ServerAccountData(
-      {required this.serverAvatarBytes,
-      required this.userAvatarBytes,
-      required this.serverName,
-      required this.serverUrl,
-      required this.username,
-      required this.userEmail,
-      required this.selected,
-      required this.userDbM});
 }
