@@ -17,7 +17,7 @@ class MessageApi {
 
   Future<Response> edit(int mid, String msgStr) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = typeText;
+    dio.options.headers["content-type"] = typeText;
     final res = await dio.put("/$mid/edit",
         options: Options(responseType: ResponseType.bytes), data: msgStr);
 
@@ -67,9 +67,9 @@ class MessageApi {
       int mid, String msgStr, Map<String, dynamic>? properties) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
 
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
-    dio.options.headers["Content-Type"] = typeText;
+    dio.options.headers["content-type"] = typeText;
     final res = await dio.post("/$mid/reply", data: msgStr);
 
     var newRes = Response<int>(

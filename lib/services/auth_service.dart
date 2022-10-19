@@ -26,6 +26,7 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/sse.dart';
+import 'package:vocechat_client/services/status_service.dart';
 
 class AuthService {
   AuthService({required this.chatServerM}) {
@@ -159,17 +160,26 @@ class AuthService {
 
     if (pswd == null || pswd.isEmpty) return false;
 
-    String deviceToken = "";
+    return login(userdb.userInfo.email!, pswd, true, true);
+  }
 
+  Future<String> _getFirebaseDeviceToken() async {
+    String deviceToken = "";
     try {
       deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
     } catch (e) {
       App.logger.warning(e);
-      // TODO: alert firebase not working, no notification.
       deviceToken = "";
     }
+    return deviceToken;
+  }
 
-    String device = "";
+  Future<TokenLoginRequest> _preparePswdLoginRequest(
+      String email, String pswd) async {
+    final deviceToken = await _getFirebaseDeviceToken();
+
+    String device;
+
     if (Platform.isIOS) {
       device = "iOS";
     } else if (Platform.isAndroid) {
@@ -178,17 +188,20 @@ class AuthService {
       device = "Others";
     }
 
-    final credential = Credential(userdb.userInfo.email!, pswd, "password");
+    // final credential = Credential(
+    //     emailController.value.text, pswdController.value.text, "password");
+    final credential = Credential(email, pswd, "password");
 
     final req = TokenLoginRequest(
         device: device, credential: credential, deviceToken: deviceToken);
-
-    return login(req, true);
+    return req;
   }
 
-  Future<bool> login(TokenLoginRequest req, bool rememberPswd,
+  Future<bool> login(String email, String pswd, bool rememberPswd,
       [bool isReLogin = false]) async {
     final _tokenApi = TokenApi(chatServerM.fullUrl);
+
+    final req = await _preparePswdLoginRequest(email, pswd);
     final res = await _tokenApi.tokenLoginPost(req);
 
     String content = "";
@@ -240,7 +253,7 @@ class AuthService {
     if (res.statusCode == 200 && res.data != null) {
       final data = res.data!;
       await initServices(data, rememberPswd ? req.credential.password : null);
-
+      App.app.chatService.initSse();
       return true;
     }
 
@@ -268,6 +281,7 @@ class AuthService {
                     .getUserAvatar(userInfo.uid))
                 .data ??
             Uint8List(0);
+    // App.app.chatServerM
 
     final chatServerId = App.app.chatServerM.id;
 
@@ -318,6 +332,7 @@ class AuthService {
     await initCurrentDb(dbName);
 
     App.app.chatService = ChatService();
+    App.app.statusService = StatusService();
 
     return true;
   }

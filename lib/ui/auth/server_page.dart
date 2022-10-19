@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voce_widgets/voce_widgets.dart';
@@ -13,11 +14,16 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
+import 'package:vocechat_client/dao/org_dao/status.dart';
+import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/auth/server_account_tile.dart';
+import 'package:vocechat_client/ui/chats/chats/chats_drawer.dart';
 
 class ServerPage extends StatefulWidget {
   // static const route = '/auth/server';
@@ -60,6 +66,7 @@ class _ServerPageState extends State<ServerPage> {
 
   final ValueNotifier<bool> _isUrlValid = ValueNotifier(true);
   final ValueNotifier<bool> _showUrlWarning = ValueNotifier(false);
+  final ValueNotifier<bool> _pushPageBusy = ValueNotifier(false);
 
   @override
   void initState() {
@@ -235,7 +242,7 @@ class _ServerPageState extends State<ServerPage> {
                 height: 40,
                 borderRadius: _outerRadius,
                 maxLength: 32,
-                onSubmitted: (_) => _onUrlSubmit(),
+                onSubmitted: (_) => _onUrlSubmit(_urlController.text + "/api"),
                 keyboardType: TextInputType.url,
                 textInputAction: TextInputAction.go,
                 scrollPadding: EdgeInsets.only(bottom: 100),
@@ -291,93 +298,146 @@ class _ServerPageState extends State<ServerPage> {
       ),
       keepNormalWhenBusy: false,
       action: () async {
-        return await _onUrlSubmit();
+        return await _onUrlSubmit(_urlController.text + "/api");
       },
     );
   }
 
   Widget _buildHistoryList() {
-    return ValueListenableBuilder<List<ChatServerM>>(
-      valueListenable: _serverListNotifier,
-      builder: (_, serverList, __) {
-        if (serverList.isEmpty) {
-          return SizedBox.shrink();
+    return FutureBuilder<List<ServerAccountData>?>(
+      future: _getServerAccountHistory(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData &&
+            snapshot.data != null &&
+            snapshot.data!.isNotEmpty) {
+          final accountList = snapshot.data!;
+          return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.serverPageHistory,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(width: 8),
+                    ValueListenableBuilder<bool>(
+                        valueListenable: _pushPageBusy,
+                        builder: (context, busy, child) {
+                          if (busy) {
+                            return CupertinoActivityIndicator(
+                                color: Colors.black);
+                          }
+                          return SizedBox.shrink();
+                        })
+                  ],
+                ),
+                SizedBox(height: 10),
+                Container(
+                    clipBehavior: Clip.hardEdge,
+                    constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.4),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(_outerRadius)),
+                    child: ListView.separated(
+                      separatorBuilder: (context, index) {
+                        return const Divider();
+                      },
+                      shrinkWrap: true,
+                      itemCount: accountList.length,
+                      itemBuilder: (context, index) {
+                        final accountData = accountList[index];
+                        return Slidable(
+                          endActionPane: ActionPane(
+                              extentRatio: 0.3,
+                              motion: DrawerMotion(),
+                              children: [
+                                SlidableAction(
+                                  onPressed: (context) {
+                                    _onHistoryDeleted(accountData);
+                                  },
+                                  icon: AppIcons.delete,
+                                  label: "Delete",
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                )
+                              ]),
+                          child: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              child: ServerAccountTile(
+                                  accountData: ValueNotifier(accountData)),
+                              onPressed: (() =>
+                                  _serverAccountTileOnPressed(accountData))),
+                        );
+                      },
+                    ))
+              ]);
         }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context)!.serverPageHistory,
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            Container(
-              // constraints: BoxConstraints(maxHeight: 300),
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(_outerRadius)),
-              child: ListView.separated(
-                  separatorBuilder: (context, index) {
-                    return const Divider();
-                  },
-                  shrinkWrap: true,
-                  itemCount: serverList.length,
-                  itemBuilder: (context, index) {
-                    final item = serverList[index];
-                    String tls = 'http://';
-                    if (item.tls == 1) {
-                      tls = 'https://';
-                    }
-                    return Slidable(
-                      endActionPane: ActionPane(
-                        extentRatio: 0.3,
-                        motion: DrawerMotion(),
-                        children: [
-                          SlidableAction(
-                            onPressed: (context) {
-                              _onDeleteHistory(context, index);
-                            },
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            icon: Icons.delete,
-                            label: 'Delete',
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        dense: true,
-                        leading: item.logo.isNotEmpty
-                            ? SizedBox(
-                                height: 36,
-                                child: Image.memory(item.logo,
-                                    fit: BoxFit.contain))
-                            : Icon(Icons.desktop_mac),
-                        onTap: () async {
-                          await ChatServerDao.dao.updateUpdatedAt(
-                              item, DateTime.now().millisecondsSinceEpoch);
-                          _urlController.text = item.fullUrl;
-                        },
-                        title: Text(
-                          prepareServerTitle(item),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        subtitle: Text(
-                          "$tls${item.url}:${item.port}",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    );
-                  }),
-            ),
-          ],
-        );
+        return SizedBox.shrink();
       },
     );
+  }
+
+  void _onHistoryDeleted(ServerAccountData data) async {
+    await UserDbMDao.dao.remove(data.userDbM.id);
+    setState(() {});
+  }
+
+  void _serverAccountTileOnPressed(ServerAccountData data) async {
+    _pushPageBusy.value = true;
+
+    final dbName = data.userDbM.dbName;
+
+    if (dbName.isEmpty) return;
+
+    final storage = FlutterSecureStorage();
+    final password = await storage.read(key: dbName);
+
+    final chatServerM = await _prepareChatServerM(data.serverUrl);
+
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => LoginPage(
+              chatServerM: chatServerM!,
+              email: data.userEmail,
+              password: password,
+            )));
+
+    _pushPageBusy.value = false;
+  }
+
+  Future<List<ServerAccountData>?> _getServerAccountHistory() async {
+    List<ServerAccountData> serverAccountList = [];
+
+    final userDbList = await UserDbMDao.dao.getList();
+
+    final status = await StatusMDao.dao.getStatus();
+
+    if (userDbList == null || userDbList.isEmpty || status == null) return null;
+
+    for (final userDb in userDbList) {
+      final serverId = userDb.chatServerId;
+
+      final chatServer = await ChatServerDao.dao.getServerById(serverId);
+
+      if (chatServer == null) {
+        continue;
+      }
+
+      serverAccountList.add(ServerAccountData(
+          serverAvatarBytes: chatServer.logo,
+          userAvatarBytes: userDb.avatarBytes,
+          serverName: chatServer.properties.serverName,
+          serverUrl: chatServer.fullUrl,
+          username: userDb.userInfo.name,
+          userEmail: userDb.userInfo.email ?? "",
+          selected: false,
+          userDbM: userDb));
+    }
+
+    if (serverAccountList.isNotEmpty) return serverAccountList;
+
+    return null;
   }
 
   String prepareServerTitle(ChatServerM chatServerM) {
@@ -434,14 +494,7 @@ class _ServerPageState extends State<ServerPage> {
     }
   }
 
-  /// Called when forward (->) button is pressed.
-  ///
-  /// Server information will be saved into App object.
-  /// Only successful server visits will be saved.
-  Future<bool> _onUrlSubmit() async {
-    String url = _urlController.text + "/api";
-
-    // Update server record in database
+  Future<ChatServerM?> _prepareChatServerM(String url) async {
     ChatServerM chatServerM = ChatServerM();
     ServerStatusWithChatServerM s;
 
@@ -451,7 +504,7 @@ class _ServerPageState extends State<ServerPage> {
       s = await _checkServerAvailability(httpsUrl);
       if (s.status == ServerStatus.uninitialized) {
         await _showServerUninitializedError(s.chatServerM);
-        return false;
+        return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
@@ -460,27 +513,28 @@ class _ServerPageState extends State<ServerPage> {
         s = await _checkServerAvailability(httpUrl);
         if (s.status == ServerStatus.uninitialized) {
           await _showServerUninitializedError(s.chatServerM);
-          return false;
+          return null;
         } else if (s.status == ServerStatus.available) {
           chatServerM = s.chatServerM;
         } else if (s.status == ServerStatus.error) {
           await _showConnectionError();
-          return false;
+          return null;
         }
       }
     } else {
       s = await _checkServerAvailability(url);
       if (s.status == ServerStatus.uninitialized) {
         await _showServerUninitializedError(s.chatServerM);
-        return false;
+        return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
         await _showConnectionError();
-        return false;
+        return null;
       }
     }
 
+    // Update server record in database
     _urlController.text = chatServerM.fullUrl;
 
     try {
@@ -512,16 +566,28 @@ class _ServerPageState extends State<ServerPage> {
         await ChatServerDao.dao.addOrUpdate(chatServerM);
       } else {
         await _showConnectionError();
-        return false;
+        return null;
       }
     } catch (e) {
       App.logger.severe(e);
       await _showConnectionError();
-      return false;
+      return null;
     }
 
-    // Set server in App singleton.
     App.app.chatServerM = chatServerM;
+    return chatServerM;
+  }
+
+  /// Called when forward (->) button is pressed.
+  ///
+  /// Server information will be saved into App object.
+  /// Only successful server visits will be saved.
+  Future<bool> _onUrlSubmit(String url) async {
+    // String url = _urlController.text + "/api";
+
+    // Set server in App singleton.
+    final chatServerM = await _prepareChatServerM(url);
+    if (chatServerM == null) return false;
 
     _urlFocusNode.requestFocus();
 

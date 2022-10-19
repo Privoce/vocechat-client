@@ -17,11 +17,13 @@ class DioUtil {
 
   DioUtil.token({required this.baseUrl}) {
     _init();
-    _dio.options.headers["X-API-Key"] = App.app.userDb!.token;
+    _dio.options.headers["x-api-key"] = App.app.userDb!.token;
     _add401Handling();
   }
 
   void _init() {
+    // _dio.httpClientAdapter = Http2Adapter(ConnectionManager());
+    _dio.options.headers = {'referer': App.app.chatServerM.fullUrl};
     _dio.interceptors.add(RetryInterceptor(
         dio: _dio,
         options:
