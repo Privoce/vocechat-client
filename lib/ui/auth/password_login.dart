@@ -163,10 +163,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
         style: TextStyle(color: Colors.white),
       ),
       action: () async {
-        if (await _onLogin(
-            emailController.text, pswdController.text, widget.chatServer)) {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
+        if (await _onLogin()) {
           return true;
         } else {
           return false;
@@ -202,12 +199,10 @@ class _PasswordLoginState extends State<PasswordLogin> {
   /// The following will be done in sequence:
   /// 1. Save [LoginResponse] to user_db and in memory;
   /// 2. Update related db. Create a new if not exist.
-  Future<bool> _onLogin(
-      String email, String pswd, ChatServerM chatServerM) async {
-    // String pswd = "";
-    // Uint8List content = Utf8Encoder().convert(widget._pswdController.text);
-    // Digest digest = md5.convert(content);
-    // pswd = hex.encode(digest.bytes);
+  Future<bool> _onLogin() async {
+    final email = emailController.text;
+    final pswd = pswdController.text;
+    final chatServerM = widget.chatServer;
     try {
       App.app.authService = AuthService(chatServerM: chatServerM);
 
@@ -219,6 +214,9 @@ class _PasswordLoginState extends State<PasswordLogin> {
       App.logger.severe(e);
       return false;
     }
+
+    Navigator.of(context)
+        .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
     return true;
   }
 }
