@@ -7,6 +7,20 @@ import Flutter
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+      let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
+      let clipboardChannel = FlutterMethodChannel(name: "clipboard/image",
+                                                  binaryMessenger: controller.binaryMessenger)
+      clipboardChannel.setMethodCallHandler({
+                (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+                // Note: this method is invoked on the UI thread.
+                print("setMethodCallHandler")
+                guard call.method == "getClipboardImage" else {
+                  result(FlutterMethodNotImplemented)
+                  return
+                }
+                self.getClipboardImage(result: result)
+              })
+      
     GeneratedPluginRegistrant.register(with: self)
     if #available(iOS 10.0, *) {
         application.applicationIconBadgeNumber = 0 // For Clear Badge Counts
@@ -15,5 +29,18 @@ import Flutter
         center.removeAllPendingNotificationRequests()
     }
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+    
+  private func getClipboardImage(result: FlutterResult) {
+        
+    let image = UIPasteboard.general.image;
+    
+    if (image == nil) {
+        print("no image in clipboard")
+        result(nil)
+    }else {
+        let data = image!.jpegData(compressionQuality: 1)
+        result(data)
+    }
   }
 }

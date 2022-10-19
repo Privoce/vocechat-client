@@ -18,7 +18,8 @@ class AppAlertDialogAction {
 Future<T?> showAppAlert<T>(
     {required BuildContext context,
     required String title,
-    required String content,
+    String? content,
+    Widget? contentWidget,
     AppAlertDialogAction? primaryAction,
     required List<AppAlertDialogAction> actions}) {
   List<Widget> _actions = [];
@@ -57,19 +58,21 @@ Future<T?> showAppAlert<T>(
     _actions.add(pa);
   }
 
+  final cont = content == null ? contentWidget : Text(content);
+
   return showDialog(
       context: context,
       builder: (context) {
         if (Platform.isIOS) {
           return CupertinoAlertDialog(
             title: Text(title),
-            content: Text(content),
+            content: cont,
             actions: _actions,
           );
         } else {
           return AlertDialog(
             title: Text(title),
-            content: Text(content),
+            content: cont,
             actions: _actions,
           );
         }
