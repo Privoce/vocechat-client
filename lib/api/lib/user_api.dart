@@ -53,9 +53,9 @@ class UserApi {
 
   Future<Response<int>> sendTextMsg(int dmUid, String msg, String cid) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode({'cid': cid})));
-    dio.options.headers["Content-Type"] = typeText;
+    dio.options.headers["content-type"] = typeText;
     final res = await dio.post("/$dmUid/send", data: msg);
 
     var newRes = Response<int>(
@@ -77,9 +77,9 @@ class UserApi {
   Future<Response<int>> sendMarkdownMsg(
       int dmUid, String msg, String cid) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode({'cid': cid})));
-    dio.options.headers["Content-Type"] = typeText;
+    dio.options.headers["content-type"] = typeText;
     final res = await dio.post("/$dmUid/send", data: msg);
 
     var newRes = Response<int>(
@@ -104,9 +104,9 @@ class UserApi {
 
     Map<String, dynamic> properties = {'cid': cid};
 
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
-    dio.options.headers["Content-Type"] = typeArchive;
+    dio.options.headers["content-type"] = typeArchive;
 
     final res = await dio.post("/$dmUid/send", data: archiveId);
 
@@ -134,9 +134,9 @@ class UserApi {
     if (width != null && height != null) {
       properties.addAll({'width': width, 'height': height});
     }
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
-    dio.options.headers["Content-Type"] = typeFile;
+    dio.options.headers["content-type"] = typeFile;
 
     final data = {'path': path};
 
@@ -181,7 +181,7 @@ class UserApi {
 
   Future<Response> updateReadIndex(String req) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     return dio.post("/read-index", data: req);
   }
@@ -194,7 +194,7 @@ class UserApi {
     dio.options.connectTimeout = 5000; //5s
     dio.options.receiveTimeout = 10000;
     dio.options.headers["X-API-Key"] = App.app.userDb!.token;
-    dio.options.headers["Content-Type"] = "image/png";
+    dio.options.headers["content-type"] = "image/png";
     dio.options.validateStatus = (status) {
       return [200, 413].contains(status);
     };
@@ -221,14 +221,14 @@ class UserApi {
 
   Future<Response> mute(String req) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     return dio.post("/mute", data: req);
   }
 
   Future<Response<bool>> checkEmail(String email) async {
     final dio = DioUtil(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     return dio.get("/check_email?email=$email");
   }

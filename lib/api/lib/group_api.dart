@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/group/group_create_request.dart';
 import 'package:vocechat_client/api/models/group/group_update_request.dart';
@@ -10,8 +12,9 @@ import 'package:vocechat_client/app_consts.dart';
 
 class GroupApi {
   late final String _baseUrl;
+  final String serverUrl;
 
-  GroupApi(String serverUrl) {
+  GroupApi(this.serverUrl) {
     _baseUrl = serverUrl + "/api/group";
   }
 
@@ -23,14 +26,14 @@ class GroupApi {
 
   Future<Response> addMembers(int gid, List<int> adds) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     return await dio.post("/$gid/members/add", data: json.encode(adds));
   }
 
   Future<Response> removeMembers(int gid, List<int> removes) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     return await dio.post("/$gid/members/remove", data: json.encode(removes));
   }
@@ -45,7 +48,7 @@ class GroupApi {
     // if pinned == 0, it has not pinned before. Thus needs to be pinned.
     String pinAction = toPin ? 'pin' : 'unpin';
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     return await dio.post("/$gid/$pinAction", data: json.encode({'mid': mid}));
   }
@@ -55,9 +58,9 @@ class GroupApi {
       {ProgressCallback? onSendProgress,
       ProgressCallback? onReceiveProgress}) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
-    dio.options.headers["Content-Type"] = typeText;
+    dio.options.headers["content-type"] = typeText;
     dio.options.receiveTimeout = 10000;
 
     final res = await dio.post("/$gid/send", data: msg);
@@ -80,9 +83,9 @@ class GroupApi {
 
   Future<Response<int>> sendMarkdownMsg(int gid, String msg, String cid) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode({'cid': cid})));
-    dio.options.headers["Content-Type"] = typeText;
+    dio.options.headers["content-type"] = typeText;
     final res = await dio.post("/$gid/send", data: msg);
 
     var newRes = Response<int>(
@@ -107,9 +110,9 @@ class GroupApi {
 
     Map<String, dynamic> properties = {'cid': cid};
 
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
-    dio.options.headers["Content-Type"] = typeArchive;
+    dio.options.headers["content-type"] = typeArchive;
 
     final res = await dio.post("/$gid/send", data: archiveId);
 
@@ -137,9 +140,9 @@ class GroupApi {
     if (width != null && height != null) {
       properties.addAll({'width': width, 'height': height});
     }
-    dio.options.headers["X-Properties"] =
+    dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
-    dio.options.headers["Content-Type"] = typeFile;
+    dio.options.headers["content-type"] = typeFile;
 
     final data = {'path': path};
 
@@ -173,7 +176,7 @@ class GroupApi {
   Future<Response<String>> uploadGroupAvatar(
       int gid, Uint8List avatarBytes) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "image/png";
+    dio.options.headers["content-type"] = "image/png";
 
     return dio.post(
       "/$gid/avatar",
@@ -225,6 +228,58 @@ class GroupApi {
       final str = paramList.join("&");
       url += "?$str";
     }
+
+    var uri = Uri.parse(_baseUrl + url);
+    dio.options.headers["Authority"] = uri.authority + ":${uri.port}";
+    dio.options.headers["Host"] = uri.host;
+
+    // print(dio.options.headers);
+
+    /*
+
+    var transport = ClientTransportConnection.viaSocket(
+      await SecureSocket.connect(
+        uri.host,
+        uri.port,
+        supportedProtocols: ['h2'],
+      ),
+    );
+
+    var stream = transport.makeRequest(
+      [
+        Header.ascii(':method', 'GET'),
+        Header.ascii(':path', uri.path),
+        Header.ascii(':scheme', uri.scheme),
+        Header.ascii(':authority', uri.authority),
+        // Header.ascii('host', uri.host),
+        Header.ascii('x-api-key', App.app.userDb!.token),
+      ],
+      endStream: true,
+    );
+
+    print([
+      Header.ascii(':method', 'GET'),
+      Header.ascii(':path', uri.path),
+      Header.ascii(':scheme', uri.scheme),
+      Header.ascii(':authority', uri.host),
+      Header.ascii('host', uri.host),
+      // Header.ascii('x-api-key', App.app.userDb!.token),
+    ].map((e) => [utf8.decode(e.name), utf8.decode(e.value)]));
+
+    await for (var message in stream.incomingMessages) {
+      if (message is HeadersStreamMessage) {
+        for (var header in message.headers) {
+          var name = utf8.decode(header.name);
+          var value = utf8.decode(header.value);
+          print('Header: $name: $value');
+        }
+      } else if (message is DataStreamMessage) {
+        // Use [message.bytes] (but respect 'content-encoding' header)
+        print(utf8.decode(message.bytes));
+      }
+    }
+    await transport.finish();
+    */
 
     return dio.get(url);
   }

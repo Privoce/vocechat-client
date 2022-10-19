@@ -129,12 +129,22 @@ class _InviteUserPageState extends State<InviteUserPage> {
     final groupApi = GroupApi(App.app.chatServerM.fullUrl);
     final res = await groupApi.getRegMagicLink();
 
-    print("here $res");
-
     if (res.statusCode == 200) {
-      print(res.data);
-      return res.data as String;
+      return _tempChangeInvitationLinkDomian(res.data as String);
     }
     return null;
+  }
+
+  /// Temp function to replace server default domain for invitation link.
+  /// Should be deleted after the issue resolves.
+  String _tempChangeInvitationLinkDomian(String originalDomain) {
+    const pattern = "http://1.2.3.4:4000";
+
+    if (originalDomain.startsWith(pattern)) {
+      originalDomain =
+          originalDomain.replaceFirst(pattern, App.app.chatServerM.fullUrl);
+    }
+
+    return originalDomain;
   }
 }

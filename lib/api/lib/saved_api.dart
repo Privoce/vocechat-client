@@ -18,7 +18,7 @@ class SavedApi {
 
   Future<Response<SavedResponse>> createSaved(List<int> midList) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     dio.options.validateStatus = (status) {
       return [200, 429].contains(status);
@@ -43,7 +43,7 @@ class SavedApi {
 
   Future<Response<List<dynamic>>> listSaved() async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    dio.options.headers["Content-Type"] = "application/json";
+    dio.options.headers["content-type"] = "application/json";
 
     return dio.get("");
   }

@@ -23,7 +23,7 @@ class FileUploader {
     _dio.options.connectTimeout = 5000; //5s
     // _dio.options.receiveTimeout = 10000;
     _dio.options.headers["accept"] = "application/json";
-    _dio.options.headers["Content-Type"] = "multipart/form-data";
+    _dio.options.headers["content-type"] = "multipart/form-data";
     _dio.options.headers["X-API-Key"] = App.app.userDb!.token;
     _fileSize = fileBytes.length;
     _maxChunkSize = min(_fileSize, 1024 * 1024);

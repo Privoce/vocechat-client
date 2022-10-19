@@ -18,6 +18,7 @@ import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -349,12 +350,28 @@ class _ServerPageState extends State<ServerPage> {
                       itemCount: accountList.length,
                       itemBuilder: (context, index) {
                         final accountData = accountList[index];
-                        return CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            child: ServerAccountTile(
-                                accountData: ValueNotifier(accountData)),
-                            onPressed: (() =>
-                                _serverAccountTileOnPressed(accountData)));
+                        return Slidable(
+                          endActionPane: ActionPane(
+                              extentRatio: 0.3,
+                              motion: DrawerMotion(),
+                              children: [
+                                SlidableAction(
+                                  onPressed: (context) {
+                                    _onHistoryDeleted(accountData);
+                                  },
+                                  icon: AppIcons.delete,
+                                  label: "Delete",
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                )
+                              ]),
+                          child: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              child: ServerAccountTile(
+                                  accountData: ValueNotifier(accountData)),
+                              onPressed: (() =>
+                                  _serverAccountTileOnPressed(accountData))),
+                        );
                       },
                     ))
               ]);
@@ -363,6 +380,8 @@ class _ServerPageState extends State<ServerPage> {
       },
     );
   }
+
+  void _onHistoryDeleted(ServerAccountData data) async {}
 
   void _serverAccountTileOnPressed(ServerAccountData data) async {
     _pushPageBusy.value = true;
@@ -382,6 +401,10 @@ class _ServerPageState extends State<ServerPage> {
         chatServerM = ChatServerM();
         chatServerM.setByUrl(data.serverUrl);
       }
+
+      // Navigator.of(context).push(MaterialPageRoute(
+      //     builder: (context) =>
+      //         LoginPage(chatServerM: chatServerM!, email: data.userEmail)));
 
       App.app.authService = AuthService(chatServerM: chatServerM);
 
