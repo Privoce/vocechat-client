@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:universal_html/html.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';

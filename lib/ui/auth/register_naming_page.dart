@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/user/register_request.dart';
 import 'package:vocechat_client/app.dart';
@@ -19,8 +20,9 @@ class RegisterNamingPage extends StatefulWidget {
   late ChatServerM _chatServer;
 
   RegisterRequest req;
+  final bool rememberMe;
 
-  RegisterNamingPage(this.req, {Key? key}) : super(key: key) {
+  RegisterNamingPage(this.req, this.rememberMe, {Key? key}) : super(key: key) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
@@ -254,8 +256,8 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       final res = await userApi.register(widget.req);
       if (res.statusCode == 200 && res.data != null) {
         final registerResponse = res.data!;
-        await App.app.authService
-            ?.initServices(registerResponse, false, widget.req.password);
+        await App.app.authService?.initServices(
+            registerResponse, widget.rememberMe, widget.req.password);
         Navigator.of(context)
             .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
         App.app.chatService.initSse();

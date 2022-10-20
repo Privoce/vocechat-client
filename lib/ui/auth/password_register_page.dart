@@ -41,6 +41,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
   final TextEditingController _pswdController = TextEditingController();
   final TextEditingController _confirmPswdController = TextEditingController();
 
+  bool rememberMe = true;
+
   final double cornerRadius = 10.0;
 
   bool isValidEmail = false;
@@ -249,6 +251,20 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                 },
               ),
             )),
+        SizedBox(
+            height: 24,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Remember me", style: TextStyle(fontSize: 16)),
+                Spacer(),
+                CupertinoSwitch(
+                    value: rememberMe,
+                    onChanged: (value) => setState(() {
+                          rememberMe = value;
+                        }))
+              ],
+            )),
       ],
     );
   }
@@ -282,7 +298,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
         final registerReq =
             RegisterRequest(email: email, password: _pswdController.text);
         Navigator.of(context).push(MaterialPageRoute(
-            builder: ((context) => RegisterNamingPage(registerReq))));
+            builder: ((context) =>
+                RegisterNamingPage(registerReq, rememberMe))));
 
         return true;
       } else {
