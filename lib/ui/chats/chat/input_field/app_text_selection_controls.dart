@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -60,29 +63,34 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
 
   @override
   Future<void> handlePaste(TextSelectionDelegate delegate) async {
-    try {
-      final image = await _getClipboardImage();
-      if (image != null) {
-        _pasteImage(image);
-      } else {
-        final TextEditingValue value = delegate
-            .textEditingValue; // Snapshot the input before using `await`.
-        final ClipboardData? data =
-            await Clipboard.getData(Clipboard.kTextPlain);
+    if (Platform.isIOS) {
+      try {
+        final image = await _getClipboardImage();
+        if (image != null) {
+          _pasteImage(image);
+        } else {
+          final TextEditingValue value = delegate
+              .textEditingValue; // Snapshot the input before using `await`.
+          final ClipboardData? data =
+              await Clipboard.getData(Clipboard.kTextPlain);
 
-        if (data != null) {
-          final updatedValue = TextEditingValue(
-              text: value.selection.textBefore(value.text) + (data.text ?? ""),
-              selection: TextSelection.collapsed(
-                  offset: value.selection.start + (data.text?.length ?? 0)));
-          delegate.userUpdateTextEditingValue(
-              updatedValue, SelectionChangedCause.tap);
+          if (data != null) {
+            final updatedValue = TextEditingValue(
+                text:
+                    value.selection.textBefore(value.text) + (data.text ?? ""),
+                selection: TextSelection.collapsed(
+                    offset: value.selection.start + (data.text?.length ?? 0)));
+            delegate.userUpdateTextEditingValue(
+                updatedValue, SelectionChangedCause.tap);
+          }
         }
+        delegate.bringIntoView(delegate.textEditingValue.selection.extent);
+        delegate.hideToolbar();
+      } catch (e) {
+        App.logger.severe(e);
       }
-      delegate.bringIntoView(delegate.textEditingValue.selection.extent);
-      delegate.hideToolbar();
-    } catch (e) {
-      App.logger.severe(e);
+    } else if (Platform.isAndroid) {
+      return super.handlePaste(delegate);
     }
   }
 
