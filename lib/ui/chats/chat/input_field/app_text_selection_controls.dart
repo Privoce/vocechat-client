@@ -1,8 +1,5 @@
-import 'dart:io';
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
@@ -10,7 +7,6 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/send_service.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble.dart';
 
 class AppTextSelectionControls extends CupertinoTextSelectionControls {
   static const channelName = 'clipboard/image';
@@ -18,8 +14,46 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
   int? uid;
   int? gid;
 
+  static const double _kToolbarContentDistanceBelow = 10.0;
+  static const double _kToolbarContentDistance = 8.0;
+
   // Function(ImageProvider) callback;
   AppTextSelectionControls();
+
+  @override
+  bool canPaste(TextSelectionDelegate delegate) {
+    return delegate.pasteEnabled;
+  }
+
+  @override
+  Widget buildToolbar(
+    BuildContext context,
+    Rect globalEditableRegion,
+    double textLineHeight,
+    Offset selectionMidpoint,
+    List<TextSelectionPoint> endpoints,
+    TextSelectionDelegate delegate,
+    ClipboardStatusNotifier? clipboardStatus,
+    Offset? lastSecondaryTapDownPosition,
+  ) {
+    clipboardStatus?.update();
+    return FutureBuilder<Uint8List?>(
+        future: _getClipboardImage(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            clipboardStatus?.value = ClipboardStatus.pasteable;
+          }
+          return super.buildToolbar(
+              context,
+              globalEditableRegion,
+              textLineHeight,
+              selectionMidpoint,
+              endpoints,
+              delegate,
+              clipboardStatus,
+              lastSecondaryTapDownPosition);
+        });
+  }
 
   @override
   Future<void> handlePaste(TextSelectionDelegate delegate) async {
@@ -79,6 +113,8 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
               Navigator.of(context).pop();
             }));
   }
+
+  // Future<bool>
 
   Future<Uint8List?> _getClipboardImage() async {
     try {

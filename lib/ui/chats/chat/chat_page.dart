@@ -1413,7 +1413,7 @@ class _ChatPageState extends State<ChatPage> {
     final groupApi = GroupApi(App.app.chatServerM.fullUrl);
     final res = await groupApi.getHistory(gid, minMid);
 
-    if (res.data == null) return;
+    if (res.statusCode != 200 || res.data == null) return;
 
     for (var each in res.data) {
       App.app.chatService.handleHistoryChatMsg(each);
