@@ -36,13 +36,16 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
     ClipboardStatusNotifier? clipboardStatus,
     Offset? lastSecondaryTapDownPosition,
   ) {
-    clipboardStatus?.update();
+    final notifier = clipboardStatus != null
+        ? ClipboardStatusNotifier(value: clipboardStatus.value)
+        : null;
     return FutureBuilder<Uint8List?>(
         future: _getClipboardImage(),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-            clipboardStatus?.value = ClipboardStatus.pasteable;
+            notifier?.value = ClipboardStatus.pasteable;
           }
+
           return super.buildToolbar(
               context,
               globalEditableRegion,
@@ -50,7 +53,7 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
               selectionMidpoint,
               endpoints,
               delegate,
-              clipboardStatus,
+              notifier,
               lastSecondaryTapDownPosition);
         });
   }
