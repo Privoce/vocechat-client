@@ -25,8 +25,8 @@ class MainActivity : FlutterFragmentActivity() {
     private val CHANNEL = "clipboard/image"
 
 
-    override fun configureFlutterEngdine(@NonNull flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
+    // override fun configureFlutterEngdine(@NonNull flutterEngine: FlutterEngine) {
+    //     super.configureFlutterEngine(flutterEngine)
         // MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
         //     if (call.method == "getBatteryLevel") {
         //         val batteryLevel = getBatteryLevel()
@@ -40,7 +40,7 @@ class MainActivity : FlutterFragmentActivity() {
         //         result.notImplemented()
         //     }
         // }
-    }
+    // }
 
     // private fun getBatteryLevel(): Int {
     //     val batteryLevel: Int

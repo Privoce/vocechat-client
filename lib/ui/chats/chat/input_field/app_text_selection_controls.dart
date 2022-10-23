@@ -17,10 +17,6 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
   int? uid;
   int? gid;
 
-  static const double _kToolbarContentDistanceBelow = 10.0;
-  static const double _kToolbarContentDistance = 8.0;
-
-  // Function(ImageProvider) callback;
   AppTextSelectionControls();
 
   @override

@@ -163,6 +163,9 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    for (final each in _uiMsgList) {
+      print(each.chatMsgM.values);
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: ChatBar(
@@ -533,18 +536,11 @@ class _ChatPageState extends State<ChatPage> {
         break;
     }
 
-    sortUiMsgList();
-
     _uiMsgList.sort((a, b) => b.chatMsgM.mid.compareTo(a.chatMsgM.mid));
 
     if (mounted) {
       setState(() {});
     }
-  }
-
-  void sortUiMsgList() {
-    // sort success messages by mid (from server);
-    // sort remaining local unsuccessful messages by timestamps.
   }
 
   Future<void> _onReaction(ReactionTypes type, int mid,
@@ -965,13 +961,14 @@ class _ChatPageState extends State<ChatPage> {
         itemCount: _uiMsgList.length + 1,
         itemBuilder: (context, index) {
           // If reaches very top, show channel start widget.
-          if (index == widget.msgCount) {
-            if (widget._isGroup) {
-              return ChannelStart(widget.groupInfoNotifier!);
-            } else {
-              return SizedBox.shrink();
-            }
-          } else if (index == _uiMsgList.length) {
+          // if (index == widget.msgCount) {
+          //   if (widget._isGroup) {
+          //     return ChannelStart(widget.groupInfoNotifier!);
+          //   } else {
+          //     return SizedBox.shrink();
+          //   }
+          // } else
+          if (index == _uiMsgList.length) {
             if (_isLoadingHistory) {
               return SizedBox(
                   height: 20,
@@ -982,6 +979,7 @@ class _ChatPageState extends State<ChatPage> {
             }
           } else {
             UiMsg uiMsg = _uiMsgList[index];
+
             final userInfoM =
                 _userInfoMMap[uiMsg.chatMsgM.fromUid] ?? UserInfoM.deleted();
             final isSelf = userInfoM.uid == App.app.userDb!.uid;
