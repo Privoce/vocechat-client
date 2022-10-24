@@ -13,6 +13,7 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
+import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
@@ -163,9 +164,6 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    for (final each in _uiMsgList) {
-      print(each.chatMsgM.values);
-    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: ChatBar(
@@ -1184,14 +1182,14 @@ class _ChatPageState extends State<ChatPage> {
     if (msgStatus == MsgSendStatus.success) {
       status = MsgSendStatus.success;
     } else {
-      status = SendService.singleton.isWaitingOrExecuting(localMid)
+      status = SendTaskQueue.singleton.isWaitingOrExecuting(localMid)
           ? MsgSendStatus.sending
           : msgStatus;
     }
 
     if (uiMsg.chatMsgM.detailContentType == typeFile) {
       if (status == MsgSendStatus.sending) {
-        final task = SendService.singleton.getTask(uiMsg.chatMsgM.localMid);
+        final task = SendTaskQueue.singleton.getTask(uiMsg.chatMsgM.localMid);
         if (task != null && task.progress != null) {
           return ValueListenableBuilder<double>(
             valueListenable: task.progress!,
@@ -1441,6 +1439,7 @@ class _ChatPageState extends State<ChatPage> {
             gid: widget.groupInfoNotifier?.value.gid,
             uid: widget.userInfoNotifier?.value.uid,
             targetMid: targetMid);
+        _sendTypeNotifier.value = SendType.normal;
         break;
       case SendType.file:
         // msg here is path.
