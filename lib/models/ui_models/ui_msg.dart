@@ -6,7 +6,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/services/send_service.dart';
+import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
 
 class UiMsg {
   ChatMsgM chatMsgM;
@@ -26,8 +26,9 @@ class UiMsg {
       this.repliedMsgM,
       this.repliedUserInfoM,
       this.repliedThumbFile}) {
-    status.value = SendService.singleton.isWaitingOrExecuting(chatMsgM.localMid)
-        ? MsgSendStatus.sending
-        : getMsgSendStatus(chatMsgM.status);
+    status.value =
+        SendTaskQueue.singleton.isWaitingOrExecuting(chatMsgM.localMid)
+            ? MsgSendStatus.sending
+            : getMsgSendStatus(chatMsgM.status);
   }
 }
