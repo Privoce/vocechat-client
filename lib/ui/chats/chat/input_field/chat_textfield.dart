@@ -580,9 +580,6 @@ class _ChatTextFieldState extends State<ChatTextField> {
 
     if (msg.trim().isNotEmpty) {
       widget.mentionsKey.currentState!.controller?.clear();
-
-      // onSend method passed through following:
-      // chat_page.dart -> chats_page.dart -> chat_service.dart
       widget.sendText(msg, SendType.normal);
     }
   }

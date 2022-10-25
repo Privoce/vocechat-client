@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -26,6 +25,7 @@ import 'package:path/path.dart' as p;
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
+import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
 
 typedef MessageSendFunction = Future<bool> Function(
     String localMid, String msg, SendType type,
@@ -37,99 +37,38 @@ class SendService {
   SendService._singleton();
   static final SendService singleton = SendService._singleton();
 
-  Queue<SendTask> sendTaskQueue = Queue();
-  bool isProcessing = false;
-
-  void delete(SendTask task) {
-    // for deleting behaviour before sending process succeeds.
-    sendTaskQueue.removeWhere((element) => element.localMid == task.localMid);
-  }
+  // void delete(SendTask task) {
+  //   // for deleting behaviour before sending process succeeds.
+  //   sendTaskQueue.removeWhere((element) => element.localMid == task.localMid);
+  // }
 
   void sendMessage(String localMid, String msg, SendType type,
       {int? gid, int? uid, int? targetMid, Uint8List? blob}) async {
-    if (sendTaskQueue.map((e) => e.localMid).contains(localMid)) return;
-    Future<bool> function;
-    ValueNotifier<double> _progress = ValueNotifier(0);
+    // TODO: change
+    // if (sendTaskQueue.map((e) => e.localMid).contains(localMid)) return;
 
     switch (type) {
       case SendType.normal:
-        function = SendText().sendMessage(localMid, msg, type,
+        SendText().sendMessage(localMid, msg, type,
             gid: gid, uid: uid, targetMid: targetMid);
         break;
       case SendType.edit:
-        function = SendEdit().sendMessage(localMid, msg, type,
+        SendEdit().sendMessage(localMid, msg, type,
             gid: gid, uid: uid, targetMid: targetMid);
         break;
       case SendType.reply:
-        function = SendReply().sendMessage(localMid, msg, type,
+        SendReply().sendMessage(localMid, msg, type,
             gid: gid, uid: uid, targetMid: targetMid);
         break;
       case SendType.file:
-        function = SendFile().sendMessage(localMid, msg, type,
-            gid: gid,
-            uid: uid,
-            targetMid: targetMid,
-            blob: blob, progress: (progress) {
-          _progress.value = progress;
-        });
+        SendFile().sendMessage(localMid, msg, type,
+            gid: gid, uid: uid, targetMid: targetMid, blob: blob);
         break;
       default:
-        function = SendText().sendMessage(localMid, msg, type,
+        SendText().sendMessage(localMid, msg, type,
             gid: gid, uid: uid, targetMid: targetMid);
     }
-
-    SendTask task = SendTask(localMid: localMid, sendTask: function);
-    task.progress = _progress;
-
-    sendTaskQueue.add(task);
-
-    _process();
   }
-
-  Future _process() async {
-    if (!isProcessing) {
-      isProcessing = true;
-
-      await Future.doWhile(() async {
-        SendTask topTask = sendTaskQueue.removeFirst();
-        sendTaskQueue.addFirst(topTask..status.value = MsgSendStatus.sending);
-        try {
-          await topTask.sendTask;
-        } catch (e) {
-          App.logger.severe(e);
-        }
-        sendTaskQueue.removeFirst();
-
-        return sendTaskQueue.isNotEmpty;
-      });
-
-      isProcessing = false;
-    }
-  }
-
-  SendTask? getTask(String localMid) {
-    try {
-      return sendTaskQueue
-          .firstWhere((element) => element.localMid == localMid);
-    } catch (e) {
-      // App.logger.warning(e);
-      return null;
-    }
-  }
-
-  bool isWaitingOrExecuting(String localMid) {
-    return sendTaskQueue.map((e) => e.localMid).contains(localMid);
-  }
-}
-
-class SendTask {
-  final String localMid;
-  final Future<bool> sendTask;
-  ValueNotifier<MsgSendStatus> status =
-      ValueNotifier(MsgSendStatus.readyToSend);
-  ValueNotifier<double>? progress = ValueNotifier(0);
-
-  SendTask({required this.localMid, required this.sendTask});
 }
 
 abstract class AbstractSend {
@@ -196,9 +135,14 @@ class SendText implements AbstractSend {
             }));
 
     // Send to server.
+    return _apiSendGroupText(message, localMid, gid, msg, detail.properties);
+  }
+
+  Future<bool> _apiSendGroupText(ChatMsg message, String localMid, int gid,
+      String msg, Map<String, dynamic>? properties) async {
     GroupApi api = GroupApi(App.app.chatServerM.fullUrl);
     try {
-      final res = await api.sendTextMsg(gid, msg, detail.properties);
+      final res = await api.sendTextMsg(gid, msg, properties);
       if (res.statusCode == 200 && res.data != null) {
         final mid = res.data!;
 
@@ -223,7 +167,6 @@ class SendText implements AbstractSend {
       App.app.chatService.fireMsg(msgM, localMid, null);
       App.app.chatService.fireSnippet(msgM);
     }
-
     return false;
   }
 
@@ -248,6 +191,12 @@ class SendText implements AbstractSend {
             }));
 
     // Send to server.
+    return _apiSendUserText(message, localMid, uid, msg, detail.properties);
+  }
+
+  Future<bool> _apiSendUserText(ChatMsg message, String localMid, int uid,
+      String msg, Map<String, dynamic>? properties) async {
+    // Send to server.
     UserApi api = UserApi(App.app.chatServerM.fullUrl);
     try {
       final res = await api.sendTextMsg(uid, msg, localMid);
@@ -255,12 +204,13 @@ class SendText implements AbstractSend {
         final mid = res.data!;
 
         message.mid = mid;
-        chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
+        final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
         App.app.chatService.taskQueue
-            .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-                  App.app.chatService.fireMsg(chatMsgM, localMid, null);
-                  App.app.chatService.fireSnippet(chatMsgM);
+            .add(() => ChatMsgDao().addOrUpdate(msgM).then((value) {
+                  App.app.chatService.fireMsg(msgM, localMid, null);
+                  App.app.chatService.fireSnippet(msgM);
                 }));
+
         return true;
       } else {
         App.logger.severe(res.statusCode);
@@ -274,7 +224,6 @@ class SendText implements AbstractSend {
       App.app.chatService.fireMsg(msgM, localMid, null);
       App.app.chatService.fireSnippet(msgM);
     }
-
     return false;
   }
 }
@@ -569,6 +518,29 @@ class SendFile implements AbstractSend {
       App.app.chatService.fireSnippet(chatMsgM);
     }
 
+    ValueNotifier<double> _progress = ValueNotifier(0);
+    final task = SendTask(
+        localMid: localMid,
+        sendTask: () => _apiSendFile(contentType, filename, message, chatMsgM,
+                fileBytes, localMid, file, uid, gid, (progress) {
+              _progress.value = progress;
+            }));
+    task.progress = _progress;
+    SendTaskQueue.singleton.addTask(task);
+    return true;
+  }
+
+  Future<bool> _apiSendFile(
+      String contentType,
+      String filename,
+      ChatMsg message,
+      ChatMsgM chatMsgM,
+      Uint8List fileBytes,
+      String localMid,
+      File file,
+      int? uid,
+      int? gid,
+      void Function(double progress)? progress) async {
     // prepare
     final prepareReq =
         FilePrepareRequest(contentType: contentType, filename: filename);
