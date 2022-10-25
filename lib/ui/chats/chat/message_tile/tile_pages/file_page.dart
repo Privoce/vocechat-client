@@ -234,7 +234,7 @@ class _FilePageState extends State<FilePage> {
           videoPlayerController: videoPlayerController,
           autoPlay: false,
           looping: false);
-      Navigator.of(context).push(
+      await Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => VideoPage(chewieController)));
     } else if (widget.extension.toLowerCase() == "pdf") {
       _status.value = FilePageStatus.open;
