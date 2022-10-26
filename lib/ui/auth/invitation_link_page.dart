@@ -3,9 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
+import 'package:vocechat_client/ui/auth/server_page.dart';
 
 enum _InvitationLinkTextFieldButtonType { clear, paste }
 
@@ -53,7 +58,7 @@ class InvitationLinkPage extends StatelessWidget {
                       _buildBackButton(context),
                       _buildTitle(),
                       const SizedBox(height: 50),
-                      _buildTextField(),
+                      _buildTextField(context),
                       const SizedBox(height: 8),
 
                       // _buildDivider(),
@@ -67,7 +72,7 @@ class InvitationLinkPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField() {
+  Widget _buildTextField(BuildContext context) {
     const double height = 44;
     const double btnRadius = height / 2;
     const double iconSize = btnRadius * 1.414;
@@ -84,7 +89,8 @@ class InvitationLinkPage extends StatelessWidget {
                     child: VoceTextField(
                   _controller,
                   height: height,
-                  onChanged: (text) {
+                  onChanged: (_) {
+                    final text = _controller.text;
                     if (text.trim().isNotEmpty) {
                       buttonType.value =
                           _InvitationLinkTextFieldButtonType.clear;
@@ -94,6 +100,7 @@ class InvitationLinkPage extends StatelessWidget {
                     }
                   },
                 )),
+                // Flexible(child: TextField()),
                 ValueListenableBuilder<_InvitationLinkTextFieldButtonType>(
                     valueListenable: buttonType,
                     builder: (context, type, _) {
@@ -123,8 +130,8 @@ class InvitationLinkPage extends StatelessWidget {
           keepNormalWhenBusy: false,
           action: () async {
             // return await _onUrlSubmit(_urlController.text + "/api");
-            if (!(await _onLinkSubmitted())) {
-              _showInvalidLinkWarning();
+            if (!(await _onLinkSubmitted(context))) {
+              _showInvalidLinkWarning(context);
             }
             return true;
           },
@@ -133,7 +140,7 @@ class InvitationLinkPage extends StatelessWidget {
     );
   }
 
-  Future<bool> _onLinkSubmitted() async {
+  Future<bool> _onLinkSubmitted(BuildContext context) async {
     final link = _controller.text.trim();
 
     try {
@@ -148,8 +155,17 @@ class InvitationLinkPage extends StatelessWidget {
 
       final res = await userApi.checkMagicToken(magicToken);
       if (res.statusCode == 200 && res.data == true) {
-        print(res.data);
-        // valid
+        final chatServerM = await ChatServerHelper(context: context)
+            .prepareChatServerM(apiPath);
+        if (chatServerM != null) {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => PasswordRegisterPage(
+                    chatServer: chatServerM,
+                  )));
+        }
+      } else {
+        App.logger.warning("Link not valid.");
+        return false;
       }
     } catch (e) {
       App.logger.severe(e);
@@ -159,7 +175,16 @@ class InvitationLinkPage extends StatelessWidget {
     return true;
   }
 
-  void _showInvalidLinkWarning() {}
+  void _showInvalidLinkWarning(BuildContext context) {
+    showAppAlert(
+        context: context,
+        title: "Invalid Invitation Link",
+        content: "Please contact server admin for a new link or help.",
+        actions: [
+          AppAlertDialogAction(
+              text: "OK", action: (() => Navigator.of(context).pop()))
+        ]);
+  }
 
   Widget _buildTextFieldButton(_InvitationLinkTextFieldButtonType type) {
     Widget child;
