@@ -233,6 +233,14 @@ class UserApi {
     return dio.get("/check_email?email=$email");
   }
 
+  Future<Response<bool>> checkMagicToken(String magicToken) async {
+    final dio = DioUtil(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    return dio.post("/check_magic_token",
+        data: json.encode({"magic_token": magicToken}));
+  }
+
   Future<Response<LoginResponse>> register(RegisterRequest req) async {
     final dio = DioUtil(baseUrl: _baseUrl);
     dio.options.validateStatus = (status) {

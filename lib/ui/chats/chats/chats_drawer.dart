@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +7,11 @@ import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
+import 'package:voce_widgets/voce_widgets.dart';
 
 class ChatsDrawer extends StatefulWidget {
   const ChatsDrawer(
@@ -80,50 +81,109 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                   separatorBuilder: (context, index) {
                     return Divider(indent: 86);
                   },
-                  itemCount: accountList.length + 1,
+                  itemCount: accountList.length,
                   itemBuilder: (context, index) {
-                    if (index == accountList.length) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: _onTapAdd,
-                            child: Padding(
-                                padding:
-                                    const EdgeInsets.only(right: 16, top: 8),
-                                child: Row(
-                                  children: const [
-                                    Icon(Icons.add),
-                                    SizedBox(width: 4),
-                                    Text("Add new account")
-                                  ],
-                                )),
-                          ),
-                        ],
-                      );
-                    } else {
-                      final accountData = accountList[index];
-                      return CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () => _switchUser(accountData.value),
-                          child: ServerAccountTile(
-                            accountData: accountData,
-                            onLogoutTapped: _onLogoutTapped,
-                          ));
-                    }
+                    // if (index == accountList.length) {
+                    //   return Row(
+                    //     mainAxisAlignment: MainAxisAlignment.end,
+                    //     children: [
+                    //       CupertinoButton(
+                    //         padding: EdgeInsets.zero,
+                    //         onPressed: _onTapAdd,
+                    //         child: Padding(
+                    //             padding:
+                    //                 const EdgeInsets.only(right: 16, top: 8),
+                    //             child: Row(
+                    //               children: const [
+                    //                 Icon(Icons.add),
+                    //                 SizedBox(width: 4),
+                    //                 Text("Add new account")
+                    //               ],
+                    //             )),
+                    //       ),
+                    //     ],
+                    //   );
+                    // } else {
+                    final accountData = accountList[index];
+                    return CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => _switchUser(accountData.value),
+                        child: ServerAccountTile(
+                          accountData: accountData,
+                          onLogoutTapped: _onLogoutTapped,
+                        ));
+                    // }
                   },
                 ),
               ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Column(
+                  children: [
+                    VoceButton(
+                      width: double.maxFinite,
+                      contentColor: Colors.white,
+                      decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(8)),
+                      normal: Text(
+                        "Add new account",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      action: () async {
+                        _onTapAddNewAccount();
+                        return true;
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    VoceButton(
+                      width: double.maxFinite,
+                      contentColor: Colors.white,
+                      decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(8)),
+                      normal: Text(
+                        "Paste invitation link",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      action: () async {
+                        _onTapPasteInvitationLink();
+                        return true;
+                      },
+                    )
+                  ],
+                ),
+              )
             ],
           ),
         ));
   }
 
-  void _onTapAdd() async {
+  void _onTapAddNewAccount() async {
     final route = PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
           ServerPage(showClose: true),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+    Navigator.of(context).push(route);
+  }
+
+  void _onTapPasteInvitationLink() async {
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          InvitationLinkPage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;
