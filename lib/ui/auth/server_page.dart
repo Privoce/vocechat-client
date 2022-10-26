@@ -2,28 +2,26 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/api/lib/admin_login_api.dart';
-import 'package:vocechat_client/api/lib/admin_system_api.dart';
-import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/app_text_styles.dart';
-import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/auth/pre_login_actions_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_drawer.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 
 class ServerPage extends StatefulWidget {
@@ -111,13 +109,35 @@ class _ServerPageState extends State<ServerPage> {
             child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            VoceButton(
-              normal: Text(AppLocalizations.of(context)!.serverPageClearData),
-              action: () async {
-                _onResetDb(context);
-                return true;
-              },
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                VoceButton(
+                  normal: Text("Clear local data",
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  action: () async {
+                    _onResetDb();
+                    return true;
+                  },
+                ),
+                Text("  |  "),
+                VoceButton(
+                  normal: Text("Paste invitation link",
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  action: () async {
+                    _onPasteInvitationLinkTapped(context);
+                    return true;
+                  },
+                ),
+              ],
             ),
+            // VoceButton(
+            //   normal: Text("Actions"),
+            //   action: () async {
+            //     _onActionsPressed(context);
+            //     return true;
+            //   },
+            // ),
             SizedBox(
               height: 30,
               child: FutureBuilder<String>(
@@ -137,42 +157,27 @@ class _ServerPageState extends State<ServerPage> {
         )));
   }
 
+  void _onActionsPressed(BuildContext context) async {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(8), topRight: Radius.circular(8))),
+        builder: (sheetContext) {
+          return FractionallySizedBox(
+            heightFactor: 0.3,
+            child: PreLoginActionsPage(),
+          );
+        });
+  }
+
   Future<String> _getVersion() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;
     // String buildNumber = packageInfo.buildNumber;
     // return version + "($buildNumber)";
     return version;
-  }
-
-  void _onResetDb(BuildContext context) async {
-    showAppAlert(
-        context: context,
-        title: "Clear Local Data",
-        content:
-            "VoceChat will be terminated. All your data will be deleted locally.",
-        primaryAction: AppAlertDialogAction(
-            text: "OK", isDangerAction: true, action: _onReset),
-        actions: [
-          AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.pop(context, 'Cancel'))
-        ]);
-  }
-
-  void _onReset() async {
-    try {
-      await closeAllDb();
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    try {
-      await removeDb();
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    exit(0);
   }
 
   Widget _buildTopBtn(BuildContext context) {
@@ -399,7 +404,8 @@ class _ServerPageState extends State<ServerPage> {
     final storage = FlutterSecureStorage();
     final password = await storage.read(key: dbName);
 
-    final chatServerM = await _prepareChatServerM(data.serverUrl);
+    final chatServerM = await ChatServerHelper(context: context)
+        .prepareChatServerM(data.serverUrl);
 
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LoginPage(
@@ -499,90 +505,6 @@ class _ServerPageState extends State<ServerPage> {
     }
   }
 
-  Future<ChatServerM?> _prepareChatServerM(String url) async {
-    ChatServerM chatServerM = ChatServerM();
-    ServerStatusWithChatServerM s;
-
-    if (!url.startsWith("https://") && !url.startsWith("http://")) {
-      final httpsUrl = "https://" + url;
-
-      s = await _checkServerAvailability(httpsUrl);
-      if (s.status == ServerStatus.uninitialized) {
-        await _showServerUninitializedError(s.chatServerM);
-        return null;
-      } else if (s.status == ServerStatus.available) {
-        chatServerM = s.chatServerM;
-      } else if (s.status == ServerStatus.error) {
-        // test http
-        final httpUrl = "http://" + url;
-        s = await _checkServerAvailability(httpUrl);
-        if (s.status == ServerStatus.uninitialized) {
-          await _showServerUninitializedError(s.chatServerM);
-          return null;
-        } else if (s.status == ServerStatus.available) {
-          chatServerM = s.chatServerM;
-        } else if (s.status == ServerStatus.error) {
-          await _showConnectionError();
-          return null;
-        }
-      }
-    } else {
-      s = await _checkServerAvailability(url);
-      if (s.status == ServerStatus.uninitialized) {
-        await _showServerUninitializedError(s.chatServerM);
-        return null;
-      } else if (s.status == ServerStatus.available) {
-        chatServerM = s.chatServerM;
-      } else if (s.status == ServerStatus.error) {
-        await _showConnectionError();
-        return null;
-      }
-    }
-
-    // Update server record in database
-    _urlController.text = chatServerM.fullUrl;
-
-    try {
-      final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
-
-      final orgInfoRes = await adminSystemApi.getOrgInfo();
-      if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
-        App.logger.info(orgInfoRes.data!.toJson().toString());
-        final orgInfo = orgInfoRes.data!;
-        chatServerM.properties = ChatServerProperties(
-            serverName: orgInfo.name, description: orgInfo.description ?? "");
-
-        final resourceApi = ResourceApi(chatServerM.fullUrl);
-        final logoRes = await resourceApi.getOrgLogo();
-        if (logoRes.statusCode == 200 && logoRes.data != null) {
-          chatServerM.logo = logoRes.data!;
-        }
-
-        final AdminLoginApi adminLoginApi = AdminLoginApi(chatServerM.fullUrl);
-        final adminLoginRes = await adminLoginApi.getConfig();
-        if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
-          chatServerM.properties = ChatServerProperties(
-              serverName: orgInfo.name,
-              description: orgInfo.description ?? "",
-              config: adminLoginRes.data);
-        }
-
-        chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
-        await ChatServerDao.dao.addOrUpdate(chatServerM);
-      } else {
-        await _showConnectionError();
-        return null;
-      }
-    } catch (e) {
-      App.logger.severe(e);
-      await _showConnectionError();
-      return null;
-    }
-
-    App.app.chatServerM = chatServerM;
-    return chatServerM;
-  }
-
   /// Called when forward (->) button is pressed.
   ///
   /// Server information will be saved into App object.
@@ -591,7 +513,8 @@ class _ServerPageState extends State<ServerPage> {
     // String url = _urlController.text + "/api";
 
     // Set server in App singleton.
-    final chatServerM = await _prepareChatServerM(url);
+    final chatServerM =
+        await ChatServerHelper(context: context).prepareChatServerM(url);
     if (chatServerM == null) return false;
 
     _urlFocusNode.requestFocus();
@@ -602,63 +525,59 @@ class _ServerPageState extends State<ServerPage> {
     return true;
   }
 
-  Future<ServerStatusWithChatServerM> _checkServerAvailability(
-      String url) async {
-    ChatServerM chatServerM = ChatServerM();
-    if (!chatServerM.setByUrl(url)) {
-      return ServerStatusWithChatServerM(
-          status: ServerStatus.error, chatServerM: chatServerM);
-    }
+  void _onPasteInvitationLinkTapped(BuildContext context) async {
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          InvitationLinkPage(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
 
-    final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-    // Check if server has been initialized
-    final initializedRes = await adminSystemApi.getInitialized();
-    if (initializedRes.statusCode == 200 && initializedRes.data != true) {
-      return ServerStatusWithChatServerM(
-          status: ServerStatus.uninitialized, chatServerM: chatServerM);
-    } else if (initializedRes.statusCode != 200) {
-      return ServerStatusWithChatServerM(
-          status: ServerStatus.error, chatServerM: chatServerM);
-    }
-
-    return ServerStatusWithChatServerM(
-        status: ServerStatus.available, chatServerM: chatServerM);
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+    Navigator.of(context).push(route);
   }
 
-  Future<void> _showServerUninitializedError(ChatServerM chatServerM) async {
-    return showAppAlert(
-        context: context,
-        title: "Server Not Initialized",
-        content: "Please use web client for initialization.",
-        actions: [
-          AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.of(context).pop()),
-          AppAlertDialogAction(
-              text: "Copy Url",
-              action: () {
-                Navigator.of(context).pop();
+  void _onResetDb() async {
+    if (navigatorKey.currentState?.context == null) return;
 
-                final url = "${chatServerM.fullUrl}/#/onboarding";
-                Clipboard.setData(ClipboardData(text: url));
-              })
-        ]);
-  }
+    final context = navigatorKey.currentState!.context;
 
-  Future<void> _showConnectionError() async {
-    return showAppAlert(
+    showAppAlert(
         context: context,
-        title: "Server Connection Error",
+        title: "Clear Local Data",
         content:
-            "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
+            "VoceChat will be terminated. All your data will be deleted locally.",
+        primaryAction: AppAlertDialogAction(
+            text: "OK", isDangerAction: true, action: _onReset),
         actions: [
           AppAlertDialogAction(
-            text: "OK",
-            action: () {
-              Navigator.of(context).pop();
-            },
-          )
+              text: "Cancel", action: () => Navigator.pop(context, 'Cancel'))
         ]);
+  }
+
+  void _onReset() async {
+    try {
+      await closeAllDb();
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    try {
+      await removeDb();
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    exit(0);
   }
 
   // void _onPinHistory(BuildContext context, int index) async {
