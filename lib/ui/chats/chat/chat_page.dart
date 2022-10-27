@@ -49,7 +49,7 @@ class ChatPage extends StatefulWidget {
 
   /// The total number of messages in the channel chat.
   /// Only available for channels. Used to show ChannelStart widget.
-  int msgCount;
+  // int msgCount;
 
   ValueNotifier<GroupInfoM>? groupInfoNotifier;
   ValueNotifier<UserInfoM>? userInfoNotifier;
@@ -65,7 +65,7 @@ class ChatPage extends StatefulWidget {
       this.description,
       required this.hintText,
       this.draft,
-      required this.msgCount,
+      // required this.msgCount,
       required this.mentionsKey,
       this.groupInfoNotifier,
       this.userInfoNotifier,
@@ -325,7 +325,7 @@ class _ChatPageState extends State<ChatPage> {
       }
 
       // Use msgCount to determine whether to show ChannelStart widget.
-      widget.msgCount = await ChatMsgDao().getChatMsgCount(gid: chatMsgM.gid);
+      // widget.msgCount = await ChatMsgDao().getChatMsgCount(gid: chatMsgM.gid);
 
       // Update read index and unread count
       if (chatMsgM.mid > _initReadIndex) {
@@ -345,7 +345,7 @@ class _ChatPageState extends State<ChatPage> {
       }
 
       // Use msgCount to determine whether to show ChannelStart widget.
-      widget.msgCount = await ChatMsgDao().getChatMsgCount(uid: chatMsgM.dmUid);
+      // widget.msgCount = await ChatMsgDao().getChatMsgCount(uid: chatMsgM.dmUid);
 
       // Update read index and unread count.
       if (widget.userInfoNotifier?.value.properties.readIndex != null &&

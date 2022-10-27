@@ -138,7 +138,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
           builder: (context) => ChatPage(
               mentionsKey: mentionsKey,
               title: userInfoM.userInfo.name,
-              msgCount: msgCount,
+              // msgCount: msgCount,
               hintText: hintText,
               draft: draft,
               userInfoNotifier: ValueNotifier(userInfoM),
