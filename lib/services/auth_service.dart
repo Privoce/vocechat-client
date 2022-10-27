@@ -252,7 +252,8 @@ class AuthService {
 
     if (res.statusCode == 200 && res.data != null) {
       final data = res.data!;
-      await initServices(data, rememberPswd ? req.credential.password : null);
+      await initServices(
+          data, rememberPswd, rememberPswd ? req.credential.password : null);
       App.app.chatService.initSse();
       return true;
     }
@@ -260,7 +261,8 @@ class AuthService {
     return false;
   }
 
-  Future<bool> initServices(LoginResponse res, [String? password]) async {
+  Future<bool> initServices(LoginResponse res, bool rememberMe,
+      [String? password]) async {
     final String serverId = res.serverId;
     final token = res.token;
     final refreshToken = res.refreshToken;
@@ -270,9 +272,13 @@ class AuthService {
     final dbName = "${serverId}_${userInfo.uid}";
 
     // Save password to secure storage.
-    if (password != null && password.isNotEmpty) {
-      final storage = FlutterSecureStorage();
-      await storage.write(key: dbName, value: password);
+    final storage = FlutterSecureStorage();
+    if (rememberMe) {
+      if (password != null && password.isNotEmpty) {
+        await storage.write(key: dbName, value: password);
+      }
+    } else {
+      await storage.delete(key: dbName);
     }
 
     final avatarBytes = userInfo.avatarUpdatedAt == 0

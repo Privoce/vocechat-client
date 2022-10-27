@@ -1,16 +1,15 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/send_service.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble.dart';
 
 class AppTextSelectionControls extends CupertinoTextSelectionControls {
   static const channelName = 'clipboard/image';
@@ -18,34 +17,76 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
   int? uid;
   int? gid;
 
-  // Function(ImageProvider) callback;
   AppTextSelectionControls();
 
   @override
-  Future<void> handlePaste(TextSelectionDelegate delegate) async {
-    try {
-      final image = await _getClipboardImage();
-      if (image != null) {
-        _pasteImage(image);
-      } else {
-        final TextEditingValue value = delegate
-            .textEditingValue; // Snapshot the input before using `await`.
-        final ClipboardData? data =
-            await Clipboard.getData(Clipboard.kTextPlain);
+  bool canPaste(TextSelectionDelegate delegate) {
+    return delegate.pasteEnabled;
+  }
 
-        if (data != null) {
-          final updatedValue = TextEditingValue(
-              text: value.selection.textBefore(value.text) + (data.text ?? ""),
-              selection: TextSelection.collapsed(
-                  offset: value.selection.start + (data.text?.length ?? 0)));
-          delegate.userUpdateTextEditingValue(
-              updatedValue, SelectionChangedCause.tap);
+  @override
+  Widget buildToolbar(
+    BuildContext context,
+    Rect globalEditableRegion,
+    double textLineHeight,
+    Offset selectionMidpoint,
+    List<TextSelectionPoint> endpoints,
+    TextSelectionDelegate delegate,
+    ClipboardStatusNotifier? clipboardStatus,
+    Offset? lastSecondaryTapDownPosition,
+  ) {
+    final notifier = clipboardStatus != null
+        ? ClipboardStatusNotifier(value: clipboardStatus.value)
+        : null;
+    return FutureBuilder<Uint8List?>(
+        future: _getClipboardImage(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            notifier?.value = ClipboardStatus.pasteable;
+          }
+
+          return super.buildToolbar(
+              context,
+              globalEditableRegion,
+              textLineHeight,
+              selectionMidpoint,
+              endpoints,
+              delegate,
+              notifier,
+              lastSecondaryTapDownPosition);
+        });
+  }
+
+  @override
+  Future<void> handlePaste(TextSelectionDelegate delegate) async {
+    if (Platform.isIOS) {
+      try {
+        final image = await _getClipboardImage();
+        if (image != null) {
+          _pasteImage(image);
+        } else {
+          final TextEditingValue value = delegate
+              .textEditingValue; // Snapshot the input before using `await`.
+          final ClipboardData? data =
+              await Clipboard.getData(Clipboard.kTextPlain);
+
+          if (data != null) {
+            final updatedValue = TextEditingValue(
+                text:
+                    value.selection.textBefore(value.text) + (data.text ?? ""),
+                selection: TextSelection.collapsed(
+                    offset: value.selection.start + (data.text?.length ?? 0)));
+            delegate.userUpdateTextEditingValue(
+                updatedValue, SelectionChangedCause.tap);
+          }
         }
+        delegate.bringIntoView(delegate.textEditingValue.selection.extent);
+        delegate.hideToolbar();
+      } catch (e) {
+        App.logger.severe(e);
       }
-      delegate.bringIntoView(delegate.textEditingValue.selection.extent);
-      delegate.hideToolbar();
-    } catch (e) {
-      App.logger.severe(e);
+    } else if (Platform.isAndroid) {
+      return super.handlePaste(delegate);
     }
   }
 
@@ -79,6 +120,8 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
               Navigator.of(context).pop();
             }));
   }
+
+  // Future<bool>
 
   Future<Uint8List?> _getClipboardImage() async {
     try {

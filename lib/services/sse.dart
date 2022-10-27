@@ -38,6 +38,7 @@ class Sse {
     try {
       eventSource.onMessage.listen((event) {
         App.app.statusService.fireSseLoading(LoadingStatus.success);
+        App.app.statusService.fireTokenLoading(TokenStatus.success);
         App.logger.info(event.data);
         fireSseEvent(event.data);
         isConnecting = false;
@@ -45,6 +46,7 @@ class Sse {
 
       eventSource.onOpen.listen((event) {
         App.app.statusService.fireSseLoading(LoadingStatus.success);
+        App.app.statusService.fireTokenLoading(TokenStatus.success);
         reconnectSec = 1;
         cancelDelay();
         isConnecting = false;

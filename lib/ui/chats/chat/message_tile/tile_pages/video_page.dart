@@ -1,10 +1,6 @@
-import 'dart:io';
-
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
-import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
 class VideoPage extends StatefulWidget {
@@ -24,8 +20,8 @@ class _VideoPageState extends State<VideoPage> {
 
   @override
   void dispose() {
+    widget.chewieController.pause();
     widget.chewieController.dispose();
-
     super.dispose();
   }
 
@@ -48,14 +44,4 @@ class _VideoPageState extends State<VideoPage> {
           : Center(child: CupertinoActivityIndicator()),
     );
   }
-
-  // void _initControllers() async {
-  //   _videoPlayerController = VideoPlayerController.file(widget.file);
-  //   await _videoPlayerController.initialize();
-
-  //   _chewieController = ChewieController(
-  //       videoPlayerController: _videoPlayerController,
-  //       autoPlay: false,
-  //       looping: false);
-  // }
 }

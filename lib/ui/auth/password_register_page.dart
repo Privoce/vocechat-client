@@ -12,9 +12,9 @@ import 'package:voce_widgets/voce_widgets.dart';
 
 class PasswordRegisterPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
-  late ChatServerM _chatServer;
+  ChatServerM chatServer;
 
-  PasswordRegisterPage() {
+  PasswordRegisterPage({required this.chatServer}) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
@@ -29,7 +29,7 @@ class PasswordRegisterPage extends StatefulWidget {
           0.6,
           1
         ]));
-    _chatServer = App.app.chatServerM;
+    // chatServer = App.app.chatServerM;
   }
 
   @override
@@ -40,6 +40,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _pswdController = TextEditingController();
   final TextEditingController _confirmPswdController = TextEditingController();
+
+  bool rememberMe = true;
 
   final double cornerRadius = 10.0;
 
@@ -125,7 +127,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                 color: AppColors.cyan500),
           ),
           Text(
-            widget._chatServer.properties.serverName,
+            widget.chatServer.properties.serverName,
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
@@ -133,7 +135,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
           ),
         ],
       ),
-      Text(widget._chatServer.fullUrlWithoutPort,
+      Text(widget.chatServer.fullUrlWithoutPort,
           style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -249,6 +251,20 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                 },
               ),
             )),
+        SizedBox(
+            height: 24,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text("Remember me", style: TextStyle(fontSize: 16)),
+                Spacer(),
+                CupertinoSwitch(
+                    value: rememberMe,
+                    onChanged: (value) => setState(() {
+                          rememberMe = value;
+                        }))
+              ],
+            )),
       ],
     );
   }
@@ -267,7 +283,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
   }
 
   Future<bool> _onTapSignUpBtn() async {
-    UserApi userApi = UserApi(widget._chatServer.fullUrl);
+    UserApi userApi = UserApi(widget.chatServer.fullUrl);
 
     final email = _emailController.text.trim().toLowerCase();
 
@@ -282,7 +298,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
         final registerReq =
             RegisterRequest(email: email, password: _pswdController.text);
         Navigator.of(context).push(MaterialPageRoute(
-            builder: ((context) => RegisterNamingPage(registerReq))));
+            builder: ((context) =>
+                RegisterNamingPage(registerReq, rememberMe))));
 
         return true;
       } else {

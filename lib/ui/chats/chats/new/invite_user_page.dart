@@ -7,7 +7,6 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/ui/chats/chats/new/invite_email_page.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 
 class InviteUserPage extends StatefulWidget {

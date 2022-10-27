@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_drawer.dart';
+import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 

@@ -267,7 +267,7 @@ class _ChatsPageState extends State<ChatsPage>
 
     final hintText =
         AppLocalizations.of(context)!.chatTextFieldHint + " #${groupInfo.name}";
-    final msgCount = await ChatMsgDao().getChatMsgCount(gid: gid);
+    // final msgCount = await ChatMsgDao().getChatMsgCount(gid: gid);
     final draft = groupInfoM.properties.draft;
 
     GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
@@ -280,7 +280,7 @@ class _ChatsPageState extends State<ChatsPage>
               title: groupInfo.name,
               hintText: hintText,
               draft: draft,
-              msgCount: msgCount,
+              // msgCount: msgCount,
               groupInfoNotifier: ValueNotifier(groupInfoM),
               unreadCount: unreadCount),
         )).then((_) async {
@@ -312,7 +312,7 @@ class _ChatsPageState extends State<ChatsPage>
     final hintText = AppLocalizations.of(context)!.chatTextFieldHint +
         " @${userInfoM.userInfo.name}";
     final draft = userInfoM.properties.draft;
-    final msgCount = await ChatMsgDao().getChatMsgCount(uid: dmUid);
+    // final msgCount = await ChatMsgDao().getChatMsgCount(uid: dmUid);
     GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
     int unreadCount = await ChatMsgDao().getDmUnreadCount(dmUid);
     Navigator.push(
@@ -321,7 +321,7 @@ class _ChatsPageState extends State<ChatsPage>
           builder: (context) => ChatPage(
               mentionsKey: mentionsKey,
               title: userInfoM.userInfo.name,
-              msgCount: msgCount,
+              // msgCount: msgCount,
               hintText: hintText,
               draft: draft,
               userInfoNotifier: ValueNotifier(userInfoM),

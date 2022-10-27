@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/file_page.dart';
 
@@ -29,7 +30,13 @@ class FileBubble extends StatelessWidget {
     }
 
     final filename = p.basename(name);
-    final extension = p.extension(name).substring(1);
+    String extension;
+    try {
+      extension = p.extension(name).substring(1);
+    } catch (e) {
+      App.logger.severe(e);
+      extension = "";
+    }
     Widget svgPic;
 
     if (_isAudio(extension)) {

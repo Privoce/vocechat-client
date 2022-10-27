@@ -13,6 +13,7 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
+import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
@@ -48,7 +49,7 @@ class ChatPage extends StatefulWidget {
 
   /// The total number of messages in the channel chat.
   /// Only available for channels. Used to show ChannelStart widget.
-  int msgCount;
+  // int msgCount;
 
   ValueNotifier<GroupInfoM>? groupInfoNotifier;
   ValueNotifier<UserInfoM>? userInfoNotifier;
@@ -64,7 +65,7 @@ class ChatPage extends StatefulWidget {
       this.description,
       required this.hintText,
       this.draft,
-      required this.msgCount,
+      // required this.msgCount,
       required this.mentionsKey,
       this.groupInfoNotifier,
       this.userInfoNotifier,
@@ -324,7 +325,7 @@ class _ChatPageState extends State<ChatPage> {
       }
 
       // Use msgCount to determine whether to show ChannelStart widget.
-      widget.msgCount = await ChatMsgDao().getChatMsgCount(gid: chatMsgM.gid);
+      // widget.msgCount = await ChatMsgDao().getChatMsgCount(gid: chatMsgM.gid);
 
       // Update read index and unread count
       if (chatMsgM.mid > _initReadIndex) {
@@ -344,7 +345,7 @@ class _ChatPageState extends State<ChatPage> {
       }
 
       // Use msgCount to determine whether to show ChannelStart widget.
-      widget.msgCount = await ChatMsgDao().getChatMsgCount(uid: chatMsgM.dmUid);
+      // widget.msgCount = await ChatMsgDao().getChatMsgCount(uid: chatMsgM.dmUid);
 
       // Update read index and unread count.
       if (widget.userInfoNotifier?.value.properties.readIndex != null &&
@@ -533,18 +534,11 @@ class _ChatPageState extends State<ChatPage> {
         break;
     }
 
-    sortUiMsgList();
-
     _uiMsgList.sort((a, b) => b.chatMsgM.mid.compareTo(a.chatMsgM.mid));
 
     if (mounted) {
       setState(() {});
     }
-  }
-
-  void sortUiMsgList() {
-    // sort success messages by mid (from server);
-    // sort remaining local unsuccessful messages by timestamps.
   }
 
   Future<void> _onReaction(ReactionTypes type, int mid,
@@ -965,13 +959,14 @@ class _ChatPageState extends State<ChatPage> {
         itemCount: _uiMsgList.length + 1,
         itemBuilder: (context, index) {
           // If reaches very top, show channel start widget.
-          if (index == widget.msgCount) {
-            if (widget._isGroup) {
-              return ChannelStart(widget.groupInfoNotifier!);
-            } else {
-              return SizedBox.shrink();
-            }
-          } else if (index == _uiMsgList.length) {
+          // if (index == widget.msgCount) {
+          //   if (widget._isGroup) {
+          //     return ChannelStart(widget.groupInfoNotifier!);
+          //   } else {
+          //     return SizedBox.shrink();
+          //   }
+          // } else
+          if (index == _uiMsgList.length) {
             if (_isLoadingHistory) {
               return SizedBox(
                   height: 20,
@@ -982,6 +977,7 @@ class _ChatPageState extends State<ChatPage> {
             }
           } else {
             UiMsg uiMsg = _uiMsgList[index];
+
             final userInfoM =
                 _userInfoMMap[uiMsg.chatMsgM.fromUid] ?? UserInfoM.deleted();
             final isSelf = userInfoM.uid == App.app.userDb!.uid;
@@ -1186,14 +1182,14 @@ class _ChatPageState extends State<ChatPage> {
     if (msgStatus == MsgSendStatus.success) {
       status = MsgSendStatus.success;
     } else {
-      status = SendService.singleton.isWaitingOrExecuting(localMid)
+      status = SendTaskQueue.singleton.isWaitingOrExecuting(localMid)
           ? MsgSendStatus.sending
           : msgStatus;
     }
 
     if (uiMsg.chatMsgM.detailContentType == typeFile) {
       if (status == MsgSendStatus.sending) {
-        final task = SendService.singleton.getTask(uiMsg.chatMsgM.localMid);
+        final task = SendTaskQueue.singleton.getTask(uiMsg.chatMsgM.localMid);
         if (task != null && task.progress != null) {
           return ValueListenableBuilder<double>(
             valueListenable: task.progress!,
@@ -1413,7 +1409,7 @@ class _ChatPageState extends State<ChatPage> {
     final groupApi = GroupApi(App.app.chatServerM.fullUrl);
     final res = await groupApi.getHistory(gid, minMid);
 
-    if (res.data == null) return;
+    if (res.statusCode != 200 || res.data == null) return;
 
     for (var each in res.data) {
       App.app.chatService.handleHistoryChatMsg(each);
@@ -1443,6 +1439,7 @@ class _ChatPageState extends State<ChatPage> {
             gid: widget.groupInfoNotifier?.value.gid,
             uid: widget.userInfoNotifier?.value.uid,
             targetMid: targetMid);
+        _sendTypeNotifier.value = SendType.normal;
         break;
       case SendType.file:
         // msg here is path.
