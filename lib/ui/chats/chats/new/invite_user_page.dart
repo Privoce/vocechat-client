@@ -129,14 +129,14 @@ class _InviteUserPageState extends State<InviteUserPage> {
     final res = await groupApi.getRegMagicLink();
 
     if (res.statusCode == 200) {
-      return _tempChangeInvitationLinkDomian(res.data as String);
+      return _tempChangeInvitationLinkDomain(res.data as String);
     }
     return null;
   }
 
   /// Temp function to replace server default domain for invitation link.
   /// Should be deleted after the issue resolves.
-  String _tempChangeInvitationLinkDomian(String originalDomain) {
+  String _tempChangeInvitationLinkDomain(String originalDomain) {
     const pattern = "http://1.2.3.4:4000";
 
     if (originalDomain.startsWith(pattern)) {

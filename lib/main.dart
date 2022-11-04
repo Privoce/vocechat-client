@@ -4,13 +4,18 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
@@ -161,6 +166,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   late bool _isLoading;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  late StreamSubscription _uniLinkSubscription;
 
   @override
   void initState() {
@@ -171,6 +177,9 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+    _handleIncomingUniLink();
+    _handleInitUniLink();
   }
 
   @override
@@ -266,7 +275,89 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     );
   }
 
+  Future<InvitationLinkData?> _parseInvitationLink(Uri uri) async {
+    final param = uri.queryParameters["magic_link"];
+    if (param == null || param.isEmpty) return null;
+
+    try {
+      final invLinkUri = Uri.parse(param);
+
+      final magicToken = invLinkUri.queryParameters["magic_token"];
+      final serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+
+      if (magicToken != null && magicToken.isNotEmpty) {
+        return InvitationLinkData(serverUrl: serverUrl, magicToken: magicToken);
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return null;
+  }
+
+  void _handleIncomingUniLink() async {
+    _uniLinkSubscription = uriLinkStream.listen((Uri? uri) async {
+      print(uri);
+      if (uri == null) return;
+
+      final linkData = await _parseInvitationLink(uri);
+
+      print(_parseInvitationLink(uri));
+
+      _handleUniLink(uri);
+    });
+  }
+
+  void _handleInitUniLink() async {
+    final initialUri = await getInitialUri();
+    if (initialUri == null) return;
+
+    _handleUniLink(initialUri);
+  }
+
+  void _handleUniLink(Uri initialUri) async {
+    try {
+      final chatServer = await ChatServerHelper(context: context)
+          .prepareChatServerM(initialUri.host);
+      if (chatServer == null) return;
+
+      final route = PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            PasswordRegisterPage(
+          chatServer: chatServer,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.fastOutSlowIn;
+
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      );
+
+      Navigator.push(context, route);
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
   void onResume() async {
+    // try {
+    //   final initialLink = await getInitialUri();
+    //   // Parse the link and warn the user, if it is not correct,
+    //   // but keep in mind it could be `null`.
+    //   print(initialLink);
+    // } on PlatformException {
+    //   // Handle exception by warning the user their action did not succeed
+    //   // return?
+    // }
+
     try {
       if (App.app.authService == null) {
         return;
@@ -341,4 +432,11 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     _isLoading = false;
   }
+}
+
+class InvitationLinkData {
+  String serverUrl;
+  String magicToken;
+
+  InvitationLinkData({required this.serverUrl, required this.magicToken});
 }

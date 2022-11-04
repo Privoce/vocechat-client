@@ -7,7 +7,7 @@ import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/ui/auth/invitation_link_page.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
@@ -183,7 +183,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
   void _onTapPasteInvitationLink() async {
     final route = PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          InvitationLinkPage(),
+          InvitationLinkPastePage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;

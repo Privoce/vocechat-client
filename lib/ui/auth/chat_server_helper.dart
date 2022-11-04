@@ -14,6 +14,8 @@ class ChatServerHelper {
 
   ChatServerHelper({required this.context});
 
+  /// url is the server domain, for example 'https://dev.voce.chat'.
+  /// No http / https required.
   Future<ChatServerM?> prepareChatServerM(String url) async {
     ChatServerM chatServerM = ChatServerM();
     ServerStatusWithChatServerM s;

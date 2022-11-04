@@ -83,6 +83,7 @@ dependencies:
   sqflite_common_ffi: ^2.1.1+1
   sqlite3_flutter_libs: ^0.5.8
   flutter_secure_storage: ^6.0.0
+  uni_links: ^0.5.1
   
   # for debug use.
   # azlistview: 
