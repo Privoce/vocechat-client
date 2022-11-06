@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -297,14 +298,12 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   void _handleIncomingUniLink() async {
     _uniLinkSubscription = uriLinkStream.listen((Uri? uri) async {
-      print(uri);
       if (uri == null) return;
 
       final linkData = await _parseInvitationLink(uri);
+      if (linkData == null) return;
 
-      print(_parseInvitationLink(uri));
-
-      _handleUniLink(uri);
+      _handleUniLink(linkData);
     });
   }
 
@@ -312,13 +311,18 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     final initialUri = await getInitialUri();
     if (initialUri == null) return;
 
-    _handleUniLink(initialUri);
+    final linkData = await _parseInvitationLink(initialUri);
+    if (linkData == null) return;
+
+    _handleUniLink(linkData);
   }
 
-  void _handleUniLink(Uri initialUri) async {
+  void _handleUniLink(InvitationLinkData data) async {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
     try {
       final chatServer = await ChatServerHelper(context: context)
-          .prepareChatServerM(initialUri.host);
+          .prepareChatServerM(data.serverUrl, showAlert: false);
       if (chatServer == null) return;
 
       final route = PageRouteBuilder(

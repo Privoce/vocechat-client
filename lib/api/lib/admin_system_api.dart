@@ -72,7 +72,23 @@ class AdminSystemApi {
 
   Future<Response<bool>> getInitialized() async {
     final dio = DioUtil(baseUrl: _baseUrl);
+    final res = await dio.get("/initialized");
 
-    return dio.get("/initialized");
+    var newRes = Response<bool>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      newRes.data = res.data;
+    }
+    return newRes;
+
+    // print(dio.get("/initialized"));
+    // return dio.get("/initialized");
   }
 }
