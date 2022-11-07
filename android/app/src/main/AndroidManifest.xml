@@ -59,9 +59,9 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with https://YOUR_HOST -->
                 <data
-                android:scheme="https"
-                android:host="voce.chat"
-                android:pathPrefix="/join" />
+                    android:scheme="https"
+                    android:host="voce.chat"
+                    android:pathPrefix="/join" />
             </intent-filter>
 
         </activity>
