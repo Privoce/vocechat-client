@@ -161,7 +161,7 @@ class _ChatBarState extends State<ChatBar> {
                         style: AppTextStyles.titleLarge,
                       ),
                     ),
-                    if (widget._isGroup && !groupInfoM.groupInfo.isPublic)
+                    if (widget._isGroup && groupInfoM.isPublic != 1)
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
                         child: Icon(Icons.lock,

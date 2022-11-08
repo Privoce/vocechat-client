@@ -16,7 +16,7 @@ class ChatTile extends StatefulWidget {
   final ValueNotifier<int> unreadCount;
   final ValueNotifier<int> unreadMentionCount;
   final ValueNotifier<bool> isMuted;
-  final bool isPrivateChannel;
+  final ValueNotifier<bool>? isPrivateChannel;
   final Function()? onTap;
 
   late bool _hasDraft;
@@ -30,7 +30,7 @@ class ChatTile extends StatefulWidget {
       required this.unreadMentionCount,
       this.avatar,
       required this.isMuted,
-      this.isPrivateChannel = false,
+      this.isPrivateChannel,
       this.onTap}) {
     _hasDraft = draft.value.isNotEmpty;
 
@@ -85,11 +85,19 @@ class _ChatTileState extends State<ChatTile> {
                         );
                       }),
                 ),
-                if (widget.isPrivateChannel)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: Icon(Icons.lock, size: 16),
-                  ),
+                if (widget.isPrivateChannel != null)
+                  ValueListenableBuilder<bool>(
+                      valueListenable: widget.isPrivateChannel!,
+                      builder: (context, isPrivate, _) {
+                        if (isPrivate) {
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 8),
+                            child: Icon(Icons.lock, size: 16),
+                          );
+                        } else {
+                          return SizedBox.shrink();
+                        }
+                      }),
               ],
             )),
             ValueListenableBuilder<int>(

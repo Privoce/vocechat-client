@@ -233,54 +233,15 @@ class GroupApi {
     dio.options.headers["Authority"] = uri.authority + ":${uri.port}";
     dio.options.headers["Host"] = uri.host;
 
-    // print(dio.options.headers);
-
-    /*
-
-    var transport = ClientTransportConnection.viaSocket(
-      await SecureSocket.connect(
-        uri.host,
-        uri.port,
-        supportedProtocols: ['h2'],
-      ),
-    );
-
-    var stream = transport.makeRequest(
-      [
-        Header.ascii(':method', 'GET'),
-        Header.ascii(':path', uri.path),
-        Header.ascii(':scheme', uri.scheme),
-        Header.ascii(':authority', uri.authority),
-        // Header.ascii('host', uri.host),
-        Header.ascii('x-api-key', App.app.userDb!.token),
-      ],
-      endStream: true,
-    );
-
-    print([
-      Header.ascii(':method', 'GET'),
-      Header.ascii(':path', uri.path),
-      Header.ascii(':scheme', uri.scheme),
-      Header.ascii(':authority', uri.host),
-      Header.ascii('host', uri.host),
-      // Header.ascii('x-api-key', App.app.userDb!.token),
-    ].map((e) => [utf8.decode(e.name), utf8.decode(e.value)]));
-
-    await for (var message in stream.incomingMessages) {
-      if (message is HeadersStreamMessage) {
-        for (var header in message.headers) {
-          var name = utf8.decode(header.name);
-          var value = utf8.decode(header.value);
-          print('Header: $name: $value');
-        }
-      } else if (message is DataStreamMessage) {
-        // Use [message.bytes] (but respect 'content-encoding' header)
-        print(utf8.decode(message.bytes));
-      }
-    }
-    await transport.finish();
-    */
-
     return dio.get(url);
+  }
+
+  Future<Response<String>> changeType(int gid, bool isPublic) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    return dio.post(
+      "/$gid/change_type",
+      data: jsonEncode({"is_public": isPublic}),
+    );
   }
 }

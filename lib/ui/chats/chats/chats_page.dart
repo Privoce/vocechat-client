@@ -101,7 +101,7 @@ class _ChatsPageState extends State<ChatsPage>
               avatar: groupInfoM.avatar,
               title: groupInfoM.groupInfo.name,
               gid: groupInfoM.gid,
-              isPrivateChannel: !groupInfoM.groupInfo.isPublic,
+              isPrivateChannel: groupInfoM.isPublic != 1,
               isMuted: groupInfoM.properties.enableMute,
               updatedAt: groupInfoM.updatedAt);
 
@@ -361,12 +361,14 @@ class _ChatsPageState extends State<ChatsPage>
             _uiChats[index].title.value = groupInfoM.groupInfo.name;
             _uiChats[index].isMuted.value = groupInfoM.properties.enableMute;
             _uiChats[index].draft.value = groupInfoM.properties.draft;
+            _uiChats[index].isPrivateChannel.value =
+                !groupInfoM.groupInfo.isPublic;
           } else {
             final uiChat = UiChat(
                 avatar: groupInfoM.avatar,
                 title: groupInfoM.groupInfo.name,
                 gid: groupInfoM.gid,
-                isPrivateChannel: !groupInfoM.groupInfo.isPublic,
+                isPrivateChannel: groupInfoM.isPublic != 1,
                 isMuted: groupInfoM.properties.enableMute,
                 updatedAt: groupInfoM.updatedAt);
 
@@ -659,7 +661,7 @@ class _ChatsPageState extends State<ChatsPage>
             draft: draft,
             gid: groupInfoM.gid,
             updatedAt: latestMsgM.createdAt,
-            isPrivateChannel: !groupInfoM.groupInfo.isPublic,
+            isPrivateChannel: groupInfoM.isPublic != 1,
             unreadCount: unreadCount,
           );
 
@@ -670,7 +672,7 @@ class _ChatsPageState extends State<ChatsPage>
               title: groupInfoM.groupInfo.name,
               gid: groupInfoM.gid,
               updatedAt: groupInfoM.createdAt,
-              isPrivateChannel: !groupInfoM.groupInfo.isPublic);
+              isPrivateChannel: groupInfoM.isPublic != 1);
 
           addOrReplaceChannel(uiChat);
         }
