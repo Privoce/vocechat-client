@@ -26,7 +26,7 @@ class UiChat {
   ValueNotifier<int> updatedAt = ValueNotifier(0);
   ValueNotifier<String> draft = ValueNotifier("");
   late final bool isChannel;
-  final bool isPrivateChannel;
+  ValueNotifier<bool> isPrivateChannel = ValueNotifier(false);
 
   /// Whether to allow user to hide this tile.
   /// Channels can't be hidden by default.
@@ -48,7 +48,7 @@ class UiChat {
       int unreadMentionCount = 0,
       int updatedAt = 0,
       String draft = "",
-      this.isPrivateChannel = false,
+      bool isPrivateChannel = false,
       this.enableHide = false,
       this.onlineNotifier}) {
     // Between Channel id (group id, or gid) and uid, only one exists.
@@ -64,6 +64,7 @@ class UiChat {
     this.updatedAt.value = updatedAt;
     this.isMuted.value = isMuted;
     this.draft.value = draft;
+    this.isPrivateChannel.value = isPrivateChannel;
 
     enableHide = !isChannel;
   }

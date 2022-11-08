@@ -8,7 +8,7 @@ import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/auth/invitation_link_page.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 
@@ -83,7 +83,7 @@ class PreLoginActionsPage extends StatelessWidget {
   void _onPasteInvitationLinkTapped(BuildContext context) async {
     final route = PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          InvitationLinkPage(),
+          InvitationLinkPastePage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;

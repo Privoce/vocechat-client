@@ -15,7 +15,7 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
-import 'package:vocechat_client/ui/auth/invitation_link_page.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -528,7 +528,7 @@ class _ServerPageState extends State<ServerPage> {
   void _onPasteInvitationLinkTapped(BuildContext context) async {
     final route = PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) =>
-          InvitationLinkPage(),
+          InvitationLinkPastePage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;

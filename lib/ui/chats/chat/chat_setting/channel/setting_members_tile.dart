@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
@@ -67,9 +69,23 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
             },
             showVerticalEdge: widget.groupInfoMNotifier.value.isPublic == 1,
             title: AppLocalizations.of(context)!.members,
-            trailing: ValueListenableBuilder(
+            trailing: ValueListenableBuilder<int>(
                 valueListenable: memberCountNotifier,
                 builder: (context, memberCount, _) {
+                  // final count = max(memberCount , )
+                  // return FutureBuilder<int>(
+                  //     future: UserInfoDao().getUserCount(),
+                  //     builder: (context, snapshot) {
+                  //       int count = memberCount;
+                  //       if (snapshot.hasData) {
+                  //         count = min(memberCount, snapshot.data!);
+                  //       }
+                  //       return Text(count.toString(),
+                  //           style: TextStyle(
+                  //               fontWeight: FontWeight.w400,
+                  //               fontSize: 17,
+                  //               color: AppColors.labelColorLightSec));
+                  //     });
                   return Text(memberCount.toString(),
                       style: TextStyle(
                           fontWeight: FontWeight.w400,

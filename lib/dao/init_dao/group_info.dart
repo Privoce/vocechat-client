@@ -210,7 +210,11 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   }
 
   Future<GroupInfoM?> updateGroup(int gid,
-      {String? description, String? name, int? owner}) async {
+      {String? description,
+      String? name,
+      int? owner,
+      int? avatarUpdatedAt,
+      bool? isPublic}) async {
     GroupInfoM? old =
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
     if (old != null) {
@@ -224,6 +228,14 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       if (owner != null) {
         oldInfo.owner = owner;
       }
+      if (avatarUpdatedAt != null) {
+        oldInfo.avatarUpdatedAt = avatarUpdatedAt;
+      }
+      if (isPublic != null) {
+        old.isPublic = isPublic ? 1 : 0;
+        oldInfo.isPublic = isPublic;
+      }
+
       old.info = jsonEncode(oldInfo);
       await super.update(old);
     }

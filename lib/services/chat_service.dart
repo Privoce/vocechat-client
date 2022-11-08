@@ -491,7 +491,9 @@ class ChatService {
           .updateGroup(map["gid"],
               description: map["description"],
               name: map["name"],
-              owner: map["owner"])
+              owner: map["owner"],
+              avatarUpdatedAt: map["avatar_updated_at"],
+              isPublic: map["is_public"])
           .then((value) async {
         if (value == null) return;
         fireChannel(value, EventActions.update);

@@ -14,16 +14,25 @@ class ChatServerHelper {
 
   ChatServerHelper({required this.context});
 
-  Future<ChatServerM?> prepareChatServerM(String url) async {
+  /// url is the server domain, for example 'https://dev.voce.chat'.
+  /// No http / https required.
+  Future<ChatServerM?> prepareChatServerM(String url,
+      {bool showAlert = true}) async {
     ChatServerM chatServerM = ChatServerM();
     ServerStatusWithChatServerM s;
+
+    if (url == "https://privoce.voce.chat") {
+      url = "https://dev.voce.chat";
+    }
 
     if (!url.startsWith("https://") && !url.startsWith("http://")) {
       final httpsUrl = "https://" + url;
 
       s = await _checkServerAvailability(httpsUrl);
       if (s.status == ServerStatus.uninitialized) {
-        await _showServerUninitializedError(s.chatServerM);
+        if (showAlert) {
+          await _showServerUninitializedError(s.chatServerM);
+        }
         return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
@@ -32,24 +41,32 @@ class ChatServerHelper {
         final httpUrl = "http://" + url;
         s = await _checkServerAvailability(httpUrl);
         if (s.status == ServerStatus.uninitialized) {
-          await _showServerUninitializedError(s.chatServerM);
+          if (showAlert) {
+            await _showServerUninitializedError(s.chatServerM);
+          }
           return null;
         } else if (s.status == ServerStatus.available) {
           chatServerM = s.chatServerM;
         } else if (s.status == ServerStatus.error) {
-          await _showConnectionError();
+          if (showAlert) {
+            await _showConnectionError();
+          }
           return null;
         }
       }
     } else {
       s = await _checkServerAvailability(url);
       if (s.status == ServerStatus.uninitialized) {
-        await _showServerUninitializedError(s.chatServerM);
+        if (showAlert) {
+          await _showServerUninitializedError(s.chatServerM);
+        }
         return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
-        await _showConnectionError();
+        if (showAlert) {
+          await _showConnectionError();
+        }
         return null;
       }
     }
@@ -82,12 +99,16 @@ class ChatServerHelper {
         chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
         await ChatServerDao.dao.addOrUpdate(chatServerM);
       } else {
-        await _showConnectionError();
+        if (showAlert) {
+          await _showConnectionError();
+        }
         return null;
       }
     } catch (e) {
       App.logger.severe(e);
-      await _showConnectionError();
+      if (showAlert) {
+        await _showConnectionError();
+      }
       return null;
     }
 

@@ -4,17 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
-import 'package:vocechat_client/app_methods.dart';
-import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
 
 enum _InvitationLinkTextFieldButtonType { clear, paste }
 
-class InvitationLinkPage extends StatelessWidget {
+class InvitationLinkPastePage extends StatelessWidget {
   late final BoxDecoration _bgDeco;
 
   final _centerColor = const Color.fromRGBO(0, 113, 236, 1);
@@ -26,7 +23,7 @@ class InvitationLinkPage extends StatelessWidget {
   final ValueNotifier<_InvitationLinkTextFieldButtonType> buttonType =
       ValueNotifier(_InvitationLinkTextFieldButtonType.paste);
 
-  InvitationLinkPage() {
+  InvitationLinkPastePage() {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
