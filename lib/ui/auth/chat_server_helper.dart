@@ -112,7 +112,7 @@ class ChatServerHelper {
       return null;
     }
 
-    App.app.chatServerM = chatServerM;
+    // App.app.chatServerM = chatServerM;
     return chatServerM;
   }
 

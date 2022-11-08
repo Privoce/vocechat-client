@@ -180,6 +180,7 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       final oldGroupInfo = old.groupInfo;
       final newMemberSet = Set<int>.from(oldGroupInfo.members!)
         ..removeAll(uids);
+
       oldGroupInfo.members = newMemberSet.toList();
 
       old.info = jsonEncode(oldGroupInfo);
@@ -225,15 +226,21 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       if (name != null) {
         oldInfo.name = name;
       }
-      if (owner != null) {
-        oldInfo.owner = owner;
-      }
+      // if (owner != null) {
+      //   oldInfo.owner = owner;
+      // }
       if (avatarUpdatedAt != null) {
         oldInfo.avatarUpdatedAt = avatarUpdatedAt;
       }
       if (isPublic != null) {
         old.isPublic = isPublic ? 1 : 0;
         oldInfo.isPublic = isPublic;
+
+        if (isPublic) {
+          oldInfo.owner = null;
+        } else {
+          oldInfo.owner = owner;
+        }
       }
 
       old.info = jsonEncode(oldInfo);
@@ -409,6 +416,8 @@ class GroupInfoDao extends Dao<GroupInfoM> {
 
       for (final uid in memberList) {
         final user = await UserInfoDao().getUserByUid(uid);
+        // print("$uid, $user");
+
         if (user == null) {
           continue;
         }

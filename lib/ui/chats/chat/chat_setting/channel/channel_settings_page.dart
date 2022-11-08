@@ -194,8 +194,16 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         builder: (context, groupInfoM, _) {
           bool isAdmin = App.app.userDb?.userInfo.isAdmin ?? false;
           bool isOwner = App.app.userDb?.uid == groupInfoM.groupInfo.owner;
+          bool isPublic = groupInfoM.isPublic == 1;
+          bool showSwitch = false;
 
-          if (isAdmin || isOwner) {
+          if (isPublic) {
+            showSwitch = isAdmin;
+          } else {
+            showSwitch = isAdmin || isOwner;
+          }
+
+          if (showSwitch) {
             final isPublic = groupInfoM.isPublic == 0 ? false : true;
             return Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -219,7 +227,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   Future<void> _changeChannelVisibility(bool isPublic) async {
     const toPublicTitle = "Change to Public Channel";
     const toPublicText =
-        "It will invite all members in this server to this channel.";
+        "It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.";
 
     const toPrivateTitle = "Change to Private Channel";
     const toPrivateText =

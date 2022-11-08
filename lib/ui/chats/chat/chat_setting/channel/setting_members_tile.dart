@@ -75,7 +75,6 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
             trailing: ValueListenableBuilder<int>(
                 valueListenable: memberCountNotifier,
                 builder: (context, memberCount, _) {
-                  print(memberCount);
                   return Text(min(serverUserCount, memberCount).toString(),
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
@@ -254,6 +253,8 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
               groupInfoM.isPublic == 1, groupInfoM.groupInfo.members ?? [],
               batchSize: count - 1)) ??
           [];
+
+      // print(groupInfoM.groupInfo.members);
       memberSetNotifier.value = Set.from(users);
     }
     return;
