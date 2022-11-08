@@ -31,6 +31,9 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
   late ValueNotifier<Set<UserInfoM>> memberSetNotifier = ValueNotifier({});
   late ValueNotifier<int> memberCountNotifier = ValueNotifier(0);
 
+  late int serverUserCount =
+      widget.groupInfoMNotifier.value.groupInfo.members?.length ?? 0;
+
   @override
   void initState() {
     super.initState();
@@ -72,21 +75,8 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
             trailing: ValueListenableBuilder<int>(
                 valueListenable: memberCountNotifier,
                 builder: (context, memberCount, _) {
-                  // final count = max(memberCount , )
-                  // return FutureBuilder<int>(
-                  //     future: UserInfoDao().getUserCount(),
-                  //     builder: (context, snapshot) {
-                  //       int count = memberCount;
-                  //       if (snapshot.hasData) {
-                  //         count = min(memberCount, snapshot.data!);
-                  //       }
-                  //       return Text(count.toString(),
-                  //           style: TextStyle(
-                  //               fontWeight: FontWeight.w400,
-                  //               fontSize: 17,
-                  //               color: AppColors.labelColorLightSec));
-                  //     });
-                  return Text(memberCount.toString(),
+                  print(memberCount);
+                  return Text(min(serverUserCount, memberCount).toString(),
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 17,
@@ -270,11 +260,12 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
   }
 
   void prepareMemberCount() async {
+    serverUserCount = await UserInfoDao().getUserCount();
     if (widget.groupInfoMNotifier.value.groupInfo.isPublic) {
-      memberCountNotifier.value = await UserInfoDao().getUserCount();
+      memberCountNotifier.value = serverUserCount;
     } else {
-      memberCountNotifier.value =
-          widget.groupInfoMNotifier.value.groupInfo.members?.length ?? 0;
+      memberCountNotifier.value = min(serverUserCount,
+          widget.groupInfoMNotifier.value.groupInfo.members?.length ?? 0);
     }
   }
 
