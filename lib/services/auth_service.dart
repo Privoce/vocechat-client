@@ -31,6 +31,7 @@ import 'package:vocechat_client/services/status_service.dart';
 class AuthService {
   AuthService({required this.chatServerM}) {
     adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+    App.app.chatServerM = chatServerM;
   }
 
   // final UserDbM userDb;

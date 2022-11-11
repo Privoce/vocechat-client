@@ -407,9 +407,11 @@ class _ServerPageState extends State<ServerPage> {
     final chatServerM = await ChatServerHelper(context: context)
         .prepareChatServerM(data.serverUrl);
 
+    if (chatServerM == null) return;
+
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LoginPage(
-              chatServerM: chatServerM!,
+              chatServerM: chatServerM,
               email: data.userEmail,
               password: password,
             )));

@@ -43,47 +43,7 @@ Future<void> main() async {
   // Disables https self-signed certificates for easier dev. To be solved.
   // HttpOverrides.global = DevHttpOverrides();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    if (kDebugMode) {
-      print('User granted permission');
-    }
-  } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-    if (kDebugMode) {
-      print('User granted provisional permission');
-    }
-  } else {
-    if (kDebugMode) {
-      print('User declined or has not accepted permission');
-    }
-  }
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print("FCM received: ${message.data}");
-    if (kDebugMode) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
-    }
-
-    if (message.notification != null) {
-      if (kDebugMode) {
-        print(
-            'Message also contained a notification: ${message.notification?.body}');
-      }
-    }
-  });
+  await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);
 
@@ -148,6 +108,35 @@ Future<void> main() async {
   }
 
   runApp(VoceChatApp(defaultHome: _defaultHome));
+}
+
+Future<void> _setUpFirebaseNotification() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    if (kDebugMode) {
+      print('User granted permission');
+    }
+  } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    if (kDebugMode) {
+      print('User granted provisional permission');
+    }
+  } else {
+    if (kDebugMode) {
+      print('User declined or has not accepted permission');
+    }
+  }
 }
 
 // ignore: must_be_immutable
@@ -274,6 +263,23 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         home: _defaultHome,
       ),
     );
+  }
+
+  void _setupForegroundNotification() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("FCM received: ${message.data}");
+      if (kDebugMode) {
+        print('Got a message whilst in the foreground!');
+        print('Message data: ${message.data}');
+      }
+
+      if (message.notification != null) {
+        if (kDebugMode) {
+          print(
+              'Message also contained a notification: ${message.notification?.body}');
+        }
+      }
+    });
   }
 
   Future<InvitationLinkData?> _parseInvitationLink(Uri uri) async {
