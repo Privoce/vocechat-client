@@ -24,6 +24,7 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/sse.dart';
+import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
 import 'package:vocechat_client/services/sse_queue.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/task_queue.dart';
@@ -62,8 +63,6 @@ class ChatService {
     Sse.sse.close();
     taskQueue.cancel();
   }
-
-  late Stream _chatStream;
 
   final Set<UsersAware> _userListeners = {};
   final Set<GroupAware> _groupListeners = {};
@@ -300,7 +299,7 @@ class ChatService {
 
       // Following methods listed in alphabetical order.
       switch (type) {
-        case "kick":
+        case sseKick:
           App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
 
           final context = navigatorKey.currentContext;
@@ -319,25 +318,25 @@ class ChatService {
           App.app.authService?.logout(markLogout: false, isKicked: true);
           break;
 
-        case "heartbeat":
+        case sseHeartbeat:
           App.app.statusService.fireSseLoading(LoadingStatus.success);
           break;
 
-        case "chat":
-        case "group_changed":
-        case "joined_group":
-        case "kick_from_group":
-        case "pinned_message_updated":
-        case "ready":
-        case "related_groups":
-        case "user_joined_group":
-        case "user_leaved_group":
-        case "users_log":
-        case "user_settings":
-        case "user_settings_changed":
-        case "users_snapshot":
-        case "users_state":
-        case "users_state_changed":
+        case sseChat:
+        case sseGroupChanged:
+        case sseJoinedGroup:
+        case sseKickFromGroup:
+        case ssePinnedMessageUpdated:
+        case sseReady:
+        case sseRelatedGroups:
+        case sseUserJoinedGroup:
+        case sseUserLeavedGroup:
+        case sseUsersLog:
+        case sseUserSettings:
+        case sseUserSettingsChanged:
+        case sseUsersSnapshot:
+        case sseUsersState:
+        case sseUsersStateChanged:
           sseQueue.add(event);
           break;
 

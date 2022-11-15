@@ -15,7 +15,6 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
-import 'package:vocechat_client/services/sp_utils.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_text_selection_controls.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
@@ -447,13 +446,6 @@ class _ChatTextFieldState extends State<ChatTextField> {
   }
 
   void _sendImage() async {
-    bool firstSend = !await SpUtils.getBool('sendImage');
-
-    if (firstSend) {
-      SpUtils.setBool('sendImage', true);
-    } else if (!firstSend) {
-      await requestPermission();
-    }
 
     // assets list
     List<AssetEntity> assets = <AssetEntity>[];

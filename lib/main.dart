@@ -269,25 +269,23 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   Future<void> _handleInitialNotification() async {
-    // Get any messages which caused the application to open from
-    // a terminated state.
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
 
-    // If the message also contains a data property with a "type" of "chat",
-    // navigate to a chat screen
     if (initialMessage != null) {
       _handleMessage(initialMessage);
     }
 
-    // Also handle any interaction when the app is in the background via a
-    // Stream listener
+    // notification from background, but not terminated state.
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
   }
 
+  /// Currently do nothing to foreground notifications,
+  /// but keep this function for potential future use.
   void _setupForegroundNotification() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("FCM received: ${message.data}");
+
       if (kDebugMode) {
         print('Got a message whilst in the foreground!');
         print('Message data: ${message.data}');
