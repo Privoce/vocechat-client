@@ -496,6 +496,12 @@ class _ChatPageState extends State<ChatPage> {
                           chatMsgM: chatMsgM,
                           repliedMsgM: repliedMsg,
                           repliedUserInfoM: repliedUserInfoM));
+                    } else {
+                      final index = _uiMsgList.indexWhere((element) =>
+                          element.chatMsgM.localMid == chatMsgM.localMid);
+                      if (index > -1) {
+                        _uiMsgList[index].chatMsgM = chatMsgM;
+                      }
                     }
                   }
 
@@ -1174,7 +1180,7 @@ class _ChatPageState extends State<ChatPage> {
 
     // [SendService.isWaitingOrExecuting] is not super accurate:
     // Sometimes the message finishes sending, but the task is still in queue
-    // for a short while, casuing the status in [uiMsg] is success, but
+    // for a short while, causing the status in [uiMsg] shows success, but
     // [SendService.isWaitingOrExecuting] still returns true.
     // The priority of status determination is uiMsg.chatMsgM, then
     // SendTaskQueue.

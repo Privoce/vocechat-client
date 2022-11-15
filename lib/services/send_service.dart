@@ -37,16 +37,8 @@ class SendService {
   SendService._singleton();
   static final SendService singleton = SendService._singleton();
 
-  // void delete(SendTask task) {
-  //   // for deleting behaviour before sending process succeeds.
-  //   sendTaskQueue.removeWhere((element) => element.localMid == task.localMid);
-  // }
-
   void sendMessage(String localMid, String msg, SendType type,
       {int? gid, int? uid, int? targetMid, Uint8List? blob}) async {
-    // TODO: change
-    // if (sendTaskQueue.map((e) => e.localMid).contains(localMid)) return;
-
     switch (type) {
       case SendType.normal:
         SendText().sendMessage(localMid, msg, type,
