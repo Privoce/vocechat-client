@@ -29,7 +29,7 @@ class FileBubble extends StatelessWidget {
       return SizedBox.shrink();
     }
 
-    final filename = p.basename(name);
+    final filename = p.basenameWithoutExtension(name);
     String extension;
     try {
       extension = p.extension(name).substring(1);
@@ -37,6 +37,7 @@ class FileBubble extends StatelessWidget {
       App.logger.severe(e);
       extension = "";
     }
+
     Widget svgPic;
 
     if (_isAudio(extension)) {
