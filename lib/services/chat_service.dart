@@ -78,6 +78,9 @@ class ChatService {
   late TaskQueue taskQueue;
   late Timer readIndexTimer;
 
+  /// Used to avoid duplicated messages.
+  final Set<int> midSet = {};
+
   /// Whether SSE has received 'ready' message.
   ///
   /// 'Ready' message means backend has pushed all accumulated messages.
@@ -433,6 +436,10 @@ class ChatService {
     if (msg != null && msg.status == MsgSendStatus.success.name) {
       return;
     }
+
+    if (midSet.contains(chatMsg.mid)) return;
+
+    midSet.add(chatMsg.mid);
 
     try {
       switch (chatMsg.detail["type"]) {
@@ -1136,6 +1143,7 @@ class ChatService {
                         "";
                     fireSnippet(value);
                     fireMsg(value, localMid, s);
+                    midSet.remove(value.mid);
                   }));
 
           break;
@@ -1151,6 +1159,7 @@ class ChatService {
           taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
                 fireSnippet(value);
                 fireMsg(value, localMid, detail.content);
+                midSet.remove(value.mid);
               }));
 
           break;
@@ -1165,6 +1174,7 @@ class ChatService {
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
           taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
                 fireSnippet(chatMsgM);
+                midSet.remove(value.mid);
               }));
 
           // thumb will only be downloaded if file is an image.
@@ -1199,6 +1209,7 @@ class ChatService {
           taskQueue
               .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
                     fireSnippet(value);
+                    midSet.remove(value.mid);
                   }));
 
           getArchive(chatMsgM).catchError((e) {
@@ -1238,6 +1249,7 @@ class ChatService {
             if (newMsgM != null) {
               fireSnippet(newMsgM);
               fireReaction(ReactionTypes.edit, targetMid, newMsgM);
+              midSet.remove(newMsgM.mid);
             }
           });
 
@@ -1251,6 +1263,7 @@ class ChatService {
               .then((newMsgM) {
             if (newMsgM != null) {
               fireReaction(ReactionTypes.like, targetMid, newMsgM);
+              midSet.remove(newMsgM.mid);
             }
           });
 
@@ -1279,6 +1292,7 @@ class ChatService {
 
                 if (msg != null) {
                   fireSnippet(msg);
+                  midSet.remove(msg.mid);
                 }
               }
             } else {
@@ -1289,15 +1303,11 @@ class ChatService {
 
                 if (msg != null) {
                   fireSnippet(msg);
+                  midSet.remove(msg.mid);
                 }
               }
             }
-
-            // delete with remaining hint words in msg list.
-            // fireSnippet(value, "This message has been deleted.");
-            // fireReaction(ReactionTypes.delete, targetMid, value);
           });
-          // );
           break;
 
         default:
@@ -1329,6 +1339,7 @@ class ChatService {
           .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
                 fireSnippet(value);
                 fireMsg(value, localMid, msgReplyJson['content']);
+                midSet.remove(value.mid);
               }));
     } catch (e) {
       App.logger.severe(e);

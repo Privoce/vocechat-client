@@ -16,6 +16,7 @@ import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/settings/firebase_settings_page.dart';
 import 'package:vocechat_client/ui/settings/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
@@ -261,13 +262,10 @@ class _SettingPageState extends State<SettingPage> {
               final api = UserApi(App.app.chatServerM.fullUrl);
               final res = await api.delete();
               if (res.statusCode == 200) {
-                App.app.authService!.selfDelete().then((value) {
+                App.app.authService!.selfDelete().then((value) async {
                   try {
-                    navigatorKey.currentState!.pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => ServerPage(),
-                        ),
-                        (route) => false);
+                    await App.app.changeUserAfterLogOut();
+                    navigatorKey.currentState!.pop();
                   } catch (e) {
                     App.logger.severe(e);
                   }

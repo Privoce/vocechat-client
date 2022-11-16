@@ -166,27 +166,6 @@ class _PasswordLoginState extends State<PasswordLogin> {
     );
   }
 
-  Future<void> _fillPassword() async {
-    final dbName = App.app.userDb?.dbName;
-
-    if (dbName == null) return;
-
-    final storage = FlutterSecureStorage();
-    final password = await storage.read(key: dbName);
-
-    if (password == null || password.isEmpty) return;
-
-    setState(() {
-      rememberMe = true;
-    });
-    pswdController.text = password;
-    pswdController.selection =
-        TextSelection.collapsed(offset: pswdController.text.length);
-
-    isPswdValid = password.isValidPswd;
-    enableLogin.value = isEmailValid && isPswdValid;
-  }
-
   /// Called when login button is pressed
   ///
   /// The following will be done in sequence:
@@ -212,4 +191,6 @@ class _PasswordLoginState extends State<PasswordLogin> {
         .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
     return true;
   }
+
+  // void _showLoginError()
 }
