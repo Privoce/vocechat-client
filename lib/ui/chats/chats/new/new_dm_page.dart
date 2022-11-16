@@ -86,8 +86,8 @@ class _NewDmPageState extends State<NewDmPage> {
     );
   }
 
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
-    final userInfo = UserInfo.fromJson(jsonDecode(userInfoM.info));
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     switch (action) {
       case EventActions.create:
         if (!_uidSet.contains(userInfoM.uid)) {
@@ -117,6 +117,10 @@ class _NewDmPageState extends State<NewDmPage> {
       default:
         break;
     }
+
+    if (mounted && afterReady) {
+      setState(() {});
+    }
   }
 
   void _getContactList() async {
@@ -130,7 +134,6 @@ class _NewDmPageState extends State<NewDmPage> {
           if (_uidSet.contains(contact.uid)) {
             continue;
           }
-          final userInfo = UserInfo.fromJson(jsonDecode(contact.info));
           _uidSet.add(contact.uid);
           _contactList.add(contact);
         }
