@@ -29,7 +29,6 @@ class PasswordRegisterPage extends StatefulWidget {
           0.6,
           1
         ]));
-    // chatServer = App.app.chatServerM;
   }
 
   @override
@@ -298,8 +297,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
         final registerReq =
             RegisterRequest(email: email, password: _pswdController.text);
         Navigator.of(context).push(MaterialPageRoute(
-            builder: ((context) =>
-                RegisterNamingPage(registerReq, rememberMe))));
+            builder: ((context) => RegisterNamingPage(
+                registerReq, rememberMe, widget.chatServer))));
 
         return true;
       } else {
