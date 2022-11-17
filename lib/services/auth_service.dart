@@ -29,14 +29,20 @@ import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 
 class AuthService {
-  AuthService({required this.chatServerM}) {
-    adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+  static final AuthService _service = AuthService._internal();
+  AuthService._internal();
+
+  factory AuthService({required chatServerM}) {
+    _service.chatServerM = chatServerM;
+    _service.adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+
     App.app.chatServerM = chatServerM;
+
+    return _service;
   }
 
-  // final UserDbM userDb;
-  final ChatServerM chatServerM;
-  late final AdminSystemApi adminSystemApi;
+  late ChatServerM chatServerM;
+  late AdminSystemApi adminSystemApi;
 
   static const int renewBase = 15;
   int renewFactor = 1;
@@ -56,7 +62,7 @@ class AuthService {
     _expiredIn = expiredIn;
 
     _timer = Timer.periodic(Duration(seconds: interval), (_timer) async {
-      // App.logger.config("Current token expires in $_expiredIn seconds");
+      App.logger.config("Current token expires in $_expiredIn seconds");
 
       if (_expiredIn < 0) {
         // token expires.
@@ -288,7 +294,6 @@ class AuthService {
                     .getUserAvatar(userInfo.uid))
                 .data ??
             Uint8List(0);
-    // App.app.chatServerM
 
     final chatServerId = App.app.chatServerM.id;
 
@@ -378,10 +383,15 @@ class AuthService {
     try {
       await logout();
 
+      // Delete all data of this user.
       final path =
           "${(await getApplicationDocumentsDirectory()).path}/${App.app.userDb!.dbName}";
-
       await Directory(path).delete(recursive: true);
+
+      // Delete user history data.
+      await UserDbMDao.dao.remove(App.app.userDb!.id);
+      final storage = FlutterSecureStorage();
+      await storage.delete(key: App.app.userDb!.dbName);
 
       App.app.userDb = null;
 

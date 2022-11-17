@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/services/auth_service.dart';
@@ -155,37 +157,51 @@ class _PasswordLoginState extends State<PasswordLogin> {
         AppLocalizations.of(context)!.loginPageLogin,
         style: TextStyle(color: Colors.white),
       ),
-      action: () async {
-        if (await _onLogin()) {
-          return true;
-        } else {
-          return false;
-        }
-      },
+      action: _onLogin,
+      // onError: () => showAppAlert(context: context, title: title, actions: actions),
+
       enabled: enableLogin,
     );
   }
 
   /// Called when login button is pressed
-  ///
-  /// The following will be done in sequence:
-  /// 1. Save [LoginResponse] to user_db and in memory;
-  /// 2. Update related db. Create a new if not exist.
   Future<bool> _onLogin() async {
     final email = emailController.text;
     final pswd = pswdController.text;
     final chatServerM = widget.chatServer;
-    try {
-      App.app.authService = AuthService(chatServerM: chatServerM);
+    // try {
+    App.app.authService = AuthService(chatServerM: chatServerM);
 
-      if (!await App.app.authService!.login(email, pswd, rememberMe)) {
-        App.logger.severe("Login Failed");
-        return false;
-      }
-    } catch (e) {
-      App.logger.severe(e);
+    if (!await App.app.authService!.login(email, pswd, rememberMe)) {
+      App.logger.severe("Login Failed");
+
+      // TODO: to be deleted after error is handled.
+      showAppAlert(context: context, title: "Login failed", actions: [
+        AppAlertDialogAction(
+            text: "OK", action: () => Navigator.of(context).pop())
+      ]);
       return false;
     }
+    // } catch (e) {
+    //   App.logger.severe(e);
+
+    //   // TODO: to be deleted after error is handled.
+    //   showAppAlert(
+    //       context: context,
+    //       title: "Login failed",
+    //       content: e.toString(),
+    //       actions: [
+    //         AppAlertDialogAction(
+    //             text: "OK", action: () => Navigator.of(context).pop()),
+    //         AppAlertDialogAction(
+    //             text: "Copy",
+    //             action: () {
+    //               Clipboard.setData(ClipboardData(text: e.toString()));
+    //               Navigator.of(context).pop();
+    //             })
+    //       ]);
+    //   return false;
+    // }
 
     Navigator.of(context)
         .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
