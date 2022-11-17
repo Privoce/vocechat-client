@@ -542,6 +542,7 @@ class _ChatPageState extends State<ChatPage> {
 
     _uiMsgList.sort((a, b) => b.chatMsgM.mid.compareTo(a.chatMsgM.mid));
 
+    print(afterReady);
     if (mounted && afterReady) {
       setState(() {});
     }
@@ -1353,12 +1354,14 @@ class _ChatPageState extends State<ChatPage> {
                       await FileHandler.singleton.getImageThumb(m);
 
                   if (thumbFile != null) {
-                    _onMsg(m, m.localMid, thumbFile, false, frontInsert: false);
+                    await _onMsg(m, m.localMid, thumbFile, false,
+                        frontInsert: false);
                   } else {
-                    _onMsg(m, m.localMid, null, false, frontInsert: false);
+                    await _onMsg(m, m.localMid, null, false,
+                        frontInsert: false);
                   }
                 } else {
-                  _onMsg(m, m.localMid, null, false, frontInsert: false);
+                  await _onMsg(m, m.localMid, null, false, frontInsert: false);
                   break;
                 }
                 break;
@@ -1367,10 +1370,10 @@ class _ChatPageState extends State<ChatPage> {
                 final archiveM = await ArchiveDao().getArchive(archiveId);
 
                 if (archiveM != null) {
-                  _onMsg(m, m.localMid, archiveM.archive, false,
+                  await _onMsg(m, m.localMid, archiveM.archive, false,
                       frontInsert: false);
                 } else {
-                  _onMsg(m, m.localMid, null, false, frontInsert: false);
+                  await _onMsg(m, m.localMid, null, false, frontInsert: false);
                   App.logger.severe("archive missing. Id: $archiveId");
                 }
 
@@ -1380,7 +1383,7 @@ class _ChatPageState extends State<ChatPage> {
             }
             break;
           case MsgDetailType.reply:
-            _onMsg(m, m.localMid, null, false, frontInsert: false);
+            await _onMsg(m, m.localMid, null, false, frontInsert: false);
             break;
           default:
         }

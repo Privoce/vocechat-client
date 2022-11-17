@@ -62,7 +62,7 @@ class AuthService {
     _expiredIn = expiredIn;
 
     _timer = Timer.periodic(Duration(seconds: interval), (_timer) async {
-      App.logger.config("Current token expires in $_expiredIn seconds");
+      // App.logger.config("Current token expires in $_expiredIn seconds");
 
       if (_expiredIn < 0) {
         // token expires.
