@@ -322,7 +322,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
           context: context,
           title: "Sign Up failed",
           content:
-              "Something wrong during the account sign up process. Please try again or contact us.",
+              "Something wrong happened during the account sign up process. Please try again or contact us.",
           actions: [
             AppAlertDialogAction(
                 text: "OK",

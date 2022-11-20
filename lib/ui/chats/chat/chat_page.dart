@@ -542,7 +542,6 @@ class _ChatPageState extends State<ChatPage> {
 
     _uiMsgList.sort((a, b) => b.chatMsgM.mid.compareTo(a.chatMsgM.mid));
 
-    print(afterReady);
     if (mounted && afterReady) {
       setState(() {});
     }

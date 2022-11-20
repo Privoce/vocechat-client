@@ -17,6 +17,9 @@ class InviteUserPage extends StatefulWidget {
 class _InviteUserPageState extends State<InviteUserPage> {
   TextEditingController emailController = TextEditingController();
 
+  // default to be 48 hours.
+  final expiredIn = 48;
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -99,7 +102,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
             },
           ),
           SizedBox(height: 4),
-          Text("Link expires in 1 hour. For single use only.",
+          Text("Link expires in $expiredIn hour(s). For single use only.",
               style: AppTextStyles.labelMedium)
         ],
       ),
@@ -126,7 +129,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
   Future<String?> _generateInvitationMagicLink() async {
     final groupApi = GroupApi(App.app.chatServerM.fullUrl);
-    final res = await groupApi.getRegMagicLink();
+    final res = await groupApi.getRegMagicLink(expiredIn: expiredIn * 3600);
 
     if (res.statusCode == 200) {
       return _tempChangeInvitationLinkDomain(res.data as String);
