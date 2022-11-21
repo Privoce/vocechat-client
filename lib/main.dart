@@ -390,8 +390,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final route = PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             PasswordRegisterPage(
-          chatServer: chatServer,
-        ),
+                chatServer: chatServer, magicToken: data.magicToken),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
@@ -414,16 +413,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void onResume() async {
-    // try {
-    //   final initialLink = await getInitialUri();
-    //   // Parse the link and warn the user, if it is not correct,
-    //   // but keep in mind it could be `null`.
-    //   print(initialLink);
-    // } on PlatformException {
-    //   // Handle exception by warning the user their action did not succeed
-    //   // return?
-    // }
-
     try {
       if (App.app.authService == null) {
         return;
