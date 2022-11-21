@@ -229,6 +229,8 @@ class GroupApi {
       url += "?$str";
     }
 
+    print(url);
+
     var uri = Uri.parse(_baseUrl + url);
     dio.options.headers["Authority"] = uri.authority + ":${uri.port}";
     dio.options.headers["Host"] = uri.host;

@@ -102,7 +102,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
             },
           ),
           SizedBox(height: 4),
-          Text("Link expires in $expiredIn hour(s). For single use only.",
+          Text("Link expires in $expiredIn hour(s)",
               style: AppTextStyles.labelMedium)
         ],
       ),
