@@ -570,10 +570,11 @@ class _ChatPageState extends State<ChatPage> {
 
         break;
       case ReactionTypes.delete:
-        final localMidIndex = _uiMsgList
-            .indexWhere((element) => element.chatMsgM.mid == chatMsgM?.mid);
-        if (localMidIndex > -1) {
-          _uiMsgList.removeAt(localMidIndex);
+        final midIndex =
+            _uiMsgList.indexWhere((element) => element.chatMsgM.mid == mid);
+
+        if (midIndex > -1) {
+          _uiMsgList.removeAt(midIndex);
         }
 
         for (var i = 0; i < _uiMsgList.length; i++) {
@@ -589,6 +590,7 @@ class _ChatPageState extends State<ChatPage> {
       default:
     }
 
+    print(afterReady);
     if (mounted && afterReady) {
       setState(() {});
     }
