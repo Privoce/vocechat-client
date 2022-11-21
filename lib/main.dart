@@ -11,6 +11,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
@@ -312,16 +313,38 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final invLinkUri = Uri.parse(param);
 
       final magicToken = invLinkUri.queryParameters["magic_token"];
-      final serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+      String serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+
+      if (serverUrl == "https://privoce.voce.chat") {
+        serverUrl = "https://dev.voce.chat";
+      }
 
       if (magicToken != null && magicToken.isNotEmpty) {
-        return InvitationLinkData(serverUrl: serverUrl, magicToken: magicToken);
+        if (await _validateMagicToken(serverUrl, magicToken)) {
+          return InvitationLinkData(
+              serverUrl: serverUrl, magicToken: magicToken);
+        } else {
+          final context = navigatorKey.currentContext;
+          if (context == null) return null;
+          _showInvalidLinkWarning(context);
+        }
       }
     } catch (e) {
       App.logger.severe(e);
     }
 
     return null;
+  }
+
+  void _showInvalidLinkWarning(BuildContext context) {
+    showAppAlert(
+        context: context,
+        title: "Invalid Invitation Link",
+        content: "Please contact server admin for a new link or help.",
+        actions: [
+          AppAlertDialogAction(
+              text: "OK", action: (() => Navigator.of(context).pop()))
+        ]);
   }
 
   void _handleIncomingUniLink() async {
@@ -333,6 +356,17 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
       _handleUniLink(linkData);
     });
+  }
+
+  Future<bool> _validateMagicToken(String url, String magicToken) async {
+    try {
+      final res = await UserApi(url).checkMagicToken(magicToken);
+      return (res.statusCode == 200 && res.data == true);
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return false;
   }
 
   void _handleInitUniLink() async {
