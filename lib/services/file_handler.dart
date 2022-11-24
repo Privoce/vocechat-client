@@ -234,8 +234,8 @@ class FileHandler {
       return File(path);
     } catch (e) {
       App.logger.warning(e);
-      return null;
     }
+    return null;
   }
 
   Future<bool> deleteImageThumb(

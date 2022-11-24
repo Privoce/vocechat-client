@@ -446,7 +446,6 @@ class _ChatTextFieldState extends State<ChatTextField> {
   }
 
   void _sendImage() async {
-
     // assets list
     List<AssetEntity> assets = <AssetEntity>[];
 
@@ -505,12 +504,14 @@ class _ChatTextFieldState extends State<ChatTextField> {
         },
       ),
     );
-    Future.forEach(assetsResult!, (AssetEntity element) async {
+
+    if (assetsResult == null) return;
+
+    Future.forEach(assetsResult, (AssetEntity element) async {
       final File? file = await element.file;
       final String? path = file?.path;
       widget.onSendFile(path!, SendType.file);
     });
-    // setState(() {});
   }
 
   Future<AssetEntity?> pickFromCamera(BuildContext c) {
