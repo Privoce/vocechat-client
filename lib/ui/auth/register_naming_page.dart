@@ -17,12 +17,13 @@ import 'package:voce_widgets/voce_widgets.dart';
 
 class RegisterNamingPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
-  late ChatServerM _chatServer;
+  ChatServerM chatServer;
 
   RegisterRequest req;
   final bool rememberMe;
 
-  RegisterNamingPage(this.req, this.rememberMe, {Key? key}) : super(key: key) {
+  RegisterNamingPage(this.req, this.rememberMe, this.chatServer, {Key? key})
+      : super(key: key) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
@@ -37,7 +38,6 @@ class RegisterNamingPage extends StatefulWidget {
           0.6,
           1
         ]));
-    _chatServer = App.app.chatServerM;
   }
 
   @override
@@ -130,7 +130,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
                 color: AppColors.cyan500),
           ),
           Text(
-            widget._chatServer.properties.serverName,
+            widget.chatServer.properties.serverName,
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
@@ -138,7 +138,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
           ),
         ],
       ),
-      Text(widget._chatServer.fullUrl,
+      Text(widget.chatServer.fullUrl,
           style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
@@ -250,9 +250,9 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       widget.req.deviceToken = deviceToken;
 
       App.app.statusService = StatusService();
-      App.app.authService = AuthService(chatServerM: App.app.chatServerM);
+      App.app.authService = AuthService(chatServerM: widget.chatServer);
 
-      UserApi userApi = UserApi(App.app.chatServerM.fullUrl);
+      UserApi userApi = UserApi(widget.chatServer.fullUrl);
       final res = await userApi.register(widget.req);
       if (res.statusCode == 200 && res.data != null) {
         final registerResponse = res.data!;

@@ -80,14 +80,15 @@ class ArchiveContentBubble extends StatelessWidget {
 
           if (name != null && size != null) {
             return FileBubble(
-                archiveId,
-                name,
-                size,
-                () => FileHandler.singleton.getLocalArchiveFile(
-                    archiveId, archiveMsg.fileId!, name), (onProgress) async {
-              return FileHandler.singleton.getArchiveFile(
-                  archiveId, archiveMsg.fileId!, name, onProgress);
-            });
+                filePath: archiveId,
+                name: name,
+                size: size,
+                getLocalFile: () => FileHandler.singleton
+                    .getLocalArchiveFile(archiveId, archiveMsg.fileId!, name),
+                getFile: (onProgress) async {
+                  return FileHandler.singleton.getArchiveFile(
+                      archiveId, archiveMsg.fileId!, name, onProgress);
+                });
           }
         }
         break;

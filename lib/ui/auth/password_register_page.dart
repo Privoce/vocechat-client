@@ -13,8 +13,9 @@ import 'package:voce_widgets/voce_widgets.dart';
 class PasswordRegisterPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
   ChatServerM chatServer;
+  String? magicToken;
 
-  PasswordRegisterPage({required this.chatServer}) {
+  PasswordRegisterPage({required this.chatServer, this.magicToken}) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
@@ -29,7 +30,6 @@ class PasswordRegisterPage extends StatefulWidget {
           0.6,
           1
         ]));
-    // chatServer = App.app.chatServerM;
   }
 
   @override
@@ -295,11 +295,13 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
       final res = await userApi.checkEmail(email);
 
       if (res.statusCode == 200 && res.data == true) {
-        final registerReq =
-            RegisterRequest(email: email, password: _pswdController.text);
+        final registerReq = RegisterRequest(
+            email: email,
+            password: _pswdController.text,
+            magicToken: widget.magicToken);
         Navigator.of(context).push(MaterialPageRoute(
-            builder: ((context) =>
-                RegisterNamingPage(registerReq, rememberMe))));
+            builder: ((context) => RegisterNamingPage(
+                registerReq, rememberMe, widget.chatServer))));
 
         return true;
       } else {
@@ -323,7 +325,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
           context: context,
           title: "Sign Up failed",
           content:
-              "Something wrong during the account sign up process. Please try again or contact us.",
+              "Something wrong happened during the account sign up process. Please try again or contact us.",
           actions: [
             AppAlertDialogAction(
                 text: "OK",

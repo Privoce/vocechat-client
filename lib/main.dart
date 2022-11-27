@@ -11,6 +11,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
@@ -43,47 +44,7 @@ Future<void> main() async {
   // Disables https self-signed certificates for easier dev. To be solved.
   // HttpOverrides.global = DevHttpOverrides();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    if (kDebugMode) {
-      print('User granted permission');
-    }
-  } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-    if (kDebugMode) {
-      print('User granted provisional permission');
-    }
-  } else {
-    if (kDebugMode) {
-      print('User declined or has not accepted permission');
-    }
-  }
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print("FCM received: ${message.data}");
-    if (kDebugMode) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
-    }
-
-    if (message.notification != null) {
-      if (kDebugMode) {
-        print(
-            'Message also contained a notification: ${message.notification?.body}');
-      }
-    }
-  });
+  await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);
 
@@ -150,6 +111,35 @@ Future<void> main() async {
   runApp(VoceChatApp(defaultHome: _defaultHome));
 }
 
+Future<void> _setUpFirebaseNotification() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    if (kDebugMode) {
+      print('User granted permission');
+    }
+  } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    if (kDebugMode) {
+      print('User granted provisional permission');
+    }
+  } else {
+    if (kDebugMode) {
+      print('User declined or has not accepted permission');
+    }
+  }
+}
+
 // ignore: must_be_immutable
 class VoceChatApp extends StatefulWidget {
   VoceChatApp({required this.defaultHome, Key? key}) : super(key: key);
@@ -181,6 +171,9 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     _handleIncomingUniLink();
     _handleInitUniLink();
+
+    _handleInitialNotification();
+    _setupForegroundNotification();
   }
 
   @override
@@ -276,6 +269,42 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     );
   }
 
+  Future<void> _handleInitialNotification() async {
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+    // notification from background, but not terminated state.
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  /// Currently do nothing to foreground notifications,
+  /// but keep this function for potential future use.
+  void _setupForegroundNotification() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("FCM received: ${message.data}");
+
+      if (kDebugMode) {
+        print('Got a message whilst in the foreground!');
+        print('Message data: ${message.data}');
+      }
+
+      if (message.notification != null) {
+        if (kDebugMode) {
+          print(
+              'Message also contained a notification: ${message.notification?.body}');
+        }
+      }
+    });
+  }
+
+  void _handleMessage(RemoteMessage message) async {
+    print(message.data);
+  }
+
   Future<InvitationLinkData?> _parseInvitationLink(Uri uri) async {
     final param = uri.queryParameters["magic_link"];
     if (param == null || param.isEmpty) return null;
@@ -284,16 +313,38 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final invLinkUri = Uri.parse(param);
 
       final magicToken = invLinkUri.queryParameters["magic_token"];
-      final serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+      String serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+
+      if (serverUrl == "https://privoce.voce.chat") {
+        serverUrl = "https://dev.voce.chat";
+      }
 
       if (magicToken != null && magicToken.isNotEmpty) {
-        return InvitationLinkData(serverUrl: serverUrl, magicToken: magicToken);
+        if (await _validateMagicToken(serverUrl, magicToken)) {
+          return InvitationLinkData(
+              serverUrl: serverUrl, magicToken: magicToken);
+        } else {
+          final context = navigatorKey.currentContext;
+          if (context == null) return null;
+          _showInvalidLinkWarning(context);
+        }
       }
     } catch (e) {
       App.logger.severe(e);
     }
 
     return null;
+  }
+
+  void _showInvalidLinkWarning(BuildContext context) {
+    showAppAlert(
+        context: context,
+        title: "Invalid Invitation Link",
+        content: "Please contact server admin for a new link or help.",
+        actions: [
+          AppAlertDialogAction(
+              text: "OK", action: (() => Navigator.of(context).pop()))
+        ]);
   }
 
   void _handleIncomingUniLink() async {
@@ -305,6 +356,17 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
       _handleUniLink(linkData);
     });
+  }
+
+  Future<bool> _validateMagicToken(String url, String magicToken) async {
+    try {
+      final res = await UserApi(url).checkMagicToken(magicToken);
+      return (res.statusCode == 200 && res.data == true);
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return false;
   }
 
   void _handleInitUniLink() async {
@@ -328,8 +390,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final route = PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             PasswordRegisterPage(
-          chatServer: chatServer,
-        ),
+                chatServer: chatServer, magicToken: data.magicToken),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
@@ -352,16 +413,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void onResume() async {
-    // try {
-    //   final initialLink = await getInitialUri();
-    //   // Parse the link and warn the user, if it is not correct,
-    //   // but keep in mind it could be `null`.
-    //   print(initialLink);
-    // } on PlatformException {
-    //   // Handle exception by warning the user their action did not succeed
-    //   // return?
-    // }
-
     try {
       if (App.app.authService == null) {
         return;

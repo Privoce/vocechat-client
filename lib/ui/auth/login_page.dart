@@ -164,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(
             fullscreenDialog: true,
             builder: (context) {
-              return PasswordRegisterPage(chatServer: App.app.chatServerM);
+              return PasswordRegisterPage(chatServer: widget.chatServerM);
             }));
   }
 

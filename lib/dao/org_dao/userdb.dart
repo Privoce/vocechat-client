@@ -234,7 +234,7 @@ class UserDbMDao extends OrgDao<UserDbM> {
       old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
       _logger.config(
-          "UserDb Auth updated. Token:$token, rToken:$refreshToken, exp:$expiredIn");
+          "UserDb Auth updated. id:$id, Token:$token, rToken:$refreshToken, exp:$expiredIn");
     } else {
       throw Exception("No matching UserDb found");
     }

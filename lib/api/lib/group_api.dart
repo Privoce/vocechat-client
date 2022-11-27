@@ -205,7 +205,7 @@ class GroupApi {
   }
 
   Future<Response> getRegMagicLink(
-      [int? gid, int? expiredIn = 3600, int? maxTimes = 1]) async {
+      {int? gid, int? expiredIn = 3600, int? maxTimes = 1}) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
 
     String url = "/create_reg_magic_link";
@@ -228,6 +228,8 @@ class GroupApi {
       final str = paramList.join("&");
       url += "?$str";
     }
+
+    print(url);
 
     var uri = Uri.parse(_baseUrl + url);
     dio.options.headers["Authority"] = uri.authority + ":${uri.port}";

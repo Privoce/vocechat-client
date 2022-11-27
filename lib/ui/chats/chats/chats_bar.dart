@@ -199,15 +199,12 @@ class _ChatsBarState extends State<ChatsBar> {
       actions: [
         // IconButton(
         //     onPressed: () async {
-        //       // print(await GroupInfoDao().getMutedChannelList());
-        //       final uri = Uri.parse(
-        //           "https://privoce.voce.chat/?magic_token=d8ee29ca4296f3acd4fa9d3cb1c87c41ea22cdf8ca01851d798062cd72f276470000000000000600000000000000363539343433ee906463000000000000#/register");
         //       Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-        //         return InvitationLinkPage(uri);
+        //         return TempPageInstruction();
         //       })));
         //     },
         //     icon: Text(
-        //       "test",
+        //       "inst",
         //       style: TextStyle(color: Colors.black),
         //     )),
         Padding(

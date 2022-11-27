@@ -29,13 +29,20 @@ import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 
 class AuthService {
-  AuthService({required this.chatServerM}) {
-    adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+  static final AuthService _service = AuthService._internal();
+  AuthService._internal();
+
+  factory AuthService({required chatServerM}) {
+    _service.chatServerM = chatServerM;
+    _service.adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+
+    App.app.chatServerM = chatServerM;
+
+    return _service;
   }
 
-  // final UserDbM userDb;
-  final ChatServerM chatServerM;
-  late final AdminSystemApi adminSystemApi;
+  late ChatServerM chatServerM;
+  late AdminSystemApi adminSystemApi;
 
   static const int renewBase = 15;
   int renewFactor = 1;
@@ -199,63 +206,68 @@ class AuthService {
 
   Future<bool> login(String email, String pswd, bool rememberPswd,
       [bool isReLogin = false]) async {
-    final _tokenApi = TokenApi(chatServerM.fullUrl);
+    try {
+      final _tokenApi = TokenApi(chatServerM.fullUrl);
 
-    final req = await _preparePswdLoginRequest(email, pswd);
-    final res = await _tokenApi.tokenLoginPost(req);
+      final req = await _preparePswdLoginRequest(email, pswd);
+      final res = await _tokenApi.tokenLoginPost(req);
 
-    String content = "";
+      String content = "";
 
-    if (!isReLogin) {
-      if (res.statusCode != 200) {
-        switch (res.statusCode) {
-          case 401:
-            content = "Invalid account or password.";
-            break;
-          case 403:
-            content = "Login method is not supported.";
-            break;
-          case 404:
-            content = "User does not exist.";
-            break;
-          case 409:
-            content = "Email collision.";
-            break;
-          case 423:
-            content = "User has been frozen.";
-            break;
-          case 451:
-            content =
-                "License has an issue. Please contact server admin for help.";
-            break;
-          default:
-            App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
-            content = "An error occured during login.";
+      if (!isReLogin) {
+        if (res.statusCode != 200) {
+          switch (res.statusCode) {
+            case 401:
+              content = "Invalid account or password.";
+              break;
+            case 403:
+              content = "Login method is not supported.";
+              break;
+            case 404:
+              content = "User does not exist.";
+              break;
+            case 409:
+              content = "Email collision.";
+              break;
+            case 423:
+              content = "User has been frozen.";
+              break;
+            case 451:
+              content =
+                  "License has an issue. Please contact server admin for help.";
+              break;
+            default:
+              App.logger
+                  .severe("Error: ${res.statusCode} ${res.statusMessage}");
+              content = "An error occured during login.";
+          }
+
+          await showAppAlert(
+              context: navigatorKey.currentContext!,
+              title: "Login Error",
+              content: content,
+              actions: [
+                AppAlertDialogAction(
+                  text: "OK",
+                  action: () {
+                    Navigator.pop(navigatorKey.currentContext!);
+                  },
+                )
+              ]);
+
+          return false;
         }
-
-        await showAppAlert(
-            context: navigatorKey.currentContext!,
-            title: "Login Error",
-            content: content,
-            actions: [
-              AppAlertDialogAction(
-                text: "OK",
-                action: () {
-                  Navigator.pop(navigatorKey.currentContext!);
-                },
-              )
-            ]);
-
-        return false;
       }
-    }
 
-    if (res.statusCode == 200 && res.data != null) {
-      final data = res.data!;
-      await initServices(
-          data, rememberPswd, rememberPswd ? req.credential.password : null);
-      App.app.chatService.initSse();
-      return true;
+      if (res.statusCode == 200 && res.data != null) {
+        final data = res.data!;
+        await initServices(
+            data, rememberPswd, rememberPswd ? req.credential.password : null);
+        App.app.chatService.initSse();
+        return true;
+      }
+    } catch (e) {
+      App.logger.severe(e);
     }
 
     return false;
@@ -287,7 +299,6 @@ class AuthService {
                     .getUserAvatar(userInfo.uid))
                 .data ??
             Uint8List(0);
-    // App.app.chatServerM
 
     final chatServerId = App.app.chatServerM.id;
 
@@ -377,10 +388,15 @@ class AuthService {
     try {
       await logout();
 
+      // Delete all data of this user.
       final path =
           "${(await getApplicationDocumentsDirectory()).path}/${App.app.userDb!.dbName}";
-
       await Directory(path).delete(recursive: true);
+
+      // Delete user history data.
+      await UserDbMDao.dao.remove(App.app.userDb!.id);
+      final storage = FlutterSecureStorage();
+      await storage.delete(key: App.app.userDb!.dbName);
 
       App.app.userDb = null;
 

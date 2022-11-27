@@ -24,6 +24,7 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/sse.dart';
+import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
 import 'package:vocechat_client/services/sse_queue.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/task_queue.dart';
@@ -35,15 +36,16 @@ enum EventActions { create, delete, update }
 enum ReactionTypes { edit, like, delete }
 
 typedef UsersAware = Future<void> Function(
-    UserInfoM userInfoM, EventActions action);
+    UserInfoM userInfoM, EventActions action, bool ready);
 typedef GroupAware = Future<void> Function(
-    GroupInfoM groupInfoM, EventActions action);
+    GroupInfoM groupInfoM, EventActions action, bool ready);
 typedef MsgAware = Future<void> Function(
-    ChatMsgM chatMsgM, String localMid, dynamic data);
-typedef ReactionAware = Future<void> Function(ReactionTypes reaction, int mid,
-    [ChatMsgM? content]);
-typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM);
-typedef UserStatusAware = Future<void> Function(int uid, bool isOnline);
+    ChatMsgM chatMsgM, String localMid, dynamic data, bool ready);
+typedef ReactionAware = Future<void>
+    Function(ReactionTypes reaction, int mid, bool ready, [ChatMsgM? content]);
+typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM, bool ready);
+typedef UserStatusAware = Future<void> Function(
+    int uid, bool isOnline, bool ready);
 
 class ChatService {
   ChatService() {
@@ -61,9 +63,8 @@ class ChatService {
     readIndexTimer.cancel();
     Sse.sse.close();
     taskQueue.cancel();
+    _afterReady = false;
   }
-
-  late Stream _chatStream;
 
   final Set<UsersAware> _userListeners = {};
   final Set<GroupAware> _groupListeners = {};
@@ -76,6 +77,34 @@ class ChatService {
   late SseQueue sseQueue;
   late TaskQueue taskQueue;
   late Timer readIndexTimer;
+
+  /// Used to avoid duplicated messages.
+  final Set<int> midSet = {};
+
+  /// Whether SSE has received 'ready' message.
+  ///
+  /// 'Ready' message means backend has pushed all accumulated messages.
+  bool _afterReady = false;
+
+  void initSse() async {
+    _afterReady = false;
+    Sse.sse.close();
+    App.app.statusService.fireSseLoading(LoadingStatus.loading);
+
+    if (App.app.userDb == null) {
+      App.logger.warning("App.app.userDb null. SSE not subscribed.");
+      App.app.statusService.fireSseLoading(LoadingStatus.disconnected);
+      return;
+    }
+
+    try {
+      Sse.sse.connect();
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    Sse.sse.subscribeSseEvent(handleSseEvent);
+  }
 
   Map<int, int> readIndexGroup = {}; // {gid: mid}
   Map<int, int> readIndexUser = {}; // {uid: mid}
@@ -135,25 +164,6 @@ class ChatService {
         }
       }
     });
-  }
-
-  void initSse() async {
-    Sse.sse.close();
-    App.app.statusService.fireSseLoading(LoadingStatus.loading);
-
-    if (App.app.userDb == null) {
-      App.logger.warning("App.app.userDb null. SSE not subscribed.");
-      App.app.statusService.fireSseLoading(LoadingStatus.disconnected);
-      return;
-    }
-
-    try {
-      Sse.sse.connect();
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    Sse.sse.subscribeSseEvent(handleSseEvent);
   }
 
   void subscribeUsers(UsersAware userAware) {
@@ -225,7 +235,7 @@ class ChatService {
     }
     for (UsersAware userAware in _userListeners) {
       try {
-        userAware(userInfoM, action);
+        userAware(userInfoM, action, _afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -235,7 +245,7 @@ class ChatService {
   void fireChannel(GroupInfoM groupInfoM, EventActions action) {
     for (GroupAware groupAware in _groupListeners) {
       try {
-        groupAware(groupInfoM, action);
+        groupAware(groupInfoM, action, _afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -245,7 +255,7 @@ class ChatService {
   void fireMsg(ChatMsgM chatMsgM, String localMid, dynamic data) {
     for (MsgAware msgAware in _normalMsgListeners) {
       try {
-        msgAware(chatMsgM, localMid, data);
+        msgAware(chatMsgM, localMid, data, _afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -255,7 +265,7 @@ class ChatService {
   void fireReaction(ReactionTypes reaction, int mid, [ChatMsgM? chatMsgM]) {
     for (ReactionAware reactionAware in _reactionListeners) {
       try {
-        reactionAware(reaction, mid, chatMsgM);
+        reactionAware(reaction, mid, _afterReady, chatMsgM);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -275,7 +285,7 @@ class ChatService {
   void fireSnippet(ChatMsgM chatMsgM) {
     for (SnippetAware snippetAware in _snippetListeners) {
       try {
-        snippetAware(chatMsgM);
+        snippetAware(chatMsgM, _afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -285,7 +295,7 @@ class ChatService {
   void fireUserStatus(int uid, bool isOnline) {
     for (UserStatusAware statusAware in _userStatusListeners) {
       try {
-        statusAware(uid, isOnline);
+        statusAware(uid, isOnline, _afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -300,7 +310,7 @@ class ChatService {
 
       // Following methods listed in alphabetical order.
       switch (type) {
-        case "kick":
+        case sseKick:
           App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
 
           final context = navigatorKey.currentContext;
@@ -319,25 +329,25 @@ class ChatService {
           App.app.authService?.logout(markLogout: false, isKicked: true);
           break;
 
-        case "heartbeat":
+        case sseHeartbeat:
           App.app.statusService.fireSseLoading(LoadingStatus.success);
           break;
 
-        case "chat":
-        case "group_changed":
-        case "joined_group":
-        case "kick_from_group":
-        case "pinned_message_updated":
-        case "ready":
-        case "related_groups":
-        case "user_joined_group":
-        case "user_leaved_group":
-        case "users_log":
-        case "user_settings":
-        case "user_settings_changed":
-        case "users_snapshot":
-        case "users_state":
-        case "users_state_changed":
+        case sseChat:
+        case sseGroupChanged:
+        case sseJoinedGroup:
+        case sseKickFromGroup:
+        case ssePinnedMessageUpdated:
+        case sseReady:
+        case sseRelatedGroups:
+        case sseUserJoinedGroup:
+        case sseUserLeavedGroup:
+        case sseUsersLog:
+        case sseUserSettings:
+        case sseUserSettingsChanged:
+        case sseUsersSnapshot:
+        case sseUsersState:
+        case sseUsersStateChanged:
           sseQueue.add(event);
           break;
 
@@ -357,49 +367,49 @@ class ChatService {
 
       // Following methods listed in alphabetical order.
       switch (type) {
-        case "chat":
+        case sseChat:
           await _handleChatMsg(map);
           break;
-        case "group_changed":
+        case sseGroupChanged:
           await _handleGroupChanged(map);
           break;
-        case "joined_group":
+        case sseJoinedGroup:
           await _handleJoinedGroup(map);
           break;
-        case "kick_from_group":
+        case sseKickFromGroup:
           await _handleKickFromGroup(map);
           break;
-        case "pinned_message_updated":
+        case ssePinnedMessageUpdated:
           await _handlePinnedMessageUpdated(map);
           break;
-        case "ready":
+        case sseReady:
           await _handleReady();
           break;
-        case "related_groups":
+        case sseRelatedGroups:
           await _handleRelatedGroups(map);
           break;
-        case "user_joined_group":
+        case sseUserJoinedGroup:
           await _handleUserJoinedGroup(map);
           break;
-        case "user_leaved_group":
+        case sseUserLeavedGroup:
           await _handleUserLeavedGroup(map);
           break;
-        case "users_log":
+        case sseUsersLog:
           await _handleUsersLog(map);
           break;
-        case "user_settings":
+        case sseUserSettings:
           await _handleUserSettings(map);
           break;
-        case "user_settings_changed":
+        case sseUserSettingsChanged:
           await _handleUserSettingsChanged(map);
           break;
-        case "users_snapshot":
+        case sseUsersSnapshot:
           await _handleUsersSnapshot(map);
           break;
-        case "users_state":
+        case sseUsersState:
           await _handleUsersState(map);
           break;
-        case "users_state_changed":
+        case sseUsersStateChanged:
           await _handleUsersStateChanged(map);
           break;
 
@@ -412,7 +422,7 @@ class ChatService {
   }
 
   Future<void> _handleChatMsg(Map<String, dynamic> chatJson) async {
-    assert(chatJson.containsKey("type") && chatJson["type"] == "chat");
+    assert(chatJson.containsKey("type") && chatJson["type"] == sseChat);
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
@@ -427,15 +437,19 @@ class ChatService {
       return;
     }
 
+    if (midSet.contains(chatMsg.mid)) return;
+
+    midSet.add(chatMsg.mid);
+
     try {
       switch (chatMsg.detail["type"]) {
-        case "normal":
+        case chatMsgNormal:
           await _handleMsgNormal(chatMsg);
           break;
-        case "reaction":
+        case chatMsgReaction:
           await _handleMsgReaction(chatMsg);
           break;
-        case "reply":
+        case chatMsgReply:
           await _handleReply(chatMsg);
           break;
         default:
@@ -464,13 +478,13 @@ class ChatService {
 
     try {
       switch (chatMsg.detail["type"]) {
-        case "normal":
+        case chatMsgNormal:
           await _handleMsgNormal(chatMsg);
           break;
-        case "reaction":
+        case chatMsgReaction:
           await _handleMsgReaction(chatMsg);
           break;
-        case "reply":
+        case chatMsgReply:
           await _handleReply(chatMsg);
           break;
         default:
@@ -484,7 +498,7 @@ class ChatService {
   }
 
   Future<void> _handleGroupChanged(Map<String, dynamic> map) async {
-    assert(map["type"] == "group_changed");
+    assert(map["type"] == sseGroupChanged);
 
     try {
       await GroupInfoDao()
@@ -512,7 +526,7 @@ class ChatService {
   }
 
   Future<void> _handleJoinedGroup(Map<String, dynamic> joinedGroupJson) async {
-    assert(joinedGroupJson["type"] == "joined_group");
+    assert(joinedGroupJson["type"] == sseJoinedGroup);
 
     try {
       final Map<String, dynamic> groupMap = joinedGroupJson["group"];
@@ -538,7 +552,7 @@ class ChatService {
   }
 
   Future<void> _handleKickFromGroup(Map<String, dynamic> map) async {
-    assert(map['type'] == "kick_from_group");
+    assert(map['type'] == sseKickFromGroup);
     try {
       await GroupInfoDao().removeByGid(map["gid"]).then((value) {
         if (value != null) {
@@ -551,7 +565,7 @@ class ChatService {
   }
 
   Future<void> _handlePinnedMessageUpdated(Map<String, dynamic> map) async {
-    assert(map["type"] == "pinned_message_updated");
+    assert(map["type"] == ssePinnedMessageUpdated);
 
     // Keep old pin updates in groupInfo
     try {
@@ -575,6 +589,8 @@ class ChatService {
   Future<void> _handleReady() async {
     App.app.statusService.fireSseLoading(LoadingStatus.success);
 
+    _afterReady = true;
+
     // find DMs with draft and fire user to chats page.
     final usersWithDraft = await UserInfoDao().getUsersWithDraft();
     if (usersWithDraft == null) {
@@ -591,7 +607,7 @@ class ChatService {
 
   Future<void> _handleRelatedGroups(Map<String, dynamic> relatedGroups) async {
     assert(relatedGroups.containsKey("type") &&
-        relatedGroups["type"] == "related_groups");
+        relatedGroups["type"] == sseRelatedGroups);
 
     try {
       final List<dynamic> groupMaps = relatedGroups["groups"];
@@ -661,7 +677,7 @@ class ChatService {
   }
 
   Future<void> _handleUserJoinedGroup(Map<String, dynamic> map) async {
-    assert(map['type'] == "user_joined_group");
+    assert(map['type'] == sseUserJoinedGroup);
 
     try {
       final gid = map["gid"] as int;
@@ -678,7 +694,7 @@ class ChatService {
   }
 
   Future<void> _handleUserLeavedGroup(Map<String, dynamic> map) async {
-    assert(map['type'] == "user_leaved_group");
+    assert(map['type'] == sseUserLeavedGroup);
 
     try {
       final gid = map["gid"] as int;
@@ -704,7 +720,7 @@ class ChatService {
   }
 
   Future<void> _handleUsersLog(Map<String, dynamic> usersLog) async {
-    assert(usersLog.containsKey("type") && usersLog["type"] == "users_log");
+    assert(usersLog.containsKey("type") && usersLog["type"] == sseUsersLog);
 
     // try {
     final List<dynamic> logMaps = usersLog["logs"];
@@ -810,7 +826,7 @@ class ChatService {
   }
 
   Future<void> _handleUserSettings(Map<String, dynamic> map) async {
-    assert(map["type"] == "user_settings");
+    assert(map["type"] == sseUserSettings);
     {
       // read index groups
       final readIndexGroups = map["read_index_groups"] as List?;
@@ -894,7 +910,7 @@ class ChatService {
   }
 
   Future<void> _handleUserSettingsChanged(Map<String, dynamic> map) async {
-    assert(map['type'] == 'user_settings_changed');
+    assert(map['type'] == sseUserSettingsChanged);
 
     // read index groups
     final readIndexGroups = map["read_index_groups"] as List?;
@@ -1013,7 +1029,7 @@ class ChatService {
 
   Future<void> _handleUsersSnapshot(Map<String, dynamic> usersSnapshot) async {
     assert(usersSnapshot.containsKey("type") &&
-        usersSnapshot["type"] == "users_snapshot");
+        usersSnapshot["type"] == sseUsersSnapshot);
 
     try {
       final List<dynamic> userMaps = usersSnapshot["users"];
@@ -1083,7 +1099,7 @@ class ChatService {
   }
 
   Future<void> _handleUsersStateChanged(Map<String, dynamic> map) async {
-    assert(map["type"] == "users_state_changed");
+    assert(map["type"] == sseUsersStateChanged);
 
     try {
       final uid = map["uid"] as int;
@@ -1127,6 +1143,7 @@ class ChatService {
                         "";
                     fireSnippet(value);
                     fireMsg(value, localMid, s);
+                    midSet.remove(value.mid);
                   }));
 
           break;
@@ -1142,6 +1159,7 @@ class ChatService {
           taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
                 fireSnippet(value);
                 fireMsg(value, localMid, detail.content);
+                midSet.remove(value.mid);
               }));
 
           break;
@@ -1156,6 +1174,7 @@ class ChatService {
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
           taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
                 fireSnippet(chatMsgM);
+                midSet.remove(value.mid);
               }));
 
           // thumb will only be downloaded if file is an image.
@@ -1190,6 +1209,7 @@ class ChatService {
           taskQueue
               .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
                     fireSnippet(value);
+                    midSet.remove(value.mid);
                   }));
 
           getArchive(chatMsgM).catchError((e) {
@@ -1229,6 +1249,7 @@ class ChatService {
             if (newMsgM != null) {
               fireSnippet(newMsgM);
               fireReaction(ReactionTypes.edit, targetMid, newMsgM);
+              midSet.remove(newMsgM.mid);
             }
           });
 
@@ -1242,6 +1263,7 @@ class ChatService {
               .then((newMsgM) {
             if (newMsgM != null) {
               fireReaction(ReactionTypes.like, targetMid, newMsgM);
+              midSet.remove(newMsgM.mid);
             }
           });
 
@@ -1270,6 +1292,7 @@ class ChatService {
 
                 if (msg != null) {
                   fireSnippet(msg);
+                  midSet.remove(msg.mid);
                 }
               }
             } else {
@@ -1280,15 +1303,11 @@ class ChatService {
 
                 if (msg != null) {
                   fireSnippet(msg);
+                  midSet.remove(msg.mid);
                 }
               }
             }
-
-            // delete with remaining hint words in msg list.
-            // fireSnippet(value, "This message has been deleted.");
-            // fireReaction(ReactionTypes.delete, targetMid, value);
           });
-          // );
           break;
 
         default:
@@ -1320,6 +1339,7 @@ class ChatService {
           .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
                 fireSnippet(value);
                 fireMsg(value, localMid, msgReplyJson['content']);
+                midSet.remove(value.mid);
               }));
     } catch (e) {
       App.logger.severe(e);

@@ -158,6 +158,7 @@ class InvitationLinkPastePage extends StatelessWidget {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => PasswordRegisterPage(
                     chatServer: chatServerM,
+                    magicToken: magicToken,
                   )));
         }
       } else {

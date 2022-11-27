@@ -89,10 +89,13 @@ class PinnedMsgTile extends StatelessWidget {
     final size = msg.properties!["size"] ?? 0;
     final filePath = msg.content;
     return FileBubble(
-        filePath, name, size, () => getLocalFile(chatId!, filePath, fileName),
-        (onProgress) async {
-      return getMsgFile(chatId!, filePath, fileName, onProgress);
-    });
+        filePath: filePath,
+        name: name,
+        size: size,
+        getLocalFile: () => getLocalFile(chatId!, filePath, fileName),
+        getFile: (onProgress) async {
+          return getMsgFile(chatId!, filePath, fileName, onProgress);
+        });
   }
 
   Widget _buildImageBubble(PinnedMsg msg) {
@@ -108,7 +111,8 @@ class PinnedMsgTile extends StatelessWidget {
               return ImageBubble(
                   imageFile: snapshot.data!,
                   localMid: msg.content,
-                  getImage: () => getMsgImage(chatId, msg.content, imageName));
+                  getImage: () =>
+                      getMsgImageThumb(chatId, msg.content, imageName));
             }
             return CupertinoActivityIndicator();
           });
@@ -146,7 +150,7 @@ class PinnedMsgTile extends StatelessWidget {
   /// Fetch thumb of Normal messages.
   /// It'll first find in File database, return if exists.
   /// If not, it will find it from server. Returns null if nothing found.
-  Future<File?> getMsgImage(
+  Future<File?> getMsgImageThumb(
       String chatId, String filePath, String imageName) async {
     final imageFile = await FileHandler.singleton
         .readImageNormal(chatId, filePath, imageName);
@@ -156,7 +160,7 @@ class PinnedMsgTile extends StatelessWidget {
 
     try {
       final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
-      final res = await resourceApi.getFile(filePath, true, false);
+      final res = await resourceApi.getFile(filePath, false, false);
 
       if (res.statusCode == 200 && res.data != null) {
         return await FileHandler.singleton
