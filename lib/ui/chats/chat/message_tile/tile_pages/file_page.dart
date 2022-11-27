@@ -11,6 +11,8 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/pdf_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/video_page.dart';
@@ -26,6 +28,7 @@ class FilePage extends StatefulWidget {
   final int size;
   final Future<File?> Function() getLocalFile;
   final Future<File?> Function(Function(int, int)) getFile;
+  final ChatMsgM? chatMsgM;
 
   FilePage(
       {required this.filePath,
@@ -33,7 +36,8 @@ class FilePage extends StatefulWidget {
       required this.extension,
       required this.size,
       required this.getLocalFile,
-      required this.getFile});
+      required this.getFile,
+      this.chatMsgM});
 
   @override
   State<FilePage> createState() => _FilePageState();
@@ -52,6 +56,13 @@ class _FilePageState extends State<FilePage> {
     super.initState();
 
     checkFileExist();
+    App.app.chatService.subscribeReaction(_onDelete);
+  }
+
+  @override
+  void dispose() {
+    App.app.chatService.subscribeReaction(_onDelete);
+    super.dispose();
   }
 
   @override
@@ -184,7 +195,9 @@ class _FilePageState extends State<FilePage> {
     }
   }
 
-  void _onDelete() {
+  Future<void> _onDelete(ReactionTypes reaction, int mid, bool ready,
+      [ChatMsgM? content]) async {
+    // if ()ReactionTypes, int, bool, [ChatMsgM?]
     showAppAlert(
         context: context,
         title: "This file has been deleted.",

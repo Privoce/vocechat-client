@@ -77,27 +77,28 @@ class SavedContentBubble extends StatelessWidget {
 
           if (name != null && size != null) {
             return FileBubble(
-                archiveId,
-                name,
-                size,
-                () => FileHandler.singleton.getLocalSavedItemsFile(
-                    App.app.userDb!.uid, archiveId, archiveMsg.fileId!, name),
-                (onProgress) async {
-              return FileHandler.singleton.getSavedItemsFile(
-                  App.app.userDb!.uid,
-                  archiveId,
-                  archiveMsg.fileId!,
-                  name,
-                  onProgress);
-              // String url = App.app.chatServerM.fullUrl;
-              // url += "/api/resource/archive/attachment?file_path=$archiveId";
-              // url += "&attachment_id=${archiveMsg.fileId!}&download=true";
-              // try {
-              //   await launchUrlString(url);
-              // } catch (e) {
-              //   App.logger.warning(e);
-              // }
-            });
+              filePath: archiveId,
+              name: name,
+              size: size,
+              getLocalFile: () => FileHandler.singleton.getLocalSavedItemsFile(
+                  App.app.userDb!.uid, archiveId, archiveMsg.fileId!, name),
+              getFile: (onProgress) async {
+                return FileHandler.singleton.getSavedItemsFile(
+                    App.app.userDb!.uid,
+                    archiveId,
+                    archiveMsg.fileId!,
+                    name,
+                    onProgress);
+                // String url = App.app.chatServerM.fullUrl;
+                // url += "/api/resource/archive/attachment?file_path=$archiveId";
+                // url += "&attachment_id=${archiveMsg.fileId!}&download=true";
+                // try {
+                //   await launchUrlString(url);
+                // } catch (e) {
+                //   App.logger.warning(e);
+                // }
+              },
+            );
           }
         }
         break;
