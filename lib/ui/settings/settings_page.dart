@@ -19,6 +19,7 @@ import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/settings/firebase_settings_page.dart';
 import 'package:vocechat_client/ui/settings/server_info_settings_page.dart';
+import 'package:vocechat_client/ui/settings/settings_about_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
 import 'package:vocechat_client/ui/settings/userinfo_setting_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
@@ -77,8 +78,8 @@ class _SettingPageState extends State<SettingPage> {
                   _buildUserInfo(),
                   _buildServer(context),
                   if (App.app.userDb?.userInfo.isAdmin ?? false)
-                    _buildConfigs(context),
-                  _buildAbout(),
+                    // _buildConfigs(context),
+                    _buildAbout(),
                   SizedBox(height: 8),
                   _buildButtons(context)
                 ],
@@ -145,10 +146,16 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildAbout() {
     return BannerTile(
-        header: AppLocalizations.of(context)!.settingsPageAbout,
-        enableTap: false,
+        // header: AppLocalizations.of(context)!.settingsPageAbout,
+
+        // title: AppLocalizations.of(context)!.settingsPageAbout,
+        // keepArrow: true,
+        // enableTap: true,
         title: AppLocalizations.of(context)!.settingsPageAboutVersion,
+        enableTap: false,
         keepArrow: false,
+        // onTap: () => Navigator.of(context)
+        //     .push(MaterialPageRoute(builder: (context) => SettingsAboutPage())),
         trailing: FutureBuilder<String>(
             future: _getVersion(),
             builder: (context, snapshot) {

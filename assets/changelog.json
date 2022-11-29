@@ -1,0 +1,8 @@
+{   
+    "latest": {"version": "0.2.53", "build_num": 23},
+    "logs": [
+        {"time": 1669619886055, "version": "0.2.53", "build_num": 23, "updates": [
+            "- fix: check invitation link validity before jumping to sign up page."
+        ]}
+    ]
+}
