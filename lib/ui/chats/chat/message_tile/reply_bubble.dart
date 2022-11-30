@@ -42,6 +42,9 @@ class ReplyBubble extends StatelessWidget {
         fontWeight: FontWeight.w500,
         fontSize: 14,
         color: AppColors.primaryHover);
+
+    print(msgM.msgReply?.content);
+    print(msgM.msgReply?.properties);
   }
 
   @override
@@ -182,6 +185,7 @@ class ReplyBubble extends StatelessWidget {
     Widget replied;
 
     bool hasMention = msgM.hasMention;
+
     if (content != null) {
       final name = repliedUser.userInfo.name.isNotEmpty
           ? repliedUser.userInfo.name

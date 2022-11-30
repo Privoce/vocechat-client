@@ -1,5 +1,7 @@
 library flutter_mentions;
 
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +18,8 @@ class AnnotationEditingController extends TextEditingController {
   // Generate the Regex pattern for matching all the suggestions in one.
   AnnotationEditingController(this._mapping)
       : _pattern = _mapping.keys.isNotEmpty
-            ? "(${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})"
+            ? "(?:${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})"
+                r"\b"
             : null;
 
   /// Can be used to get the markup from the controller directly.
@@ -58,7 +61,8 @@ class AnnotationEditingController extends TextEditingController {
   set mapping(Map<String, Annotation> _mapping) {
     this._mapping = _mapping;
 
-    _pattern = "(${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})";
+    _pattern =
+        "(?:${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})" r"\b";
   }
 
   @override
@@ -76,7 +80,6 @@ class AnnotationEditingController extends TextEditingController {
             final mention = _mapping[match[0]!] ??
                 _mapping[_mapping.keys.firstWhere((element) {
                   final reg = RegExp(element);
-
                   return reg.hasMatch(match[0]!);
                 })]!;
 
