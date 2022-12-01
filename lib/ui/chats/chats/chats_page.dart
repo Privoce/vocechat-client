@@ -290,7 +290,7 @@ class _ChatsPageState extends State<ChatsPage>
         globals.unreadCountSum.value = calUnreadCountSum();
       }
 
-      final draft = mentionsKey.currentState?.controller?.text.trim();
+      final draft = mentionsKey.currentState?.controller?.text;
 
       await GroupInfoDao().updateProperties(gid, draft: draft).then((value) {
         if (value != null) {
@@ -329,7 +329,7 @@ class _ChatsPageState extends State<ChatsPage>
         globals.unreadCountSum.value = calUnreadCountSum();
       }
 
-      final draft = mentionsKey.currentState?.controller?.text.trim();
+      final draft = mentionsKey.currentState?.controller?.text;
 
       UserInfoDao().updateProperties(dmUid, draft: draft).then((value) async {
         if (value != null) {

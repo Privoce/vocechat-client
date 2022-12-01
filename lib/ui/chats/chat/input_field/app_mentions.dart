@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:universal_html/js_util.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
 /// A custom implementation of [TextEditingController] to support @ mention or other
@@ -19,7 +20,7 @@ class AnnotationEditingController extends TextEditingController {
   AnnotationEditingController(this._mapping)
       : _pattern = _mapping.keys.isNotEmpty
             ? "(?:${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})"
-                r"\b"
+                r"\s"
             : null;
 
   /// Can be used to get the markup from the controller directly.
@@ -29,11 +30,11 @@ class AnnotationEditingController extends TextEditingController {
         : text.splitMapJoin(
             RegExp('$_pattern'),
             onMatch: (Match match) {
-              final mention = _mapping[match[0]!] ??
+              final key = match.group(0)?.trim();
+              final mention = _mapping[key] ??
                   _mapping[_mapping.keys.firstWhere((element) {
                     final reg = RegExp(element);
-
-                    return reg.hasMatch(match[0]!);
+                    return reg.hasMatch(key ?? "");
                   })]!;
 
               // Default markup format for mentions
@@ -61,8 +62,8 @@ class AnnotationEditingController extends TextEditingController {
   set mapping(Map<String, Annotation> _mapping) {
     this._mapping = _mapping;
 
-    _pattern =
-        "(?:${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})" r"\b";
+    _pattern = "(?:${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})"
+        r"\s";
   }
 
   @override
@@ -76,11 +77,13 @@ class AnnotationEditingController extends TextEditingController {
       text.splitMapJoin(
         RegExp('$_pattern'),
         onMatch: (Match match) {
+          final key = match[0].toString().trim();
+
           if (_mapping.isNotEmpty) {
-            final mention = _mapping[match[0]!] ??
+            final mention = _mapping[key] ??
                 _mapping[_mapping.keys.firstWhere((element) {
                   final reg = RegExp(element);
-                  return reg.hasMatch(match[0]!);
+                  return reg.hasMatch(key);
                 })]!;
 
             children.add(

@@ -42,9 +42,6 @@ class ReplyBubble extends StatelessWidget {
         fontWeight: FontWeight.w500,
         fontSize: 14,
         color: AppColors.primaryHover);
-
-    print(msgM.msgReply?.content);
-    print(msgM.msgReply?.properties);
   }
 
   @override
