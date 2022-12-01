@@ -590,7 +590,6 @@ class _ChatPageState extends State<ChatPage> {
       default:
     }
 
-    print(afterReady);
     if (mounted && afterReady) {
       setState(() {});
     }

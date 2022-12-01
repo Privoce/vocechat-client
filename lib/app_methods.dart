@@ -45,7 +45,8 @@ Future<String> parseMention(String snippet) async {
   return text;
 }
 
-/// Get first, or first two, if exists, initials of a name string.
+/// Get first, or first two, if exists, initials of a name string, used for
+/// user avatars.
 String getInitials(String input, {int limit = 4}) {
   return input.isNotEmpty
       ? input
@@ -59,6 +60,7 @@ String getInitials(String input, {int limit = 4}) {
       : '';
 }
 
+/// used for path generation when doing file storage
 String? getChatId({int? uid, int? gid}) {
   if (uid != null && uid != -1) {
     return "U$uid";

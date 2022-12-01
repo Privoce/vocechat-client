@@ -182,6 +182,7 @@ class ReplyBubble extends StatelessWidget {
     Widget replied;
 
     bool hasMention = msgM.hasMention;
+
     if (content != null) {
       final name = repliedUser.userInfo.name.isNotEmpty
           ? repliedUser.userInfo.name
