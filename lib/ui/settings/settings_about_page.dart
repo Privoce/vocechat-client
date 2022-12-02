@@ -1,15 +1,20 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_icon.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';
+import 'package:http/http.dart' as http;
 
 class SettingsAboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    _getChangeLog();
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -38,9 +43,9 @@ class SettingsAboutPage extends StatelessWidget {
     return Column(
       children: [
         AppIcon(),
-        SizedBox(height: 8),
-        _buildAppInfo(),
         SizedBox(height: 16),
+        _buildAppInfo(),
+        SizedBox(height: 32),
         _buildActions()
       ],
     );
@@ -78,5 +83,11 @@ class SettingsAboutPage extends StatelessWidget {
     // String buildNumber = packageInfo.buildNumber;
     // return version + "($buildNumber)";
     return version;
+  }
+
+  Future<Map<String, dynamic>?> _getChangeLog() async {
+    final logUrl = "https://vocechat.s3.amazonaws.com/changelog.json";
+    final res = await http.get(Uri.parse(logUrl));
+    return jsonDecode(res.body)["latest"];
   }
 }

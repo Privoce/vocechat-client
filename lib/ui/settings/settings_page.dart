@@ -77,10 +77,11 @@ class _SettingPageState extends State<SettingPage> {
                 children: [
                   _buildUserInfo(),
                   _buildServer(context),
+                  _buildAbout(),
                   if (App.app.userDb?.userInfo.isAdmin ?? false)
                     // _buildConfigs(context),
-                    _buildAbout(),
-                  SizedBox(height: 8),
+
+                    SizedBox(height: 8),
                   _buildButtons(context)
                 ],
               )),
@@ -146,16 +147,11 @@ class _SettingPageState extends State<SettingPage> {
 
   Widget _buildAbout() {
     return BannerTile(
-        // header: AppLocalizations.of(context)!.settingsPageAbout,
-
-        // title: AppLocalizations.of(context)!.settingsPageAbout,
-        // keepArrow: true,
-        // enableTap: true,
-        title: AppLocalizations.of(context)!.settingsPageAboutVersion,
-        enableTap: false,
-        keepArrow: false,
-        // onTap: () => Navigator.of(context)
-        //     .push(MaterialPageRoute(builder: (context) => SettingsAboutPage())),
+        title: AppLocalizations.of(context)!.settingsPageAbout,
+        keepArrow: true,
+        enableTap: true,
+        onTap: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => SettingsAboutPage())),
         trailing: FutureBuilder<String>(
             future: _getVersion(),
             builder: (context, snapshot) {
