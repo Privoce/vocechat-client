@@ -553,8 +553,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
     RegExp markupRegExp = RegExp(r'\(__([^\(\)]+)__\)');
 
     Iterable<Match> markupMatches = markupRegExp.allMatches(markupText);
+
     for (Match m in markupMatches) {
-      String? match = m.group(1);
+      String? match = m.group(1)?.trim();
       markupSet.add(match);
     }
 

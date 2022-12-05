@@ -1,0 +1,17 @@
+{   
+    "latest": {"version": "0.2.55", "build_num": 25},
+    "logs": [
+        {"time": 1670209545158, "version": "0.2.55", "build_num": 24, "updates": [
+            "- add: check updates and changelog.",
+            "- add: Simplified Chinese language.",
+            "- fix: disable super admin (uid == 1) access to deleting their account.",
+            "- fix: messages cannot be deleted throughly in chats."
+        ]},
+        {"time": 1670009545158, "version": "0.2.54", "build_num": 24, "updates": [
+            "- fix: invitation link validation might output wrongly with localhost server deployment."
+        ]},
+        {"time": 1669619886055, "version": "0.2.53", "build_num": 23, "updates": [
+            "- fix: check invitation link validity before jumping to sign up page."
+        ]}
+    ]
+}

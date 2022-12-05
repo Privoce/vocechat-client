@@ -19,6 +19,7 @@ import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/settings/firebase_settings_page.dart';
 import 'package:vocechat_client/ui/settings/server_info_settings_page.dart';
+import 'package:vocechat_client/ui/settings/settings_about_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
 import 'package:vocechat_client/ui/settings/userinfo_setting_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
@@ -76,10 +77,11 @@ class _SettingPageState extends State<SettingPage> {
                 children: [
                   _buildUserInfo(),
                   _buildServer(context),
-                  if (App.app.userDb?.userInfo.isAdmin ?? false)
-                    _buildConfigs(context),
                   _buildAbout(),
-                  SizedBox(height: 8),
+                  if (App.app.userDb?.userInfo.isAdmin ?? false)
+                    // _buildConfigs(context),
+
+                    SizedBox(height: 8),
                   _buildButtons(context)
                 ],
               )),
@@ -144,11 +146,29 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildAbout() {
+    // return BannerTile(
+    //     title: AppLocalizations.of(context)!.settingsPageAbout,
+    //     keepArrow: false,
+    //     enableTap: false,
+    //     trailing: FutureBuilder<String>(
+    //         future: _getVersion(),
+    //         builder: (context, snapshot) {
+    //           if (snapshot.hasData) {
+    //             return Text(snapshot.data!,
+    //                 style: TextStyle(
+    //                     fontSize: 15,
+    //                     fontWeight: FontWeight.w400,
+    //                     color: AppColors.grey500));
+    //           } else {
+    //             return SizedBox.shrink();
+    //           }
+    //         }));
     return BannerTile(
-        header: AppLocalizations.of(context)!.settingsPageAbout,
-        enableTap: false,
-        title: AppLocalizations.of(context)!.settingsPageAboutVersion,
-        keepArrow: false,
+        title: AppLocalizations.of(context)!.settingsPageAbout,
+        keepArrow: true,
+        enableTap: true,
+        onTap: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => SettingsAboutPage())),
         trailing: FutureBuilder<String>(
             future: _getVersion(),
             builder: (context, snapshot) {
@@ -196,10 +216,11 @@ class _SettingPageState extends State<SettingPage> {
             },
             title: AppLocalizations.of(context)!.settingsPageClearData),
         SizedBox(height: 8),
-        AppBannerButton(
-          onTap: () => _onDeleteAccountTapped(context),
-          title: "Delete Account",
-        )
+        if (App.app.userDb?.uid != 1)
+          AppBannerButton(
+            onTap: () => _onDeleteAccountTapped(context),
+            title: "Delete Account",
+          )
       ],
     );
   }

@@ -237,6 +237,14 @@ class UserApi {
     final dio = DioUtil(baseUrl: _baseUrl);
     dio.options.headers["content-type"] = "application/json";
 
+    final res = await dio.post("/check_magic_token",
+        data: json.encode({"magic_token": magicToken}));
+
+    print(res.realUri);
+    print(res.requestOptions.data);
+    print(res.statusCode);
+    print(res.data);
+
     return dio.post("/check_magic_token",
         data: json.encode({"magic_token": magicToken}));
   }

@@ -2,17 +2,33 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:vocechat_client/api/lib/dio_retry/options.dart';
-import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/admin/system/sys_org_info.dart';
-import 'package:vocechat_client/app.dart';
 
 class AdminSystemApi {
   late final String _baseUrl;
 
   AdminSystemApi(String serverUrl) {
     _baseUrl = serverUrl + "/api/admin/system";
+  }
+
+  Future<Response<String>> getServerVersion() async {
+    final dio = DioUtil(baseUrl: _baseUrl);
+    final res = await dio.get("/version");
+
+    var newRes = Response<String>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      newRes.data = res.data;
+    }
+    return newRes;
   }
 
   Future<Response> setOrgInfo({String? name, String? description}) async {
