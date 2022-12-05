@@ -3,9 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:universal_html/js.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_text_styles.dart';
@@ -18,6 +19,11 @@ import 'package:http/http.dart' as http;
 
 class SettingsAboutPage extends StatelessWidget {
   final ValueNotifier<bool> _isCheckingUpdates = ValueNotifier(false);
+
+  final appStoreUrl = "http://apps.apple.com/app/vocechat/id1631779678";
+  final googlePlayUrl =
+      "http://play.app.goo.gl/?link=https://play.google.com/store/apps/details?id=com.privoce.vocechatclient";
+  final vocechatUrl = "http://voce.chat/";
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +113,16 @@ class SettingsAboutPage extends StatelessWidget {
     return version;
   }
 
+  Future<String?> _getServerVersion() async {
+    final res =
+        await AdminSystemApi(App.app.chatServerM.fullUrl).getServerVersion();
+    if (res.statusCode == 200 && res.data != null) {
+      return res.data!;
+    }
+
+    return null;
+  }
+
   void _checkUpdates(BuildContext context) async {
     _isCheckingUpdates.value = true;
 
@@ -122,6 +138,7 @@ class SettingsAboutPage extends StatelessWidget {
     final localVersion = await _getAppVersion();
 
     if (latestVersion.compareTo(localVersion) > 0) {
+      // if (true) {
       _showUpdates(context, latestVersion);
     } else {
       _showUpToDate(context);
@@ -156,11 +173,14 @@ class SettingsAboutPage extends StatelessWidget {
   void _showUpdates(BuildContext context, String latestVersionNum) {
     List<AppAlertDialogAction> actions = [];
     if (Platform.isIOS) {
-      actions.add(AppAlertDialogAction(text: "App Store", action: (() {})));
+      actions.add(AppAlertDialogAction(
+          text: "App Store", action: (() => launchUrlString(appStoreUrl))));
     } else if (Platform.isAndroid) {
       actions.addAll([
-        AppAlertDialogAction(text: "Play Store", action: (() {})),
-        AppAlertDialogAction(text: "APK", action: (() {}))
+        AppAlertDialogAction(
+            text: "Play Store", action: (() => launchUrlString(googlePlayUrl))),
+        AppAlertDialogAction(
+            text: "APK", action: (() => launchUrlString(vocechatUrl)))
       ]);
     }
 
@@ -173,7 +193,8 @@ class SettingsAboutPage extends StatelessWidget {
     showAppAlert(
         context: context,
         title: "Update Available",
-        content: "A newer version $latestVersionNum is available.",
+        content:
+            "A newer version $latestVersionNum is available. Please check first if your server version is up-to-date.",
         actions: actions);
   }
 

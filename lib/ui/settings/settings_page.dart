@@ -146,6 +146,23 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildAbout() {
+    // return BannerTile(
+    //     title: AppLocalizations.of(context)!.settingsPageAbout,
+    //     keepArrow: false,
+    //     enableTap: false,
+    //     trailing: FutureBuilder<String>(
+    //         future: _getVersion(),
+    //         builder: (context, snapshot) {
+    //           if (snapshot.hasData) {
+    //             return Text(snapshot.data!,
+    //                 style: TextStyle(
+    //                     fontSize: 15,
+    //                     fontWeight: FontWeight.w400,
+    //                     color: AppColors.grey500));
+    //           } else {
+    //             return SizedBox.shrink();
+    //           }
+    //         }));
     return BannerTile(
         title: AppLocalizations.of(context)!.settingsPageAbout,
         keepArrow: true,
@@ -199,10 +216,11 @@ class _SettingPageState extends State<SettingPage> {
             },
             title: AppLocalizations.of(context)!.settingsPageClearData),
         SizedBox(height: 8),
-        AppBannerButton(
-          onTap: () => _onDeleteAccountTapped(context),
-          title: "Delete Account",
-        )
+        if (App.app.userDb?.uid != 1)
+          AppBannerButton(
+            onTap: () => _onDeleteAccountTapped(context),
+            title: "Delete Account",
+          )
       ],
     );
   }
