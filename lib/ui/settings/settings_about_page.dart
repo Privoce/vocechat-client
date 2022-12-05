@@ -12,6 +12,7 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/settings/changelog_models.dart/change_log.dart';
+import 'package:vocechat_client/ui/settings/settings_changelog_page.dart';
 import 'package:vocechat_client/ui/widgets/app_icon.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';
@@ -27,7 +28,6 @@ class SettingsAboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _getChangeLog();
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
@@ -101,7 +101,10 @@ class SettingsAboutPage extends StatelessWidget {
           _checkUpdates(context);
         },
       ),
-      BannerTile(title: "Changelog")
+      BannerTile(
+        title: "Changelog",
+        onTap: (() => _goToChangelog(context)),
+      )
     ]);
   }
 
@@ -145,6 +148,12 @@ class SettingsAboutPage extends StatelessWidget {
     }
 
     _isCheckingUpdates.value = false;
+  }
+
+  void _goToChangelog(BuildContext context) async {
+    final changeLog = await _getChangeLog();
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => SettingsChangelogPage(changeLog: changeLog)));
   }
 
   Future<ChangeLog?> _getChangeLog() async {

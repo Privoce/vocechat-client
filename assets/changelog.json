@@ -5,7 +5,7 @@
             "- add: check updates and changelog.",
             "- add: Simplified Chinese language.",
             "- fix: disable super admin (uid == 1) access to deleting their account.",
-            " -fix: messages cannot be deleted throughly in chats."
+            "- fix: messages cannot be deleted throughly in chats."
         ]},
         {"time": 1670009545158, "version": "0.2.54", "build_num": 24, "updates": [
             "- fix: invitation link validation might output wrongly with localhost server deployment."
