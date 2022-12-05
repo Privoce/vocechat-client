@@ -113,8 +113,10 @@ class _ServerPageState extends State<ServerPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 VoceButton(
-                  normal: Text("Clear local data",
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  normal: Text(
+                      AppLocalizations.of(context)!.serverPageClearLocalData,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   action: () async {
                     _onResetDb();
                     return true;
@@ -122,8 +124,11 @@ class _ServerPageState extends State<ServerPage> {
                 ),
                 Text("  |  "),
                 VoceButton(
-                  normal: Text("Paste invitation link",
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  normal: Text(
+                      AppLocalizations.of(context)!
+                          .serverPagePasteInvitationLink,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   action: () async {
                     _onPasteInvitationLinkTapped(context);
                     return true;
@@ -131,13 +136,6 @@ class _ServerPageState extends State<ServerPage> {
                 ),
               ],
             ),
-            // VoceButton(
-            //   normal: Text("Actions"),
-            //   action: () async {
-            //     _onActionsPressed(context);
-            //     return true;
-            //   },
-            // ),
             SizedBox(
               height: 30,
               child: FutureBuilder<String>(
@@ -145,7 +143,7 @@ class _ServerPageState extends State<ServerPage> {
                   builder: ((context, snapshot) {
                     if (snapshot.hasData) {
                       return Text(
-                        "Version: ${snapshot.data}",
+                        "${AppLocalizations.of(context)!.version}: ${snapshot.data}",
                         style: AppTextStyles.labelSmall,
                       );
                     } else {
@@ -364,7 +362,7 @@ class _ServerPageState extends State<ServerPage> {
                                     _onHistoryDeleted(accountData);
                                   },
                                   icon: AppIcons.delete,
-                                  label: "Delete",
+                                  label: AppLocalizations.of(context)!.delete,
                                   backgroundColor: Colors.red,
                                   foregroundColor: Colors.white,
                                 )
@@ -407,7 +405,10 @@ class _ServerPageState extends State<ServerPage> {
     final chatServerM = await ChatServerHelper(context: context)
         .prepareChatServerM(data.serverUrl);
 
-    if (chatServerM == null) return;
+    if (chatServerM == null) {
+      _pushPageBusy.value = false;
+      return;
+    }
 
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LoginPage(
@@ -555,14 +556,16 @@ class _ServerPageState extends State<ServerPage> {
 
     showAppAlert(
         context: context,
-        title: "Clear Local Data",
-        content:
-            "VoceChat will be terminated. All your data will be deleted locally.",
+        title: AppLocalizations.of(context)!.serverPageClearLocalData,
+        content: AppLocalizations.of(context)!.serverPageClearLocalDataContent,
         primaryAction: AppAlertDialogAction(
-            text: "OK", isDangerAction: true, action: _onReset),
+            text: AppLocalizations.of(context)!.ok,
+            isDangerAction: true,
+            action: _onReset),
         actions: [
           AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.pop(context, 'Cancel'))
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.pop(context, 'Cancel'))
         ]);
   }
 

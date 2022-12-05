@@ -262,7 +262,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: const [
-          Locale('en', ''), // English, no country code
+          Locale('en', 'US'), // English, no country code
+          Locale('zh', ''),
         ],
         home: _defaultHome,
       ),

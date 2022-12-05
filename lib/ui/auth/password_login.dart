@@ -130,7 +130,8 @@ class _PasswordLoginState extends State<PasswordLogin> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text("Remember me", style: TextStyle(fontSize: 16)),
+              Text(AppLocalizations.of(context)!.loginPageRememberMe,
+                  style: TextStyle(fontSize: 16)),
               Spacer(),
               CupertinoSwitch(
                   value: rememberMe,
