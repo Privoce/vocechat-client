@@ -78,7 +78,7 @@ dependencies:
   wechat_camera_picker: ^3.4.0
   any_link_preview: ^2.0.9
   chewie: ^1.3.4
-  video_player: ^2.4.5
+  video_player: ^2.4.8
   scroll_to_index: ^3.0.1
   sqflite_common_ffi: ^2.1.1+1
   sqlite3_flutter_libs: ^0.5.8

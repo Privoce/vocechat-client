@@ -8,6 +8,7 @@ import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:path/path.dart' as p;
 
 enum FileType { file, image, thumb, videoThumb }
 
@@ -26,32 +27,39 @@ class FileHandler {
 
   Future<String> imageThumbPath(
       String chatId, String localMid, String fileName) async {
-    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/image_thumb/$localMid/$fileName";
+    // Use localMid as filename to avoid special chars.
+    final extension = p.extension(fileName);
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/image_thumb/$localMid$extension";
   }
 
   Future<String> _imageNormalPath(
       String chatId, String localMid, String fileName) async {
-    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/image_normal/$localMid/$fileName";
+    final extension = p.extension(fileName);
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/image_normal/$localMid$extension";
   }
 
   Future<String> videoThumbPath(
       String chatId, String localMid, String fileName) async {
-    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/video_thumb/$localMid/$fileName";
+    final extension = p.extension(fileName);
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/video_thumb/$localMid$extension";
   }
 
   Future<String> _filePath(
       String chatId, String localMid, String fileName) async {
-    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/file/$localMid/$fileName";
+    final extension = p.extension(fileName);
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/file/$localMid$extension";
   }
 
   Future<String> _archiveFilePath(
       String archiveId, int attachmentId, String fileName) async {
-    return "${await _localPath}/file/${App.app.userDb!.dbName}/archive_file/$archiveId/$attachmentId/$fileName";
+    final extension = p.extension(fileName);
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/archive_file/$archiveId/$attachmentId$extension";
   }
 
   Future<String> _savedItemsFilePath(
       String archiveId, int attachmentId, String fileName) async {
-    return "${await _localPath}/file/${App.app.userDb!.dbName}/saved_items_file/$archiveId/$attachmentId/$fileName";
+    final extension = p.extension(fileName);
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/saved_items_file/$archiveId/$attachmentId$extension";
   }
 
   Future<bool> imageThumbExists(

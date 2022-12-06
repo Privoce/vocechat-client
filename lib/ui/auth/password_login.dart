@@ -108,7 +108,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       VoceTextField.filled(
         pswdController,
         title: Text(
-          AppLocalizations.of(context)!.loginPagePassword,
+          AppLocalizations.of(context)!.password,
           style: TextStyle(fontSize: 16),
         ),
         obscureText: true,
@@ -130,7 +130,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(AppLocalizations.of(context)!.loginPageRememberMe,
+              Text(AppLocalizations.of(context)!.rememberMe,
                   style: TextStyle(fontSize: 16)),
               Spacer(),
               CupertinoSwitch(

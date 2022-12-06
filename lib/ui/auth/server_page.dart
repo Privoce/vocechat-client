@@ -20,7 +20,6 @@ import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:vocechat_client/ui/auth/pre_login_actions_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 
@@ -153,21 +152,6 @@ class _ServerPageState extends State<ServerPage> {
             )
           ],
         )));
-  }
-
-  void _onActionsPressed(BuildContext context) async {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(8), topRight: Radius.circular(8))),
-        builder: (sheetContext) {
-          return FractionallySizedBox(
-            heightFactor: 0.3,
-            child: PreLoginActionsPage(),
-          );
-        });
   }
 
   Future<String> _getVersion() async {
