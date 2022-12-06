@@ -8,6 +8,7 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatServerHelper {
   BuildContext context;
@@ -49,7 +50,7 @@ class ChatServerHelper {
           chatServerM = s.chatServerM;
         } else if (s.status == ServerStatus.error) {
           if (showAlert) {
-            await _showConnectionError();
+            await _showConnectionError(context);
           }
           return null;
         }
@@ -65,7 +66,7 @@ class ChatServerHelper {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
         if (showAlert) {
-          await _showConnectionError();
+          await _showConnectionError(context);
         }
         return null;
       }
@@ -100,14 +101,14 @@ class ChatServerHelper {
         await ChatServerDao.dao.addOrUpdate(chatServerM);
       } else {
         if (showAlert) {
-          await _showConnectionError();
+          await _showConnectionError(context);
         }
         return null;
       }
     } catch (e) {
       App.logger.severe(e);
       if (showAlert) {
-        await _showConnectionError();
+        await _showConnectionError(context);
       }
       return null;
     }
@@ -159,15 +160,16 @@ class ChatServerHelper {
         ]);
   }
 
-  Future<void> _showConnectionError() async {
+  Future<void> _showConnectionError(BuildContext context) async {
     return showAppAlert(
         context: context,
-        title: "Server Connection Error",
-        content:
-            "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
+        title:
+            AppLocalizations.of(context)!.chatServerHelperServerConnectionError,
+        content: AppLocalizations.of(context)!
+            .chatServerHelperServerConnectionErrorContent,
         actions: [
           AppAlertDialogAction(
-            text: "OK",
+            text: AppLocalizations.of(context)!.ok,
             action: () {
               Navigator.of(context).pop();
             },

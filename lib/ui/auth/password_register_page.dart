@@ -9,13 +9,15 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/auth/register_naming_page.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PasswordRegisterPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
   ChatServerM chatServer;
   String? magicToken;
 
-  PasswordRegisterPage({required this.chatServer, this.magicToken}) {
+  PasswordRegisterPage({Key? key, required this.chatServer, this.magicToken})
+      : super(key: key) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
@@ -117,24 +119,21 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
 
   Widget _buildTitle() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Wrap(
-        children: [
-          Text(
-            'Sign up to ',
+      RichText(
+          text: TextSpan(children: [
+        TextSpan(
+            text: AppLocalizations.of(context)!.signUpTo + " ",
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: AppColors.cyan500),
-          ),
-          Text(
-            widget.chatServer.properties.serverName,
+                color: AppColors.cyan500)),
+        TextSpan(
+            text: widget.chatServer.properties.serverName,
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: Colors.blue.shade700),
-          ),
-        ],
-      ),
+                color: Colors.blue.shade700))
+      ])),
       Text(widget.chatServer.fullUrlWithoutPort,
           style: TextStyle(
               fontSize: 14,
@@ -149,7 +148,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
       children: [
         VoceTextField.filled(
           _emailController,
-          title: Text('Email'),
+          title: Text(AppLocalizations.of(context)!.email),
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           scrollPadding: EdgeInsets.only(bottom: 100),
@@ -171,7 +170,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                 builder: (context, showEmailAlert, child) {
                   if (showEmailAlert) {
                     return Text(
-                      "Invalid Email Format",
+                      AppLocalizations.of(context)!
+                          .passwordRegisterPageInvalidEmailFormat,
                       style: TextStyle(fontSize: 12, color: Colors.red),
                     );
                   }
@@ -184,7 +184,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
 
         VoceTextField.filled(
           _pswdController,
-          title: Text('Password'),
+          title: Text(AppLocalizations.of(context)!.password),
           obscureText: true,
           keyboardType: TextInputType.visiblePassword,
           textInputAction: TextInputAction.next,
@@ -208,7 +208,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                 builder: (context, showPswdAlert, child) {
                   if (showPswdAlert) {
                     return Text(
-                      "Invalid Password Format",
+                      AppLocalizations.of(context)!
+                          .passwordRegisterPageInvalidPasswordFormat,
                       style: TextStyle(fontSize: 12, color: Colors.red),
                     );
                   }
@@ -221,7 +222,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
 
         VoceTextField.filled(
           _confirmPswdController,
-          title: Text('Confirm Password'),
+          title: Text(AppLocalizations.of(context)!.confirmPassword),
           obscureText: true,
           keyboardType: TextInputType.visiblePassword,
           textInputAction: TextInputAction.go,
@@ -243,7 +244,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                 builder: (context, showPswdConfirmAlert, child) {
                   if (showPswdConfirmAlert) {
                     return Text(
-                      "Passwords are not the same",
+                      AppLocalizations.of(context)!
+                          .passwordRegisterPagePasswordNotMatch,
                       style: TextStyle(fontSize: 12, color: Colors.red),
                     );
                   }
@@ -256,7 +258,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text("Remember me", style: TextStyle(fontSize: 16)),
+                Text(AppLocalizations.of(context)!.rememberMe,
+                    style: TextStyle(fontSize: 16)),
                 Spacer(),
                 CupertinoSwitch(
                     value: rememberMe,
@@ -277,7 +280,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
       decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
           borderRadius: BorderRadius.circular(8)),
-      normal: Text("Sign Up", style: TextStyle(color: Colors.white)),
+      normal: Text(AppLocalizations.of(context)!.signUp,
+          style: TextStyle(color: Colors.white)),
       action: _onTapSignUpBtn,
     );
   }
@@ -307,12 +311,13 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
       } else {
         await showAppAlert(
             context: context,
-            title: "Email already exists",
-            content:
-                "This email has been registered. Please go to sign in page.",
+            title: AppLocalizations.of(context)!
+                .passwordRegisterPageEmailAlreadyExists,
+            content: AppLocalizations.of(context)!
+                .passwordRegisterPageEmailAlreadyExistsContent,
             actions: [
               AppAlertDialogAction(
-                  text: "OK",
+                  text: AppLocalizations.of(context)!.ok,
                   action: () {
                     Navigator.pop(context);
                   })
@@ -328,7 +333,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
               "Something wrong happened during the account sign up process. Please try again or contact us.",
           actions: [
             AppAlertDialogAction(
-                text: "OK",
+                text: AppLocalizations.of(context)!.ok,
                 action: () {
                   Navigator.pop(context);
                 })
