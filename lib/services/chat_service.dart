@@ -14,6 +14,7 @@ import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -609,31 +610,51 @@ class ChatService {
     assert(relatedGroups.containsKey("type") &&
         relatedGroups["type"] == sseRelatedGroups);
 
+    final channels = await GroupInfoDao().getAllGroupList();
+    Set<int> localGids = {};
+    if (channels != null) {
+      localGids = Set.from(channels.map((e) => e.gid));
+    }
+
     try {
       final List<dynamic> groupMaps = relatedGroups["groups"];
-      if (groupMaps.isNotEmpty) {
-        for (var groupMap in groupMaps) {
-          final groupInfo = GroupInfo.fromJson(groupMap);
+      final groups = groupMaps.map((e) => GroupInfo.fromJson(e));
 
-          if (!enablePublicChannels && groupInfo.isPublic) {
-            continue;
-          }
+      final serverGids = Set.from(groups.map((e) => e.gid));
 
-          GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
+      // Delete extra groups.
+      for (final localGid in localGids) {
+        if (!serverGids.contains(localGid)) {
+          await FileHandler.singleton
+              .deleteChatDirectory(getChatId(gid: localGid)!);
+          await ChatMsgDao().deleteMsgByGid(localGid);
+          await GroupInfoDao().deleteGroupByGid(localGid);
 
-          final oldAvatarUpdatedAt =
-              (await GroupInfoDao().getGroupByGid(groupInfoM.gid))
-                  ?.groupInfo
-                  .avatarUpdatedAt;
-
-          await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-            fireChannel(groupInfoM, EventActions.create);
-            if (shouldGetChannelAvatar(oldAvatarUpdatedAt,
-                groupInfo.avatarUpdatedAt, groupInfoM.avatar)) {
-              await getGroupAvatar(groupInfo.gid);
-            }
-          });
+          final groupInfoM = GroupInfoM()..gid = localGid;
+          fireChannel(groupInfoM, EventActions.delete);
         }
+      }
+
+      // Update all existing groups.
+      for (var groupInfo in groups) {
+        if (!enablePublicChannels && groupInfo.isPublic) {
+          continue;
+        }
+
+        GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
+
+        final oldAvatarUpdatedAt =
+            (await GroupInfoDao().getGroupByGid(groupInfoM.gid))
+                ?.groupInfo
+                .avatarUpdatedAt;
+
+        await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
+          fireChannel(groupInfoM, EventActions.create);
+          if (shouldGetChannelAvatar(oldAvatarUpdatedAt,
+              groupInfo.avatarUpdatedAt, groupInfoM.avatar)) {
+            await getGroupAvatar(groupInfo.gid);
+          }
+        });
       }
     } catch (e) {
       App.logger.severe(e);
@@ -702,6 +723,8 @@ class ChatService {
 
       if (uids.contains(App.app.userDb!.uid)) {
         // Myself quit the channel.
+        await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
+        await ChatMsgDao().deleteMsgByGid(gid);
         await GroupInfoDao().removeByGid(gid).then((value) {
           if (value != null) {
             fireChannel(value, EventActions.delete);

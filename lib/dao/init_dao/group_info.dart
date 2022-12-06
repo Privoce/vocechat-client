@@ -328,15 +328,13 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     return old;
   }
 
-  /// Get a list of Users in UserInfo
-  ///
-  /// Result shown in
-  /// 1. name, ascending order
+  /// Get all channels, including private and public ones.
   Future<List<GroupInfoM>?> getAllGroupList() async {
     String orderBy = "${GroupInfoM.F_gid} ASC";
     return super.list(orderBy: orderBy);
   }
 
+  /// Get all public channels.
   Future<List<GroupInfoM>?> getChannelList() async {
     String orderBy = "${GroupInfoM.F_gid} ASC";
     return super.query(
