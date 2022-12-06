@@ -7,6 +7,8 @@ class BannerTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool enableTap;
   final String title;
+
+  /// If set, it's located after title string, forming a row.
   final Widget? titleWidget;
   final bool keepTitle;
   final Widget? trailing;

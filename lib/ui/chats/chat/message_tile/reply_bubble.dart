@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
@@ -91,7 +92,6 @@ class ReplyBubble extends StatelessWidget {
             if (repliedMsgM.isImageMsg) {
               final tag = uuid();
               if (repliedImageFile != null) {
-                content = Image.file(repliedImageFile!, height: 30);
                 content = Container(
                   constraints: BoxConstraints(maxHeight: 30, maxWidth: 50),
                   child: ImageBubble(
@@ -113,7 +113,15 @@ class ReplyBubble extends StatelessWidget {
               final String? filename =
                   repliedMsgM.msgNormal?.properties?["name"];
               if (filename != null && filename.isNotEmpty) {
-                final extension = path.extension(filename);
+                String basename, extension;
+                try {
+                  basename = path.basenameWithoutExtension(filename);
+                  extension = path.extension(filename).substring(1);
+                } catch (e) {
+                  App.logger.severe(e);
+                  basename = "file";
+                  extension = "";
+                }
 
                 content = Row(
                   children: [
@@ -122,13 +130,24 @@ class ReplyBubble extends StatelessWidget {
                           horizontal: 5, vertical: 3),
                       child: _buildFileIcon(extension),
                     ),
-                    Text(
-                      filename,
-                      style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                          color: AppColors.grey600),
-                    )
+                    Flexible(
+                      child: Text(
+                        basename,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: AppColors.grey600),
+                      ),
+                    ),
+                    Text("." + extension,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            color: AppColors.grey600))
                   ],
                 );
               }
@@ -163,6 +182,7 @@ class ReplyBubble extends StatelessWidget {
     Widget replied;
 
     bool hasMention = msgM.hasMention;
+
     if (content != null) {
       final name = repliedUser.userInfo.name.isNotEmpty
           ? repliedUser.userInfo.name

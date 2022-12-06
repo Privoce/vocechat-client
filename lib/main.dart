@@ -1,16 +1,23 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
@@ -37,47 +44,7 @@ Future<void> main() async {
   // Disables https self-signed certificates for easier dev. To be solved.
   // HttpOverrides.global = DevHttpOverrides();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseMessaging messaging = FirebaseMessaging.instance;
-  NotificationSettings settings = await messaging.requestPermission(
-    alert: true,
-    announcement: false,
-    badge: true,
-    carPlay: false,
-    criticalAlert: false,
-    provisional: false,
-    sound: true,
-  );
-  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    if (kDebugMode) {
-      print('User granted permission');
-    }
-  } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-    if (kDebugMode) {
-      print('User granted provisional permission');
-    }
-  } else {
-    if (kDebugMode) {
-      print('User declined or has not accepted permission');
-    }
-  }
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print("FCM received: ${message.data}");
-    if (kDebugMode) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
-    }
-
-    if (message.notification != null) {
-      if (kDebugMode) {
-        print(
-            'Message also contained a notification: ${message.notification?.body}');
-      }
-    }
-  });
+  await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);
 
@@ -144,6 +111,35 @@ Future<void> main() async {
   runApp(VoceChatApp(defaultHome: _defaultHome));
 }
 
+Future<void> _setUpFirebaseNotification() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    announcement: false,
+    badge: true,
+    carPlay: false,
+    criticalAlert: false,
+    provisional: false,
+    sound: true,
+  );
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    if (kDebugMode) {
+      print('User granted permission');
+    }
+  } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    if (kDebugMode) {
+      print('User granted provisional permission');
+    }
+  } else {
+    if (kDebugMode) {
+      print('User declined or has not accepted permission');
+    }
+  }
+}
+
 // ignore: must_be_immutable
 class VoceChatApp extends StatefulWidget {
   VoceChatApp({required this.defaultHome, Key? key}) : super(key: key);
@@ -161,6 +157,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   late bool _isLoading;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  late StreamSubscription _uniLinkSubscription;
 
   @override
   void initState() {
@@ -171,6 +168,12 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+    _handleIncomingUniLink();
+    _handleInitUniLink();
+
+    _handleInitialNotification();
+    _setupForegroundNotification();
   }
 
   @override
@@ -259,11 +262,155 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: const [
-          Locale('en', ''), // English, no country code
+          Locale('en', 'US'), // English, no country code
+          // Locale('zh', ''),
         ],
         home: _defaultHome,
       ),
     );
+  }
+
+  Future<void> _handleInitialNotification() async {
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+
+    // notification from background, but not terminated state.
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+
+  /// Currently do nothing to foreground notifications,
+  /// but keep this function for potential future use.
+  void _setupForegroundNotification() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("FCM received: ${message.data}");
+
+      if (kDebugMode) {
+        print('Got a message whilst in the foreground!');
+        print('Message data: ${message.data}');
+      }
+
+      if (message.notification != null) {
+        if (kDebugMode) {
+          print(
+              'Message also contained a notification: ${message.notification?.body}');
+        }
+      }
+    });
+  }
+
+  void _handleMessage(RemoteMessage message) async {
+    print(message.data);
+  }
+
+  Future<InvitationLinkData?> _parseInvitationLink(Uri uri) async {
+    final param = uri.queryParameters["magic_link"];
+    if (param == null || param.isEmpty) return null;
+
+    try {
+      final invLinkUri = Uri.parse(param);
+
+      final magicToken = invLinkUri.queryParameters["magic_token"];
+      String serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+
+      if (serverUrl == "https://privoce.voce.chat") {
+        serverUrl = "https://dev.voce.chat";
+      }
+
+      if (magicToken != null && magicToken.isNotEmpty) {
+        if (await _validateMagicToken(serverUrl, magicToken)) {
+          return InvitationLinkData(
+              serverUrl: serverUrl, magicToken: magicToken);
+        } else {
+          final context = navigatorKey.currentContext;
+          if (context == null) return null;
+          _showInvalidLinkWarning(context);
+        }
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return null;
+  }
+
+  void _showInvalidLinkWarning(BuildContext context) {
+    showAppAlert(
+        context: context,
+        title: "Invalid Invitation Link",
+        content: "Please contact server admin for a new link or help.",
+        actions: [
+          AppAlertDialogAction(
+              text: "OK", action: (() => Navigator.of(context).pop()))
+        ]);
+  }
+
+  void _handleIncomingUniLink() async {
+    _uniLinkSubscription = uriLinkStream.listen((Uri? uri) async {
+      if (uri == null) return;
+
+      final linkData = await _parseInvitationLink(uri);
+      if (linkData == null) return;
+
+      _handleUniLink(linkData);
+    });
+  }
+
+  Future<bool> _validateMagicToken(String url, String magicToken) async {
+    try {
+      final res = await UserApi(url).checkMagicToken(magicToken);
+      return (res.statusCode == 200 && res.data == true);
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return false;
+  }
+
+  void _handleInitUniLink() async {
+    final initialUri = await getInitialUri();
+    if (initialUri == null) return;
+
+    final linkData = await _parseInvitationLink(initialUri);
+    if (linkData == null) return;
+
+    _handleUniLink(linkData);
+  }
+
+  void _handleUniLink(InvitationLinkData data) async {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+    try {
+      final chatServer = await ChatServerHelper(context: context)
+          .prepareChatServerM(data.serverUrl, showAlert: false);
+      if (chatServer == null) return;
+
+      final route = PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            PasswordRegisterPage(
+                chatServer: chatServer, magicToken: data.magicToken),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.fastOutSlowIn;
+
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      );
+
+      Navigator.push(context, route);
+    } catch (e) {
+      App.logger.severe(e);
+    }
   }
 
   void onResume() async {
@@ -341,4 +488,11 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     _isLoading = false;
   }
+}
+
+class InvitationLinkData {
+  String serverUrl;
+  String magicToken;
+
+  InvitationLinkData({required this.serverUrl, required this.magicToken});
 }

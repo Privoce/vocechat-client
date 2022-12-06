@@ -180,6 +180,7 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       final oldGroupInfo = old.groupInfo;
       final newMemberSet = Set<int>.from(oldGroupInfo.members!)
         ..removeAll(uids);
+
       oldGroupInfo.members = newMemberSet.toList();
 
       old.info = jsonEncode(oldGroupInfo);
@@ -210,7 +211,11 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   }
 
   Future<GroupInfoM?> updateGroup(int gid,
-      {String? description, String? name, int? owner}) async {
+      {String? description,
+      String? name,
+      int? owner,
+      int? avatarUpdatedAt,
+      bool? isPublic}) async {
     GroupInfoM? old =
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
     if (old != null) {
@@ -221,9 +226,23 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       if (name != null) {
         oldInfo.name = name;
       }
-      if (owner != null) {
-        oldInfo.owner = owner;
+      // if (owner != null) {
+      //   oldInfo.owner = owner;
+      // }
+      if (avatarUpdatedAt != null) {
+        oldInfo.avatarUpdatedAt = avatarUpdatedAt;
       }
+      if (isPublic != null) {
+        old.isPublic = isPublic ? 1 : 0;
+        oldInfo.isPublic = isPublic;
+
+        if (isPublic) {
+          oldInfo.owner = null;
+        } else {
+          oldInfo.owner = owner;
+        }
+      }
+
       old.info = jsonEncode(oldInfo);
       await super.update(old);
     }
@@ -309,15 +328,13 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     return old;
   }
 
-  /// Get a list of Users in UserInfo
-  ///
-  /// Result shown in
-  /// 1. name, ascending order
+  /// Get all channels, including private and public ones.
   Future<List<GroupInfoM>?> getAllGroupList() async {
     String orderBy = "${GroupInfoM.F_gid} ASC";
     return super.list(orderBy: orderBy);
   }
 
+  /// Get all public channels.
   Future<List<GroupInfoM>?> getChannelList() async {
     String orderBy = "${GroupInfoM.F_gid} ASC";
     return super.query(
@@ -397,6 +414,8 @@ class GroupInfoDao extends Dao<GroupInfoM> {
 
       for (final uid in memberList) {
         final user = await UserInfoDao().getUserByUid(uid);
+        // print("$uid, $user");
+
         if (user == null) {
           continue;
         }

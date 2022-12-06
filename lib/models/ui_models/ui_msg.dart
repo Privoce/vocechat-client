@@ -31,4 +31,25 @@ class UiMsg {
             ? MsgSendStatus.sending
             : getMsgSendStatus(chatMsgM.status);
   }
+
+  // Includes pure text and markdown messages.
+  UiMsg.text({required this.chatMsgM})
+      : file = null,
+        archive = null,
+        repliedMsgM = null,
+        repliedUserInfoM = null,
+        repliedThumbFile = null;
+
+  UiMsg.textWithTextReply(
+      {required this.chatMsgM, this.repliedMsgM, this.repliedUserInfoM})
+      : archive = null,
+        repliedThumbFile = null;
+
+  // UiMsg.textWithImageReply()
+
+  // Includes image and corresponding chatMsgM
+  UiMsg.image({required this.chatMsgM, this.file})
+      : archive = null,
+        repliedMsgM = null,
+        repliedThumbFile = null;
 }

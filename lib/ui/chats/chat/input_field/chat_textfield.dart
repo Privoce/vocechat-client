@@ -15,7 +15,6 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
-import 'package:vocechat_client/services/sp_utils.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_text_selection_controls.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
@@ -447,14 +446,6 @@ class _ChatTextFieldState extends State<ChatTextField> {
   }
 
   void _sendImage() async {
-    bool firstSend = !await SpUtils.getBool('sendImage');
-
-    if (firstSend) {
-      SpUtils.setBool('sendImage', true);
-    } else if (!firstSend) {
-      await requestPermission();
-    }
-
     // assets list
     List<AssetEntity> assets = <AssetEntity>[];
 
@@ -513,12 +504,14 @@ class _ChatTextFieldState extends State<ChatTextField> {
         },
       ),
     );
-    Future.forEach(assetsResult!, (AssetEntity element) async {
+
+    if (assetsResult == null) return;
+
+    Future.forEach(assetsResult, (AssetEntity element) async {
       final File? file = await element.file;
       final String? path = file?.path;
       widget.onSendFile(path!, SendType.file);
     });
-    // setState(() {});
   }
 
   Future<AssetEntity?> pickFromCamera(BuildContext c) {
@@ -560,8 +553,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
     RegExp markupRegExp = RegExp(r'\(__([^\(\)]+)__\)');
 
     Iterable<Match> markupMatches = markupRegExp.allMatches(markupText);
+
     for (Match m in markupMatches) {
-      String? match = m.group(1);
+      String? match = m.group(1)?.trim();
       markupSet.add(match);
     }
 

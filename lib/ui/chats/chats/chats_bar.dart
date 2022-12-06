@@ -13,14 +13,12 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
-import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/invite_user_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_channel_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_dm_page.dart';
-import 'package:vocechat_client/ui/widgets/search/app_search_field.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum AddActions { channel, private, dm, user }
@@ -201,13 +199,12 @@ class _ChatsBarState extends State<ChatsBar> {
       actions: [
         // IconButton(
         //     onPressed: () async {
-        //       // print(await GroupInfoDao().getMutedChannelList());
         //       Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-        //         return NewPage();
+        //         return TempPageInstruction();
         //       })));
         //     },
         //     icon: Text(
-        //       "test",
+        //       "inst",
         //       style: TextStyle(color: Colors.black),
         //     )),
         Padding(

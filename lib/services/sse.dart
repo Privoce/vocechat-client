@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:universal_html/html.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
 
 typedef SseEventAware = void Function(dynamic);
 
@@ -22,6 +24,11 @@ class Sse {
   bool isConnecting = false;
 
   Timer? _reconnectTimer;
+
+  /// shows whether sse has received 'ready' message from server.
+  bool _afterReady = false;
+
+  bool get afterReady => _afterReady;
 
   void connect() async {
     if (isConnecting) return;
@@ -41,6 +48,7 @@ class Sse {
         App.app.statusService.fireTokenLoading(TokenStatus.success);
         App.logger.info(event.data);
         fireSseEvent(event.data);
+        // _monitorReadyEvent(event.data);
         isConnecting = false;
       });
 
@@ -48,7 +56,8 @@ class Sse {
         App.app.statusService.fireSseLoading(LoadingStatus.success);
         App.app.statusService.fireTokenLoading(TokenStatus.success);
         reconnectSec = 1;
-        cancelDelay();
+        cancelReconnectionDelay();
+        // _resetAfterReady();
         isConnecting = false;
       });
 
@@ -57,6 +66,7 @@ class Sse {
         App.logger.severe(event);
         eventSource.close();
         handleError(event);
+        // _resetAfterReady();
         isConnecting = false;
       });
     } catch (e) {
@@ -118,9 +128,23 @@ class Sse {
     });
   }
 
-  void cancelDelay() {
+  void cancelReconnectionDelay() {
     _reconnectTimer?.cancel();
   }
+
+  // void _setAfterReady() {
+  //   _afterReady = true;
+  // }
+
+  // void _resetAfterReady() {
+  //   _afterReady = false;
+  // }
+
+  // void _monitorReadyEvent(dynamic event) {
+  //   final map = json.decode(event);
+  //   final type = map["type"];
+  //   if (type == sseReady) _setAfterReady();
+  // }
 
   bool isClosed() {
     if (eventSource == null) {

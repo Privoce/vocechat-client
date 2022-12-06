@@ -4,5 +4,10 @@
 <dict>
 	<key>aps-environment</key>
 	<string>development</string>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:voce.chat</string>
+		<string>webcredentials:voce.chat</string>
+	</array>
 </dict>
 </plist>

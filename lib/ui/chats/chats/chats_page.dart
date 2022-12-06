@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
@@ -8,16 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_methods.dart';
-import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/models/ui_models/ui_chat.dart';
-import 'package:vocechat_client/models/ui_models/ui_msg.dart';
 import 'package:vocechat_client/services/chat_service.dart';
-import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
@@ -101,7 +95,7 @@ class _ChatsPageState extends State<ChatsPage>
               avatar: groupInfoM.avatar,
               title: groupInfoM.groupInfo.name,
               gid: groupInfoM.gid,
-              isPrivateChannel: !groupInfoM.groupInfo.isPublic,
+              isPrivateChannel: groupInfoM.isPublic != 1,
               isMuted: groupInfoM.properties.enableMute,
               updatedAt: groupInfoM.updatedAt);
 
@@ -296,7 +290,7 @@ class _ChatsPageState extends State<ChatsPage>
         globals.unreadCountSum.value = calUnreadCountSum();
       }
 
-      final draft = mentionsKey.currentState?.controller?.text.trim();
+      final draft = mentionsKey.currentState?.controller?.text;
 
       await GroupInfoDao().updateProperties(gid, draft: draft).then((value) {
         if (value != null) {
@@ -335,7 +329,7 @@ class _ChatsPageState extends State<ChatsPage>
         globals.unreadCountSum.value = calUnreadCountSum();
       }
 
-      final draft = mentionsKey.currentState?.controller?.text.trim();
+      final draft = mentionsKey.currentState?.controller?.text;
 
       UserInfoDao().updateProperties(dmUid, draft: draft).then((value) async {
         if (value != null) {
@@ -349,7 +343,8 @@ class _ChatsPageState extends State<ChatsPage>
     });
   }
 
-  Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
+  Future<void> _onChannel(
+      GroupInfoM groupInfoM, EventActions action, bool afterReady) async {
     taskQueue.add(() async {
       switch (action) {
         case EventActions.create:
@@ -361,12 +356,14 @@ class _ChatsPageState extends State<ChatsPage>
             _uiChats[index].title.value = groupInfoM.groupInfo.name;
             _uiChats[index].isMuted.value = groupInfoM.properties.enableMute;
             _uiChats[index].draft.value = groupInfoM.properties.draft;
+            _uiChats[index].isPrivateChannel.value =
+                !groupInfoM.groupInfo.isPublic;
           } else {
             final uiChat = UiChat(
                 avatar: groupInfoM.avatar,
                 title: groupInfoM.groupInfo.name,
                 gid: groupInfoM.gid,
-                isPrivateChannel: !groupInfoM.groupInfo.isPublic,
+                isPrivateChannel: groupInfoM.isPublic != 1,
                 isMuted: groupInfoM.properties.enableMute,
                 updatedAt: groupInfoM.updatedAt);
 
@@ -386,7 +383,8 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   /// Only response to update and delete. User initiazed in [onSnippet].
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     taskQueue.add(() async {
       _userInfoMap.addAll({userInfoM.uid: userInfoM});
 
@@ -440,7 +438,7 @@ class _ChatsPageState extends State<ChatsPage>
     });
   }
 
-  Future<void> _onSnippet(ChatMsgM chatMsgM) async {
+  Future<void> _onSnippet(ChatMsgM chatMsgM, bool afterReady) async {
     taskQueue.add(() async {
       final uid = chatMsgM.isGroupMsg ? chatMsgM.fromUid : chatMsgM.dmUid;
 
@@ -523,7 +521,7 @@ class _ChatsPageState extends State<ChatsPage>
       }
       globals.unreadCountSum.value = calUnreadCountSum();
 
-      if (mounted) {
+      if (mounted && afterReady) {
         setState(() {});
       }
     });
@@ -597,7 +595,7 @@ class _ChatsPageState extends State<ChatsPage>
     return snippet;
   }
 
-  Future<void> _onUserStatus(int uid, bool isOnline) async {
+  Future<void> _onUserStatus(int uid, bool isOnline, bool afterReady) async {
     final index = getUiChatIndex(uid: uid);
     if (index > -1) {
       _uiChats[index].onlineNotifier?.value = isOnline;
@@ -659,7 +657,7 @@ class _ChatsPageState extends State<ChatsPage>
             draft: draft,
             gid: groupInfoM.gid,
             updatedAt: latestMsgM.createdAt,
-            isPrivateChannel: !groupInfoM.groupInfo.isPublic,
+            isPrivateChannel: groupInfoM.isPublic != 1,
             unreadCount: unreadCount,
           );
 
@@ -670,7 +668,7 @@ class _ChatsPageState extends State<ChatsPage>
               title: groupInfoM.groupInfo.name,
               gid: groupInfoM.gid,
               updatedAt: groupInfoM.createdAt,
-              isPrivateChannel: !groupInfoM.groupInfo.isPublic);
+              isPrivateChannel: groupInfoM.isPublic != 1);
 
           addOrReplaceChannel(uiChat);
         }

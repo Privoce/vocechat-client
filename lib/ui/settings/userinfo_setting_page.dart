@@ -165,7 +165,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
             content: "Avatar size exceeds limit.",
             actions: [
               AppAlertDialogAction(
-                  text: "Ok", action: () => Navigator.pop(context))
+                  text: "OK", action: () => Navigator.pop(context))
             ]);
         _uploadNotifier.value = false;
         return;

@@ -1,20 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:universal_html/js.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
-import 'package:vocechat_client/app_methods.dart';
-import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum _InvitationLinkTextFieldButtonType { clear, paste }
 
-class InvitationLinkPage extends StatelessWidget {
+class InvitationLinkPastePage extends StatelessWidget {
   late final BoxDecoration _bgDeco;
 
   final _centerColor = const Color.fromRGBO(0, 113, 236, 1);
@@ -26,7 +25,7 @@ class InvitationLinkPage extends StatelessWidget {
   final ValueNotifier<_InvitationLinkTextFieldButtonType> buttonType =
       ValueNotifier(_InvitationLinkTextFieldButtonType.paste);
 
-  InvitationLinkPage() {
+  InvitationLinkPastePage() {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
@@ -56,7 +55,7 @@ class InvitationLinkPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       _buildBackButton(context),
-                      _buildTitle(),
+                      _buildTitle(context),
                       const SizedBox(height: 50),
                       _buildTextField(context),
                       const SizedBox(height: 8),
@@ -104,7 +103,7 @@ class InvitationLinkPage extends StatelessWidget {
                 ValueListenableBuilder<_InvitationLinkTextFieldButtonType>(
                     valueListenable: buttonType,
                     builder: (context, type, _) {
-                      return _buildTextFieldButton(type);
+                      return _buildTextFieldButton(context, type);
                     }),
               ],
             ),
@@ -145,7 +144,7 @@ class InvitationLinkPage extends StatelessWidget {
 
     try {
       Uri uri = Uri.parse(link);
-      String host = uri.host;
+      String host = uri.host + (uri.hasPort ? ":" + uri.port.toString() : "");
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
       }
@@ -161,6 +160,7 @@ class InvitationLinkPage extends StatelessWidget {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => PasswordRegisterPage(
                     chatServer: chatServerM,
+                    magicToken: magicToken,
                   )));
         }
       } else {
@@ -178,15 +178,18 @@ class InvitationLinkPage extends StatelessWidget {
   void _showInvalidLinkWarning(BuildContext context) {
     showAppAlert(
         context: context,
-        title: "Invalid Invitation Link",
-        content: "Please contact server admin for a new link or help.",
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
         actions: [
           AppAlertDialogAction(
-              text: "OK", action: (() => Navigator.of(context).pop()))
+              text: AppLocalizations.of(context)!.ok,
+              action: (() => Navigator.of(context).pop()))
         ]);
   }
 
-  Widget _buildTextFieldButton(_InvitationLinkTextFieldButtonType type) {
+  Widget _buildTextFieldButton(
+      BuildContext context, _InvitationLinkTextFieldButtonType type) {
     Widget child;
     void Function()? onPressed;
 
@@ -200,7 +203,7 @@ class InvitationLinkPage extends StatelessWidget {
 
         break;
       case _InvitationLinkTextFieldButtonType.paste:
-        child = Text("Paste");
+        child = Text(AppLocalizations.of(context)!.paste);
         onPressed = () async {
           ClipboardData? data = await Clipboard.getData('text/plain');
           if (data != null) {
@@ -252,19 +255,20 @@ class InvitationLinkPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle() {
+  Widget _buildTitle(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       RichText(
           text: TextSpan(
         children: [
           TextSpan(
-              text: "Input ",
+              text: AppLocalizations.of(context)!.inputInvitationLinkPageInput,
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
                   color: AppColors.cyan500)),
           TextSpan(
-            text: "Invitation Link",
+            text: AppLocalizations.of(context)!
+                .inputInvitationLinkPageInvitationLink,
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
@@ -272,11 +276,6 @@ class InvitationLinkPage extends StatelessWidget {
           ),
         ],
       )),
-      // Text(widget.chatServerM.fullUrlWithoutPort,
-      //     style: TextStyle(
-      //         fontSize: 14,
-      //         fontWeight: FontWeight.w400,
-      //         color: AppColors.grey500)),
     ]);
   }
 }

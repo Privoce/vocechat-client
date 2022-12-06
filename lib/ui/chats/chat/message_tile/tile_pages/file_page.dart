@@ -5,11 +5,15 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:path/path.dart' as path;
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/pdf_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/video_page.dart';
@@ -19,12 +23,13 @@ enum FilePageStatus { download, open, share, downloading }
 class FilePage extends StatefulWidget {
   final String filePath;
 
-  /// This file name contains extension.
+  /// This file name does not contain extension.
   final String fileName;
   final String extension;
   final int size;
   final Future<File?> Function() getLocalFile;
   final Future<File?> Function(Function(int, int)) getFile;
+  final ChatMsgM? chatMsgM;
 
   FilePage(
       {required this.filePath,
@@ -32,7 +37,8 @@ class FilePage extends StatefulWidget {
       required this.extension,
       required this.size,
       required this.getLocalFile,
-      required this.getFile});
+      required this.getFile,
+      this.chatMsgM});
 
   @override
   State<FilePage> createState() => _FilePageState();
@@ -51,6 +57,13 @@ class _FilePageState extends State<FilePage> {
     super.initState();
 
     checkFileExist();
+    // App.app.chatService.subscribeReaction(_onDelete);
+  }
+
+  @override
+  void dispose() {
+    // App.app.chatService.subscribeReaction(_onDelete);
+    super.dispose();
   }
 
   @override
@@ -157,7 +170,8 @@ class _FilePageState extends State<FilePage> {
                         return CupertinoButton.filled(
                             child: Text("Share"),
                             onPressed: () async {
-                              Share.shareFiles([_localFile!.path]);
+                              _shareFile(_localFile!,
+                                  "${widget.fileName}.${widget.extension}");
                             });
                       } else {
                         return SizedBox.shrink();
@@ -171,6 +185,14 @@ class _FilePageState extends State<FilePage> {
     );
   }
 
+  /// To replace internal filename (localMid) with real name, making shared file
+  /// consistant with the original one.
+  void _shareFile(File file, String filename) async {
+    final tempPath = (await getTemporaryDirectory()).path + "/$filename";
+    final tempFile = await file.copy(tempPath);
+    Share.shareFiles([tempFile.path]);
+  }
+
   void checkFileExist() async {
     _localFile = await widget.getLocalFile();
 
@@ -182,6 +204,19 @@ class _FilePageState extends State<FilePage> {
       _enableShare.value = true;
     }
   }
+
+  // Future<void> _onDelete(ReactionTypes reaction, int mid, bool ready,
+  //     [ChatMsgM? content]) async {
+  //   // if ()ReactionTypes, int, bool, [ChatMsgM?]
+  //   showAppAlert(
+  //       context: context,
+  //       title: "This file has been deleted.",
+  //       content: "This page will be popped.",
+  //       actions: [
+  //         AppAlertDialogAction(
+  //             text: "OK", action: () => Navigator.of(context).pop())
+  //       ]);
+  // }
 
   Future<void> _download(String filePath, BuildContext context) async {
     _status.value = FilePageStatus.downloading;
@@ -203,7 +238,7 @@ class _FilePageState extends State<FilePage> {
                 "VoceChat can't find this file on your device or from the server. It might have been deleted.",
             actions: [
               AppAlertDialogAction(
-                  text: "Ok", action: () => Navigator.of(context).pop())
+                  text: "OK", action: () => Navigator.of(context).pop())
             ]);
         _status.value = FilePageStatus.download;
         _enableShare.value = false;
@@ -213,10 +248,10 @@ class _FilePageState extends State<FilePage> {
           context: context,
           title: "Download Failed",
           content:
-              "VoceChat is unable to download this file now. Please try again later.",
+              "VoceChat can't download this file. It might have been deleted from server.",
           actions: [
             AppAlertDialogAction(
-                text: "Ok", action: () => Navigator.of(context).pop())
+                text: "OK", action: () => Navigator.of(context).pop())
           ]);
       _status.value = FilePageStatus.download;
       _enableShare.value = false;
@@ -224,26 +259,39 @@ class _FilePageState extends State<FilePage> {
   }
 
   void _open(File file) async {
-    if (_isVideo(widget.extension)) {
-      _status.value = FilePageStatus.open;
-      _enableShare.value = true;
-      final VideoPlayerController videoPlayerController =
-          VideoPlayerController.file(file);
-      await videoPlayerController.initialize();
-      final ChewieController chewieController = ChewieController(
-          videoPlayerController: videoPlayerController,
-          autoPlay: false,
-          looping: false);
-      await Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => VideoPage(chewieController)));
-    } else if (widget.extension.toLowerCase() == "pdf") {
-      _status.value = FilePageStatus.open;
-      _enableShare.value = true;
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => PdfPage(widget.fileName, file)));
-    } else {
-      _status.value = FilePageStatus.share;
-      _enableShare.value = false;
+    try {
+      if (_isVideo(widget.extension)) {
+        _status.value = FilePageStatus.open;
+        _enableShare.value = true;
+        final VideoPlayerController videoPlayerController =
+            VideoPlayerController.file(file);
+        await videoPlayerController.initialize();
+        final ChewieController chewieController = ChewieController(
+            videoPlayerController: videoPlayerController,
+            autoPlay: false,
+            looping: false);
+        await Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => VideoPage(chewieController)));
+      } else if (widget.extension.toLowerCase() == "pdf") {
+        _status.value = FilePageStatus.open;
+        _enableShare.value = true;
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => PdfPage(widget.fileName, file)));
+      } else {
+        _status.value = FilePageStatus.share;
+        _enableShare.value = false;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+      showAppAlert(
+          context: context,
+          title: "Can't open file",
+          content:
+              "VoceChat does not support this file type. Please open with other Apps.",
+          actions: [
+            AppAlertDialogAction(
+                text: "OK", action: () => Navigator.pop(context))
+          ]);
     }
   }
 

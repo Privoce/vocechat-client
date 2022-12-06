@@ -76,6 +76,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                       return SettingMembersTile(
                           groupInfoMNotifier: widget.groupInfoNotifier);
                     }),
+                _buildChannelVisibiliy(),
                 _buildBtns()
               ],
             ),
@@ -187,6 +188,87 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     );
   }
 
+  Widget _buildChannelVisibiliy() {
+    return ValueListenableBuilder<GroupInfoM>(
+        valueListenable: widget.groupInfoNotifier,
+        builder: (context, groupInfoM, _) {
+          bool isAdmin = App.app.userDb?.userInfo.isAdmin ?? false;
+          bool isOwner = App.app.userDb?.uid == groupInfoM.groupInfo.owner;
+          bool isPublic = groupInfoM.isPublic == 1;
+          bool showSwitch = false;
+
+          if (isPublic) {
+            showSwitch = isAdmin;
+          } else {
+            showSwitch = isAdmin || isOwner;
+          }
+
+          if (showSwitch) {
+            final isPublic = groupInfoM.isPublic == 0 ? false : true;
+            return Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: BannerTileGroup(bannerTileList: [
+                  BannerTile(
+                    title: "Public Channel",
+                    keepArrow: false,
+                    trailing: CupertinoSwitch(
+                        value: isPublic,
+                        onChanged: (_isPublic) async {
+                          await _changeChannelVisibility(_isPublic);
+                          setState(() {});
+                        }),
+                  )
+                ]));
+          }
+          return SizedBox.shrink();
+        });
+  }
+
+  Future<void> _changeChannelVisibility(bool isPublic) async {
+    const toPublicTitle = "Change to Public Channel";
+    const toPublicText =
+        "It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.";
+
+    const toPrivateTitle = "Change to Private Channel";
+    const toPrivateText =
+        "This channel will not be visible to new server members. Current members will not be affected.";
+
+    String title = isPublic ? toPublicTitle : toPrivateTitle;
+    String text = isPublic ? toPublicText : toPrivateText;
+
+    await showAppAlert(
+        context: context,
+        title: title,
+        content: text,
+        actions: [
+          AppAlertDialogAction(
+              text: "Cancel", action: () => Navigator.of(context).pop()),
+        ],
+        primaryAction: AppAlertDialogAction(
+            isDangerAction: true,
+            text: "Continue",
+            action: () async {
+              await _apiChangeChannelVisibility(isPublic);
+              Navigator.of(context).pop();
+            }));
+  }
+
+  Future<bool> _apiChangeChannelVisibility(bool isPublic) async {
+    final gid = widget.groupInfoNotifier.value.gid;
+    final api = GroupApi(App.app.chatServerM.fullUrl);
+
+    try {
+      final res = await api.changeType(gid, isPublic);
+      if (res.statusCode == 200) {
+        return true;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return false;
+  }
+
   Widget _buildBtns() {
     // Owner / admin has 2 btns: leave & delete;
     // When the owner is leaving, ask for a ownership transfer.
@@ -202,7 +284,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           bool isOwner = App.app.userDb?.uid == groupInfoM.groupInfo.owner;
 
           bool showDeleteBtn = isAdmin || isOwner;
-          bool showLeaveBtn = !groupInfoM.groupInfo.isPublic;
+          bool showLeaveBtn = groupInfoM.isPublic != 1;
 
           return Column(
             children: [

@@ -12,7 +12,7 @@ class GroupInfo {
   List<int>? members;
   int avatarUpdatedAt;
   List<PinnedMsg> pinnedMessages;
-  final bool isPublic;
+  bool isPublic;
 
   GroupInfo(this.gid, this.owner, this.name, this.description, this.members,
       this.isPublic, this.avatarUpdatedAt, this.pinnedMessages);

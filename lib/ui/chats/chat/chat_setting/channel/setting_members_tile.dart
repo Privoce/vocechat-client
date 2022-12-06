@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
@@ -28,6 +30,9 @@ class SettingMembersTile extends StatefulWidget {
 class _SettingMembersTileState extends State<SettingMembersTile> {
   late ValueNotifier<Set<UserInfoM>> memberSetNotifier = ValueNotifier({});
   late ValueNotifier<int> memberCountNotifier = ValueNotifier(0);
+
+  late int serverUserCount =
+      widget.groupInfoMNotifier.value.groupInfo.members?.length ?? 0;
 
   @override
   void initState() {
@@ -67,10 +72,10 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
             },
             showVerticalEdge: widget.groupInfoMNotifier.value.isPublic == 1,
             title: AppLocalizations.of(context)!.members,
-            trailing: ValueListenableBuilder(
+            trailing: ValueListenableBuilder<int>(
                 valueListenable: memberCountNotifier,
                 builder: (context, memberCount, _) {
-                  return Text(memberCount.toString(),
+                  return Text(min(serverUserCount, memberCount).toString(),
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 17,
@@ -232,7 +237,8 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
     );
   }
 
-  Future<void> _onGroup(GroupInfoM groupInfoM, EventActions action) async {
+  Future<void> _onGroup(
+      GroupInfoM groupInfoM, EventActions action, bool afterReady) async {
     if (groupInfoM.gid != widget.groupInfoMNotifier.value.gid) {
       return;
     }
@@ -248,17 +254,20 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
               groupInfoM.isPublic == 1, groupInfoM.groupInfo.members ?? [],
               batchSize: count - 1)) ??
           [];
+
+      // print(groupInfoM.groupInfo.members);
       memberSetNotifier.value = Set.from(users);
     }
     return;
   }
 
   void prepareMemberCount() async {
+    serverUserCount = await UserInfoDao().getUserCount();
     if (widget.groupInfoMNotifier.value.groupInfo.isPublic) {
-      memberCountNotifier.value = await UserInfoDao().getUserCount();
+      memberCountNotifier.value = serverUserCount;
     } else {
-      memberCountNotifier.value =
-          widget.groupInfoMNotifier.value.groupInfo.members?.length ?? 0;
+      memberCountNotifier.value = min(serverUserCount,
+          widget.groupInfoMNotifier.value.groupInfo.members?.length ?? 0);
     }
   }
 

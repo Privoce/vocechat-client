@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/file_page.dart';
 
 import 'package:path/path.dart' as p;
@@ -19,9 +20,15 @@ class FileBubble extends StatelessWidget {
   final int size;
   final Future<File?> Function() getLocalFile;
   final Future<File?> Function(Function(int, int)) getFile;
+  final ChatMsgM? chatMsgM;
 
   FileBubble(
-      this.filePath, this.name, this.size, this.getLocalFile, this.getFile);
+      {required this.filePath,
+      required this.name,
+      required this.size,
+      required this.getLocalFile,
+      required this.getFile,
+      this.chatMsgM});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +36,7 @@ class FileBubble extends StatelessWidget {
       return SizedBox.shrink();
     }
 
-    final filename = p.basename(name);
+    final filename = p.basenameWithoutExtension(name);
     String extension;
     try {
       extension = p.extension(name).substring(1);
@@ -37,6 +44,7 @@ class FileBubble extends StatelessWidget {
       App.logger.severe(e);
       extension = "";
     }
+
     Widget svgPic;
 
     if (_isAudio(extension)) {
@@ -187,6 +195,7 @@ class FileBubble extends StatelessWidget {
             extension: extension,
             size: size,
             getLocalFile: getLocalFile,
-            getFile: getFile)));
+            getFile: getFile,
+            chatMsgM: chatMsgM)));
   }
 }

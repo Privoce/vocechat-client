@@ -263,12 +263,18 @@ class _MessageTileState extends State<MessageTile> {
               final msgNormal = widget.chatMsgM.msgNormal!;
               final name = msgNormal.properties?["name"] ?? "";
               final size = msgNormal.properties?["size"] ?? 0;
-              return FileBubble(msgNormal.content, name, size, () async {
-                return FileHandler.singleton.getLocalFile(widget.chatMsgM);
-              }, (onProgress) async {
-                return FileHandler.singleton
-                    .getFile(widget.chatMsgM, onProgress);
-              });
+              return FileBubble(
+                  filePath: msgNormal.content,
+                  name: name,
+                  size: size,
+                  getLocalFile: () async {
+                    return FileHandler.singleton.getLocalFile(widget.chatMsgM);
+                  },
+                  getFile: (onProgress) async {
+                    return FileHandler.singleton
+                        .getFile(widget.chatMsgM, onProgress);
+                  },
+                  chatMsgM: widget.chatMsgM);
             }
           case MsgContentType.archive:
             return ArchiveBubble(

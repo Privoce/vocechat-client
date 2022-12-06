@@ -8,22 +8,32 @@ import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatServerHelper {
   BuildContext context;
 
   ChatServerHelper({required this.context});
 
-  Future<ChatServerM?> prepareChatServerM(String url) async {
+  /// url is the server domain, for example 'https://dev.voce.chat'.
+  /// No http / https required.
+  Future<ChatServerM?> prepareChatServerM(String url,
+      {bool showAlert = true}) async {
     ChatServerM chatServerM = ChatServerM();
     ServerStatusWithChatServerM s;
+
+    if (url == "https://privoce.voce.chat") {
+      url = "https://dev.voce.chat";
+    }
 
     if (!url.startsWith("https://") && !url.startsWith("http://")) {
       final httpsUrl = "https://" + url;
 
       s = await _checkServerAvailability(httpsUrl);
       if (s.status == ServerStatus.uninitialized) {
-        await _showServerUninitializedError(s.chatServerM);
+        if (showAlert) {
+          await _showServerUninitializedError(s.chatServerM);
+        }
         return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
@@ -32,24 +42,32 @@ class ChatServerHelper {
         final httpUrl = "http://" + url;
         s = await _checkServerAvailability(httpUrl);
         if (s.status == ServerStatus.uninitialized) {
-          await _showServerUninitializedError(s.chatServerM);
+          if (showAlert) {
+            await _showServerUninitializedError(s.chatServerM);
+          }
           return null;
         } else if (s.status == ServerStatus.available) {
           chatServerM = s.chatServerM;
         } else if (s.status == ServerStatus.error) {
-          await _showConnectionError();
+          if (showAlert) {
+            await _showConnectionError(context);
+          }
           return null;
         }
       }
     } else {
       s = await _checkServerAvailability(url);
       if (s.status == ServerStatus.uninitialized) {
-        await _showServerUninitializedError(s.chatServerM);
+        if (showAlert) {
+          await _showServerUninitializedError(s.chatServerM);
+        }
         return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
-        await _showConnectionError();
+        if (showAlert) {
+          await _showConnectionError(context);
+        }
         return null;
       }
     }
@@ -82,16 +100,20 @@ class ChatServerHelper {
         chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
         await ChatServerDao.dao.addOrUpdate(chatServerM);
       } else {
-        await _showConnectionError();
+        if (showAlert) {
+          await _showConnectionError(context);
+        }
         return null;
       }
     } catch (e) {
       App.logger.severe(e);
-      await _showConnectionError();
+      if (showAlert) {
+        await _showConnectionError(context);
+      }
       return null;
     }
 
-    App.app.chatServerM = chatServerM;
+    // App.app.chatServerM = chatServerM;
     return chatServerM;
   }
 
@@ -138,15 +160,16 @@ class ChatServerHelper {
         ]);
   }
 
-  Future<void> _showConnectionError() async {
+  Future<void> _showConnectionError(BuildContext context) async {
     return showAppAlert(
         context: context,
-        title: "Server Connection Error",
-        content:
-            "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
+        title:
+            AppLocalizations.of(context)!.chatServerHelperServerConnectionError,
+        content: AppLocalizations.of(context)!
+            .chatServerHelperServerConnectionErrorContent,
         actions: [
           AppAlertDialogAction(
-            text: "OK",
+            text: AppLocalizations.of(context)!.ok,
             action: () {
               Navigator.of(context).pop();
             },
