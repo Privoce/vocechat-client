@@ -1,11 +1,11 @@
 {   
     "latest": {"version": "0.2.55", "build_num": 25},
-    "logs": [
-        {"time": 1670209545158, "version": "0.2.55", "build_num": 24, "updates": [
+    "logs":  [
+        {"time": 1670303386582, "version": "0.2.55", "build_num": 25, "updates": [
             "- add: check updates and changelog.",
-            "- add: Simplified Chinese language.",
             "- fix: disable super admin (uid == 1) access to deleting their account.",
-            "- fix: messages cannot be deleted throughly in chats."
+            "- fix: some files do not open due to path and file name issues.",
+            "- fix: add channel list comparison when connection establishes, delete extra ones if necessary."
         ]},
         {"time": 1670009545158, "version": "0.2.54", "build_num": 24, "updates": [
             "- fix: invitation link validation might output wrongly with localhost server deployment."
