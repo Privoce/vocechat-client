@@ -240,13 +240,17 @@ class UserApi {
     final res = await dio.post("/check_magic_token",
         data: json.encode({"magic_token": magicToken}));
 
-    print(res.realUri);
-    print(res.requestOptions.data);
-    print(res.statusCode);
-    print(res.data);
+    var newRes = Response<bool>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
 
-    return dio.post("/check_magic_token",
-        data: json.encode({"magic_token": magicToken}));
+    newRes.data = res.statusCode == 200 && res.data != null;
+    return newRes;
   }
 
   Future<Response<LoginResponse>> register(RegisterRequest req) async {

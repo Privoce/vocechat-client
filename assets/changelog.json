@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.55", "build_num": 25},
+    "latest": {"version": "0.2.56", "build_num": 26},
     "logs":  [
+        {"time": 1670367008359, "version": "0.2.56", "build_num": 26, "updates": [
+            "- fix: minor issues in invitation link validation."
+        ]},
         {"time": 1670303386582, "version": "0.2.55", "build_num": 25, "updates": [
             "- add: check updates and changelog.",
             "- fix: disable super admin (uid == 1) access to deleting their account.",
@@ -15,3 +18,4 @@
         ]}
     ]
 }
+

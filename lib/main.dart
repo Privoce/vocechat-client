@@ -314,9 +314,14 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final invLinkUri = Uri.parse(param);
 
       final magicToken = invLinkUri.queryParameters["magic_token"];
-      String serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+      String serverUrl = invLinkUri.scheme +
+          '://' +
+          invLinkUri.host +
+          ":" +
+          invLinkUri.port.toString();
 
-      if (serverUrl == "https://privoce.voce.chat") {
+      if (serverUrl == "https://privoce.voce.chat" ||
+          serverUrl == "https://privoce.voce.chat:443") {
         serverUrl = "https://dev.voce.chat";
       }
 
