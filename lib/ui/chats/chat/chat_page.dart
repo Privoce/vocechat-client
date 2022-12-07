@@ -892,8 +892,6 @@ class _ChatPageState extends State<ChatPage> {
         });
       }
 
-      // App.app.chatService.fireReaction(ReactionTypes.delete, old.mid, old);
-
       if (old.isGroupMsg) {
         final curMaxMid = await ChatMsgDao().getChannelMaxMid(old.gid);
         if (curMaxMid > -1) {
@@ -917,7 +915,10 @@ class _ChatPageState extends State<ChatPage> {
       await FileHandler.singleton.deleteWithChatMsgM(old);
 
       final messageApi = MessageApi(App.app.chatServerM.fullUrl);
+
+      print("here1");
       await messageApi.delete(old.mid);
+      print("here2");
     } catch (e) {
       App.logger.severe(e);
       final index = _uiMsgList
@@ -932,6 +933,7 @@ class _ChatPageState extends State<ChatPage> {
       return false;
     }
 
+    print(_uiMsgList.map((e) => e.chatMsgM.mid));
     return true;
   }
 
@@ -1390,8 +1392,7 @@ class _ChatPageState extends State<ChatPage> {
       }
     }
 
-    if (page.records.length <= _pageMeta.pageSize) {
-      // load from server
+    if (page.records.length < _pageMeta.pageSize) {
       _loadServerHistory();
     }
 
