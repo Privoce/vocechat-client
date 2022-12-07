@@ -11,7 +11,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
-import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/token/credential.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
