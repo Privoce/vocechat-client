@@ -203,69 +203,64 @@ class AuthService {
 
   Future<bool> login(String email, String pswd, bool rememberPswd,
       [bool isReLogin = false]) async {
+    String errorContent = "";
     try {
       final _tokenApi = TokenApi(chatServerM.fullUrl);
 
       final req = await _preparePswdLoginRequest(email, pswd);
       final res = await _tokenApi.tokenLoginPost(req);
 
-      String content = "";
-
-      if (!isReLogin) {
-        if (res.statusCode != 200) {
-          switch (res.statusCode) {
-            case 401:
-              content = "Invalid account or password.";
-              break;
-            case 403:
-              content = "Login method is not supported.";
-              break;
-            case 404:
-              content = "User does not exist.";
-              break;
-            case 409:
-              content = "Email collision.";
-              break;
-            case 423:
-              content = "User has been frozen.";
-              break;
-            case 451:
-              content =
-                  "License has an issue. Please contact server admin for help.";
-              break;
-            default:
-              App.logger
-                  .severe("Error: ${res.statusCode} ${res.statusMessage}");
-              content = "An error occured during login.";
-          }
-
-          await showAppAlert(
-              context: navigatorKey.currentContext!,
-              title: "Login Error",
-              content: content,
-              actions: [
-                AppAlertDialogAction(
-                  text: "OK",
-                  action: () {
-                    Navigator.pop(navigatorKey.currentContext!);
-                  },
-                )
-              ]);
-
-          return false;
+      if (res.statusCode != 200) {
+        switch (res.statusCode) {
+          case 401:
+            errorContent = "Invalid account or password.";
+            break;
+          case 403:
+            errorContent = "Login method is not supported.";
+            break;
+          case 404:
+            errorContent = "User does not exist.";
+            break;
+          case 409:
+            errorContent = "Email collision.";
+            break;
+          case 423:
+            errorContent = "User has been frozen.";
+            break;
+          case 451:
+            errorContent =
+                "License has an issue. Please contact server admin for help.";
+            break;
+          default:
+            App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
+            errorContent = "An error occured during login.";
         }
-      }
-
-      if (res.statusCode == 200 && res.data != null) {
+      } else if (res.statusCode == 200 && res.data != null) {
         final data = res.data!;
         await initServices(
             data, rememberPswd, rememberPswd ? req.credential.password : null);
         App.app.chatService.initSse();
         return true;
+      } else {
+        errorContent = "An error occured during login.";
       }
     } catch (e) {
       App.logger.severe(e);
+      errorContent = "An error occured during login.";
     }
+
+    await showAppAlert(
+        context: navigatorKey.currentContext!,
+        title: "Login Error",
+        content: errorContent,
+        actions: [
+          AppAlertDialogAction(
+            text: "OK",
+            action: () {
+              Navigator.pop(navigatorKey.currentContext!);
+            },
+          )
+        ]);
 
     return false;
   }
