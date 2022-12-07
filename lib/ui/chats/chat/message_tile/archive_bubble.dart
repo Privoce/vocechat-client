@@ -129,6 +129,7 @@ class ArchiveBubble extends StatelessWidget {
                                 enableAvatarMention: false,
                                 enableOnlineStatus: false,
                                 enableUserDetailPush: false,
+                                contentWidth: contentWidth,
                                 child: SizedBox(
                                     width: contentWidth, child: child)),
                           );
@@ -147,6 +148,7 @@ class ArchiveBubble extends StatelessWidget {
                         enableAvatarMention: false,
                         enableOnlineStatus: false,
                         enableUserDetailPush: false,
+                        contentWidth: contentWidth,
                         child: SizedBox(
                             width: contentWidth,
                             child: ArchiveContentBubble(

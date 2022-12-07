@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -211,8 +210,6 @@ class ReplyBubble extends StatelessWidget {
           content
         ]),
       );
-
-      // print(msgM.msgReply?.content);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
