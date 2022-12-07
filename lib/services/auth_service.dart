@@ -195,8 +195,6 @@ class AuthService {
       device = "Others";
     }
 
-    // final credential = Credential(
-    //     emailController.value.text, pswdController.value.text, "password");
     final credential = Credential(email, pswd, "password");
 
     final req = TokenLoginRequest(
