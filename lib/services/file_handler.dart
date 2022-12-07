@@ -565,7 +565,7 @@ class FileHandler {
   Future<File?> getArchiveFile(String archiveId, int attachmentId,
       [String? fileName, Function(int, int)? onProgress]) async {
     String _fileName =
-        (fileName != null && fileName.isNotEmpty) ? fileName : "avatar";
+        (fileName != null && fileName.isNotEmpty) ? fileName : "avatar.jpg";
     if (await archiveFileExists(archiveId, attachmentId, _fileName)) {
       return readArchiveFile(archiveId, attachmentId, _fileName);
     }
@@ -588,7 +588,7 @@ class FileHandler {
       int uid, String archiveId, int attachmentId,
       [String? fileName]) async {
     String _fileName =
-        (fileName != null && fileName.isNotEmpty) ? fileName : "avatar";
+        (fileName != null && fileName.isNotEmpty) ? fileName : "avatar.jpg";
     if (await savedItemsFileExists(archiveId, attachmentId, _fileName)) {
       return readSavedItemsFile(archiveId, attachmentId, _fileName);
     }
@@ -598,7 +598,7 @@ class FileHandler {
   Future<File?> getSavedItemsFile(int uid, String archiveId, int attachmentId,
       [String? fileName, Function(int, int)? onProgress]) async {
     String _fileName =
-        (fileName != null && fileName.isNotEmpty) ? fileName : "avatar";
+        (fileName != null && fileName.isNotEmpty) ? fileName : "avatar.jpg";
     if (await savedItemsFileExists(archiveId, attachmentId, _fileName)) {
       return readSavedItemsFile(archiveId, attachmentId, _fileName);
     }
