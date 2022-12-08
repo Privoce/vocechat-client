@@ -31,7 +31,7 @@ class AuthService {
   static final AuthService _service = AuthService._internal();
   AuthService._internal();
 
-  factory AuthService({required chatServerM}) {
+  factory AuthService({required ChatServerM chatServerM}) {
     _service.chatServerM = chatServerM;
     _service.adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
 
