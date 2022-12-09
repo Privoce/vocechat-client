@@ -45,19 +45,17 @@ class Sse {
     try {
       eventSource.onMessage.listen((event) {
         App.app.statusService.fireSseLoading(LoadingStatus.success);
-        App.app.statusService.fireTokenLoading(TokenStatus.success);
         App.logger.info(event.data);
         fireSseEvent(event.data);
-        // _monitorReadyEvent(event.data);
+
         isConnecting = false;
       });
 
       eventSource.onOpen.listen((event) {
         App.app.statusService.fireSseLoading(LoadingStatus.success);
-        App.app.statusService.fireTokenLoading(TokenStatus.success);
         reconnectSec = 1;
         cancelReconnectionDelay();
-        // _resetAfterReady();
+
         isConnecting = false;
       });
 
@@ -66,7 +64,7 @@ class Sse {
         App.logger.severe(event);
         eventSource.close();
         handleError(event);
-        // _resetAfterReady();
+
         isConnecting = false;
       });
     } catch (e) {
@@ -93,7 +91,7 @@ class Sse {
   void fireSseEvent(dynamic event) {
     for (SseEventAware sseEventAware in sseEventListeners) {
       try {
-        sseEventAware(event);
+      sseEventAware(event);
       } catch (e) {
         App.logger.severe(e);
       }

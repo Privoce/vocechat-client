@@ -23,6 +23,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum AddActions { channel, private, dm, user }
 
+enum ConnectionStates { disconnected, connecting, successful }
+
 class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
   late final Widget _avatar;
   late final bool _isAdmin;
@@ -309,10 +311,28 @@ class _ChatsBarState extends State<ChatsBar> {
     );
   }
 
+  bool _isSuccessful() {
+    return _sseStatus == LoadingStatus.success &&
+        _tokenStatus == TokenStatus.success &&
+        _taskStatus == LoadingStatus.success;
+  }
+
+  bool _isConnecting() {
+    return _sseStatus == LoadingStatus.loading ||
+        _tokenStatus == TokenStatus.loading ||
+        _taskStatus == LoadingStatus.loading;
+  }
+
+  bool _isDisconnected() {
+    return _sseStatus == LoadingStatus.disconnected ||
+        _tokenStatus == TokenStatus.disconnected ||
+        _taskStatus == LoadingStatus.disconnected;
+  }
+
   Widget _buildStatus() {
-    // print("SSE: $_sseStatus");
-    // print("TOKEN: $_tokenStatus");
-    // print("TASK: $_taskStatus");
+    print("SSE: $_sseStatus");
+    print("TOKEN: $_tokenStatus");
+    print("TASK: $_taskStatus");
     if (_sseStatus == LoadingStatus.success &&
         _tokenStatus == TokenStatus.success &&
         _taskStatus == LoadingStatus.success) {

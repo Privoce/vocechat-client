@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
@@ -43,15 +44,18 @@ class AuthService {
   late ChatServerM chatServerM;
   late AdminSystemApi adminSystemApi;
 
-  static const int renewBase = 15;
-  int renewFactor = 1;
+  // static const int renewBase = 15;
+  // int renewFactor = 1;
+
+  List<int> retryList = const [2, 2, 4, 8, 16, 32, 64];
+  int retryIndex = 0;
 
   Timer? _timer;
   static const threshold = 60; // Refresh tokens if remaining time < 60.
 
   int _expiredIn = 0;
 
-  void setTimer(int expiredIn) {
+  void _setTimer(int expiredIn) {
     if (_timer != null) {
       _timer!.cancel();
     }
@@ -102,7 +106,7 @@ class AuthService {
       final res = await _tokenApi.tokenRenewPost(req);
 
       if (res.statusCode == 200 && res.data != null) {
-        renewFactor = 1;
+        _resetRetryInterval();
 
         App.logger.config("Token Refreshed.");
         final data = res.data!;
@@ -110,18 +114,15 @@ class AuthService {
         final refreshToken = data.refreshToken;
         final expiredIn = data.expiredIn;
 
-        setTimer(expiredIn);
+        _setTimer(expiredIn);
         await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
 
         return true;
       } else {
         if (res.statusCode == 401 || res.statusCode == 403) {
-          _expiredIn = threshold + renewBase * renewFactor;
-          renewFactor += 1;
-          if (renewFactor > 4) {
-            renewFactor = 4;
-          }
-
+          App.logger
+              .severe("Renew Token Failed, Status code: ${res.statusCode}");
+          _increaseRetryInterval();
           App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
           return false;
         }
@@ -131,13 +132,26 @@ class AuthService {
       App.logger.severe(e);
     }
 
-    _expiredIn = threshold + renewBase * renewFactor;
-    renewFactor += 1;
-    if (renewFactor > 4) {
-      renewFactor = 4;
-    }
+    _increaseRetryInterval();
     App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
     return false;
+  }
+
+  /// Increase retry interval index by 1,
+  /// If index reaches [retryList.length], index won't change, otherwise increase
+  /// by 1.
+  /// updated [_expiredIn] value include basic [threshold], which is 60 sec by
+  /// default.
+  void _increaseRetryInterval() {
+    if (retryIndex >= 0 && retryIndex < retryList.length - 1) {
+      retryIndex += 1;
+    }
+    _expiredIn = threshold + retryList[retryIndex];
+  }
+
+  /// Resets retry interval index to 0, which 2 seconds.
+  void _resetRetryInterval() {
+    retryIndex = 0;
   }
 
   Future<void> _renewAuthDataInUserDb(
@@ -233,7 +247,8 @@ class AuthService {
             break;
           default:
             App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
-            errorContent = "An error occured during login.";
+            errorContent =
+                "An error occured during login. ${res.statusCode} ${res.statusMessage}";
         }
       } else if (res.statusCode == 200 && res.data != null) {
         final data = res.data!;
@@ -242,11 +257,12 @@ class AuthService {
         App.app.chatService.initSse();
         return true;
       } else {
-        errorContent = "An error occured during login.";
+        errorContent =
+            "An error occured during login.  ${res.statusCode} ${res.statusMessage}";
       }
     } catch (e) {
       App.logger.severe(e);
-      errorContent = "An error occured during login.";
+      errorContent = e.toString();
     }
 
     await showAppAlert(
@@ -254,6 +270,12 @@ class AuthService {
         title: "Login Error",
         content: errorContent,
         actions: [
+          AppAlertDialogAction(
+            text: "Copy Error",
+            action: () {
+              Clipboard.setData(ClipboardData(text: errorContent));
+            },
+          ),
           AppAlertDialogAction(
             text: "OK",
             action: () {
@@ -336,7 +358,7 @@ class AuthService {
     App.app.userDb = newUserDb;
     StatusM statusM = StatusM.item(newUserDb.id);
     await StatusMDao.dao.replace(statusM);
-    setTimer(expiredIn);
+    _setTimer(expiredIn);
 
     await initCurrentDb(dbName);
 
