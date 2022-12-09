@@ -78,7 +78,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _ChatsBarState extends State<ChatsBar> {
   final double _tileHeight = 50;
-  late LoadingStatus _sseStatus;
+  late SseStatus _sseStatus;
   late TokenStatus _tokenStatus;
   late LoadingStatus _taskStatus;
 
@@ -87,8 +87,8 @@ class _ChatsBarState extends State<ChatsBar> {
   @override
   void initState() {
     super.initState();
-    _sseStatus = LoadingStatus.success;
-    _tokenStatus = TokenStatus.success;
+    _sseStatus = SseStatus.successful;
+    _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
     App.app.statusService.subscribeSseLoading(_onSse);
     App.app.statusService.subscribeTokenLoading(_onToken);
@@ -112,15 +112,15 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService.unsubscribeTokenLoading(_onToken);
     App.app.statusService.unsubscribeTaskLoading(_onTask);
 
-    _sseStatus = LoadingStatus.success;
-    _tokenStatus = TokenStatus.success;
+    _sseStatus = SseStatus.successful;
+    _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
     App.app.statusService.subscribeSseLoading(_onSse);
     App.app.statusService.subscribeTokenLoading(_onToken);
     App.app.statusService.subscribeTaskLoading(_onTask);
   }
 
-  Future<void> _onSse(LoadingStatus status) async {
+  Future<void> _onSse(SseStatus status) async {
     if (mounted) {
       setState(() {
         _sseStatus = status;
@@ -311,31 +311,33 @@ class _ChatsBarState extends State<ChatsBar> {
     );
   }
 
+  bool _isInitial() {
+    return _sseStatus == SseStatus.init && _tokenStatus == TokenStatus.init;
+  }
+
   bool _isSuccessful() {
-    return _sseStatus == LoadingStatus.success &&
-        _tokenStatus == TokenStatus.success &&
+    return _sseStatus == SseStatus.successful &&
+        _tokenStatus == TokenStatus.successful &&
         _taskStatus == LoadingStatus.success;
   }
 
   bool _isConnecting() {
-    return _sseStatus == LoadingStatus.loading ||
-        _tokenStatus == TokenStatus.loading ||
+    return _sseStatus == SseStatus.connecting ||
+        _tokenStatus == TokenStatus.connecting ||
         _taskStatus == LoadingStatus.loading;
   }
 
   bool _isDisconnected() {
-    return _sseStatus == LoadingStatus.disconnected ||
+    return _sseStatus == SseStatus.disconnected ||
         _tokenStatus == TokenStatus.disconnected ||
         _taskStatus == LoadingStatus.disconnected;
   }
 
   Widget _buildStatus() {
-    print("SSE: $_sseStatus");
-    print("TOKEN: $_tokenStatus");
-    print("TASK: $_taskStatus");
-    if (_sseStatus == LoadingStatus.success &&
-        _tokenStatus == TokenStatus.success &&
-        _taskStatus == LoadingStatus.success) {
+    // print("SSE: $_sseStatus");
+    // print("TOKEN: $_tokenStatus");
+    // print("TASK: $_taskStatus");
+    if (_isSuccessful() || _isInitial()) {
       return SizedBox.shrink();
     } else if (_tokenStatus == TokenStatus.unauthorized) {
       return CupertinoButton(
@@ -361,16 +363,12 @@ class _ChatsBarState extends State<ChatsBar> {
                 ]);
           },
           child: Icon(Icons.error, color: Colors.red.shade600));
-    } else if (_sseStatus == LoadingStatus.loading ||
-        _tokenStatus == TokenStatus.loading ||
-        _taskStatus == LoadingStatus.loading) {
+    } else if (_isConnecting()) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: CupertinoActivityIndicator(color: AppColors.coolGrey700),
       );
-    } else if (_sseStatus == LoadingStatus.disconnected ||
-        _tokenStatus == TokenStatus.disconnected ||
-        _taskStatus == LoadingStatus.disconnected) {
+    } else if (_isDisconnected()) {
       return CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () {

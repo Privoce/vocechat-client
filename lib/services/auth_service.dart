@@ -93,7 +93,7 @@ class AuthService {
   }
 
   Future<bool> renewAuthToken() async {
-    App.app.statusService.fireTokenLoading(TokenStatus.loading);
+    App.app.statusService.fireTokenLoading(TokenStatus.connecting);
     try {
       if (App.app.userDb == null) {
         App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
@@ -165,7 +165,7 @@ class AuthService {
     final newUserDbM = await UserDbMDao.dao
         .updateAuth(status.userDbId, token, refreshToken, expiredIn);
     App.app.userDb = newUserDbM;
-    App.app.statusService.fireTokenLoading(TokenStatus.success);
+    App.app.statusService.fireTokenLoading(TokenStatus.successful);
   }
 
   Future<bool> tryReLogin() async {

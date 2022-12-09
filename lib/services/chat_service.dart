@@ -90,11 +90,11 @@ class ChatService {
   void initSse() async {
     _afterReady = false;
     Sse.sse.close();
-    App.app.statusService.fireSseLoading(LoadingStatus.loading);
+    App.app.statusService.fireSseLoading(SseStatus.connecting);
 
     if (App.app.userDb == null) {
       App.logger.warning("App.app.userDb null. SSE not subscribed.");
-      App.app.statusService.fireSseLoading(LoadingStatus.disconnected);
+      App.app.statusService.fireSseLoading(SseStatus.disconnected);
       return;
     }
 
@@ -331,7 +331,7 @@ class ChatService {
           break;
 
         case sseHeartbeat:
-          App.app.statusService.fireSseLoading(LoadingStatus.success);
+          App.app.statusService.fireSseLoading(SseStatus.successful);
           break;
 
         case sseChat:
@@ -588,7 +588,7 @@ class ChatService {
   }
 
   Future<void> _handleReady() async {
-    App.app.statusService.fireSseLoading(LoadingStatus.success);
+    App.app.statusService.fireSseLoading(SseStatus.successful);
 
     _afterReady = true;
 

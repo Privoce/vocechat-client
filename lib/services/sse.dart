@@ -37,14 +37,14 @@ class Sse {
 
     close();
     App.logger.info("Connecting SSE: ${await prepareUrl()}");
-    App.app.statusService.fireSseLoading(LoadingStatus.loading);
+    App.app.statusService.fireSseLoading(SseStatus.connecting);
 
     final eventSource =
         html.EventSource(Uri.parse(await prepareUrl()).toString());
 
     try {
       eventSource.onMessage.listen((event) {
-        App.app.statusService.fireSseLoading(LoadingStatus.success);
+        App.app.statusService.fireSseLoading(SseStatus.successful);
         App.logger.info(event.data);
         fireSseEvent(event.data);
 
@@ -52,7 +52,7 @@ class Sse {
       });
 
       eventSource.onOpen.listen((event) {
-        App.app.statusService.fireSseLoading(LoadingStatus.success);
+        App.app.statusService.fireSseLoading(SseStatus.successful);
         reconnectSec = 1;
         cancelReconnectionDelay();
 
@@ -60,7 +60,7 @@ class Sse {
       });
 
       eventSource.onError.listen((event) {
-        App.app.statusService.fireSseLoading(LoadingStatus.disconnected);
+        App.app.statusService.fireSseLoading(SseStatus.disconnected);
         App.logger.severe(event);
         eventSource.close();
         handleError(event);

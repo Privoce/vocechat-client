@@ -466,7 +466,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     if (result == ConnectivityResult.wifi ||
         result == ConnectivityResult.mobile ||
         result == ConnectivityResult.none) {
-      await Future.delayed(Duration(seconds: 2));
       await _connect();
     }
   }
