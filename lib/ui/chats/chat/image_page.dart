@@ -69,13 +69,13 @@ class _ImagePageState extends State<ImagePage> {
               });
               _navigator.pop();
             },
-            onLongPress: () {
-              if (imageFile != null) {
-                _saveImage(imageFile!);
-              } else {
-                _saveImage(widget.initImageFile);
-              }
-            },
+            // onLongPress: () {
+            //   if (imageFile != null) {
+            //     _saveImage(imageFile!);
+            //   } else {
+            //     _saveImage(widget.initImageFile);
+            //   }
+            // },
             child: Center(child: _buildImage())),
         Positioned(bottom: 50, right: 16, child: _buildNavBarActions()),
       ],

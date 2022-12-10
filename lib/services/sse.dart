@@ -46,7 +46,10 @@ class Sse {
       eventSource.onMessage.listen((event) {
         App.app.statusService.fireSseLoading(SseStatus.successful);
         App.logger.info(event.data);
-        fireSseEvent(event.data);
+
+        if (event.data.toString().trim().isNotEmpty) {
+          fireSseEvent(event.data);
+        }
 
         isConnecting = false;
       });
@@ -91,7 +94,7 @@ class Sse {
   void fireSseEvent(dynamic event) {
     for (SseEventAware sseEventAware in sseEventListeners) {
       try {
-      sseEventAware(event);
+        sseEventAware(event);
       } catch (e) {
         App.logger.severe(e);
       }
