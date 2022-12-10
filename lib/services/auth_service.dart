@@ -271,12 +271,6 @@ class AuthService {
         content: errorContent,
         actions: [
           AppAlertDialogAction(
-            text: "Copy Error",
-            action: () {
-              Clipboard.setData(ClipboardData(text: errorContent));
-            },
-          ),
-          AppAlertDialogAction(
             text: "OK",
             action: () {
               Navigator.pop(navigatorKey.currentContext!);
