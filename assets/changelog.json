@@ -1,8 +1,8 @@
 {   
-    "latest": {"version": "0.2.56", "build_num": 26},
+    "latest": {"version": "0.2.57", "build_num": 27},
     "logs":  [
         {"time": 1670377803572, "version": "0.2.57", "build_num": 27, "updates": [
-            "- fix: Archive messages might stay in loading status."
+            "- fix: archive messages might stay in loading status."
         ]},
         {"time": 1670367008359, "version": "0.2.56", "build_num": 26, "updates": [
             "- fix: minor issues in invitation link validation."

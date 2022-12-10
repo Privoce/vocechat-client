@@ -3,7 +3,7 @@ import 'package:vocechat_client/app_consts.dart';
 
 class StatusService {
   final Set<TokenAware> _tokenListeners = {};
-  final Set<LoadingAware> _sseListeners = {};
+  final Set<SseAware> _sseListeners = {};
   final Set<LoadingAware> _taskListeners = {};
 
   void dispose() {
@@ -31,19 +31,19 @@ class StatusService {
     }
   }
 
-  void subscribeSseLoading(LoadingAware loadingAware) {
-    unsubscribeSseLoading(loadingAware);
-    _sseListeners.add(loadingAware);
+  void subscribeSseLoading(SseAware sseAware) {
+    unsubscribeSseLoading(sseAware);
+    _sseListeners.add(sseAware);
   }
 
-  void unsubscribeSseLoading(LoadingAware loadingAware) {
-    _sseListeners.remove(loadingAware);
+  void unsubscribeSseLoading(SseAware sseAware) {
+    _sseListeners.remove(sseAware);
   }
 
-  void fireSseLoading(LoadingStatus status) {
-    for (LoadingAware loadingAware in _sseListeners) {
+  void fireSseLoading(SseStatus status) {
+    for (SseAware sseAware in _sseListeners) {
       try {
-        loadingAware(status);
+        sseAware(status);
       } catch (e) {
         App.logger.severe(e);
       }

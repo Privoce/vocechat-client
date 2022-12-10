@@ -126,6 +126,8 @@ class MsgTileFrame extends StatelessWidget {
                         Flexible(
                           child: CupertinoButton(
                             padding: EdgeInsets.zero,
+                            alignment: Alignment.centerLeft,
+                            minSize: 12,
                             child: Text(displayedName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
