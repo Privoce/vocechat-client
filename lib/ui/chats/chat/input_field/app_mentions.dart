@@ -14,10 +14,12 @@ import 'package:vocechat_client/ui/app_colors.dart';
 class AnnotationEditingController extends TextEditingController {
   Map<String, Annotation> _mapping;
 
+  final bool _enableMention;
+
   String? _pattern;
 
   // Generate the Regex pattern for matching all the suggestions in one.
-  AnnotationEditingController(this._mapping)
+  AnnotationEditingController(this._mapping, this._enableMention)
       : _pattern = _mapping.keys.isNotEmpty
             ? "(?:${_mapping.keys.map((key) => RegExp.escape(key)).join('|')})"
                 r"\s"
@@ -25,6 +27,8 @@ class AnnotationEditingController extends TextEditingController {
 
   /// Can be used to get the markup from the controller directly.
   String get markupText {
+    if (!_enableMention) return text;
+
     final someVal = _mapping.isEmpty
         ? text
         : text.splitMapJoin(
@@ -69,6 +73,10 @@ class AnnotationEditingController extends TextEditingController {
   @override
   TextSpan buildTextSpan(
       {BuildContext? context, TextStyle? style, bool? withComposing}) {
+    if (!_enableMention) {
+      return TextSpan(text: text, style: style);
+    }
+
     var children = <InlineSpan>[];
 
     if (_pattern == null || _pattern == '()') {
@@ -143,6 +151,7 @@ class AppMentions extends StatefulWidget {
       this.onEditingComplete,
       this.onSubmitted,
       this.enabled,
+      this.enableMention = true,
       this.cursorWidth = 2.0,
       this.cursorRadius,
       this.cursorColor,
@@ -296,6 +305,11 @@ class AppMentions extends StatefulWidget {
   /// If non-null this property overrides the [decoration]'s
   /// [Decoration.enabled] property.
   final bool? enabled;
+
+  /// Whether to enable mention.
+  ///
+  /// Mention is not enable in private chats.
+  final bool enableMention;
 
   /// {@macro flutter.widgets.editableText.cursorWidth}
   final double cursorWidth;
@@ -488,15 +502,15 @@ class AppMentionsState extends State<AppMentions> {
   void initState() {
     final data = mapToAnotation();
 
-    controller = AnnotationEditingController(data);
+    controller = AnnotationEditingController(data, widget.enableMention);
 
     if (widget.defaultText != null) {
       controller!.text = widget.defaultText!;
     }
 
     // setup a listener to figure out which suggestions to show based on the trigger
-    controller!.addListener(suggestionListerner);
 
+    controller!.addListener(suggestionListerner);
     controller!.addListener(inputListeners);
 
     super.initState();
@@ -525,81 +539,88 @@ class AppMentionsState extends State<AppMentions> {
             (element) => _selectedMention!.str.contains(element.trigger))
         : widget.mentions[0];
 
-    return Container(
-      child: PortalTarget(
-        anchor: Aligned(
-            follower: Alignment.bottomCenter, target: Alignment.topCenter),
-        portalFollower: ValueListenableBuilder(
-          valueListenable: showSuggestions,
-          builder: (BuildContext context, bool show, Widget? child) {
-            return show && !widget.hideSuggestionList
-                ? OptionList(
-                    suggestionListHeight: widget.suggestionListHeight,
-                    suggestionBuilder: list.suggestionBuilder,
-                    suggestionListDecoration: widget.suggestionListDecoration,
-                    data: list.data.where((element) {
-                      final ele = element['display'].toLowerCase();
-                      final str = _selectedMention!.str
-                          .toLowerCase()
-                          .replaceAll(RegExp(_pattern), '');
-
-                      return ele == str ? false : ele.contains(str);
-                    }).toList(),
-                    onTap: (value) {
-                      addMention(value, list);
-                      showSuggestions.value = false;
-                    },
-                  )
-                : Container();
-          },
+    final inputField = Row(
+      children: [
+        ...widget.leading,
+        Expanded(
+          child: TextField(
+            selectionControls: widget.selectionControls,
+            maxLines: widget.maxLines,
+            minLines: widget.minLines,
+            maxLength: widget.maxLength,
+            focusNode: widget.focusNode,
+            keyboardType: widget.keyboardType,
+            keyboardAppearance: widget.keyboardAppearance,
+            textInputAction: widget.textInputAction,
+            textCapitalization: widget.textCapitalization,
+            style: widget.style,
+            textAlign: widget.textAlign,
+            textDirection: widget.textDirection,
+            readOnly: widget.readOnly,
+            showCursor: widget.showCursor,
+            autofocus: widget.autofocus,
+            autocorrect: widget.autocorrect,
+            maxLengthEnforcement: widget.maxLengthEnforcement,
+            cursorColor: widget.cursorColor,
+            cursorRadius: widget.cursorRadius,
+            cursorWidth: widget.cursorWidth,
+            buildCounter: widget.buildCounter,
+            autofillHints: widget.autofillHints,
+            decoration: widget.decoration,
+            expands: widget.expands,
+            onEditingComplete: widget.onEditingComplete,
+            onTap: widget.onTap,
+            onSubmitted: widget.onSubmitted,
+            enabled: widget.enabled,
+            enableInteractiveSelection: widget.enableInteractiveSelection,
+            enableSuggestions: widget.enableSuggestions,
+            scrollController: widget.scrollController,
+            scrollPadding: widget.scrollPadding,
+            scrollPhysics: widget.scrollPhysics,
+            controller: controller,
+            inputFormatters: widget.inputFormatters,
+          ),
         ),
-        child: Row(
-          children: [
-            ...widget.leading,
-            Expanded(
-              child: TextField(
-                selectionControls: widget.selectionControls,
-                maxLines: widget.maxLines,
-                minLines: widget.minLines,
-                maxLength: widget.maxLength,
-                focusNode: widget.focusNode,
-                keyboardType: widget.keyboardType,
-                keyboardAppearance: widget.keyboardAppearance,
-                textInputAction: widget.textInputAction,
-                textCapitalization: widget.textCapitalization,
-                style: widget.style,
-                textAlign: widget.textAlign,
-                textDirection: widget.textDirection,
-                readOnly: widget.readOnly,
-                showCursor: widget.showCursor,
-                autofocus: widget.autofocus,
-                autocorrect: widget.autocorrect,
-                maxLengthEnforcement: widget.maxLengthEnforcement,
-                cursorColor: widget.cursorColor,
-                cursorRadius: widget.cursorRadius,
-                cursorWidth: widget.cursorWidth,
-                buildCounter: widget.buildCounter,
-                autofillHints: widget.autofillHints,
-                decoration: widget.decoration,
-                expands: widget.expands,
-                onEditingComplete: widget.onEditingComplete,
-                onTap: widget.onTap,
-                onSubmitted: widget.onSubmitted,
-                enabled: widget.enabled,
-                enableInteractiveSelection: widget.enableInteractiveSelection,
-                enableSuggestions: widget.enableSuggestions,
-                scrollController: widget.scrollController,
-                scrollPadding: widget.scrollPadding,
-                scrollPhysics: widget.scrollPhysics,
-                controller: controller,
-                inputFormatters: widget.inputFormatters,
-              ),
-            ),
-            ...widget.trailing,
-          ],
-        ),
-      ),
+        ...widget.trailing,
+      ],
     );
+
+    if (!widget.enableMention) {
+      return inputField;
+    } else {
+      // This container widget cannot be removed due to UI building issue.
+      return Container(
+        child: PortalTarget(
+            anchor: Aligned(
+                follower: Alignment.bottomCenter, target: Alignment.topCenter),
+            portalFollower: ValueListenableBuilder(
+              valueListenable: showSuggestions,
+              builder: (BuildContext context, bool show, Widget? child) {
+                return show && !widget.hideSuggestionList
+                    ? OptionList(
+                        suggestionListHeight: widget.suggestionListHeight,
+                        suggestionBuilder: list.suggestionBuilder,
+                        suggestionListDecoration:
+                            widget.suggestionListDecoration,
+                        data: list.data.where((element) {
+                          final ele = element['display'].toLowerCase();
+                          final str = _selectedMention!.str
+                              .toLowerCase()
+                              .replaceAll(RegExp(_pattern), '');
+
+                          return ele == str ? false : ele.contains(str);
+                        }).toList(),
+                        onTap: (value) {
+                          addMention(value, list);
+                          showSuggestions.value = false;
+                        },
+                      )
+                    : Container();
+              },
+            ),
+            child: inputField),
+      );
+    }
   }
 }
 
