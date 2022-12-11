@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.58", "build_num": 28},
+    "latest": {"version": "0.2.59", "build_num": 29},
     "logs":  [
+        {"time": 1670734049670, "version": "0.2.59", "build_num": 29, "updates": [
+            "- fix: disable mentions and solve cursor issue in DMs."
+        ]},
         {"time": 1670658669903, "version": "0.2.58", "build_num": 28, "updates": [
             "- fix: improve online state stability."
         ]},
@@ -24,4 +27,5 @@
         ]}
     ]
 }
+
 
