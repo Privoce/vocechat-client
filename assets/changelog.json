@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.57", "build_num": 27},
+    "latest": {"version": "0.2.58", "build_num": 28},
     "logs":  [
+        {"time": 1670658669903, "version": "0.2.58", "build_num": 28, "updates": [
+            "- fix: improve online state stability."
+        ]},
         {"time": 1670377803572, "version": "0.2.57", "build_num": 27, "updates": [
             "- fix: archive messages might stay in loading status."
         ]},
