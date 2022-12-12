@@ -77,9 +77,11 @@ class _TextBubbleState extends State<TextBubble> {
                   if (_url.substring(0, 4) != 'http') {
                     _url = 'http://' + url;
                   }
-                  if (await canLaunchUrl(Uri.parse(_url))) {
+
+                  try {
                     await launchUrl(Uri.parse(_url));
-                  } else {
+                  } catch (e) {
+                    App.logger.severe(e);
                     throw "error: $_url";
                   }
                 }));
@@ -120,9 +122,10 @@ class _TextBubbleState extends State<TextBubble> {
                                 child: GestureDetector(
                                   onTap: () async {
                                     String _url = url;
-                                    if (await canLaunchUrl(Uri.parse(_url))) {
+                                    try {
                                       await launchUrl(Uri.parse(_url));
-                                    } else {
+                                    } catch (e) {
+                                      App.logger.severe(e);
                                       throw "error: $_url";
                                     }
                                   },
@@ -161,9 +164,10 @@ class _TextBubbleState extends State<TextBubble> {
                 removeElevation: false,
                 // boxShadow: const [BoxShadow(blurRadius: 3, color: Colors.grey)],
                 onTap: () async {
-                  if (await canLaunchUrl(Uri.parse(url))) {
+                  try {
                     await launchUrl(Uri.parse(url));
-                  } else {
+                  } catch (e) {
+                    App.logger.severe(e);
                     throw "error: $url";
                   }
                 }, // This disables tap event
