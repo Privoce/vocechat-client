@@ -261,7 +261,8 @@ class InvitationLinkPastePage extends StatelessWidget {
           text: TextSpan(
         children: [
           TextSpan(
-              text: AppLocalizations.of(context)!.inputInvitationLinkPageInput,
+              text: AppLocalizations.of(context)!.inputInvitationLinkPageInput +
+                  " ",
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
