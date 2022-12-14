@@ -1,6 +1,24 @@
 {   
-    "latest": {"version": "0.2.55", "build_num": 25},
+    "latest": {"version": "0.2.60", "build_num": 30},
     "logs":  [
+        {"time": 1670977149151, "version": "0.2.60", "build_num": 30, "updates": [
+            "- fix: UI in auth pages.",
+            "- fix: http websites does not open in Android.",
+            "- fix: UI error after deleting account.",
+            "- fix: data interference between servers if data is being loaded."
+        ]},
+        {"time": 1670734049670, "version": "0.2.59", "build_num": 29, "updates": [
+            "- fix: disable mentions and solve cursor issue in DMs."
+        ]},
+        {"time": 1670658669903, "version": "0.2.58", "build_num": 28, "updates": [
+            "- fix: improve online state stability."
+        ]},
+        {"time": 1670377803572, "version": "0.2.57", "build_num": 27, "updates": [
+            "- fix: archive messages might stay in loading status."
+        ]},
+        {"time": 1670367008359, "version": "0.2.56", "build_num": 26, "updates": [
+            "- fix: minor issues in invitation link validation."
+        ]},
         {"time": 1670303386582, "version": "0.2.55", "build_num": 25, "updates": [
             "- add: check updates and changelog.",
             "- fix: disable super admin (uid == 1) access to deleting their account.",
@@ -15,3 +33,5 @@
         ]}
     ]
 }
+
+

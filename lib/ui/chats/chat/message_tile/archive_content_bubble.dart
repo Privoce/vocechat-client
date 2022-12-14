@@ -43,6 +43,7 @@ class ArchiveContentBubble extends StatelessWidget {
       case typeFile:
         if (archiveMsg.isImageMsg) {
           // Only show thumb in chat list.
+
           if (archiveMsg.thumbnailId != null) {
             return FutureBuilder<File?>(
                 // Get thumb of an image archive msg.

@@ -136,6 +136,7 @@ class _MessageTileState extends State<MessageTile> {
                   enableUserDetailPush: true,
                   mentionsKey: widget.mentionsKey,
                   timeStamp: widget.chatMsgM.createdAt,
+                  contentWidth: contentWidth,
                   child: _buildContents(contentWidth, context),
                 ),
               ],

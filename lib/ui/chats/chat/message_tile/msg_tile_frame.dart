@@ -18,6 +18,8 @@ class MsgTileFrame extends StatelessWidget {
   final String username;
   late final Color nameColor;
 
+  final double? contentWidth;
+
   /// Font size of name.
   final double nameSize;
 
@@ -39,6 +41,7 @@ class MsgTileFrame extends StatelessWidget {
       {Key? key,
       required this.username,
       Color? nameColor,
+      this.contentWidth,
       this.nameSize = 14,
       required this.avatarBytes,
       this.avatarSize = AvatarSize.s36,
@@ -107,40 +110,82 @@ class MsgTileFrame extends StatelessWidget {
                   ),
           ),
           SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!isFollowing)
-                SizedBox(
-                  height: 20,
-                  child: RichText(
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      text: TextSpan(children: [
-                        TextSpan(
-                            text: displayedName + "  ",
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                if (enableUserDetailPush) {
-                                  _showUserDetail(context, uid);
-                                }
-                              },
-                            style: TextStyle(
-                                fontSize: nameSize,
-                                color: nameColor,
-                                fontWeight: FontWeight.w500)),
-                        TextSpan(
-                          text: DateTime.fromMillisecondsSinceEpoch(timeStamp!)
+          SizedBox(
+            width: contentWidth,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!isFollowing)
+                  SizedBox(
+                    height: 20,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            alignment: Alignment.centerLeft,
+                            minSize: 12,
+                            child: Text(displayedName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                strutStyle: StrutStyle(forceStrutHeight: true),
+                                style: TextStyle(
+                                    fontSize: nameSize,
+                                    color: nameColor,
+                                    fontWeight: FontWeight.w500)),
+                            onPressed: enableUserDetailPush
+                                ? () {
+                                    if (enableUserDetailPush) {
+                                      _showUserDetail(context, uid);
+                                    }
+                                  }
+                                : null,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          DateTime.fromMillisecondsSinceEpoch(timeStamp!)
                               .toChatTime24StrEn(),
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: AppColors.navLink),
                         )
-                      ])),
-                ),
-              if (child != null) child!,
-            ],
+                      ],
+                    ),
+                    // child: RichText(
+                    //     maxLines: 1,
+                    //     overflow: TextOverflow.ellipsis,
+                    //     text: TextSpan(children: [
+                    //       TextSpan(
+                    //           text: "ssdgasdgasgdisplayedName" + "  ",
+                    //           recognizer: TapGestureRecognizer()
+                    //             ..onTap = () {
+                    //               if (enableUserDetailPush) {
+                    //                 _showUserDetail(context, uid);
+                    //               }
+                    //             },
+                    //           style: TextStyle(
+                    //               fontSize: nameSize,
+                    //               color: nameColor,
+                    //               fontWeight: FontWeight.w500)),
+                    //       TextSpan(
+                    //         text:
+                    //             DateTime.fromMillisecondsSinceEpoch(timeStamp!)
+                    //                 .toChatTime24StrEn(),
+                    //         style: TextStyle(
+                    //             fontSize: 12,
+                    //             fontWeight: FontWeight.w500,
+                    //             color: AppColors.navLink),
+                    //       )
+                    //     ])),
+                  ),
+                if (child != null) child!,
+              ],
+            ),
           ),
         ],
       ),

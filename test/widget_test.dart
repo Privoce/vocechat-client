@@ -10,6 +10,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:vocechat_client/main.dart';
 
+Set<Function> funcSet = {};
+
+void subscribe(Function func) {
+  funcSet.add(func);
+}
+
+Future<void> testFunc() async {}
+
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {});
+
+  test("subscription stop", () async {});
 }

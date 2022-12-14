@@ -28,8 +28,6 @@
     "passwordRegisterPageEmailAlreadyExists": "邮箱已经存在",
     "passwordRegisterPageEmailAlreadyExistsContent": "此邮箱已经被注册过，请移步登入页面。",
     
-
-
     "chatsPageSearchHint":"搜索消息及用户",
     "contactsPageSearchHint": "搜索用户",
     

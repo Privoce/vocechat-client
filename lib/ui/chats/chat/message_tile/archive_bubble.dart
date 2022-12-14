@@ -104,6 +104,7 @@ class ArchiveBubble extends StatelessWidget {
                     final avatarId = user.avatar!;
                     return FutureBuilder<File?>(
                         // Get sender avatar of archive msg.
+
                         future: getFile(archiveId, avatarId, msg.fileName),
                         builder: (context, snapshot) {
                           Uint8List avatarBytes = Uint8List(0);
@@ -128,6 +129,7 @@ class ArchiveBubble extends StatelessWidget {
                                 enableAvatarMention: false,
                                 enableOnlineStatus: false,
                                 enableUserDetailPush: false,
+                                contentWidth: contentWidth,
                                 child: SizedBox(
                                     width: contentWidth, child: child)),
                           );
@@ -146,6 +148,7 @@ class ArchiveBubble extends StatelessWidget {
                         enableAvatarMention: false,
                         enableOnlineStatus: false,
                         enableUserDetailPush: false,
+                        contentWidth: contentWidth,
                         child: SizedBox(
                             width: contentWidth,
                             child: ArchiveContentBubble(

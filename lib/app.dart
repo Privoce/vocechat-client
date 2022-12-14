@@ -13,6 +13,8 @@ import 'package:vocechat_client/services/status_service.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 
+import 'UI/chats/chats/chats_main_page.dart';
+
 /// A place for app infos and services.
 class App {
   static final App app = App._internal();
@@ -49,6 +51,14 @@ class App {
   }
 
   Future<void> changeUser(UserDbM userDbM) async {
+    // Wait until all current tasks has been done to avoid data interference.
+    await Future.doWhile(
+      () async {
+        await Future.delayed(Duration(milliseconds: 500));
+        return App.app.chatService.sseQueue.isProcessing;
+      },
+    );
+
     // Switch database
     await closeUserDb();
     await initCurrentDb(userDbM.dbName);
@@ -79,7 +89,7 @@ class App {
     if (authService != null) {
       if (await authService!.renewAuthToken()) {
         chatService.initSse();
-      } else {}
+      }
     }
   }
 
@@ -97,7 +107,8 @@ class App {
     } else {
       final next = loggedInUserDbList.first;
       await changeUser(next);
-      navigatorKey.currentState?.pop();
+      navigatorKey.currentState
+          ?.pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
     }
   }
 

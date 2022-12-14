@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/app.dart';
@@ -21,10 +20,10 @@ import 'package:http/http.dart' as http;
 class SettingsAboutPage extends StatelessWidget {
   final ValueNotifier<bool> _isCheckingUpdates = ValueNotifier(false);
 
-  final appStoreUrl = "http://apps.apple.com/app/vocechat/id1631779678";
+  final appStoreUrl = "https://apps.apple.com/app/vocechat/id1631779678";
   final googlePlayUrl =
-      "http://play.app.goo.gl/?link=https://play.google.com/store/apps/details?id=com.privoce.vocechatclient";
-  final vocechatUrl = "http://voce.chat/";
+      "https://play.app.goo.gl/?link=https://play.google.com/store/apps/details?id=com.privoce.vocechatclient";
+  final vocechatUrl = "https://voce.chat/";
 
   @override
   Widget build(BuildContext context) {
@@ -186,10 +185,11 @@ class SettingsAboutPage extends StatelessWidget {
           text: "App Store", action: (() => launchUrlString(appStoreUrl))));
     } else if (Platform.isAndroid) {
       actions.addAll([
+        // AppAlertDialogAction(
+        //     text: "Play Store", action: (() => launchUrlString(googlePlayUrl))),
         AppAlertDialogAction(
-            text: "Play Store", action: (() => launchUrlString(googlePlayUrl))),
-        AppAlertDialogAction(
-            text: "APK", action: (() => launchUrlString(vocechatUrl)))
+            text: "VoceChat Website",
+            action: (() => launchUrlString(vocechatUrl)))
       ]);
     }
 

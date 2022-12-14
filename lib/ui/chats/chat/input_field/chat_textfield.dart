@@ -118,6 +118,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
           defaultText: widget.draft,
           key: widget.mentionsKey,
           selectionControls: controls,
+          enableMention: widget.groupInfoM != null,
           leading: [
             SizedBox(
               width: widget._height,

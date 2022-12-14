@@ -148,7 +148,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
   Widget _buildLoginButton() {
     final themeData = Theme.of(context);
     final bgColor = themeData.primaryColor;
-    // final textColor = themeData.textTheme.
+
     return VoceButton(
       width: double.maxFinite,
       contentColor: Colors.white,
@@ -159,8 +159,6 @@ class _PasswordLoginState extends State<PasswordLogin> {
         style: TextStyle(color: Colors.white),
       ),
       action: _onLogin,
-      // onError: () => showAppAlert(context: context, title: title, actions: actions),
-
       enabled: enableLogin,
     );
   }
@@ -170,49 +168,42 @@ class _PasswordLoginState extends State<PasswordLogin> {
     final email = emailController.text;
     final pswd = pswdController.text;
     final chatServerM = widget.chatServer;
+
+    String errorMsg = "Login Failed";
+
     try {
       App.app.authService = AuthService(chatServerM: chatServerM);
 
-      if (!await App.app.authService!.login(email, pswd, rememberMe)) {
-        App.logger.severe("Login Failed");
-
-        /*
-      // TODO: to be deleted after error is handled.
-      showAppAlert(context: context, title: "Login failed", actions: [
-        AppAlertDialogAction(
-            text: "OK", action: () => Navigator.of(context).pop())
-      ]);
-
-      */
+      if (await App.app.authService!.login(email, pswd, rememberMe)) {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
+        return true;
+      } else {
         return false;
       }
     } catch (e) {
       App.logger.severe(e);
-
-      /*
-      // TODO: to be deleted after error is handled.
-      showAppAlert(
-          context: context,
-          title: "Login failed",
-          content: e.toString(),
-          actions: [
-            AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop()),
-            AppAlertDialogAction(
-                text: "Copy",
-                action: () {
-                  Clipboard.setData(ClipboardData(text: e.toString()));
-                  Navigator.of(context).pop();
-                })
-          ]);
-          */
-      return false;
+      errorMsg = e.toString();
     }
 
-    Navigator.of(context)
-        .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
-    return true;
-  }
+    App.logger.severe("Login Failed");
 
-  // void _showLoginError()
+    // TODO: to be deleted after error is handled.
+    showAppAlert(
+        context: context,
+        title: "Login failed",
+        content:
+            "This is only for testing. If this shows, please tap 'copy' button and contact us.",
+        actions: [
+          AppAlertDialogAction(
+              text: "OK", action: () => Navigator.of(context).pop()),
+          AppAlertDialogAction(
+              text: "Copy",
+              action: () {
+                Clipboard.setData(ClipboardData(text: errorMsg));
+                Navigator.of(context).pop();
+              })
+        ]);
+    return false;
+  }
 }

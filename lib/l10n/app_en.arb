@@ -3,7 +3,7 @@
     "serverPageWelcomeSecondLine":"VoceChat.",
     "serverPageHostServer": "Host Server",
     "serverPageHistory": "History",
-    "serverPageClearLocalData": "Clear Local Data",
+    "serverPageClearLocalData": "Clear local data",
     "serverPageClearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
     "serverPagePasteInvitationLink": "Paste invitation link",
 

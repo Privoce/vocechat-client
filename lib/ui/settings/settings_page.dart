@@ -242,12 +242,6 @@ class _SettingPageState extends State<SettingPage> {
               await App.app.authService?.logout().then((value) async {
                 await App.app.changeUserAfterLogOut();
               });
-
-              // try {
-              //   Navigator.of(context).pop();
-              // } catch (e) {
-              //   App.logger.warning(e);
-              // }
               isBusy.value = false;
             }),
         actions: [
@@ -286,7 +280,7 @@ class _SettingPageState extends State<SettingPage> {
                 App.app.authService!.selfDelete().then((value) async {
                   try {
                     await App.app.changeUserAfterLogOut();
-                    navigatorKey.currentState!.pop();
+                    // navigatorKey.currentState!.pop();
                   } catch (e) {
                     App.logger.severe(e);
                   }

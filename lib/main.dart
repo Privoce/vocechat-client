@@ -153,11 +153,12 @@ class VoceChatApp extends StatefulWidget {
 class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   late Widget _defaultHome;
   late bool shouldRefresh;
-  late bool _isInitLoad;
-  late bool _isLoading;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
-  late StreamSubscription _uniLinkSubscription;
+
+  /// When network changes, such as from wi-fi to data, a relay is set to avoid
+  /// [_connect()] function to be called repeatly.
+  bool _isConnecting = false;
 
   @override
   void initState() {
@@ -314,9 +315,14 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final invLinkUri = Uri.parse(param);
 
       final magicToken = invLinkUri.queryParameters["magic_token"];
-      String serverUrl = invLinkUri.scheme + '://' + invLinkUri.host;
+      String serverUrl = invLinkUri.scheme +
+          '://' +
+          invLinkUri.host +
+          ":" +
+          invLinkUri.port.toString();
 
-      if (serverUrl == "https://privoce.voce.chat") {
+      if (serverUrl == "https://privoce.voce.chat" ||
+          serverUrl == "https://privoce.voce.chat:443") {
         serverUrl = "https://dev.voce.chat";
       }
 
@@ -349,7 +355,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _handleIncomingUniLink() async {
-    _uniLinkSubscription = uriLinkStream.listen((Uri? uri) async {
+    uriLinkStream.listen((Uri? uri) async {
       if (uri == null) return;
 
       final linkData = await _parseInvitationLink(uri);
@@ -456,37 +462,36 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
-    print("Connectivity: $result");
+    App.logger.info("Connectivity: $result");
     if (result == ConnectivityResult.wifi ||
         result == ConnectivityResult.mobile ||
         result == ConnectivityResult.none) {
-      await Future.delayed(Duration(seconds: 2));
       await _connect();
     }
-    // if (result == ConnectivityResult.none) {
-    //   App.app.authService!.disableTimer();
-    // }
   }
 
   Future<void> _connect() async {
-    final status = await StatusMDao.dao.getStatus();
-    if (status == null) return;
-    final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
-    if (userDb == null) {
-      return;
-    }
+    if (_isConnecting) return;
 
-    if (App.app.authService != null) {
-      if (await App.app.authService!.renewAuthToken()) {
-        if (Sse.sse.isClosed()) {
-          App.app.chatService.initSse();
+    _isConnecting = true;
+
+    final status = await StatusMDao.dao.getStatus();
+    if (status != null) {
+      final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
+      if (userDb != null) {
+        if (App.app.authService != null) {
+          if (await App.app.authService!.renewAuthToken() &&
+              Sse.sse.isClosed()) {
+            App.app.chatService.initSse();
+          } else {
+            Sse.sse.close();
+          }
         }
-      } else {
-        Sse.sse.close();
       }
     }
 
-    _isLoading = false;
+    _isConnecting = false;
+    return;
   }
 }
 

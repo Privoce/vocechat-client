@@ -17,11 +17,13 @@ enum MsgSendStatus { fail, success, sending, readyToSend }
 
 enum LoadingStatus { loading, success, disconnected }
 
+enum SseStatus { init, connecting, successful, disconnected }
+
+enum TokenStatus { init, connecting, successful, unauthorized, disconnected }
+
 typedef LoadingAware = Future<void> Function(LoadingStatus status);
-
+typedef SseAware = Future<void> Function(SseStatus status);
 typedef TokenAware = Future<void> Function(TokenStatus status);
-
-enum TokenStatus { loading, success, unauthorized, disconnected }
 
 /// [MsgContentType] is consistant with server definition.
 /// Original String consts are defined separately.
