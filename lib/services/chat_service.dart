@@ -61,9 +61,11 @@ class ChatService {
   }
 
   void dispose() {
+    taskQueue.cancel();
+    sseQueue.clear();
     readIndexTimer.cancel();
     Sse.sse.close();
-    taskQueue.cancel();
+
     _afterReady = false;
   }
 

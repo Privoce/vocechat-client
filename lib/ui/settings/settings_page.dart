@@ -280,7 +280,7 @@ class _SettingPageState extends State<SettingPage> {
                 App.app.authService!.selfDelete().then((value) async {
                   try {
                     await App.app.changeUserAfterLogOut();
-                    navigatorKey.currentState!.pop();
+                    // navigatorKey.currentState!.pop();
                   } catch (e) {
                     App.logger.severe(e);
                   }

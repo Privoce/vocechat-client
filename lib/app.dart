@@ -51,6 +51,14 @@ class App {
   }
 
   Future<void> changeUser(UserDbM userDbM) async {
+    // Wait until all current tasks has been done to avoid data interference.
+    await Future.doWhile(
+      () async {
+        await Future.delayed(Duration(milliseconds: 500));
+        return App.app.chatService.sseQueue.isProcessing;
+      },
+    );
+
     // Switch database
     await closeUserDb();
     await initCurrentDb(userDbM.dbName);
@@ -81,7 +89,7 @@ class App {
     if (authService != null) {
       if (await authService!.renewAuthToken()) {
         chatService.initSse();
-      } else {}
+      }
     }
   }
 
