@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:async/async.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 
@@ -22,6 +23,10 @@ class SseQueue {
       queue.add(sseMsg);
       _process();
     }
+  }
+
+  Future<void> clear() async {
+    queue.clear();
   }
 
   Future _process() async {
