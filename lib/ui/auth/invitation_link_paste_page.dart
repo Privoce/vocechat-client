@@ -10,6 +10,7 @@ import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/widgets/app_qr_scan_page.dart';
 
 enum _InvitationLinkTextFieldButtonType { clear, paste }
 
@@ -103,8 +104,32 @@ class InvitationLinkPastePage extends StatelessWidget {
                 ValueListenableBuilder<_InvitationLinkTextFieldButtonType>(
                     valueListenable: buttonType,
                     builder: (context, type, _) {
-                      return _buildTextFieldButton(context, type);
+                      return _buildTextFieldPasteButton(context, type);
                     }),
+                IconButton(
+                    icon: Icon(Icons.qr_code_2_rounded,
+                        color: Colors.blue, size: 30),
+                    onPressed: () {
+                      final route = PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            AppQrScanPage(),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          const begin = Offset(0.0, 1.0);
+                          const end = Offset.zero;
+                          const curve = Curves.fastOutSlowIn;
+
+                          var tween = Tween(begin: begin, end: end)
+                              .chain(CurveTween(curve: curve));
+
+                          return SlideTransition(
+                            position: animation.drive(tween),
+                            child: child,
+                          );
+                        },
+                      );
+                      Navigator.push(context, route);
+                    })
               ],
             ),
           ),
@@ -188,7 +213,7 @@ class InvitationLinkPastePage extends StatelessWidget {
         ]);
   }
 
-  Widget _buildTextFieldButton(
+  Widget _buildTextFieldPasteButton(
       BuildContext context, _InvitationLinkTextFieldButtonType type) {
     Widget child;
     void Function()? onPressed;
