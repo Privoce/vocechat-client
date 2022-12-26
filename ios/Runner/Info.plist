@@ -42,7 +42,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>VoceChat needs camera permission to send image messages.</string>
+	<string>VoceChat needs camera permission to send image messages and scan QR Codes.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>VoceChat needs permission to your Microphone device for recording or video messages.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
