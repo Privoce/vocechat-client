@@ -248,17 +248,20 @@ class AuthService {
           default:
             App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
             errorContent =
-                "An error occured during login. ${res.statusCode} ${res.statusMessage}";
+                "An error occurred during login. ${res.statusCode} ${res.statusMessage}";
         }
       } else if (res.statusCode == 200 && res.data != null) {
         final data = res.data!;
-        await initServices(
-            data, rememberPswd, rememberPswd ? req.credential.password : null);
-        App.app.chatService.initSse();
-        return true;
+        if (await initServices(data, rememberPswd,
+            rememberPswd ? req.credential.password : null)) {
+          App.app.chatService.initSse();
+          return true;
+        } else {
+          errorContent = "An error occurred during login (initialization).";
+        }
       } else {
         errorContent =
-            "An error occured during login.  ${res.statusCode} ${res.statusMessage}";
+            "An error occurred during login.  ${res.statusCode} ${res.statusMessage}";
       }
     } catch (e) {
       App.logger.severe(e);
@@ -283,83 +286,111 @@ class AuthService {
 
   Future<bool> initServices(LoginResponse res, bool rememberMe,
       [String? password]) async {
-    final String serverId = res.serverId;
-    final token = res.token;
-    final refreshToken = res.refreshToken;
-    final expiredIn = res.expiredIn;
-    final userInfo = res.user;
-    final userInfoJson = json.encode(userInfo.toJson());
-    final dbName = "${serverId}_${userInfo.uid}";
+    try {
+      final String serverId = res.serverId;
+      final token = res.token;
+      final refreshToken = res.refreshToken;
+      final expiredIn = res.expiredIn;
+      final userInfo = res.user;
+      final userInfoJson = json.encode(userInfo.toJson());
+      final dbName = "${serverId}_${userInfo.uid}";
 
-    // Save password to secure storage.
-    final storage = FlutterSecureStorage();
-    if (rememberMe) {
-      if (password != null && password.isNotEmpty) {
-        await storage.write(key: dbName, value: password);
+      // Save password to secure storage.
+      final storage = FlutterSecureStorage();
+      if (rememberMe) {
+        if (password != null && password.isNotEmpty) {
+          await storage.write(key: dbName, value: password);
+        }
+      } else {
+        await storage.delete(key: dbName);
       }
-    } else {
-      await storage.delete(key: dbName);
+
+      final avatarBytes = userInfo.avatarUpdatedAt == 0
+          ? Uint8List(0)
+          : (await ResourceApi(App.app.chatServerM.fullUrl)
+                      .getUserAvatar(userInfo.uid))
+                  .data ??
+              Uint8List(0);
+
+      final chatServerId = App.app.chatServerM.id;
+
+      final old = await UserDbMDao.dao.first(
+          where: '${UserDbM.F_chatServerId} = ? AND ${UserDbM.F_uid} = ?',
+          whereArgs: [dbName, userInfo.uid]);
+
+      late UserDbM newUserDb;
+      if (old == null) {
+        UserDbM m = UserDbM.item(
+            userInfo.uid,
+            userInfoJson,
+            dbName,
+            chatServerId,
+            DateTime.now().millisecondsSinceEpoch,
+            DateTime.now().millisecondsSinceEpoch,
+            token,
+            refreshToken,
+            expiredIn,
+            1,
+            -1,
+            avatarBytes,
+            "");
+        newUserDb = await UserDbMDao.dao.addOrUpdate(m);
+      } else {
+        UserDbM m = UserDbM.item(
+            userInfo.uid,
+            userInfoJson,
+            dbName,
+            chatServerId,
+            old.createdAt,
+            DateTime.now().millisecondsSinceEpoch,
+            token,
+            refreshToken,
+            expiredIn,
+            1,
+            old.usersVersion,
+            avatarBytes,
+            "");
+        newUserDb = await UserDbMDao.dao.addOrUpdate(m);
+      }
+
+      App.app.userDb = newUserDb;
+      StatusM statusM = StatusM.item(newUserDb.id);
+      await StatusMDao.dao.replace(statusM);
+      _setTimer(expiredIn);
+
+      await initCurrentDb(dbName);
+
+      App.app.chatService = ChatService();
+      App.app.statusService = StatusService();
+
+      return true;
+    } catch (e) {
+      App.logger.severe(e);
+
+      final context = navigatorKey.currentState?.context;
+      if (context != null) {
+        final error = e.toString();
+        showAppAlert(
+            context: context,
+            title: "Login Error",
+            content: "An error occurred during login (initialization).",
+            actions: [
+              AppAlertDialogAction(
+                  text: "Copy Error",
+                  action: () {
+                    Clipboard.setData(ClipboardData(text: error));
+                    Navigator.of(context).pop();
+                  }),
+              AppAlertDialogAction(
+                  text: "OK",
+                  action: () {
+                    Navigator.of(context).pop();
+                  })
+            ]);
+      }
     }
 
-    final avatarBytes = userInfo.avatarUpdatedAt == 0
-        ? Uint8List(0)
-        : (await ResourceApi(App.app.chatServerM.fullUrl)
-                    .getUserAvatar(userInfo.uid))
-                .data ??
-            Uint8List(0);
-
-    final chatServerId = App.app.chatServerM.id;
-
-    final old = await UserDbMDao.dao.first(
-        where: '${UserDbM.F_chatServerId} = ? AND ${UserDbM.F_uid} = ?',
-        whereArgs: [dbName, userInfo.uid]);
-
-    late UserDbM newUserDb;
-    if (old == null) {
-      UserDbM m = UserDbM.item(
-          userInfo.uid,
-          userInfoJson,
-          dbName,
-          chatServerId,
-          DateTime.now().millisecondsSinceEpoch,
-          DateTime.now().millisecondsSinceEpoch,
-          token,
-          refreshToken,
-          expiredIn,
-          1,
-          -1,
-          avatarBytes,
-          "");
-      newUserDb = await UserDbMDao.dao.addOrUpdate(m);
-    } else {
-      UserDbM m = UserDbM.item(
-          userInfo.uid,
-          userInfoJson,
-          dbName,
-          chatServerId,
-          old.createdAt,
-          DateTime.now().millisecondsSinceEpoch,
-          token,
-          refreshToken,
-          expiredIn,
-          1,
-          old.usersVersion,
-          avatarBytes,
-          "");
-      newUserDb = await UserDbMDao.dao.addOrUpdate(m);
-    }
-
-    App.app.userDb = newUserDb;
-    StatusM statusM = StatusM.item(newUserDb.id);
-    await StatusMDao.dao.replace(statusM);
-    _setTimer(expiredIn);
-
-    await initCurrentDb(dbName);
-
-    App.app.chatService = ChatService();
-    App.app.statusService = StatusService();
-
-    return true;
+    return false;
   }
 
   Future<bool> logout({bool markLogout = true, bool isKicked = false}) async {

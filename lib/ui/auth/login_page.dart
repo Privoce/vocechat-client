@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/auth/magiclink_login.dart';
 import 'package:vocechat_client/ui/auth/password_login.dart';

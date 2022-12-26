@@ -22,6 +22,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
+import 'package:vocechat_client/ui/widgets/app_qr_scan_page.dart';
 
 class ServerPage extends StatefulWidget {
   // static const route = '/auth/server';
@@ -224,20 +225,57 @@ class _ServerPageState extends State<ServerPage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
-              child: VoceTextField.filled(
-                _urlController,
-                focusNode: _urlFocusNode,
-                height: 40,
-                borderRadius: _outerRadius,
-                maxLength: 32,
-                onSubmitted: (_) => _onUrlSubmit(_urlController.text + "/api"),
-                keyboardType: TextInputType.url,
-                textInputAction: TextInputAction.go,
-                scrollPadding: EdgeInsets.only(bottom: 100),
-                onChanged: (url) {
-                  // _isUrlValid.value = isUrlValid(url);
-                  // _showUrlWarning.value = shouldShowUrlAlert(url);
-                },
+              child: Container(
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: VoceTextField(
+                        _urlController,
+                        focusNode: _urlFocusNode,
+                        height: 40,
+                        borderRadius: _outerRadius,
+                        maxLength: 32,
+                        onSubmitted: (_) =>
+                            _onUrlSubmit(_urlController.text + "/api"),
+                        keyboardType: TextInputType.url,
+                        textInputAction: TextInputAction.go,
+                        scrollPadding: EdgeInsets.only(bottom: 100),
+                        onChanged: (url) {
+                          // _isUrlValid.value = isUrlValid(url);
+                          // _showUrlWarning.value = shouldShowUrlAlert(url);
+                        },
+                      ),
+                    ),
+                    IconButton(
+                        icon: Icon(Icons.qr_code_2_rounded,
+                            color: Colors.blue, size: 30),
+                        onPressed: () {
+                          final route = PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    AppQrScanPage(),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              const begin = Offset(0.0, 1.0);
+                              const end = Offset.zero;
+                              const curve = Curves.fastOutSlowIn;
+
+                              var tween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
+
+                              return SlideTransition(
+                                position: animation.drive(tween),
+                                child: child,
+                              );
+                            },
+                          );
+                          Navigator.push(context, route);
+                        })
+                  ],
+                ),
               ),
             ),
             const SizedBox(width: 10),

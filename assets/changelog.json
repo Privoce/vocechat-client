@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.60", "build_num": 30},
+    "latest": {"version": "0.2.61", "build_num": 31},
     "logs":  [
+        {"time": 1672040425605, "version": "0.2.61", "build_num": 31, "updates": [
+            "- add: invitation link QR code and scanning.",
+            "- add: potential error message output during login."
+        ]},
         {"time": 1670977149151, "version": "0.2.60", "build_num": 30, "updates": [
             "- fix: UI in auth pages.",
             "- fix: http websites does not open in Android.",
