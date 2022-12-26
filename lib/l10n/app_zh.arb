@@ -1,7 +1,7 @@
 {   
     "serverPageWelcomeFirstLine":"欢迎使用",
     "serverPageWelcomeSecondLine":"VoceChat.",
-    "serverPageHostServer": "服务器地址",
+    "serverPageHostServer": "服务器 Url",
     "serverPageHistory": "历史",
     "serverPageClearLocalData": "清空本地数据",
     "serverPageClearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
@@ -51,36 +51,58 @@
     "settingsPageConfigFirebase": "Firebase",
     "settingsPageConfigFooter": "请使用网页端来设置 SMTP、登录方式及第三方App接入。",
     "settingsPageAbout": "关于",
-    "settingsPageLogout": "登出",
+    
     "settingsPageClearData": "清空本地数据",
 
     "call" : "语音通话",
     "cancel": "取消",
+    "confirmPassword": "确认密码",
     "continueStr": "继续",
+    
     "delete": "删除",
+    "deleteAccount": "删除账户",
     "deleteChannel": "删除频道",
     "deleteChannelWarningDes": "此频道将被删除。所有成员都将被移除，且不再可以看到其中的数据。",
     "done": "完成",
+
     "edit": "编辑",
     "email": "邮箱",
+
+    "invitationLink": "邀请链接",
+    "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",
+    "inviteNewUsers": "邀请新用户",
+
     "logIn": "登入",
     "logInTo": "登入中",
+    "logOut":"登出",
+
     "message": "发消息",
     "members":"成员",
     "mute" : "静音",
+    
+    "newPrivateChannel":"新私有频道",
+    "newPublicChannel":"新公有频道",
     "next": "下一步",
+
     "ok": "好",
+
     "paste": "粘贴",
     "password": "密码",
-    "confirmPassword": "确认密码",
     "pin": "钉选",
+
     "rememberMe": "记住我",
+
     "savedItems": "保存的消息",
+    "scanQrCodeToRegister": "扫描二维码来注册",
     "setNewAvatar": "设置新头像",
     "send": "发送",
+    "shareInvitationLink":"分享邀请链接",
+    "shareQrCode": "分享二维码",
     "signIn": "登入",
     "signUp": "注册",
     "signUpTo": "注册",
+    "switchServer": "切换服务器",
+
     "unmute": "取消静音",
     "version": "版本",
     "video" : "视频通话",

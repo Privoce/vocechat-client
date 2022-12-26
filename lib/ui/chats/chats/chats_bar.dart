@@ -306,8 +306,10 @@ class _ChatsBarState extends State<ChatsBar> {
                       Icon(AppIcons.dm, color: AppColors.grey97),
                       AppLocalizations.of(context)!.chatsBarNewDm,
                       AddActions.dm),
-                  _buildItem(Icon(AppIcons.member_add, color: AppColors.grey97),
-                      "Invite People", AddActions.user)
+                  _buildItem(
+                      Icon(AppIcons.member_add, color: AppColors.grey97),
+                      AppLocalizations.of(context)!.inviteNewUsers,
+                      AddActions.user)
                 ];
               },
             ))

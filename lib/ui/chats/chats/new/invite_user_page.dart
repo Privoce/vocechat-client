@@ -17,6 +17,7 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:path_provider/path_provider.dart' as path;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum LinkStatus { loading, ready, error }
 
@@ -52,7 +53,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
         toolbarHeight: barHeight,
         elevation: 0,
         backgroundColor: AppColors.coolGrey200,
-        title: Text("Invite People",
+        title: Text(AppLocalizations.of(context)!.inviteNewUsers,
             style: AppTextStyles.titleLarge,
             overflow: TextOverflow.ellipsis,
             maxLines: 1),
@@ -98,7 +99,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 16),
                           child: Text(
-                            "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
+                            AppLocalizations.of(context)!
+                                .invitationLinkGenerationError,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.labelMedium,
                           ),
@@ -119,7 +121,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Invitation Link:", style: AppTextStyles.titleMedium),
+            Text(AppLocalizations.of(context)!.invitationLink + ":",
+                style: AppTextStyles.titleMedium),
             SizedBox(height: 4),
             SelectableText(_invitationLink ?? "", style: AppTextStyles.snippet)
           ],
@@ -136,7 +139,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              "Scan this QR Code to register.",
+              AppLocalizations.of(context)!.scanQrCodeToRegister,
               style: AppTextStyles.labelMedium,
             )),
       ],
@@ -159,7 +162,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
                       color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(8)),
                   normal: Text(
-                    "Share Invitation Link",
+                    AppLocalizations.of(context)!.shareInvitationLink,
                     style: TextStyle(color: Colors.white),
                   ),
                   action: () async {
@@ -180,7 +183,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
                       color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(8)),
                   normal: Text(
-                    "Share QR Code",
+                    AppLocalizations.of(context)!.shareQrCode,
                     style: TextStyle(color: Colors.white),
                   ),
                   action: () async {

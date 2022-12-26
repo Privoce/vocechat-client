@@ -197,14 +197,14 @@ class _SettingPageState extends State<SettingPage> {
       children: [
         SizedBox(height: 8),
         AppBannerButton(
-          title: "Switch Server",
+          title: AppLocalizations.of(context)!.switchServer,
           onTap: () {
             _onSwitchServerTapped();
           },
         ),
         SizedBox(height: 8),
         AppBannerButton(
-          title: AppLocalizations.of(context)!.settingsPageLogout,
+          title: AppLocalizations.of(context)!.logOut,
           onTap: () {
             _onLogoutTapped(context);
           },
@@ -219,7 +219,7 @@ class _SettingPageState extends State<SettingPage> {
         if (App.app.userDb?.uid != 1)
           AppBannerButton(
             onTap: () => _onDeleteAccountTapped(context),
-            title: "Delete Account",
+            title: AppLocalizations.of(context)!.deleteAccount,
           )
       ],
     );
@@ -232,7 +232,7 @@ class _SettingPageState extends State<SettingPage> {
   void _onLogoutTapped(BuildContext context) async {
     showAppAlert(
         context: context,
-        title: "Log Out",
+        title: AppLocalizations.of(context)!.logOut,
         content: "Are you sure to log out?",
         primaryAction: AppAlertDialogAction(
             text: 'Log Out',
