@@ -38,13 +38,19 @@ Future<void> initDb({String? dbFileName}) async {
               } catch (e) {
                 App.logger.warning(e);
               }
-
-              try {
-                db.execute("ALTER TABLE user_db DROP COLUMN max_mid");
-              } catch (e) {
-                App.logger.warning(e);
-              }
             }
+
+            // print("########### $oldVersion $newVersion");
+
+            // if (oldVersion < newVersion && oldVersion < 3) {
+            //   print("########### $oldVersion $newVersion");
+            //   try {
+            //     db.execute(
+            //         "ALTER TABLE user_db ADD COLUMN max_mid INTEGER NOT NULL DEFAULT -1");
+            //   } catch (e) {
+            //     App.logger.warning(e);
+            //   }
+            // }
           },
         ),
       );

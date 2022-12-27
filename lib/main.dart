@@ -12,6 +12,7 @@ import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
@@ -99,6 +100,8 @@ Future<void> main() async {
               App.app.chatServerM.updatedAt =
                   DateTime.now().millisecondsSinceEpoch;
               await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
+
+              await _updateMaxMid();
             }
           } catch (e) {
             App.logger.severe(e);
@@ -109,6 +112,19 @@ Future<void> main() async {
   }
 
   runApp(VoceChatApp(defaultHome: _defaultHome));
+}
+
+/// This function is only for fixing potential difference in maxMid between
+/// old (calculated from chatMsgDao) and the new (saved separately),
+/// to reduce message duplication.
+Future<void> _updateMaxMid() async {
+  final oldMaxMid = await ChatMsgDao().getMaxMid();
+  if (oldMaxMid > -1) {
+    final userId = await StatusMDao.dao.getStatus();
+    if (userId != null) {
+      await UserDbMDao.dao.updateMaxMid(userId.userDbId, oldMaxMid);
+    }
+  }
 }
 
 Future<void> _setUpFirebaseNotification() async {

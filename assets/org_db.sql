@@ -30,7 +30,8 @@ create table if not exists user_db (
     logged_in integer not null,
     users_version integer not null,
     avatar_bytes BLOB not null,
-    properties text not null
+    properties text not null,
+    max_mid integer not null
 );
 
 CREATE INDEX IF NOT EXISTS index_chat_server_id ON user_db(chat_server_id);

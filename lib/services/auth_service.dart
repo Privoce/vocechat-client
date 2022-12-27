@@ -333,7 +333,8 @@ class AuthService {
             1,
             -1,
             avatarBytes,
-            "");
+            "",
+            0);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);
       } else {
         UserDbM m = UserDbM.item(
@@ -349,7 +350,8 @@ class AuthService {
             1,
             old.usersVersion,
             avatarBytes,
-            "");
+            "",
+            old.maxMid);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);
       }
 
