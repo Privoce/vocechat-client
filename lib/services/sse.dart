@@ -6,6 +6,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
 
 typedef SseEventAware = void Function(dynamic);
@@ -104,7 +105,7 @@ class Sse {
   Future<String> prepareUrl() async {
     String url = App.app.chatServerM.fullUrl + "/api/user/events?";
 
-    final afterMid = await ChatMsgDao().getMaxMid();
+    final afterMid = await UserDbMDao.dao.getMaxMid(App.app.userDb!.id);
     if (afterMid > -1) {
       url += "after_mid=$afterMid";
     }
