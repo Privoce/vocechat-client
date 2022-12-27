@@ -82,6 +82,7 @@
     "invitationLinkGenerationError": "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
     "inviteNewUsers": "Invite New Users",
     
+    "language": "Language",
     "logIn": "Log in",
     "logInTo": "Login To",
     "logOut":"Log Out",

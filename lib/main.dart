@@ -162,6 +162,9 @@ class VoceChatApp extends StatefulWidget {
 
   late Widget defaultHome;
 
+  static _VoceChatAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_VoceChatAppState>();
+
   @override
   State<VoceChatApp> createState() => _VoceChatAppState();
 }
@@ -171,6 +174,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   late bool shouldRefresh;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  Locale? _locale;
 
   /// When network changes, such as from wi-fi to data, a relay is set to avoid
   /// [_connect()] function to be called repeatly.
@@ -185,6 +189,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+    _initLocale();
 
     _handleIncomingUniLink();
     _handleInitUniLink();
@@ -234,6 +240,12 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     }
   }
 
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Portal(
@@ -278,6 +290,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        locale: _locale,
         supportedLocales: const [
           Locale('en', 'US'), // English, no country code
           Locale('zh', ''),
@@ -317,6 +330,29 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         }
       }
     });
+  }
+
+  Future<void> _initLocale() async {
+    final userDbM = await UserDbMDao.dao.getUserDbById(App.app.userDb!.id);
+    final userLanguageTag = userDbM?.userInfo.language;
+
+    if (userLanguageTag != null && userLanguageTag.isNotEmpty) {
+      final split = userLanguageTag.split("-");
+      String languageTag = "", scriptTag = "", regionTag = "";
+      try {
+        languageTag = split[0];
+        scriptTag = split[1];
+        regionTag = split[2];
+      } catch (e) {
+        App.logger.warning(e);
+      }
+      final locale = Locale.fromSubtags(
+          languageCode: languageTag,
+          scriptCode: scriptTag,
+          countryCode: regionTag);
+
+      setLocale(locale);
+    }
   }
 
   void _handleMessage(RemoteMessage message) async {

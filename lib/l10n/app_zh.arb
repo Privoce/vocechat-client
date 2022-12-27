@@ -86,6 +86,7 @@
     "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",
     "inviteNewUsers": "邀请新用户",
 
+    "language": "语言",
     "logIn": "登入",
     "logInTo": "登入中",
     "logOut":"登出",

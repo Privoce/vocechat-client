@@ -1,23 +1,18 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:vocechat_client/api/lib/admin_user_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
-import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/settings/firebase_settings_page.dart';
+import 'package:vocechat_client/ui/settings/language_setting_page.dart';
 import 'package:vocechat_client/ui/settings/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/settings_about_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
@@ -77,6 +72,7 @@ class _SettingPageState extends State<SettingPage> {
                 children: [
                   _buildUserInfo(),
                   _buildServer(context),
+                  _buildLanguage(context),
                   _buildAbout(),
                   if (App.app.userDb?.userInfo.isAdmin ?? false)
                     // _buildConfigs(context),
@@ -134,6 +130,19 @@ class _SettingPageState extends State<SettingPage> {
         title: AppLocalizations.of(context)!.settingsPageServerOverview);
   }
 
+  Widget _buildLanguage(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: BannerTile(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
+              return LanguageSettingPage();
+            })));
+          },
+          title: AppLocalizations.of(context)!.language),
+    );
+  }
+
   Widget _buildConfigs(BuildContext context) {
     return BannerTile(
         onTap: () {
@@ -146,23 +155,6 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildAbout() {
-    // return BannerTile(
-    //     title: AppLocalizations.of(context)!.settingsPageAbout,
-    //     keepArrow: false,
-    //     enableTap: false,
-    //     trailing: FutureBuilder<String>(
-    //         future: _getVersion(),
-    //         builder: (context, snapshot) {
-    //           if (snapshot.hasData) {
-    //             return Text(snapshot.data!,
-    //                 style: TextStyle(
-    //                     fontSize: 15,
-    //                     fontWeight: FontWeight.w400,
-    //                     color: AppColors.grey500));
-    //           } else {
-    //             return SizedBox.shrink();
-    //           }
-    //         }));
     return BannerTile(
         title: AppLocalizations.of(context)!.settingsPageAbout,
         keepArrow: true,
