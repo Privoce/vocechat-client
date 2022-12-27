@@ -13,6 +13,7 @@ import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
@@ -34,6 +35,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
   GlobalKey qrKey = GlobalKey();
 
+  Uint8List? _image;
+
   // default to be 48 hours.
   final expiredIn = 48;
 
@@ -44,6 +47,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
     super.initState();
 
     _generateInvitationMagicLink();
+    _getServerImge();
   }
 
   @override
@@ -134,7 +138,10 @@ class _InviteUserPageState extends State<InviteUserPage> {
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: QrImage(data: _invitationLink ?? "")),
+            child: QrImage(
+              data: _invitationLink ?? "",
+              // foregroundColor: Colors.blue.shade900,
+            )),
         SizedBox(height: 8),
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -213,6 +220,10 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
     _linkStatus.value = LinkStatus.error;
     return null;
+  }
+
+  Future<void> _getServerImge() async {
+    _image = App.app.chatServerM.logo;
   }
 
   /// Temp function to replace server default domain for invitation link.

@@ -107,6 +107,11 @@
     "paste": "粘贴",
     "password": "密码",
     "pin": "钉选",
+    "privateChannelToPublicTitle":"转为公有频道",
+    "privateChannelToPublicContent":"这将邀请本服务器的所有用户加入此频道。如果您不是管理员，您会失去此频道的所有权。",
+    "publicChannel":"公有频道",
+    "publicChannelToPrivateTitle":"转为私有频道",
+    "publicChannelToPrivateContent":"此频道将不再对新加入此服务器的用户可见。当前的频道成员不会收到影响。",
 
     "rememberMe": "记住我",
 
@@ -122,6 +127,7 @@
     "switchServer": "切换服务器",
 
     "today":"今天",
+    "transferOwnership":"转让所有权",
 
     "unmute": "取消静音",
     "version": "版本",
@@ -130,6 +136,7 @@
 
     "yesterday":"昨天",
     
+    "leave":"离开",
     "leaveChannel": "离开频道",
     "leaveChannelWarningDes": "此频道及其所有消息都将从您的设备中删除。",
     "leaveChannelTransferOwnerDes": "作为频道所有者，您需要在离开前转让频道所有权。",

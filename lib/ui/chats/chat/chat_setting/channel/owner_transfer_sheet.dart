@@ -14,6 +14,7 @@ import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OwnerTransferSheet extends StatefulWidget {
   final GroupInfoM groupInfoM;
@@ -39,7 +40,8 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
         child: Column(
       children: [
         SheetAppBar(
-          title: Text("Transfer Owner", style: AppTextStyles.titleLarge),
+          title: Text(AppLocalizations.of(context)!.transferOwnership,
+              style: AppTextStyles.titleLarge),
           leading: CupertinoButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -55,7 +57,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
                         CupertinoActivityIndicator(),
                         CupertinoButton(
                             onPressed: () {},
-                            child: Text("Done",
+                            child: Text(AppLocalizations.of(context)!.done,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontSize: 17,
@@ -75,7 +77,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
                         Navigator.of(context).pop();
                         _busyNotifier.value = false;
                       },
-                      child: Text("Done",
+                      child: Text(AppLocalizations.of(context)!.done,
                           style: TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 17,

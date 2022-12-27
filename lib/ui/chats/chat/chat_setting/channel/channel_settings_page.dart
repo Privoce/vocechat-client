@@ -209,7 +209,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                 padding: const EdgeInsets.only(top: 8),
                 child: BannerTileGroup(bannerTileList: [
                   BannerTile(
-                    title: "Public Channel",
+                    title: AppLocalizations.of(context)!.publicChannel,
                     keepArrow: false,
                     trailing: CupertinoSwitch(
                         value: isPublic,
@@ -225,13 +225,15 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   }
 
   Future<void> _changeChannelVisibility(bool isPublic) async {
-    const toPublicTitle = "Change to Public Channel";
-    const toPublicText =
-        "It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.";
+    final toPublicTitle =
+        AppLocalizations.of(context)!.privateChannelToPublicTitle;
+    final toPublicText =
+        AppLocalizations.of(context)!.privateChannelToPublicContent;
 
-    const toPrivateTitle = "Change to Private Channel";
-    const toPrivateText =
-        "This channel will not be visible to new server members. Current members will not be affected.";
+    final toPrivateTitle =
+        AppLocalizations.of(context)!.publicChannelToPrivateTitle;
+    final toPrivateText =
+        AppLocalizations.of(context)!.publicChannelToPrivateContent;
 
     String title = isPublic ? toPublicTitle : toPrivateTitle;
     String text = isPublic ? toPublicText : toPrivateText;
@@ -242,11 +244,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         content: text,
         actions: [
           AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.of(context).pop()),
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.of(context).pop()),
         ],
         primaryAction: AppAlertDialogAction(
             isDangerAction: true,
-            text: "Continue",
+            text: AppLocalizations.of(context)!.continueStr,
             action: () async {
               await _apiChangeChannelVisibility(isPublic);
               Navigator.of(context).pop();
@@ -344,7 +347,9 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         title: title,
         content: content,
         primaryAction: AppAlertDialogAction(
-          text: isOwner ? AppLocalizations.of(context)!.call : "Leave",
+          text: isOwner
+              ? AppLocalizations.of(context)!.call
+              : AppLocalizations.of(context)!.leave,
           isDangerAction: !isOwner,
           action: () async {
             Navigator.pop(context);
@@ -363,7 +368,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   }
 
   void _onDelete() async {
-    String title = "Delete Channel";
+    String title = AppLocalizations.of(context)!.deleteChannel;
     String content = AppLocalizations.of(context)!.deleteChannelWarningDes;
 
     await showAppAlert(
@@ -371,7 +376,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         title: title,
         content: content,
         primaryAction: AppAlertDialogAction(
-          text: "Delete",
+          text: AppLocalizations.of(context)!.delete,
           isDangerAction: true,
           action: () async {
             Navigator.pop(context);

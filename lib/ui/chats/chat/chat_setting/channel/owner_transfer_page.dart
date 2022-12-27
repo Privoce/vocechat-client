@@ -8,6 +8,7 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OwnerTransferPage extends StatefulWidget {
   final GroupInfoM groupInfoM;
@@ -37,7 +38,8 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
                 Navigator.pop(context);
               },
               child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
-          title: Text("Transfer Owner", style: AppTextStyles.titleLarge),
+          title: Text(AppLocalizations.of(context)!.transferOwnership,
+              style: AppTextStyles.titleLarge),
           backgroundColor: AppColors.barBg,
           elevation: 0,
           actions: [
@@ -50,7 +52,7 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
                         CupertinoActivityIndicator(),
                         CupertinoButton(
                             onPressed: () {},
-                            child: Text("Done",
+                            child: Text(AppLocalizations.of(context)!.done,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w400,
                                     fontSize: 17,
@@ -69,7 +71,7 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
                         Navigator.of(context).pop();
                         _busyNotifier.value = false;
                       },
-                      child: Text("Done",
+                      child: Text(AppLocalizations.of(context)!.done,
                           style: TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 17,

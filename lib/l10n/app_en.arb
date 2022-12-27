@@ -103,6 +103,11 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "pin": "Pin",
+    "privateChannelToPublicTitle":"Change to Public Channel",
+    "privateChannelToPublicContent":"It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.",
+    "publicChannel":"Public Channel",
+    "publicChannelToPrivateTitle":"Change to Private Channel",
+    "publicChannelToPrivateContent":"This channel will not be visible to new server members. Current members will not be affected.",
     "rememberMe": "Remember me",
 
     "scanQrCodeToRegister": "Scan this QR Code to register",
@@ -117,6 +122,7 @@
     "switchServer": "Switch Server",
 
     "today":"Today",
+    "transferOwnership":"Transfer Ownership",
 
     "unmute": "Unmute",
     "version": "Version",
@@ -125,6 +131,7 @@
 
     "yesterday":"yesterday",
     
+    "leave":"Leave",
     "leaveChannel": "Leave Channel",
     "leaveChannelWarningDes": "This channel and its messages will be deleted from all your devices.",
     "leaveChannelTransferOwnerDes": "As Owner, you have to transfer ownership before leaving.",
