@@ -346,10 +346,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       } catch (e) {
         App.logger.warning(e);
       }
-      final locale = Locale.fromSubtags(
-          languageCode: languageTag,
-          scriptCode: scriptTag,
-          countryCode: regionTag);
+      final locale = Locale(languageTag, regionTag);
 
       setLocale(locale);
     }

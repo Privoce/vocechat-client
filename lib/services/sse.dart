@@ -105,7 +105,8 @@ class Sse {
   Future<String> prepareUrl() async {
     String url = App.app.chatServerM.fullUrl + "/api/user/events?";
 
-    final afterMid = await UserDbMDao.dao.getMaxMid(App.app.userDb!.id);
+    // final afterMid = await UserDbMDao.dao.getMaxMid(App.app.userDb!.id);
+    final afterMid = await ChatMsgDao().getMaxMid();
     if (afterMid > -1) {
       url += "after_mid=$afterMid";
     }

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_text_styles.dart';
@@ -24,6 +25,8 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
     LanguageItem(language: "English", locale: Locale('en', 'US'))
   ];
 
+  final ValueNotifier<bool> _isUpdatingLanguage = ValueNotifier(false);
+
   @override
   void initState() {
     super.initState();
@@ -34,10 +37,29 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
     return Scaffold(
       backgroundColor: AppColors.pageBg,
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.language,
-            style: AppTextStyles.titleLarge,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(AppLocalizations.of(context)!.language,
+                  style: AppTextStyles.titleLarge,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1),
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: _isUpdatingLanguage,
+              builder: (context, value, child) {
+                if (value) {
+                  return Padding(
+                      padding: EdgeInsets.only(left: 4),
+                      child: CupertinoActivityIndicator());
+                } else {
+                  return SizedBox.shrink();
+                }
+              },
+            )
+          ],
+        ),
         toolbarHeight: barHeight,
         elevation: 0,
         backgroundColor: AppColors.barBg,
@@ -56,7 +78,13 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
         //               color: AppColors.primary400)))
         // ],
       ),
-      body: SafeArea(child: _buildLanguages()),
+      body: SafeArea(
+          child: ValueListenableBuilder<bool>(
+              valueListenable: _isUpdatingLanguage,
+              builder: (context, isUpdating, _) {
+                return AbsorbPointer(
+                    absorbing: isUpdating, child: _buildLanguages());
+              })),
     );
   }
 
@@ -80,11 +108,22 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
     );
   }
 
-  void _onTapLanguage(Locale locale) {
-    VoceChatApp.of(context)?.setLocale(locale);
-  }
+  void _onTapLanguage(Locale locale) async {
+    _isUpdatingLanguage.value = true;
 
-  void _onSubmit() {}
+    try {
+      await UserApi(App.app.chatServerM.fullUrl)
+          .updateUserInfo(language: locale.toLanguageTag());
+
+      await UserInfoDao()
+          .updateLanguage(App.app.userDb!.uid, locale.toLanguageTag());
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    VoceChatApp.of(context)?.setLocale(locale);
+    _isUpdatingLanguage.value = false;
+  }
 }
 
 class LanguageItem {

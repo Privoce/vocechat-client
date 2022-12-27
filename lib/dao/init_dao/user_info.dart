@@ -186,6 +186,21 @@ class UserInfoDao extends Dao<UserInfoM> {
     return old;
   }
 
+  Future<UserInfoM?> updateLanguage(int uid, String languageTag) async {
+    UserInfoM? old =
+        await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
+    if (old != null) {
+      UserInfo userInfo = old.userInfo;
+      userInfo.language = languageTag;
+      old.info = jsonEncode(userInfo);
+
+      await super.update(old);
+
+      await UserDbMDao.dao.updateUserInfo(userInfo);
+    }
+    return old;
+  }
+
   /// Get a list of Users in UserInfo
   ///
   /// Result shown in
