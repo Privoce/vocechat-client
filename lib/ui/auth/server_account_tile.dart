@@ -125,7 +125,7 @@ class _ServerAccountTileState extends State<ServerAccountTile> {
                             context: context,
                             title: AppLocalizations.of(context)!.logOut,
                             content:
-                                "${AppLocalizations.of(context)!.serverAccountLogoutWarning} \"${widget.accountData.value.serverName}\"?",
+                                "${AppLocalizations.of(context)!.logoutWarning} \"${widget.accountData.value.serverName}\"?",
                             actions: [
                               AppAlertDialogAction(
                                   text: AppLocalizations.of(context)!.cancel,

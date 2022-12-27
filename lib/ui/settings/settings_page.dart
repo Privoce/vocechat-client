@@ -214,7 +214,7 @@ class _SettingPageState extends State<SettingPage> {
             onTap: () {
               _onResetDbTapped(context);
             },
-            title: AppLocalizations.of(context)!.settingsPageClearData),
+            title: AppLocalizations.of(context)!.clearLocalData),
         SizedBox(height: 8),
         if (App.app.userDb?.uid != 1)
           AppBannerButton(
@@ -233,9 +233,9 @@ class _SettingPageState extends State<SettingPage> {
     showAppAlert(
         context: context,
         title: AppLocalizations.of(context)!.logOut,
-        content: "Are you sure to log out?",
+        content: AppLocalizations.of(context)!.logoutWarningWithQM,
         primaryAction: AppAlertDialogAction(
-            text: 'Log Out',
+            text: AppLocalizations.of(context)!.logOut,
             isDangerAction: true,
             action: () async {
               isBusy.value = true;
@@ -246,33 +246,35 @@ class _SettingPageState extends State<SettingPage> {
             }),
         actions: [
           AppAlertDialogAction(
-              text: 'Cancel', action: () => Navigator.pop(context)),
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.pop(context)),
         ]);
   }
 
   void _onResetDbTapped(BuildContext context) async {
     showAppAlert(
         context: context,
-        title: "Clear Local Data",
-        content:
-            "VoceChat will be terminated. All your data will be deleted locally.",
+        title: AppLocalizations.of(context)!.clearLocalData,
+        content: AppLocalizations.of(context)!.clearLocalDataContent,
         primaryAction: AppAlertDialogAction(
-            text: "OK", isDangerAction: true, action: _onReset),
+            text: AppLocalizations.of(context)!.ok,
+            isDangerAction: true,
+            action: _onReset),
         actions: [
           AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.pop(context, 'Cancel'))
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.pop(context))
         ]);
   }
 
   void _onDeleteAccountTapped(BuildContext context) async {
     showAppAlert(
         context: context,
-        title: "Are you sure to delete account?",
-        content:
-            "All your data will be deleted locally. Your account information will be deleted on server, but message contents will still be visible to other users. This can not be undone.",
+        title: AppLocalizations.of(context)!.deleteAccountWarning,
+        content: AppLocalizations.of(context)!.deleteAccountWarningContent,
         primaryAction: AppAlertDialogAction(
             isDangerAction: true,
-            text: "Delete",
+            text: AppLocalizations.of(context)!.delete,
             action: () async {
               final api = UserApi(App.app.chatServerM.fullUrl);
               final res = await api.delete();
@@ -289,19 +291,20 @@ class _SettingPageState extends State<SettingPage> {
                 Navigator.of(context).pop(context);
                 showAppAlert(
                     context: context,
-                    title: "Account Deletion Failed",
-                    content:
-                        "Please try again later or contact admin for help.",
+                    title:
+                        AppLocalizations.of(context)!.deleteAccountFailWarning,
+                    content: AppLocalizations.of(context)!
+                        .deleteAccountFailWarningContent,
                     actions: [
                       AppAlertDialogAction(
-                          text: "OK",
+                          text: AppLocalizations.of(context)!.ok,
                           action: () => Navigator.of(context).pop(context))
                     ]);
               }
             }),
         actions: [
           AppAlertDialogAction(
-              text: "Cancel",
+              text: AppLocalizations.of(context)!.cancel,
               action: () {
                 Navigator.of(context).pop(context);
               })

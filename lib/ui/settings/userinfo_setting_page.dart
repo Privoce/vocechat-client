@@ -64,7 +64,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
                   if (enableBtn) {
                     return CupertinoButton(
                         onPressed: onDone,
-                        child: Text("Done",
+                        child: Text(AppLocalizations.of(context)!.done,
                             style: TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 17,
@@ -123,7 +123,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTextField(
-              header: "Name",
+              header: AppLocalizations.of(context)!.name,
               controller: _nameController,
               maxLength: 32,
               autofocus: true,

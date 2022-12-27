@@ -3,12 +3,10 @@
     "serverPageWelcomeSecondLine":"VoceChat.",
     "serverPageHostServer": "服务器 Url",
     "serverPageHistory": "历史",
-    "serverPageClearLocalData": "清空本地数据",
-    "serverPageClearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
 
-    "registerNamingPageWhatsYourName":"您的昵称",
-    "registerNamingPageWhatsYourNameContent":"您希望别人怎样称呼您？此昵称只会对加入本服务器的用户可见。",
-    "registerNamingPageInvalidNameFormat":"无效的昵称格式",
+    "registerNamingPageWhatsYourName":"您的用户名",
+    "registerNamingPageWhatsYourNameContent":"您希望别人怎样称呼您？此用户名只会对加入本服务器的用户可见。",
+    "registerNamingPageInvalidNameFormat":"无效的用户名格式",
     "registerNamingPageSignUpFailed":"注册失败",
     "registerNamingPageSignUpFailedContent":"注册过程中遇到错误，请稍后再试或联系服务器所有者寻求帮助。",
 
@@ -36,8 +34,6 @@
     "chatsDrawerServerAndAccount": "服务器及账户",
     "chatsDrawerServerAndAccountPl": "服务器及账户",
     "chatsDrawerAddNewAccount":"添加新账户",
-
-    "serverAccountLogoutWarning":"您确认要登出",
     
     "chatsPageSearchHint":"搜索消息及用户",
     "contactsPageSearchHint": "搜索用户",
@@ -68,10 +64,16 @@
     "call" : "语音通话",
     "cancel": "取消",
     "confirmPassword": "确认密码",
+    "clearLocalData": "清空本地数据",
+    "clearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
     "continueStr": "继续",
     
     "delete": "删除",
     "deleteAccount": "删除账户",
+    "deleteAccountWarning":"您确认要删除账户吗？",
+    "deleteAccountWarningContent":"您的所有数据都将在本地被删除。您的账户信息会从服务器删除，但已发出的消息仍能被其他成员看到。此操作不可逆。",
+    "deleteAccountFailWarning":"删除账户失败",
+    "deleteAccountFailWarningContent":"请稍后重试或联系服务器管理员寻求帮助。",
     "deleteChannel": "删除频道",
     "deleteChannelWarningDes": "此频道将被删除。所有成员都将被移除，且不再可以看到其中的数据。",
     "done": "完成",
@@ -87,11 +89,14 @@
     "logIn": "登入",
     "logInTo": "登入中",
     "logOut":"登出",
+    "logoutWarning":"您确认要登出",
+    "logoutWarningWithQM":"您确认要登出吗？",
 
     "message": "发消息",
     "members":"成员",
     "mute" : "静音",
     
+    "name":"用户名",
     "newPrivateChannel":"新私有频道",
     "newPublicChannel":"新公有频道",
     "next": "下一步",
@@ -142,6 +147,14 @@
     "serverInfoSettingTitle": "服务器概览",
     "serverInfoSettingNameHint": "服务器名",
     "serverInfoSettingDesHint": "服务器描述",
+    "serverInfoSettingFooter": "以上更新仅会在重新启动 App 或重新登入后可见。",
+
+    "aboutPageTitle":"关于 VoceChat",
+    "aboutPageCheckUpdates":"检查更新",
+    "aboutPageChangeLog":"更新日志",
+    "aboutPageUpdateTitleUpToDate":"此版本为最新",
+    "aboutPageUpdateTitleUpToDateContent":"您使用的是最新版本的 VoceChat。",
+    "aboutPageCopyRight":"© Privoce Inc. 保留所有权利。",
 
     "firebaseEnable": "启用",
 

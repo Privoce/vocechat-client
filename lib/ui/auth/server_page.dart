@@ -113,10 +113,8 @@ class _ServerPageState extends State<ServerPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 VoceButton(
-                  normal: Text(
-                      AppLocalizations.of(context)!.serverPageClearLocalData,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  normal: Text(AppLocalizations.of(context)!.clearLocalData,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                   action: () async {
                     _onResetDb();
                     return true;
@@ -577,8 +575,8 @@ class _ServerPageState extends State<ServerPage> {
 
     showAppAlert(
         context: context,
-        title: AppLocalizations.of(context)!.serverPageClearLocalData,
-        content: AppLocalizations.of(context)!.serverPageClearLocalDataContent,
+        title: AppLocalizations.of(context)!.clearLocalData,
+        content: AppLocalizations.of(context)!.clearLocalDataContent,
         primaryAction: AppAlertDialogAction(
             text: AppLocalizations.of(context)!.ok,
             isDangerAction: true,
