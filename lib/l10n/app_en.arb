@@ -33,6 +33,12 @@
     "passwordRegisterPageEmailAlreadyExists": "Email Already Exists",
     "passwordRegisterPageEmailAlreadyExistsContent": "This email has been registered. Please go to sign in page.",
 
+    "chatsDrawerServerAndAccount": "Server and Account",
+    "chatsDrawerServerAndAccountPl": "Servers and Accounts",
+    "chatsDrawerAddNewAccount":"Add new account",
+
+    "serverAccountLogoutWarning":"Are you sure to log out",
+
     "chatsPageSearchHint":"Search for messages or users",
     "contactsPageSearchHint": "Search for users",
     

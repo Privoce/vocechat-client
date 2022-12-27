@@ -125,7 +125,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         text: TextSpan(
           children: [
             TextSpan(
-              text: AppLocalizations.of(context)!.signUpTo,
+              text: AppLocalizations.of(context)!.signUpTo + " ",
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,

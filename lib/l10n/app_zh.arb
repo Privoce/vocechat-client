@@ -32,6 +32,12 @@
     "passwordRegisterPagePasswordNotMatch": "密码不相同",
     "passwordRegisterPageEmailAlreadyExists": "邮箱已经存在",
     "passwordRegisterPageEmailAlreadyExistsContent": "此邮箱已经被注册过，请移步登入页面。",
+
+    "chatsDrawerServerAndAccount": "服务器及账户",
+    "chatsDrawerServerAndAccountPl": "服务器及账户",
+    "chatsDrawerAddNewAccount":"添加新账户",
+
+    "serverAccountLogoutWarning":"您确认要登出",
     
     "chatsPageSearchHint":"搜索消息及用户",
     "contactsPageSearchHint": "搜索用户",

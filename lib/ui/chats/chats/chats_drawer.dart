@@ -12,6 +12,7 @@ import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatsDrawer extends StatefulWidget {
   const ChatsDrawer(
@@ -39,7 +40,9 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
   @override
   Widget build(BuildContext context) {
     final maxWidth = MediaQuery.of(context).size.width * 0.8;
-    final titleStr = accountList.length > 1 ? "Servers" : "Server";
+    final titleStr = accountList.length > 1
+        ? AppLocalizations.of(context)!.chatsDrawerServerAndAccountPl
+        : AppLocalizations.of(context)!.chatsDrawerServerAndAccount;
 
     return Container(
         width: min(maxWidth, 320),
@@ -83,27 +86,6 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                   },
                   itemCount: accountList.length,
                   itemBuilder: (context, index) {
-                    // if (index == accountList.length) {
-                    //   return Row(
-                    //     mainAxisAlignment: MainAxisAlignment.end,
-                    //     children: [
-                    //       CupertinoButton(
-                    //         padding: EdgeInsets.zero,
-                    //         onPressed: _onTapAdd,
-                    //         child: Padding(
-                    //             padding:
-                    //                 const EdgeInsets.only(right: 16, top: 8),
-                    //             child: Row(
-                    //               children: const [
-                    //                 Icon(Icons.add),
-                    //                 SizedBox(width: 4),
-                    //                 Text("Add new account")
-                    //               ],
-                    //             )),
-                    //       ),
-                    //     ],
-                    //   );
-                    // } else {
                     final accountData = accountList[index];
                     return CupertinoButton(
                         padding: EdgeInsets.zero,
@@ -127,7 +109,9 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                           color: Colors.blue,
                           borderRadius: BorderRadius.circular(8)),
                       normal: Text(
-                        "Add new account",
+                        AppLocalizations.of(context)!.chatsDrawerAddNewAccount,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(color: Colors.white),
                       ),
                       action: () async {
@@ -143,7 +127,9 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                           color: Colors.blue,
                           borderRadius: BorderRadius.circular(8)),
                       normal: Text(
-                        "Paste invitation link",
+                        AppLocalizations.of(context)!.inputInvitationLink,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(color: Colors.white),
                       ),
                       action: () async {
