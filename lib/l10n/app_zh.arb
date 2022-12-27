@@ -120,10 +120,14 @@
     "signUpTo": "注册",
     "switchServer": "切换服务器",
 
+    "today":"今天",
+
     "unmute": "取消静音",
     "version": "版本",
     "video" : "视频通话",
     "voice" : "语音通话",
+
+    "yesterday":"昨天",
     
     "leaveChannel": "离开频道",
     "leaveChannelWarningDes": "此频道及其所有消息都将从您的设备中删除。",

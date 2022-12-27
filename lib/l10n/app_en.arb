@@ -115,10 +115,14 @@
     "signUpTo": "Sign Up to",
     "switchServer": "Switch Server",
 
+    "today":"Today",
+
     "unmute": "Unmute",
     "version": "Version",
     "video" : "Video",
     "voice" : "Voice",
+
+    "yesterday":"yesterday",
     
     "leaveChannel": "Leave Channel",
     "leaveChannelWarningDes": "This channel and its messages will be deleted from all your devices.",
