@@ -5,7 +5,12 @@
     "serverPageHistory": "History",
     "serverPageClearLocalData": "Clear local data",
     "serverPageClearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
-    "serverPagePasteInvitationLink": "Paste invitation link",
+    
+    "registerNamingPageWhatsYourName":"What's your name",
+    "registerNamingPageWhatsYourNameContent":"Enter a name so people know how you'd like to be called. Your name will only be visible to others in spaces you joined.",
+    "registerNamingPageInvalidNameFormat":"Invalid Name Format",
+    "registerNamingPageSignUpFailed":"Sign Up Failed",
+    "registerNamingPageSignUpFailedContent":"Something wrong happened. Please try again later or contact server owner for help.",
 
     "chatServerHelperServerConnectionError": "Server Connection Error",
     "chatServerHelperServerConnectionErrorContent": "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
@@ -65,6 +70,7 @@
     "edit": "Edit",
     "email": "Email",
 
+    "inputInvitationLink":"Input Invitation Link",
     "invitationLink": "Invitation Link",
     "invitationLinkGenerationError": "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
     "inviteNewUsers": "Invite New Users",

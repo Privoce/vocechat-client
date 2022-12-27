@@ -344,7 +344,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         title: title,
         content: content,
         primaryAction: AppAlertDialogAction(
-          text: isOwner ? AppLocalizations.of(context)!.continueStr : "Leave",
+          text: isOwner ? AppLocalizations.of(context)!.call : "Leave",
           isDangerAction: !isOwner,
           action: () async {
             Navigator.pop(context);

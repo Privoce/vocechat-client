@@ -107,7 +107,7 @@ class InvitationLinkPastePage extends StatelessWidget {
                       return _buildTextFieldPasteButton(context, type);
                     }),
                 IconButton(
-                    icon: Icon(Icons.qr_code_2_rounded,
+                    icon: Icon(Icons.qr_code_scanner_rounded,
                         color: Colors.blue, size: 30),
                     onPressed: () {
                       final route = PageRouteBuilder(

@@ -125,8 +125,7 @@ class _ServerPageState extends State<ServerPage> {
                 Text("  |  "),
                 VoceButton(
                   normal: Text(
-                      AppLocalizations.of(context)!
-                          .serverPagePasteInvitationLink,
+                      AppLocalizations.of(context)!.inputInvitationLink,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
                   action: () async {
@@ -250,7 +249,7 @@ class _ServerPageState extends State<ServerPage> {
                       ),
                     ),
                     IconButton(
-                        icon: Icon(Icons.qr_code_2_rounded,
+                        icon: Icon(Icons.qr_code_scanner_rounded,
                             color: Colors.blue, size: 30),
                         onPressed: () {
                           final route = PageRouteBuilder(

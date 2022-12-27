@@ -14,6 +14,7 @@ import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegisterNamingPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
@@ -120,23 +121,25 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
 
   Widget _buildTitle() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Wrap(
-        children: [
-          Text(
-            'Sign up to ',
-            style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cyan500),
-          ),
-          Text(
-            widget.chatServer.properties.serverName,
-            style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: Colors.blue.shade700),
-          ),
-        ],
+      RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: AppLocalizations.of(context)!.signUpTo,
+              style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cyan500),
+            ),
+            TextSpan(
+              text: widget.chatServer.properties.serverName,
+              style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.blue.shade700),
+            ),
+          ],
+        ),
       ),
       Text(widget.chatServer.fullUrl,
           style: TextStyle(
@@ -151,7 +154,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'What\'s your name',
+          AppLocalizations.of(context)!.registerNamingPageWhatsYourName,
           style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
@@ -159,7 +162,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         ),
         SizedBox(height: 8),
         Text(
-          "Enter a name so people know how you'd like to be called. Your name will only be visible to others in spaces you joined.",
+          AppLocalizations.of(context)!.registerNamingPageWhatsYourNameContent,
           style: TextStyle(
               fontWeight: FontWeight.w400,
               fontSize: 14,
@@ -186,7 +189,8 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
                 builder: (context, showNameWarning, child) {
                   if (showNameWarning) {
                     return Text(
-                      "Invalid Name Format",
+                      AppLocalizations.of(context)!
+                          .registerNamingPageInvalidNameFormat,
                       style: TextStyle(fontSize: 12, color: Colors.red),
                     );
                   }
@@ -206,7 +210,8 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         decoration: BoxDecoration(
             color: Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(8)),
-        normal: Text("Continue", style: TextStyle(color: Colors.white)),
+        normal: Text(AppLocalizations.of(context)!.continueStr,
+            style: TextStyle(color: Colors.white)),
         action: _onTapContinue);
   }
 
@@ -265,23 +270,20 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       }
     } catch (e) {
       App.logger.severe(e);
-
-      showAppAlert(
-          context: context,
-          title: "Sign Up Failed",
-          content:
-              "Something wrong happened. Please try again later or contact us for help.",
-          actions: [
-            AppAlertDialogAction(
-              text: "OK",
-              action: () {
-                Navigator.pop(context);
-              },
-            )
-          ]);
-
-      return false;
     }
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.registerNamingPageSignUpFailed,
+        content:
+            AppLocalizations.of(context)!.registerNamingPageSignUpFailedContent,
+        actions: [
+          AppAlertDialogAction(
+            text: AppLocalizations.of(context)!.ok,
+            action: () {
+              Navigator.pop(context);
+            },
+          )
+        ]);
     return false;
   }
 }
