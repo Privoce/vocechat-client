@@ -26,13 +26,13 @@ Future<void> initDb({String? dbFileName}) async {
       String path = p.join(databasesPath, dbFileName ?? _orgDbName);
       await Directory(databasesPath)
           .create(recursive: true); // App will terminate if create fails.
-      orgDb = await databaseFactory.openDatabase(
+      await databaseFactory.openDatabase(
         path,
         options: OpenDatabaseOptions(
           version: 3,
           onCreate: (db, version) async {
             // Check if db table has been created.
-            int? count = firstIntValue(await orgDb.query('sqlite_master',
+            int? count = firstIntValue(await db.query('sqlite_master',
                 columns: ['COUNT(*)'],
                 where: 'type = ?',
                 whereArgs: ['table']));
@@ -41,7 +41,7 @@ Future<void> initDb({String? dbFileName}) async {
               // sql string and execute one after another.
               List<String> sqlList =
                   (await _initSql('assets/org_db.sql')).split(';');
-              Batch batch = orgDb.batch();
+              Batch batch = db.batch();
               for (String sql in sqlList) {
                 sql = sql.trim();
                 if (sql.isNotEmpty) {
@@ -50,6 +50,8 @@ Future<void> initDb({String? dbFileName}) async {
               }
               batch.commit();
             }
+
+            orgDb = db;
           },
           onUpgrade: (db, oldVersion, newVersion) {
             if (oldVersion < newVersion && oldVersion < 2) {

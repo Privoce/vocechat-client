@@ -15,19 +15,22 @@ class DioUtil {
     _init();
   }
 
-  DioUtil.token({required this.baseUrl}) {
-    _init();
+  DioUtil.token({required this.baseUrl, bool withRetry = true}) {
+    _init(withRetry: withRetry);
     _dio.options.headers["x-api-key"] = App.app.userDb!.token;
     _add401Handling();
   }
 
-  void _init() {
+  void _init({bool withRetry = true}) {
     // _dio.httpClientAdapter = Http2Adapter(ConnectionManager());
     _dio.options.headers = {'referer': App.app.chatServerM.fullUrl};
-    _dio.interceptors.add(RetryInterceptor(
-        dio: _dio,
-        options:
-            RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
+
+    if (withRetry) {
+      _dio.interceptors.add(RetryInterceptor(
+          dio: _dio,
+          options:
+              RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
+    }
     _dio.options.baseUrl = baseUrl;
     _dio.options.connectTimeout = 5000; //5s
     // _dio.options.receiveTimeout = 10000;

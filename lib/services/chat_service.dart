@@ -446,6 +446,9 @@ class ChatService {
 
     midSet.add(chatMsg.mid);
 
+    // Update max_mid in UserDB
+    await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, chatMsg.mid);
+
     try {
       switch (chatMsg.detail["type"]) {
         case chatMsgNormal:

@@ -113,7 +113,6 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "pin": "Pin",
-    "pinLC":"pin",
     "privateChannelToPublicTitle":"Change to Public Channel",
     "privateChannelToPublicContent":"It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.",
     "publicChannel":"Public Channel",
