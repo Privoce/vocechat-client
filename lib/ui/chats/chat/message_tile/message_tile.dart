@@ -18,6 +18,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum ImageType { thumb, original }
 
@@ -245,7 +246,7 @@ class _MessageTileState extends State<MessageTile> {
             }
 
             return TextBubble(
-                content: content ?? "No Content",
+                content: content ?? AppLocalizations.of(context)!.noContent,
                 edited: m.edited == 1,
                 hasMention: hasMention,
                 chatMsgM: widget.chatMsgM,
@@ -254,8 +255,8 @@ class _MessageTileState extends State<MessageTile> {
 
           case MsgContentType.markdown:
             return MarkdownBubble(
-                markdownText:
-                    widget.chatMsgM.msgNormal?.content ?? "No Content",
+                markdownText: widget.chatMsgM.msgNormal?.content ??
+                    AppLocalizations.of(context)!.noContent,
                 edited: widget.chatMsgM.edited == 1);
 
           case MsgContentType.file:

@@ -31,6 +31,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
 import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum EventActions { create, delete, update }
 
@@ -320,12 +321,13 @@ class ChatService {
           if (context != null) {
             showAppAlert(
                 context: context,
-                title: "Login Session Expires",
+                title: AppLocalizations.of(context)!.loginSessionExpires,
                 content:
-                    "If you didn't login from another device, please change password immediately, or contact server admins for help.",
+                    AppLocalizations.of(context)!.loginSessionExpiresContent,
                 actions: [
                   AppAlertDialogAction(
-                      text: "OK", action: () => Navigator.pop(context))
+                      text: AppLocalizations.of(context)!.ok,
+                      action: () => Navigator.pop(context))
                 ]);
           }
 

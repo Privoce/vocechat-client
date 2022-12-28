@@ -17,6 +17,7 @@ import 'package:path/path.dart' as path;
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/pdf_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/video_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum FilePageStatus { download, open, share, downloading }
 
@@ -233,12 +234,12 @@ class _FilePageState extends State<FilePage> {
       } else {
         showAppAlert(
             context: context,
-            title: "Can't Find File",
-            content:
-                "VoceChat can't find this file on your device or from the server. It might have been deleted.",
+            title: AppLocalizations.of(context)!.filePageCantFindFile,
+            content: AppLocalizations.of(context)!.filePageCantFindFileContent,
             actions: [
               AppAlertDialogAction(
-                  text: "OK", action: () => Navigator.of(context).pop())
+                  text: AppLocalizations.of(context)!.ok,
+                  action: () => Navigator.of(context).pop())
             ]);
         _status.value = FilePageStatus.download;
         _enableShare.value = false;
@@ -246,12 +247,12 @@ class _FilePageState extends State<FilePage> {
     }).onError((error, stackTrace) {
       showAppAlert(
           context: context,
-          title: "Download Failed",
-          content:
-              "VoceChat can't download this file. It might have been deleted from server.",
+          title: AppLocalizations.of(context)!.filePageDownloadFailed,
+          content: AppLocalizations.of(context)!.filePageDownloadFailedContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop())
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
           ]);
       _status.value = FilePageStatus.download;
       _enableShare.value = false;
@@ -285,12 +286,12 @@ class _FilePageState extends State<FilePage> {
       App.logger.severe(e);
       showAppAlert(
           context: context,
-          title: "Can't open file",
-          content:
-              "VoceChat does not support this file type. Please open with other Apps.",
+          title: AppLocalizations.of(context)!.filePageCantOpenFile,
+          content: AppLocalizations.of(context)!.filePageCantOpenFileContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.pop(context))
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.pop(context))
           ]);
     }
   }

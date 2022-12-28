@@ -144,13 +144,16 @@ class ChatServerHelper {
   Future<void> _showServerUninitializedError(ChatServerM chatServerM) async {
     return showAppAlert(
         context: context,
-        title: "Server Not Initialized",
-        content: "Please use web client for initialization.",
+        title:
+            AppLocalizations.of(context)!.chatServerHelperServerNotInitialized,
+        content: AppLocalizations.of(context)!
+            .chatServerHelperServerNotInitializedContent,
         actions: [
           AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.of(context).pop()),
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.of(context).pop()),
           AppAlertDialogAction(
-              text: "Copy Url",
+              text: AppLocalizations.of(context)!.copyUrl,
               action: () {
                 Navigator.of(context).pop();
 

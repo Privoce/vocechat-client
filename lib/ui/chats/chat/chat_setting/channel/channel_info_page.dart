@@ -182,11 +182,12 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
         App.logger.severe("Payload too large");
         await showAppAlert(
             context: context,
-            title: "Upload Error",
-            content: "Avatar size exceeds limit.",
+            title: AppLocalizations.of(context)!.uploadError,
+            content: AppLocalizations.of(context)!.uploadErrorContent,
             actions: [
               AppAlertDialogAction(
-                  text: "OK", action: () => Navigator.pop(context))
+                  text: AppLocalizations.of(context)!.ok,
+                  action: () => Navigator.pop(context))
             ]);
         _uploadNotifier.value = false;
         return;

@@ -12,6 +12,8 @@
 
     "chatServerHelperServerConnectionError": "服务端连接错误",
     "chatServerHelperServerConnectionErrorContent": "VoceChat 无法获取服务端信息。您可以检查链接格式，如“http”、”https“, 或端口号，或联系服务端拥有者寻求帮助。",
+    "chatServerHelperServerNotInitialized": "服务器未初始化",
+    "chatServerHelperServerNotInitializedContent": "请使用网页端完成初始化。",
 
     "inputInvitationLinkPageInput": "输入",
     "inputInvitationLinkPageInvitationLink": "邀请链接",
@@ -66,6 +68,7 @@
     "channel":"频道",
     "confirmPassword": "确认密码",
     "copy":"复制",
+    "copyUrl":"拷贝 Url",
     "clearLocalData": "清空本地数据",
     "clearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
     "continueStr": "继续",
@@ -107,6 +110,7 @@
     "newPrivateChannel":"新私有频道",
     "newPublicChannel":"新公有频道",
     "next": "下一步",
+    "noContent":"没有内容",
 
     "ok": "好",
 
@@ -143,6 +147,8 @@
 
     "unmute": "取消静音",
     "unpin":"取消钉选",
+    "uploadError": "上传错误",
+    "uploadErrorContent": "头像图片大小超过限制。",
     "version": "版本",
     "video" : "视频通话",
     "voice" : "语音通话",
@@ -187,6 +193,10 @@
     "savedItemEmptyChannelDes": "此频道暂无保存的信息。",
 
     "pinnedMsgPageEmptyChannelDes": "此频道暂无钉选的信息。",
+    "pinnedMsgPageUnPinTitle": "取消钉选",
+    "pinnedMsgPageUnPinContent": "您确定要取消钉选此消息？",
+    "pinnedMsgPageUnPinErrorTitle": "取消钉选错误",
+    "pinnedMsgPageUnPinErrorContent": "在取消钉选的过程中发生了错误。",
 
     "memberAddPageTitle": "添加频道成员",
     "memberAddPageAdd": "添加",
@@ -202,6 +212,57 @@
     "chatPageCantFindImageWarning":"无法找到图片",
     "chatPageCantFindImageWarningContent":"图片也许已被删除。请发一条新消息。",
     "chatPageResendWarning":"重发消息",
-    "chatPageResendWarningContent":"您确认要重发这条消息吗？"
+    "chatPageResendWarningContent":"您确认要重发这条消息吗？",
 
+    "savedPageDeleteTitle":"删除保存的项目",
+    "savedPageDeleteContent":"您确定要删除这个保存的项目吗？",
+    "savedPageDeleteErrorTitle":"删除保存的项目时出错",
+    "savedPageDeleteErrorContent":"删除保存项目时出现了问题。",
+
+    "magicLinkLoginSendError":"Magic Link 错误",
+    "magicLinkLoginSendErrorContent":"在发送 Magic Link 到邮箱地址时出错。请稍后再试或向我们报告问题。",
+
+    "appQrCodeScanPageInvalidCodeTitle":"无效的二维码",
+    "appQrCodeScanPageInvalidCodeContent":"请获取一个新的邀请链接二维码，或检查您的网络状况。",
+
+    "settingsAboutPageNetworkError":"网络错误",
+    "settingsAboutPageNetworkErrorContent":"VoceChat 无法获取最新的版本信息。请您稍后再试。",
+
+    "chatsBarNetworkError": "网络错误",
+    "chatsBarNetworkErrorContent": "请检查您的网络状况，或稍后再试。",
+    "chatsBarLoginStatusExpired": "登入状态过期",
+    "chatsBarLoginStatusExpiredContent": "请重新登入。",
+
+    "filePageCantOpenFile":"无法打开文件",
+    "filePageCantOpenFileContent":"VoceChat 不支持此文件类型，请尝试用其他 App 打开。",
+    "filePageDownloadFailed":"下载失败",
+    "filePageDownloadFailedContent":"VoceChat 无法下载此文件。它可能已从服务器删除。",
+    "filePageCantFindFile":"无法找到文件",
+    "filePageCantFindFileContent":"VoceChat 无法在本机或服务器找到此文件。它可能已从服务器删除。",
+
+    "chatTextFieldCameraMicrophonePermission":"VoceChat 需要相机和麦克风权限",
+    "chatTextFieldCameraMicrophonePermissionContent":"授权相机和麦克风权限以发送图片及视频消息。",
+    "chatTextFieldPhotoPermission":"VoceChat 需要系统相册访问权限",
+    "chatTextFieldPhotoPermissionContent":"请到设置 -> VoceChat 开启权限。",
+    
+    "loginSessionExpires":"登入状态过期",
+    "loginSessionExpiresContent":"如果您没有在另一个设备登入，请立刻更改密码，或联系服务器管理员寻求帮助。",
+    
+    "loginError":"登入错误",
+    "loginErrorContent401":"账户或密码无效。",
+    "loginErrorContent403":"不支持此登录方式。",
+    "loginErrorContent404":"用户不存在。",
+    "loginErrorContent409":"邮箱地址重复。",
+    "loginErrorContent423":"用户被冻结。",
+    "loginErrorContent451":"证书存在问题。请联系服务器管理员寻求帮助。",
+    "loginErrorContentOther":"登录过程中出现问题。",
+    "loginErrorCopy":"复制错误信息",
+
+    "appTextSelectionControlPasteImage":"粘贴并发送图片",
+
+    "fcmError":"FCM 错误",
+    "fcmErrorContent":"FCM 配置失败。",
+    "fcmErrorCopyErrorLog":"拷贝错误记录。"
+    
+    
 }

@@ -438,11 +438,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
     if (status != PermissionStatus.granted) {
       showAppAlert(
           context: context,
-          title: "VoceChat needs Photo Album permission",
-          content: "Please go to settings -> VoceChat for permission settings.",
+          title: AppLocalizations.of(context)!.chatTextFieldPhotoPermission,
+          content:
+              AppLocalizations.of(context)!.chatTextFieldPhotoPermissionContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop())
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
           ]);
     } else {
       return true;
@@ -485,12 +487,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
                 if (cameraPermissionDenied || microphonePermissionDenied) {
                   showAppAlert(
                       context: context,
-                      title: "VoceChat needs camera and microphone permissions",
-                      content:
-                          "Grant camera and microphone permissions for sending image and video messages.",
+                      title: AppLocalizations.of(context)!
+                          .chatTextFieldCameraMicrophonePermission,
+                      content: AppLocalizations.of(context)!
+                          .chatTextFieldCameraMicrophonePermissionContent,
                       actions: [
                         AppAlertDialogAction(
-                            text: "OK",
+                            text: AppLocalizations.of(context)!.ok,
                             action: () => Navigator.of(context).pop())
                       ]);
                 } else {

@@ -395,11 +395,13 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   void _showInvalidLinkWarning(BuildContext context) {
     showAppAlert(
         context: context,
-        title: "Invalid Invitation Link",
-        content: "Please contact server admin for a new link or help.",
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
         actions: [
           AppAlertDialogAction(
-              text: "OK", action: (() => Navigator.of(context).pop()))
+              text: AppLocalizations.of(context)!.ok,
+              action: (() => Navigator.of(context).pop()))
         ]);
   }
 

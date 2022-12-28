@@ -12,6 +12,8 @@
 
     "chatServerHelperServerConnectionError": "Server Connection Error",
     "chatServerHelperServerConnectionErrorContent": "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
+    "chatServerHelperServerNotInitialized": "Server Not Initialized",
+    "chatServerHelperServerNotInitializedContent": "Please use web client for initialization.",
 
     "inputInvitationLinkPageInput": "Input",
     "inputInvitationLinkPageInvitationLink": "Invitation Link",
@@ -66,6 +68,7 @@
     "clearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
     "continueStr": "Continue",
     "copy":"Copy",
+    "copyUrl":"Copy Url",
 
     "delete": "Delete",
     "deleteAccount": "Delete Account",
@@ -103,6 +106,7 @@
     "newPrivateChannel":"New Private Channel",
     "newPublicChannel":"New Public Channel",
     "next": "Next",
+    "noContent":"No Content",
 
     "ok": "OK",
     "paste": "Paste",
@@ -139,6 +143,8 @@
 
     "unmute": "Unmute",
     "unpin":"Unpin",
+    "uploadError": "Upload Error",
+    "uploadErrorContent": "Avatar size exceeds limit.",
     "version": "Version",
     "video" : "Video",
     "voice" : "Voice",
@@ -183,6 +189,10 @@
     "savedItemEmptyChannelDes": "This channel doesn't have any saved item.",
 
     "pinnedMsgPageEmptyChannelDes": "This channel doesn't have any pinned message.",
+    "pinnedMsgPageUnPinTitle": "Unpin Message",
+    "pinnedMsgPageUnPinContent": "Are you sure to unpin this message?",
+    "pinnedMsgPageUnPinErrorTitle": "Unpin Message Error",
+    "pinnedMsgPageUnPinErrorContent": "Something wrong when unpinning this pinned message.",
 
     "memberAddPageTitle": "Add Members",
     "memberAddPageAdd": "Add",
@@ -198,7 +208,57 @@
     "chatPageCantFindImageWarning":"Can't Find Image File",
     "chatPageCantFindImageWarningContent":"Image might have been deleted. Please send a new message.",
     "chatPageResendWarning":"Resend Message",
-    "chatPageResendWarningContent":"Do you want to resend this message?"
+    "chatPageResendWarningContent":"Do you want to resend this message?",
 
+    "savedPageDeleteTitle":"Delete Saved Item",
+    "savedPageDeleteContent":"Are you sure to delete this saved item?",
+    "savedPageDeleteErrorTitle":"Delete Saved Item Error",
+    "savedPageDeleteErrorContent":"Something wrong with saved item deletion.",
+
+    "magicLinkLoginSendError":"Magic Link Error",
+    "magicLinkLoginSendErrorContent":"There was an error when sending magic link to the provided email. Please try again or report an issue to us.",
+
+    "appQrCodeScanPageInvalidCodeTitle":"Invalid QR Code",
+    "appQrCodeScanPageInvalidCodeContent":"Please ask for a new invitation link, or check your network.",
+    
+    "settingsAboutPageNetworkError":"Network Error",
+    "settingsAboutPageNetworkErrorContent":"VoceChat cannot fetch latest version information. You may try it later.",
+
+    "chatsBarNetworkError": "Network Error",
+    "chatsBarNetworkErrorContent": "Please check your network settings, or try to log in again.",
+    "chatsBarLoginStatusExpired": "Login Status Expired",
+    "chatsBarLoginStatusExpiredContent": "Please login again.",
+
+    "filePageCantOpenFile":"Can't Open File",
+    "filePageCantOpenFileContent":"VoceChat does not support this file type. Please open with other Apps.",
+    "filePageDownloadFailed":"Download Failed",
+    "filePageDownloadFailedContent":"VoceChat can't download this file. It might have been deleted from server.",
+    "filePageCantFindFile":"Can't Open File",
+    "filePageCantFindFileContent":"VoceChat can't find this file on your device or from the server. It might have been deleted.",
+
+    "chatTextFieldCameraMicrophonePermission":"VoceChat needs camera and microphone permissions",
+    "chatTextFieldCameraMicrophonePermissionContent":"Grant camera and microphone permissions for sending image and video messages.",
+    "chatTextFieldPhotoPermission":"VoceChat needs Photo Album permission",
+    "chatTextFieldPhotoPermissionContent":"Please go to settings -> VoceChat for permission settings.",
+    
+    "loginSessionExpires":"Login Session Expires",
+    "loginSessionExpiresContent":"If you didn't login from another device, please change password immediately, or contact server admins for help.",
+
+    "loginError":"Login Error",
+    "loginErrorContent401":"Invalid account or password.",
+    "loginErrorContent403":"Login method is not supported.",
+    "loginErrorContent404":"User does not exist.",
+    "loginErrorContent409":"Email collision.",
+    "loginErrorContent423":"User has been frozen.",
+    "loginErrorContent451":"License has an issue. Please contact server admin for help.",
+    "loginErrorContentOther":"An error occurred during login.",
+    "loginErrorCopy":"Copy Error",
+
+    "appTextSelectionControlPasteImage":"Paste and Send Image",
+
+    "fcmError":"FCM Error",
+    "fcmErrorContent":"FCM Configuration Failed.",
+    "fcmErrorCopyErrorLog":"Copy Error Log"
+    
     
 }

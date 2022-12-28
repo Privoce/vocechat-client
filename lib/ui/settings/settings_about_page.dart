@@ -171,12 +171,13 @@ class SettingsAboutPage extends StatelessWidget {
   void _showNetworkError(BuildContext context) {
     showAppAlert(
         context: context,
-        title: "Network Error",
+        title: AppLocalizations.of(context)!.settingsAboutPageNetworkError,
         content:
-            "VoceChat cannot fetch latest version information. You may try it later.",
+            AppLocalizations.of(context)!.settingsAboutPageNetworkErrorContent,
         actions: [
           AppAlertDialogAction(
-              text: "OK", action: () => Navigator.of(context).pop())
+              text: AppLocalizations.of(context)!.ok,
+              action: () => Navigator.of(context).pop())
         ]);
   }
 
@@ -190,13 +191,12 @@ class SettingsAboutPage extends StatelessWidget {
         // AppAlertDialogAction(
         //     text: "Play Store", action: (() => launchUrlString(googlePlayUrl))),
         AppAlertDialogAction(
-            text: "VoceChat Website",
-            action: (() => launchUrlString(vocechatUrl)))
+            text: "Voce.Chat", action: (() => launchUrlString(vocechatUrl)))
       ]);
     }
 
     actions.add(AppAlertDialogAction(
-        text: "Cancel",
+        text: AppLocalizations.of(context)!.cancel,
         action: (() {
           Navigator.of(context).pop();
         })));
