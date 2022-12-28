@@ -11,6 +11,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ForwardSheet extends StatefulWidget {
   List<int>? midList;
@@ -50,7 +51,7 @@ class _ForwardSheetState extends State<ForwardSheet> {
             children: [
               SheetAppBar(
                   title: Text(
-                    "Forward to ",
+                    AppLocalizations.of(context)!.forwardTo,
                     style: AppTextStyles.titleLarge,
                   ),
                   leading: CupertinoButton(
@@ -66,7 +67,7 @@ class _ForwardSheetState extends State<ForwardSheet> {
                           )
                         : CupertinoButton(
                             child: Text(
-                              "Select",
+                              AppLocalizations.of(context)!.select,
                               style: TextStyle(
                                   fontWeight: FontWeight.w400,
                                   fontSize: 16,
@@ -118,12 +119,12 @@ class _ForwardSheetState extends State<ForwardSheet> {
                     indicatorColor: AppColors.grey600,
                     unselectedLabelColor: AppColors.grey300,
                     tabs: [
-                      Text("Channels",
+                      Text(AppLocalizations.of(context)!.channel,
                           style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
                               color: AppColors.grey600)),
-                      Text("Contacts",
+                      Text(AppLocalizations.of(context)!.tabContacts,
                           style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,

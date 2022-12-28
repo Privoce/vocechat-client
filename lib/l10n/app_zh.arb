@@ -63,7 +63,9 @@
 
     "call" : "语音通话",
     "cancel": "取消",
+    "channel":"频道",
     "confirmPassword": "确认密码",
+    "copy":"复制",
     "clearLocalData": "清空本地数据",
     "clearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
     "continueStr": "继续",
@@ -80,6 +82,10 @@
 
     "edit": "编辑",
     "email": "邮箱",
+
+    "forward":"转发",
+    "forwarded":"被转发",
+    "forwardTo":"转发到",
     
     "inputInvitationLink":"输入邀请链接",
     "invitationLink": "邀请链接",
@@ -107,6 +113,7 @@
     "paste": "粘贴",
     "password": "密码",
     "pin": "钉选",
+    
     "privateChannelToPublicTitle":"转为公有频道",
     "privateChannelToPublicContent":"这将邀请本服务器的所有用户加入此频道。如果您不是管理员，您会失去此频道的所有权。",
     "publicChannel":"公有频道",
@@ -114,9 +121,14 @@
     "publicChannelToPrivateContent":"此频道将不再对新加入此服务器的用户可见。当前的频道成员不会收到影响。",
 
     "rememberMe": "记住我",
+    "reply": "回复",
+    "replyingTo":"回复给",
+    "resend":"重发",
 
+    "save": "保存",
     "savedItems": "保存的消息",
     "scanQrCodeToRegister": "扫描二维码来注册",
+    "select":"选择",
     "setNewAvatar": "设置新头像",
     "send": "发送",
     "shareInvitationLink":"分享邀请链接",
@@ -130,6 +142,7 @@
     "transferOwnership":"转让所有权",
 
     "unmute": "取消静音",
+    "unpin":"取消钉选",
     "version": "版本",
     "video" : "视频通话",
     "voice" : "语音通话",
@@ -181,5 +194,14 @@
     "memberAddPageInvitationLink": "邀请链接",
 
     "memberRemovePageTitle": "移除频道成员",
-    "memberRemovePageRemove": "移除"
+    "memberRemovePageRemove": "移除",
+
+    "chatPageSelectionWarning":"多选模式中无法转发或保存被转发的或发送失败的消息。",
+    "chatPageCantFindFileWarning":"无法找到文件",
+    "chatPageCantFindFileWarningContent":"文件也许已被删除。请发一条新消息。",
+    "chatPageCantFindImageWarning":"无法找到图片",
+    "chatPageCantFindImageWarningContent":"图片也许已被删除。请发一条新消息。",
+    "chatPageResendWarning":"重发消息",
+    "chatPageResendWarningContent":"您确认要重发这条消息吗？"
+
 }

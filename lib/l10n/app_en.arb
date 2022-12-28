@@ -61,9 +61,11 @@
 
     "call" : "Call",
     "cancel": "Cancel",
+    "channel":"Channel",
     "clearLocalData": "Clear local data",
     "clearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
     "continueStr": "Continue",
+    "copy":"Copy",
 
     "delete": "Delete",
     "deleteAccount": "Delete Account",
@@ -76,6 +78,10 @@
     "done": "Done",
     "edit": "Edit",
     "email": "Email",
+
+    "forward":"Forward",
+    "forwarded":"forwarded",
+    "forwardTo":"Forward to",
 
     "inputInvitationLink":"Input Invitation Link",
     "invitationLink": "Invitation Link",
@@ -103,15 +109,22 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "pin": "Pin",
+    "pinLC":"pin",
     "privateChannelToPublicTitle":"Change to Public Channel",
     "privateChannelToPublicContent":"It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.",
     "publicChannel":"Public Channel",
     "publicChannelToPrivateTitle":"Change to Private Channel",
     "publicChannelToPrivateContent":"This channel will not be visible to new server members. Current members will not be affected.",
+
     "rememberMe": "Remember me",
+    "reply": "Reply",
+    "replyingTo":"Replying to",
+    "resend":"Resend",
 
     "scanQrCodeToRegister": "Scan this QR Code to register",
+    "save": "Save",
     "savedItems": "Saved Items",
+    "select":"Select",
     "setNewAvatar": "Set a new avatar",
     "send": "Send",
     "shareInvitationLink":"Share Invitation Link",
@@ -125,6 +138,7 @@
     "transferOwnership":"Transfer Ownership",
 
     "unmute": "Unmute",
+    "unpin":"Unpin",
     "version": "Version",
     "video" : "Video",
     "voice" : "Voice",
@@ -176,7 +190,15 @@
     "memberAddPageInvitationLink": "Invitation Link",
 
     "memberRemovePageTitle": "Remove Members",
-    "memberRemovePageRemove": "Remove"
+    "memberRemovePageRemove": "Remove",
+
+    "chatPageSelectionWarning":"Can't forward or save a forwarded/unsuccessful message in selection mode.",
+    "chatPageCantFindFileWarning":"Can't Find File",
+    "chatPageCantFindFileWarningContent":"File might have been deleted. Please send a new message.",
+    "chatPageCantFindImageWarning":"Can't Find Image File",
+    "chatPageCantFindImageWarningContent":"Image might have been deleted. Please send a new message.",
+    "chatPageResendWarning":"Resend Message",
+    "chatPageResendWarningContent":"Do you want to resend this message?"
 
     
 }

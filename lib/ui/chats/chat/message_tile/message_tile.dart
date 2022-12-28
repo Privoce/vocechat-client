@@ -117,13 +117,34 @@ class _MessageTileState extends State<MessageTile> {
                     child: FutureBuilder<UserInfoM?>(
                         future: UserInfoDao().getUserByUid(widget.pinnedBy),
                         builder: (context, snapshot) {
-                          String pinStr = "pinned";
-                          if (snapshot.hasData && snapshot.data != null) {
-                            pinStr += " by ${snapshot.data!.userInfo.name}";
+                          final locale = Localizations.localeOf(context);
+                          String pinStr;
+                          if (locale == Locale("zh")) {
+                            pinStr = "被";
+                            if (snapshot.hasData && snapshot.data != null) {
+                              pinStr += " ${snapshot.data!.userInfo.name} ";
+                            }
+                            pinStr += "钉选";
+                          } else {
+                            pinStr = "pinned";
+                            if (snapshot.hasData && snapshot.data != null) {
+                              pinStr += " by ${snapshot.data!.userInfo.name}";
+                            }
                           }
-                          return Text(pinStr,
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.grey400));
+                          return SizedBox(
+                            width: contentWidth,
+                            child: Row(
+                              children: [
+                                Icon(AppIcons.pin,
+                                    size: 12, color: AppColors.grey400),
+                                SizedBox(width: 4),
+                                Text(pinStr,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.grey400)),
+                              ],
+                            ),
+                          );
                         }),
                   ),
                 MsgTileFrame(

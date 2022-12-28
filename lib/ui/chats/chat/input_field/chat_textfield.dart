@@ -21,6 +21,7 @@ import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatTextField extends StatefulWidget {
   final GroupInfoM? groupInfoM;
@@ -353,7 +354,10 @@ class _ChatTextFieldState extends State<ChatTextField> {
                                 fontWeight: FontWeight.w400,
                                 fontSize: 15),
                             children: [
-                              TextSpan(text: "Replying to "),
+                              TextSpan(
+                                  text:
+                                      AppLocalizations.of(context)!.replyingTo +
+                                          " "),
                               TextSpan(
                                 text: widget.repliedUser!.userInfo.name + "   ",
                                 style: TextStyle(
