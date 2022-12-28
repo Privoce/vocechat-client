@@ -262,7 +262,9 @@
 
     "fcmError":"FCM 错误",
     "fcmErrorContent":"FCM 配置失败。",
-    "fcmErrorCopyErrorLog":"拷贝错误记录。"
+    "fcmErrorCopyErrorLog":"拷贝错误记录。",
+
+    "invitationLinkViewSend":"向朋友发送邀请链接。"
     
     
 }

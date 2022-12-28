@@ -258,7 +258,9 @@
 
     "fcmError":"FCM Error",
     "fcmErrorContent":"FCM Configuration Failed.",
-    "fcmErrorCopyErrorLog":"Copy Error Log"
+    "fcmErrorCopyErrorLog":"Copy Error Log",
+
+    "invitationLinkViewSend":"Send invitation link to your friends."
     
     
 }
