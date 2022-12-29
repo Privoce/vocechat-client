@@ -74,7 +74,8 @@ class PinnedMsgPage extends StatelessWidget {
                                                   listViewContext, msg.mid);
                                             },
                                             icon: AppIcons.delete,
-                                            label: "Unpin",
+                                            label: AppLocalizations.of(context)!
+                                                .unpin,
                                             backgroundColor: Colors.red,
                                             foregroundColor: Colors.white,
                                           )

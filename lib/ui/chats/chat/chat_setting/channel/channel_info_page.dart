@@ -110,7 +110,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
             }
             return GestureDetector(
               onTap: _changeAvatar,
-              child: Text("Set a new channel avatar",
+              child: Text(AppLocalizations.of(context)!.setNewAvatar,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -126,7 +126,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
     return Column(
       children: [
         AppTextField(
-          header: "Name",
+          header: AppLocalizations.of(context)!.name,
           controller: _nameController,
           textInputAction: TextInputAction.next,
           maxLength: 32,
@@ -142,7 +142,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
         ),
         SizedBox(height: 8),
         AppTextField(
-          header: "Description",
+          header: AppLocalizations.of(context)!.description,
           textInputAction: TextInputAction.done,
           maxLines: 5,
           maxLength: 128,

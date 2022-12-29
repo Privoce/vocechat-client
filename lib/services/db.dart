@@ -26,7 +26,7 @@ Future<void> initDb({String? dbFileName}) async {
       String path = p.join(databasesPath, dbFileName ?? _orgDbName);
       await Directory(databasesPath)
           .create(recursive: true); // App will terminate if create fails.
-      await databaseFactory.openDatabase(
+      orgDb = await databaseFactory.openDatabase(
         path,
         options: OpenDatabaseOptions(
           version: 3,
@@ -51,7 +51,7 @@ Future<void> initDb({String? dbFileName}) async {
               batch.commit();
             }
 
-            orgDb = db;
+            // orgDb = db;
           },
           onUpgrade: (db, oldVersion, newVersion) {
             if (oldVersion < newVersion && oldVersion < 2) {

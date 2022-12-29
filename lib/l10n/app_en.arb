@@ -61,6 +61,8 @@
     "settingsPageConfigFooter": "Please use web client for SMTP, Login Methods and Third-party App Settings.",
     "settingsPageAbout": "About",
 
+    "archive":"Archive",
+
     "call" : "Call",
     "cancel": "Cancel",
     "channel":"Channel",
@@ -78,14 +80,17 @@
     "deleteAccountFailWarningContent":"Please try again later or contact admin for help.",
     "deleteChannel": "Delete Channel",
     "deleteChannelWarningDes": "This channel will be dismissed. All members will have no access to its data.",
+    "description":"Description",
     "done": "Done",
     "edit": "Edit",
     "email": "Email",
 
+    "file":"File",
     "forward":"Forward",
     "forwarded":"forwarded",
     "forwardTo":"Forward to",
 
+    "image":"Image",
     "inputInvitationLink":"Input Invitation Link",
     "invitationLink": "Invitation Link",
     "invitationLinkGenerationError": "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
@@ -142,6 +147,7 @@
 
     "unmute": "Unmute",
     "unpin":"Unpin",
+    "unsupportedMessageType":"Unsupported Message Type",
     "uploadError": "Upload Error",
     "uploadErrorContent": "Avatar size exceeds limit.",
     "version": "Version",

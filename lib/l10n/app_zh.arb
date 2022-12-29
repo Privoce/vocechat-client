@@ -63,6 +63,8 @@
     
     "settingsPageClearData": "清空本地数据",
 
+    "archive":"归档",
+
     "call" : "语音通话",
     "cancel": "取消",
     "channel":"频道",
@@ -81,15 +83,18 @@
     "deleteAccountFailWarningContent":"请稍后重试或联系服务器管理员寻求帮助。",
     "deleteChannel": "删除频道",
     "deleteChannelWarningDes": "此频道将被删除。所有成员都将被移除，且不再可以看到其中的数据。",
+    "description":"描述",
     "done": "完成",
 
     "edit": "编辑",
     "email": "邮箱",
 
+    "file":"文件",
     "forward":"转发",
     "forwarded":"被转发",
     "forwardTo":"转发到",
     
+    "image":"图片",
     "inputInvitationLink":"输入邀请链接",
     "invitationLink": "邀请链接",
     "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",
@@ -147,6 +152,7 @@
 
     "unmute": "取消静音",
     "unpin":"取消钉选",
+    "unsupportedMessageType":"不支持的消息类型",
     "uploadError": "上传错误",
     "uploadErrorContent": "头像图片大小超过限制。",
     "version": "版本",
