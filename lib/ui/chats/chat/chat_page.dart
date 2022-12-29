@@ -937,8 +937,6 @@ class _ChatPageState extends State<ChatPage> {
       }
       return false;
     }
-
-    print(_uiMsgList.map((e) => e.chatMsgM.mid));
     return true;
   }
 

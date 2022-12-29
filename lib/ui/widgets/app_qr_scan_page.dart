@@ -58,7 +58,7 @@ class AppQrScanPage extends StatelessWidget {
   void _onQrCodeDetected(String link, BuildContext context) async {
     showLoaderDialog(context);
     if (await _validateLink(link, context)) {
-      print("success, $link");
+      App.logger.info("success, $link");
     } else {
       // Dismiss loading dialog.
       Navigator.pop(context);

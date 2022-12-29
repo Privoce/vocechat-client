@@ -263,7 +263,7 @@ class UserDbMDao extends OrgDao<UserDbM> {
   Future<UserDbM> updateMaxMid(String id, int maxMid) async {
     UserDbM? old = await get(id);
     if (old != null) {
-      old.maxMid = maxMid;
+      old.maxMid = max(old.maxMid, maxMid);
       old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
       _logger.config("UserDb maxMid updated. maxMid :$maxMid");

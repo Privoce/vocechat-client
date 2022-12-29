@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:async/async.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,9 @@ class AuthService {
   List<int> retryList = const [2, 2, 4, 8, 16, 32, 64];
   int retryIndex = 0;
 
+  Timer? _fcmTimer;
+  int _fcmExpiresIn = 0;
+
   Timer? _timer;
   static const threshold = 60; // Refresh tokens if remaining time < 60.
 
@@ -84,13 +88,15 @@ class AuthService {
   }
 
   void dispose() {
-    disableTimer();
+    disableAuthTimer();
   }
 
-  void disableTimer() {
-    if (_timer != null) {
-      _timer!.cancel();
-    }
+  void disableAuthTimer() {
+    _timer!.cancel();
+  }
+
+  void disableFcmTImer() {
+    _fcmTimer?.cancel();
   }
 
   Future<bool> renewAuthToken() async {
@@ -186,8 +192,24 @@ class AuthService {
 
   Future<String> _getFirebaseDeviceToken() async {
     String deviceToken = "";
+
     try {
-      deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+      final cancellableOperation = CancelableOperation.fromFuture(
+        FirebaseMessaging.instance.getToken(),
+        onCancel: () {
+          deviceToken = "";
+          return;
+        },
+      ).then((token) {
+        deviceToken = token ?? "";
+      });
+
+      Timer(Duration(seconds: 3), (() {
+        App.logger.info("FCM timeout (3s), handled by VoceChat");
+        cancellableOperation.cancel();
+      }));
+      // deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+      return deviceToken;
     } catch (e) {
       App.logger.warning(e);
       deviceToken = "";
@@ -323,7 +345,7 @@ class AuthService {
 
       final old = await UserDbMDao.dao.first(
           where: '${UserDbM.F_chatServerId} = ? AND ${UserDbM.F_uid} = ?',
-          whereArgs: [dbName, userInfo.uid]);
+          whereArgs: [chatServerId, userInfo.uid]);
 
       late UserDbM newUserDb;
       if (old == null) {

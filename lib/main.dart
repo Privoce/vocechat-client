@@ -101,7 +101,7 @@ Future<void> main() async {
                   DateTime.now().millisecondsSinceEpoch;
               await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
 
-              await _updateMaxMid();
+              // await _updateMaxMid();
             }
           } catch (e) {
             App.logger.severe(e);
@@ -117,15 +117,15 @@ Future<void> main() async {
 /// This function is only for fixing potential difference in maxMid between
 /// old (calculated from chatMsgDao) and the new (saved separately),
 /// to reduce message duplication.
-Future<void> _updateMaxMid() async {
-  final oldMaxMid = await ChatMsgDao().getMaxMid();
-  if (oldMaxMid > -1) {
-    final userId = await StatusMDao.dao.getStatus();
-    if (userId != null) {
-      await UserDbMDao.dao.updateMaxMid(userId.userDbId, oldMaxMid);
-    }
-  }
-}
+// Future<void> _updateMaxMid() async {
+//   final oldMaxMid = await ChatMsgDao().getMaxMid();
+//   if (oldMaxMid > -1) {
+//     final userId = await StatusMDao.dao.getStatus();
+//     if (userId != null) {
+//       await UserDbMDao.dao.updateMaxMid(userId.userDbId, oldMaxMid);
+//     }
+//   }
+// }
 
 Future<void> _setUpFirebaseNotification() async {
   await Firebase.initializeApp(
