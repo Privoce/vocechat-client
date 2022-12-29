@@ -5,6 +5,7 @@ import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/main.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DioUtil {
   final String baseUrl;
@@ -15,19 +16,22 @@ class DioUtil {
     _init();
   }
 
-  DioUtil.token({required this.baseUrl}) {
-    _init();
+  DioUtil.token({required this.baseUrl, bool withRetry = true}) {
+    _init(withRetry: withRetry);
     _dio.options.headers["x-api-key"] = App.app.userDb!.token;
     _add401Handling();
   }
 
-  void _init() {
+  void _init({bool withRetry = true}) {
     // _dio.httpClientAdapter = Http2Adapter(ConnectionManager());
     _dio.options.headers = {'referer': App.app.chatServerM.fullUrl};
-    _dio.interceptors.add(RetryInterceptor(
-        dio: _dio,
-        options:
-            RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
+
+    if (withRetry) {
+      _dio.interceptors.add(RetryInterceptor(
+          dio: _dio,
+          options:
+              RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
+    }
     _dio.options.baseUrl = baseUrl;
     _dio.options.connectTimeout = 5000; //5s
     // _dio.options.receiveTimeout = 10000;
@@ -41,8 +45,9 @@ class DioUtil {
           if (!res) {
             // alert and jump to login if failed.
             if (navigatorKey.currentContext != null) {
+              final context = navigatorKey.currentContext!;
               showAppAlert(
-                  context: navigatorKey.currentContext!,
+                  context: context,
                   title: "Authentication Error",
                   content: "Please login again.",
                   primaryAction: AppAlertDialogAction(
@@ -53,7 +58,8 @@ class DioUtil {
                       }),
                   actions: [
                     AppAlertDialogAction(
-                        text: "Cancel",
+                        text: AppLocalizations.of(navigatorKey.currentContext!)!
+                            .cancel,
                         action: () =>
                             Navigator.of(navigatorKey.currentContext!).pop())
                   ]);

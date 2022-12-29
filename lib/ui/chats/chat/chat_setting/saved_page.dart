@@ -112,7 +112,7 @@ class _SavedItemPageState extends State<SavedItemPage> {
                                       _onTapDelete(filePath);
                                     },
                                     icon: AppIcons.delete,
-                                    label: "Delete",
+                                    label: AppLocalizations.of(context)!.delete,
                                     backgroundColor: Colors.red,
                                     foregroundColor: Colors.white,
                                   )
@@ -130,10 +130,10 @@ class _SavedItemPageState extends State<SavedItemPage> {
   void _onTapDelete(String id) async {
     showAppAlert(
         context: context,
-        title: "Delete Saved Item",
-        content: "Are you sure to delete this saved item?",
+        title: AppLocalizations.of(context)!.savedPageDeleteTitle,
+        content: AppLocalizations.of(context)!.savedPageDeleteContent,
         primaryAction: AppAlertDialogAction(
-          text: "Delete",
+          text: AppLocalizations.of(context)!.delete,
           isDangerAction: true,
           action: () async {
             final res = await _onDelete(id);
@@ -149,7 +149,7 @@ class _SavedItemPageState extends State<SavedItemPage> {
         ),
         actions: [
           AppAlertDialogAction(
-              text: "Cancel",
+              text: AppLocalizations.of(context)!.cancel,
               action: () {
                 Navigator.of(context).pop();
               })
@@ -168,11 +168,12 @@ class _SavedItemPageState extends State<SavedItemPage> {
       App.logger.severe(e);
       showAppAlert(
           context: context,
-          title: "Delete Saved Item Error",
-          content: "Something wrong with saved item deletion.",
+          title: AppLocalizations.of(context)!.savedPageDeleteErrorTitle,
+          content: AppLocalizations.of(context)!.savedPageDeleteErrorContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop())
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
           ]);
     }
     return false;

@@ -8,6 +8,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ServerAccountTile extends StatefulWidget {
   final ValueNotifier<ServerAccountData> accountData;
@@ -122,19 +123,19 @@ class _ServerAccountTileState extends State<ServerAccountTile> {
                         onPressed: () {
                           showAppAlert(
                             context: context,
-                            title: "Log Out",
+                            title: AppLocalizations.of(context)!.logOut,
                             content:
-                                "Are you sure to log out \"${widget.accountData.value.serverName}\"?",
+                                "${AppLocalizations.of(context)!.logoutWarning} \"${widget.accountData.value.serverName}\"?",
                             actions: [
                               AppAlertDialogAction(
-                                  text: "Cancel",
+                                  text: AppLocalizations.of(context)!.cancel,
                                   action: () {
                                     Navigator.of(context).pop();
                                     Navigator.of(context).pop();
                                   }),
                             ],
                             primaryAction: AppAlertDialogAction(
-                                text: "Log Out",
+                                text: AppLocalizations.of(context)!.logOut,
                                 action: () {
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop();
@@ -144,7 +145,7 @@ class _ServerAccountTileState extends State<ServerAccountTile> {
                           );
                         },
                         child: Text(
-                          "Log Out",
+                          AppLocalizations.of(context)!.logOut,
                           style: TextStyle(color: AppColors.systemRed),
                         )),
                   ],
@@ -152,7 +153,7 @@ class _ServerAccountTileState extends State<ServerAccountTile> {
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
-                      child: Text("Cancel")),
+                      child: Text(AppLocalizations.of(context)!.cancel)),
                 );
               });
         });

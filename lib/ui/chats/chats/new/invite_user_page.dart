@@ -13,10 +13,12 @@ import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:path_provider/path_provider.dart' as path;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum LinkStatus { loading, ready, error }
 
@@ -33,6 +35,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
   GlobalKey qrKey = GlobalKey();
 
+  Uint8List? _image;
+
   // default to be 48 hours.
   final expiredIn = 48;
 
@@ -43,6 +47,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
     super.initState();
 
     _generateInvitationMagicLink();
+    _getServerImge();
   }
 
   @override
@@ -52,7 +57,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
         toolbarHeight: barHeight,
         elevation: 0,
         backgroundColor: AppColors.coolGrey200,
-        title: Text("Invite People",
+        title: Text(AppLocalizations.of(context)!.inviteNewUsers,
             style: AppTextStyles.titleLarge,
             overflow: TextOverflow.ellipsis,
             maxLines: 1),
@@ -98,7 +103,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 16),
                           child: Text(
-                            "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
+                            AppLocalizations.of(context)!
+                                .invitationLinkGenerationError,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.labelMedium,
                           ),
@@ -119,7 +125,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Invitation Link:", style: AppTextStyles.titleMedium),
+            Text(AppLocalizations.of(context)!.invitationLink + ":",
+                style: AppTextStyles.titleMedium),
             SizedBox(height: 4),
             SelectableText(_invitationLink ?? "", style: AppTextStyles.snippet)
           ],
@@ -131,12 +138,15 @@ class _InviteUserPageState extends State<InviteUserPage> {
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: QrImage(data: _invitationLink ?? "")),
+            child: QrImage(
+              data: _invitationLink ?? "",
+              // foregroundColor: Colors.blue.shade900,
+            )),
         SizedBox(height: 8),
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              "Scan this QR Code to register.",
+              AppLocalizations.of(context)!.scanQrCodeToRegister,
               style: AppTextStyles.labelMedium,
             )),
       ],
@@ -159,7 +169,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
                       color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(8)),
                   normal: Text(
-                    "Share Invitation Link",
+                    AppLocalizations.of(context)!.shareInvitationLink,
                     style: TextStyle(color: Colors.white),
                   ),
                   action: () async {
@@ -180,7 +190,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
                       color: Theme.of(context).primaryColor,
                       borderRadius: BorderRadius.circular(8)),
                   normal: Text(
-                    "Share QR Code",
+                    AppLocalizations.of(context)!.shareQrCode,
                     style: TextStyle(color: Colors.white),
                   ),
                   action: () async {
@@ -210,6 +220,10 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
     _linkStatus.value = LinkStatus.error;
     return null;
+  }
+
+  Future<void> _getServerImge() async {
+    _image = App.app.chatServerM.logo;
   }
 
   /// Temp function to replace server default domain for invitation link.

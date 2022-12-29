@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:vocechat_client/api/models/user/user_info.dart';
@@ -46,6 +47,8 @@ class UserDbM with M {
 
   String _properties = "";
 
+  int maxMid = 0;
+
   UserInfo get userInfo {
     return UserInfo.fromJson(jsonDecode(info));
   }
@@ -73,7 +76,8 @@ class UserDbM with M {
       this.loggedIn,
       this.usersVersion,
       this.avatarBytes,
-      this._properties);
+      this._properties,
+      this.maxMid);
 
   static UserDbM fromMap(Map<String, dynamic> map) {
     UserDbM m = UserDbM();
@@ -119,6 +123,9 @@ class UserDbM with M {
     if (map.containsKey(F_properties)) {
       m._properties = map[F_properties];
     }
+    if (map.containsKey(F_maxMid)) {
+      m.maxMid = map[F_maxMid];
+    }
     return m;
   }
 
@@ -136,6 +143,7 @@ class UserDbM with M {
   static const F_usersVersion = "users_version";
   static const F_avatarBytes = "avatar_bytes";
   static const F_properties = "properties";
+  static const F_maxMid = "max_mid";
 
   @override
   Map<String, Object> get values => {
@@ -151,7 +159,8 @@ class UserDbM with M {
         UserDbM.F_loggedIn: loggedIn,
         UserDbM.F_usersVersion: usersVersion,
         UserDbM.F_avatarBytes: avatarBytes,
-        UserDbM.F_properties: _properties
+        UserDbM.F_properties: _properties,
+        UserDbM.F_maxMid: maxMid
       };
 
   static MMeta meta = MMeta.fromType(UserDbM, UserDbM.fromMap)
@@ -224,6 +233,15 @@ class UserDbMDao extends OrgDao<UserDbM> {
     return first(where: '${UserDbM.F_uid} = ?', whereArgs: [uid]);
   }
 
+  /// Get maxMid of current user. This mid includes reactions, which can't be
+  /// retrieved by calculating the max mid from ChatMsg table.
+  ///
+  /// Returns -1 if no results found.
+  Future<int> getMaxMid(String id) async {
+    UserDbM? old = await get(id);
+    return old?.maxMid ?? -1;
+  }
+
   Future<UserDbM> updateAuth(
       String id, String token, String refreshToken, int expiredIn) async {
     UserDbM? old = await get(id);
@@ -241,6 +259,21 @@ class UserDbMDao extends OrgDao<UserDbM> {
     return old;
   }
 
+  /// id can be retrieved from Status, where a userDbId is included.
+  Future<UserDbM> updateMaxMid(String id, int maxMid) async {
+    UserDbM? old = await get(id);
+    if (old != null) {
+      old.maxMid = maxMid;
+      old.updatedAt = DateTime.now().millisecondsSinceEpoch;
+      await super.update(old);
+      _logger.config("UserDb maxMid updated. maxMid :$maxMid");
+    } else {
+      throw Exception("No matching UserDb found");
+    }
+    return old;
+  }
+
+  /// id can be retrieved from Status, where a userDbId is included.
   Future<UserDbM> updateUsersVersion(String id, int version) async {
     UserDbM? old = await get(id);
     if (old != null) {
@@ -254,6 +287,7 @@ class UserDbMDao extends OrgDao<UserDbM> {
     return old;
   }
 
+  /// id can be retrieved from Status, where a userDbId is included.
   Future<UserDbM> updateWhenLogout(String id) async {
     UserDbM? old = await get(id);
     if (old != null) {

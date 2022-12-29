@@ -113,10 +113,8 @@ class _ServerPageState extends State<ServerPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 VoceButton(
-                  normal: Text(
-                      AppLocalizations.of(context)!.serverPageClearLocalData,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  normal: Text(AppLocalizations.of(context)!.clearLocalData,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                   action: () async {
                     _onResetDb();
                     return true;
@@ -125,8 +123,7 @@ class _ServerPageState extends State<ServerPage> {
                 Text("  |  "),
                 VoceButton(
                   normal: Text(
-                      AppLocalizations.of(context)!
-                          .serverPagePasteInvitationLink,
+                      AppLocalizations.of(context)!.inputInvitationLink,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
                   action: () async {
@@ -250,7 +247,7 @@ class _ServerPageState extends State<ServerPage> {
                       ),
                     ),
                     IconButton(
-                        icon: Icon(Icons.qr_code_2_rounded,
+                        icon: Icon(Icons.qr_code_scanner_rounded,
                             color: Colors.blue, size: 30),
                         onPressed: () {
                           final route = PageRouteBuilder(
@@ -578,8 +575,8 @@ class _ServerPageState extends State<ServerPage> {
 
     showAppAlert(
         context: context,
-        title: AppLocalizations.of(context)!.serverPageClearLocalData,
-        content: AppLocalizations.of(context)!.serverPageClearLocalDataContent,
+        title: AppLocalizations.of(context)!.clearLocalData,
+        content: AppLocalizations.of(context)!.clearLocalDataContent,
         primaryAction: AppAlertDialogAction(
             text: AppLocalizations.of(context)!.ok,
             isDangerAction: true,

@@ -18,6 +18,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum ImageType { thumb, original }
 
@@ -117,13 +118,34 @@ class _MessageTileState extends State<MessageTile> {
                     child: FutureBuilder<UserInfoM?>(
                         future: UserInfoDao().getUserByUid(widget.pinnedBy),
                         builder: (context, snapshot) {
-                          String pinStr = "pinned";
-                          if (snapshot.hasData && snapshot.data != null) {
-                            pinStr += " by ${snapshot.data!.userInfo.name}";
+                          final locale = Localizations.localeOf(context);
+                          String pinStr;
+                          if (locale == Locale("zh")) {
+                            pinStr = "被";
+                            if (snapshot.hasData && snapshot.data != null) {
+                              pinStr += " ${snapshot.data!.userInfo.name} ";
+                            }
+                            pinStr += "钉选";
+                          } else {
+                            pinStr = "pinned";
+                            if (snapshot.hasData && snapshot.data != null) {
+                              pinStr += " by ${snapshot.data!.userInfo.name}";
+                            }
                           }
-                          return Text(pinStr,
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.grey400));
+                          return SizedBox(
+                            width: contentWidth,
+                            child: Row(
+                              children: [
+                                Icon(AppIcons.pin,
+                                    size: 12, color: AppColors.grey400),
+                                SizedBox(width: 4),
+                                Text(pinStr,
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.grey400)),
+                              ],
+                            ),
+                          );
                         }),
                   ),
                 MsgTileFrame(
@@ -224,7 +246,7 @@ class _MessageTileState extends State<MessageTile> {
             }
 
             return TextBubble(
-                content: content ?? "No Content",
+                content: content ?? AppLocalizations.of(context)!.noContent,
                 edited: m.edited == 1,
                 hasMention: hasMention,
                 chatMsgM: widget.chatMsgM,
@@ -233,8 +255,8 @@ class _MessageTileState extends State<MessageTile> {
 
           case MsgContentType.markdown:
             return MarkdownBubble(
-                markdownText:
-                    widget.chatMsgM.msgNormal?.content ?? "No Content",
+                markdownText: widget.chatMsgM.msgNormal?.content ??
+                    AppLocalizations.of(context)!.noContent,
                 edited: widget.chatMsgM.edited == 1);
 
           case MsgContentType.file:

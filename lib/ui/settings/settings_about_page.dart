@@ -15,6 +15,7 @@ import 'package:vocechat_client/ui/settings/settings_changelog_page.dart';
 import 'package:vocechat_client/ui/widgets/app_icon.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
 
 class SettingsAboutPage extends StatelessWidget {
@@ -32,7 +33,7 @@ class SettingsAboutPage extends StatelessWidget {
         elevation: 0,
         backgroundColor: AppColors.barBg,
         centerTitle: true,
-        title: Text("About VoceChat",
+        title: Text(AppLocalizations.of(context)!.aboutPageTitle,
             style: AppTextStyles.titleLarge,
             overflow: TextOverflow.ellipsis,
             maxLines: 1),
@@ -45,7 +46,7 @@ class SettingsAboutPage extends StatelessWidget {
       body: SafeArea(child: _buildBody(context)),
       bottomNavigationBar: SafeArea(
           child: Text(
-        "© Privoce Inc. All Rights Reserved.",
+        AppLocalizations.of(context)!.aboutPageCopyRight,
         textAlign: TextAlign.center,
       )),
     );
@@ -72,7 +73,8 @@ class SettingsAboutPage extends StatelessWidget {
             future: _getAppVersion(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return Text("Version: ${snapshot.data!}",
+                return Text(
+                    "${AppLocalizations.of(context)!.version}: ${snapshot.data!}",
                     style: AppTextStyles.labelMedium);
               } else {
                 return SizedBox.shrink();
@@ -85,7 +87,7 @@ class SettingsAboutPage extends StatelessWidget {
   Widget _buildActions(BuildContext context) {
     return BannerTileGroup(bannerTileList: [
       BannerTile(
-        title: "Check Updates",
+        title: AppLocalizations.of(context)!.aboutPageCheckUpdates,
         titleWidget: ValueListenableBuilder<bool>(
           valueListenable: _isCheckingUpdates,
           builder: (context, value, child) {
@@ -101,7 +103,7 @@ class SettingsAboutPage extends StatelessWidget {
         },
       ),
       BannerTile(
-        title: "Changelog",
+        title: AppLocalizations.of(context)!.aboutPageChangeLog,
         onTap: (() => _goToChangelog(context)),
       )
     ]);
@@ -169,12 +171,13 @@ class SettingsAboutPage extends StatelessWidget {
   void _showNetworkError(BuildContext context) {
     showAppAlert(
         context: context,
-        title: "Network Error",
+        title: AppLocalizations.of(context)!.settingsAboutPageNetworkError,
         content:
-            "VoceChat cannot fetch latest version information. You may try it later.",
+            AppLocalizations.of(context)!.settingsAboutPageNetworkErrorContent,
         actions: [
           AppAlertDialogAction(
-              text: "OK", action: () => Navigator.of(context).pop())
+              text: AppLocalizations.of(context)!.ok,
+              action: () => Navigator.of(context).pop())
         ]);
   }
 
@@ -188,13 +191,12 @@ class SettingsAboutPage extends StatelessWidget {
         // AppAlertDialogAction(
         //     text: "Play Store", action: (() => launchUrlString(googlePlayUrl))),
         AppAlertDialogAction(
-            text: "VoceChat Website",
-            action: (() => launchUrlString(vocechatUrl)))
+            text: "Voce.Chat", action: (() => launchUrlString(vocechatUrl)))
       ]);
     }
 
     actions.add(AppAlertDialogAction(
-        text: "Cancel",
+        text: AppLocalizations.of(context)!.cancel,
         action: (() {
           Navigator.of(context).pop();
         })));
@@ -210,11 +212,12 @@ class SettingsAboutPage extends StatelessWidget {
   void _showUpToDate(BuildContext context) {
     showAppAlert(
         context: context,
-        title: "You are Up-to-date",
-        content: "You are using the latest VoceChat App.",
+        title: AppLocalizations.of(context)!.aboutPageUpdateTitleUpToDate,
+        content:
+            AppLocalizations.of(context)!.aboutPageUpdateTitleUpToDateContent,
         actions: [
           AppAlertDialogAction(
-              text: "OK",
+              text: AppLocalizations.of(context)!.ok,
               action: (() {
                 Navigator.of(context).pop();
               }))

@@ -130,7 +130,9 @@ class _NewChannelPageState extends State<NewChannelPage> {
           maxLines: 1,
           textInputAction: TextInputAction.next,
           header: AppLocalizations.of(context)!.newChannelPageName,
-          hintText: isPrivate ? "New Private Channel" : "New Public Channel",
+          hintText: isPrivate
+              ? AppLocalizations.of(context)!.newPrivateChannel
+              : AppLocalizations.of(context)!.newPublicChannel,
           controller: _nameController,
         ),
         SizedBox(height: 8),
@@ -192,7 +194,9 @@ class _NewChannelPageState extends State<NewChannelPage> {
     try {
       String name = _nameController.text.trim();
       if (name.isEmpty) {
-        name = "New Public Channel";
+        name = isPrivate
+            ? AppLocalizations.of(context)!.newPrivateChannel
+            : AppLocalizations.of(context)!.newPublicChannel;
       }
 
       const String description = "";

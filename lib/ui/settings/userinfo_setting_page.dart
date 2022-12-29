@@ -10,7 +10,6 @@ import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
@@ -64,7 +63,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
                   if (enableBtn) {
                     return CupertinoButton(
                         onPressed: onDone,
-                        child: Text("Done",
+                        child: Text(AppLocalizations.of(context)!.done,
                             style: TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 17,
@@ -123,7 +122,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTextField(
-              header: "Name",
+              header: AppLocalizations.of(context)!.name,
               controller: _nameController,
               maxLength: 32,
               autofocus: true,
@@ -161,11 +160,12 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
         App.logger.severe("Payload too large");
         await showAppAlert(
             context: context,
-            title: "Upload Error",
-            content: "Avatar size exceeds limit.",
+            title: AppLocalizations.of(context)!.uploadError,
+            content: AppLocalizations.of(context)!.uploadErrorContent,
             actions: [
               AppAlertDialogAction(
-                  text: "OK", action: () => Navigator.pop(context))
+                  text: AppLocalizations.of(context)!.ok,
+                  action: () => Navigator.pop(context))
             ]);
         _uploadNotifier.value = false;
         return;

@@ -10,7 +10,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SavedContentBubble extends StatelessWidget {
   final ArchiveMsg archiveMsg;
@@ -27,14 +27,17 @@ class SavedContentBubble extends StatelessWidget {
     switch (archiveMsg.contentType) {
       case typeText:
         return TextBubble(
-            content: archiveMsg.content ?? "No Content",
+            content:
+                archiveMsg.content ?? AppLocalizations.of(context)!.noContent,
             edited: false,
             hasMention: true,
             enableShowMoreBtn: true,
             maxLines: 10);
       case typeMarkdown:
         return MarkdownBubble(
-            markdownText: archiveMsg.content ?? "No Content", edited: false);
+            markdownText:
+                archiveMsg.content ?? AppLocalizations.of(context)!.noContent,
+            edited: false);
       case typeFile:
         if (archiveMsg.isImageMsg) {
           // Only show thumb in chat list.
@@ -62,7 +65,8 @@ class SavedContentBubble extends StatelessWidget {
                         });
                   } else {
                     return TextBubble(
-                        content: archiveMsg.content ?? "No Content",
+                        content: archiveMsg.content ??
+                            AppLocalizations.of(context)!.noContent,
                         edited: false,
                         hasMention: false);
                   }

@@ -6,6 +6,7 @@ import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class InviteLinkView extends StatefulWidget {
   final int gid;
@@ -38,7 +39,7 @@ class _InviteLinkViewState extends State<InviteLinkView>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Send invitation link to your friends.",
+            AppLocalizations.of(context)!.invitationLinkViewSend,
             style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,

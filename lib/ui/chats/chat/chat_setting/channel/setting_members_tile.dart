@@ -226,7 +226,7 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
               (isAdmin || isOwner))
             BannerTile(
                 showVerticalEdge: false,
-                title: "Transfer Ownership",
+                title: AppLocalizations.of(context)!.transferOwnership,
                 onTap: () {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => OwnerTransferPage(

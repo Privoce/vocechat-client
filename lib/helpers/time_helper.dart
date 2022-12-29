@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 extension TimeHelper on DateTime {
-  String toTime24StringEn() {
+  String toTime24StringEn(BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = DateTime(now.year, now.month, now.day - 1);
@@ -11,7 +14,7 @@ extension TimeHelper on DateTime {
       final minute = localtime.minute.toString().padLeft(2, '0');
       return "$hour:$minute";
     } else if (dateToCheck == yesterday) {
-      return "Yesterday";
+      return AppLocalizations.of(context)!.yesterday;
     } else {
       final year = localtime.year.toString();
       final month = localtime.month.toString();
@@ -21,7 +24,7 @@ extension TimeHelper on DateTime {
     }
   }
 
-  String toChatTime24StrEn() {
+  String toChatTime24StrEn(BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = DateTime(now.year, now.month, now.day - 1);
@@ -31,11 +34,11 @@ extension TimeHelper on DateTime {
     if (dateToCheck == today) {
       final hour = localtime.hour.toString();
       final minute = localtime.minute.toString().padLeft(2, '0');
-      return "Today $hour:$minute";
+      return "${AppLocalizations.of(context)!.today} $hour:$minute";
     } else if (dateToCheck == yesterday) {
       final hour = localtime.hour.toString();
       final minute = localtime.minute.toString().padLeft(2, '0');
-      return "Yesterday $hour:$minute";
+      return "${AppLocalizations.of(context)!.yesterday} $hour:$minute";
     } else if (dateToCheck.year == localtime.year) {
       final month = localtime.month.toString();
       final day = localtime.day.toString();
@@ -52,7 +55,7 @@ extension TimeHelper on DateTime {
     }
   }
 
-  String toChatDateStrEn() {
+  String toChatDateStrEn(BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = DateTime(now.year, now.month, now.day - 1);
@@ -60,9 +63,9 @@ extension TimeHelper on DateTime {
     final localtime = toLocal();
     final dateToCheck = DateTime(year, month, day);
     if (dateToCheck == today) {
-      return "Today";
+      return AppLocalizations.of(context)!.today;
     } else if (dateToCheck == yesterday) {
-      return "Yesterday";
+      return AppLocalizations.of(context)!.yesterday;
     } else if (dateToCheck.year == now.year) {
       final month = localtime.month.toString();
       final day = localtime.day.toString();
@@ -103,8 +106,8 @@ extension ChatTimeDisplay on int {
     microsecond: 1/100,000 second
     millisecond: 1/1,000 second
    */
-  String toChatTime24StrEn() {
+  String toChatTime24StrEn(BuildContext context) {
     final messageTime = DateTime.fromMillisecondsSinceEpoch(this).toLocal();
-    return messageTime.toTime24StringEn();
+    return messageTime.toTime24StringEn(context);
   }
 }

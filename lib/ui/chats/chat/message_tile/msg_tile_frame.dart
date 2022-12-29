@@ -1,10 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
@@ -148,7 +144,7 @@ class MsgTileFrame extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           DateTime.fromMillisecondsSinceEpoch(timeStamp!)
-                              .toChatTime24StrEn(),
+                              .toChatTime24StrEn(context),
                           style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,

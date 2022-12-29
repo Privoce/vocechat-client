@@ -110,7 +110,7 @@ class _ChatTileState extends State<ChatTile> {
                     padding: const EdgeInsets.only(left: 16),
                     child: Text(
                         DateTime.fromMillisecondsSinceEpoch(updatedAt)
-                            .toTime24StringEn(),
+                            .toTime24StringEn(context),
                         strutStyle: StrutStyle(forceStrutHeight: true),
                         style: AppTextStyles.labelSmall),
                   );

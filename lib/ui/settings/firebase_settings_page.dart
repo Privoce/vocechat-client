@@ -196,17 +196,18 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
   void _showAlert(Object error) async {
     showAppAlert(
         context: context,
-        title: "FCM Error",
-        content: "FCM configuration failed.",
+        title: AppLocalizations.of(context)!.fcmError,
+        content: AppLocalizations.of(context)!.fcmErrorContent,
         primaryAction: AppAlertDialogAction(
-          text: "Copy Error Log",
+          text: AppLocalizations.of(context)!.fcmErrorCopyErrorLog,
           action: () {
             Clipboard.setData(ClipboardData(text: error.toString()));
           },
         ),
         actions: [
           AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.pop(context))
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.pop(context))
         ]);
   }
 }
