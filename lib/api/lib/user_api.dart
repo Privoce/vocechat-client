@@ -277,6 +277,28 @@ class UserApi {
     return newRes;
   }
 
+  Future<Response> postBurnAfterReadingSetting(
+      {int? uid, int? gid, required int expiresIn}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    Map reqMap = {};
+    if (uid != null) {
+      reqMap = {
+        "users": [
+          {"uid": uid, "expiresIn": expiresIn}
+        ]
+      };
+    } else if (gid != null) {
+      reqMap = {
+        "groups": [
+          {"gid": gid, "expiresIn": expiresIn}
+        ]
+      };
+    }
+
+    return await dio.post("/burn-after-reading", data: jsonEncode(reqMap));
+  }
+
   Future<Response> delete() async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     return dio.delete("/delete");
