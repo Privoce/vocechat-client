@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:async/async.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,7 @@ import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AuthService {
   static final AuthService _service = AuthService._internal();
@@ -49,6 +51,9 @@ class AuthService {
 
   List<int> retryList = const [2, 2, 4, 8, 16, 32, 64];
   int retryIndex = 0;
+
+  Timer? _fcmTimer;
+  int _fcmExpiresIn = 0;
 
   Timer? _timer;
   static const threshold = 60; // Refresh tokens if remaining time < 60.
@@ -83,13 +88,15 @@ class AuthService {
   }
 
   void dispose() {
-    disableTimer();
+    disableAuthTimer();
   }
 
-  void disableTimer() {
-    if (_timer != null) {
-      _timer!.cancel();
-    }
+  void disableAuthTimer() {
+    _timer!.cancel();
+  }
+
+  void disableFcmTImer() {
+    _fcmTimer?.cancel();
   }
 
   Future<bool> renewAuthToken() async {
@@ -185,8 +192,24 @@ class AuthService {
 
   Future<String> _getFirebaseDeviceToken() async {
     String deviceToken = "";
+
     try {
-      deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+      final cancellableOperation = CancelableOperation.fromFuture(
+        FirebaseMessaging.instance.getToken(),
+        onCancel: () {
+          deviceToken = "";
+          return;
+        },
+      ).then((token) {
+        deviceToken = token ?? "";
+      });
+
+      Timer(Duration(seconds: 3), (() {
+        App.logger.info("FCM timeout (3s), handled by VoceChat");
+        cancellableOperation.cancel();
+      }));
+      // deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+      return deviceToken;
     } catch (e) {
       App.logger.warning(e);
       deviceToken = "";
@@ -227,28 +250,33 @@ class AuthService {
       if (res.statusCode != 200) {
         switch (res.statusCode) {
           case 401:
-            errorContent = "Invalid account or password.";
+            errorContent = AppLocalizations.of(navigatorKey.currentContext!)!
+                .loginErrorContent401;
             break;
           case 403:
-            errorContent = "Login method is not supported.";
+            errorContent = AppLocalizations.of(navigatorKey.currentContext!)!
+                .loginErrorContent403;
             break;
           case 404:
-            errorContent = "User does not exist.";
+            errorContent = AppLocalizations.of(navigatorKey.currentContext!)!
+                .loginErrorContent404;
             break;
           case 409:
-            errorContent = "Email collision.";
+            errorContent = AppLocalizations.of(navigatorKey.currentContext!)!
+                .loginErrorContent409;
             break;
           case 423:
-            errorContent = "User has been frozen.";
+            errorContent = AppLocalizations.of(navigatorKey.currentContext!)!
+                .loginErrorContent423;
             break;
           case 451:
-            errorContent =
-                "License has an issue. Please contact server admin for help.";
+            errorContent = AppLocalizations.of(navigatorKey.currentContext!)!
+                .loginErrorContent451;
             break;
           default:
             App.logger.severe("Error: ${res.statusCode} ${res.statusMessage}");
             errorContent =
-                "An error occurred during login. ${res.statusCode} ${res.statusMessage}";
+                "${AppLocalizations.of(navigatorKey.currentContext!)!.loginErrorContentOther} ${res.statusCode} ${res.statusMessage}";
         }
       } else if (res.statusCode == 200 && res.data != null) {
         final data = res.data!;
@@ -257,11 +285,12 @@ class AuthService {
           App.app.chatService.initSse();
           return true;
         } else {
-          errorContent = "An error occurred during login (initialization).";
+          errorContent =
+              "${AppLocalizations.of(navigatorKey.currentContext!)!.loginErrorContentOther}(initialization).";
         }
       } else {
         errorContent =
-            "An error occurred during login.  ${res.statusCode} ${res.statusMessage}";
+            "${AppLocalizations.of(navigatorKey.currentContext!)!.loginErrorContentOther}  ${res.statusCode} ${res.statusMessage}";
       }
     } catch (e) {
       App.logger.severe(e);
@@ -270,11 +299,11 @@ class AuthService {
 
     await showAppAlert(
         context: navigatorKey.currentContext!,
-        title: "Login Error",
+        title: AppLocalizations.of(navigatorKey.currentContext!)!.loginError,
         content: errorContent,
         actions: [
           AppAlertDialogAction(
-            text: "OK",
+            text: AppLocalizations.of(navigatorKey.currentContext!)!.ok,
             action: () {
               Navigator.pop(navigatorKey.currentContext!);
             },
@@ -316,7 +345,7 @@ class AuthService {
 
       final old = await UserDbMDao.dao.first(
           where: '${UserDbM.F_chatServerId} = ? AND ${UserDbM.F_uid} = ?',
-          whereArgs: [dbName, userInfo.uid]);
+          whereArgs: [chatServerId, userInfo.uid]);
 
       late UserDbM newUserDb;
       if (old == null) {
@@ -333,7 +362,8 @@ class AuthService {
             1,
             -1,
             avatarBytes,
-            "");
+            "",
+            0);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);
       } else {
         UserDbM m = UserDbM.item(
@@ -349,7 +379,8 @@ class AuthService {
             1,
             old.usersVersion,
             avatarBytes,
-            "");
+            "",
+            old.maxMid);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);
       }
 
@@ -372,17 +403,20 @@ class AuthService {
         final error = e.toString();
         showAppAlert(
             context: context,
-            title: "Login Error",
-            content: "An error occurred during login (initialization).",
+            title:
+                AppLocalizations.of(navigatorKey.currentContext!)!.loginError,
+            content:
+                "${AppLocalizations.of(navigatorKey.currentContext!)!.loginErrorContentOther} (initialization).",
             actions: [
               AppAlertDialogAction(
-                  text: "Copy Error",
+                  text: AppLocalizations.of(navigatorKey.currentContext!)!
+                      .loginErrorCopy,
                   action: () {
                     Clipboard.setData(ClipboardData(text: error));
                     Navigator.of(context).pop();
                   }),
               AppAlertDialogAction(
-                  text: "OK",
+                  text: AppLocalizations.of(navigatorKey.currentContext!)!.ok,
                   action: () {
                     Navigator.of(context).pop();
                   })

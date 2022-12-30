@@ -11,7 +11,7 @@ class UserInfo {
   final int? gender;
   final bool? isAdmin;
   final String? createBy;
-  late final String language;
+  late String language;
   late final int avatarUpdatedAt;
 
   UserInfo(this.uid, this.email, String? name, this.gender, String? language,

@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_content_bubble.dart';
@@ -13,6 +12,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/archive_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ArchiveBubble extends StatelessWidget {
   final Archive? archive;
@@ -72,8 +72,8 @@ class ArchiveBubble extends StatelessWidget {
               Row(
                 children: [
                   Icon(AppIcons.forward, size: 12, color: AppColors.grey400),
-                  SizedBox(width: 5),
-                  Text("Forwarded",
+                  SizedBox(width: 4),
+                  Text(AppLocalizations.of(context)!.forwarded,
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 12,

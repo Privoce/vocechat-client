@@ -8,6 +8,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/banner_button.dart';
 import 'package:vocechat_client/ui/widgets/full_width_textfield.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MagiclinkLogin extends StatefulWidget {
   final ChatServerM chatServer;
@@ -130,12 +131,12 @@ class _MagiclinkLoginState extends State<MagiclinkLogin> {
       });
       await showAppAlert(
           context: context,
-          title: "Magic Link send failed.",
-          content:
-              "There was an error when sending magic link to the provided email. Please try again or report an issue to us.",
+          title: AppLocalizations.of(context)!.magicLinkLoginSendError,
+          content: AppLocalizations.of(context)!.magicLinkLoginSendErrorContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.pop(context))
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.pop(context))
           ]);
       App.logger.severe(e);
     }

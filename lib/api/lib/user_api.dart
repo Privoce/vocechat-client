@@ -38,7 +38,7 @@ class UserApi {
       req.addAll({"password": password});
     }
 
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+    final dio = DioUtil.token(baseUrl: _baseUrl, withRetry: false);
     dio.options.validateStatus = (status) {
       return status! == 200 || status == 409;
     };

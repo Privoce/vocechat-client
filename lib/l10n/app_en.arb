@@ -1,14 +1,19 @@
 {   
     "serverPageWelcomeFirstLine":"Welcome to",
     "serverPageWelcomeSecondLine":"VoceChat.",
-    "serverPageHostServer": "Host Server",
+    "serverPageHostServer": "Host Server Url",
     "serverPageHistory": "History",
-    "serverPageClearLocalData": "Clear local data",
-    "serverPageClearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
-    "serverPagePasteInvitationLink": "Paste invitation link",
+    
+    "registerNamingPageWhatsYourName":"What's your name",
+    "registerNamingPageWhatsYourNameContent":"Enter a name so people know how you'd like to be called. Your name will only be visible to others in spaces you joined.",
+    "registerNamingPageInvalidNameFormat":"Invalid Name Format",
+    "registerNamingPageSignUpFailed":"Sign Up Failed",
+    "registerNamingPageSignUpFailedContent":"Something wrong happened. Please try again later or contact server owner for help.",
 
     "chatServerHelperServerConnectionError": "Server Connection Error",
     "chatServerHelperServerConnectionErrorContent": "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
+    "chatServerHelperServerNotInitialized": "Server Not Initialized",
+    "chatServerHelperServerNotInitializedContent": "Please use web client for initialization.",
 
     "inputInvitationLinkPageInput": "Input",
     "inputInvitationLinkPageInvitationLink": "Invitation Link",
@@ -27,6 +32,10 @@
     "passwordRegisterPagePasswordNotMatch": "Passwords do not match",
     "passwordRegisterPageEmailAlreadyExists": "Email Already Exists",
     "passwordRegisterPageEmailAlreadyExistsContent": "This email has been registered. Please go to sign in page.",
+
+    "chatsDrawerServerAndAccount": "Server and Account",
+    "chatsDrawerServerAndAccountPl": "Servers and Accounts",
+    "chatsDrawerAddNewAccount":"Add new account",
 
     "chatsPageSearchHint":"Search for messages or users",
     "contactsPageSearchHint": "Search for users",
@@ -51,41 +60,103 @@
     "settingsPageConfigFirebase": "Firebase",
     "settingsPageConfigFooter": "Please use web client for SMTP, Login Methods and Third-party App Settings.",
     "settingsPageAbout": "About",
-    "settingsPageLogout": "Log Out",
-    "settingsPageClearData": "Clear Local Data",
+
+    "archive":"Archive",
 
     "call" : "Call",
     "cancel": "Cancel",
+    "channel":"Channel",
+    "clearLocalData": "Clear local data",
+    "clearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
     "continueStr": "Continue",
+    "copy":"Copy",
+    "copyUrl":"Copy Url",
+
     "delete": "Delete",
+    "deleteAccount": "Delete Account",
+    "deleteAccountWarning":"Are you sure to delete account?",
+    "deleteAccountWarningContent":"All your data will be deleted locally. Your account information will be deleted on server, but message contents will still be visible to other users. This can not be undone.",
+    "deleteAccountFailWarning":"Account Deletion Failed",
+    "deleteAccountFailWarningContent":"Please try again later or contact admin for help.",
     "deleteChannel": "Delete Channel",
     "deleteChannelWarningDes": "This channel will be dismissed. All members will have no access to its data.",
+    "description":"Description",
     "done": "Done",
     "edit": "Edit",
     "email": "Email",
+
+    "file":"File",
+    "forward":"Forward",
+    "forwarded":"forwarded",
+    "forwardTo":"Forward to",
+
+    "image":"Image",
+    "inputInvitationLink":"Input Invitation Link",
+    "invitationLink": "Invitation Link",
+    "invitationLinkGenerationError": "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
+    "inviteNewUsers": "Invite New Users",
+    
+    "language": "Language",
     "logIn": "Log in",
     "logInTo": "Login To",
+    "logOut":"Log Out",
+    "logoutWarning":"Are you sure to log out",
+    "logoutWarningWithQM":"Are you sure to log out?",
+
     "message": "Message",
     "members":"Members",
     "mute" : "Mute",
+
+    "name":"Name",
+    "newPrivateChannel":"New Private Channel",
+    "newPublicChannel":"New Public Channel",
     "next": "Next",
+    "noContent":"No Content",
+
     "ok": "OK",
     "paste": "Paste",
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "pin": "Pin",
+    "privateChannelToPublicTitle":"Change to Public Channel",
+    "privateChannelToPublicContent":"It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.",
+    "publicChannel":"Public Channel",
+    "publicChannelToPrivateTitle":"Change to Private Channel",
+    "publicChannelToPrivateContent":"This channel will not be visible to new server members. Current members will not be affected.",
+
     "rememberMe": "Remember me",
+    "reply": "Reply",
+    "replyingTo":"Replying to",
+    "resend":"Resend",
+
+    "scanQrCodeToRegister": "Scan this QR Code to register",
+    "save": "Save",
     "savedItems": "Saved Items",
+    "select":"Select",
     "setNewAvatar": "Set a new avatar",
     "send": "Send",
+    "shareInvitationLink":"Share Invitation Link",
+    "shareQrCode": "Share QR Code",
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signUpTo": "Sign Up to",
+    "switchServer": "Switch Server",
+
+    "today":"Today",
+    "transferOwnership":"Transfer Ownership",
+
     "unmute": "Unmute",
+    "unpin":"Unpin",
+    "unsupportedMessageType":"Unsupported Message Type",
+    "uploadError": "Upload Error",
+    "uploadErrorContent": "Avatar size exceeds limit.",
     "version": "Version",
     "video" : "Video",
     "voice" : "Voice",
+
+    "yesterday":"yesterday",
     
+    "leave":"Leave",
     "leaveChannel": "Leave Channel",
     "leaveChannelWarningDes": "This channel and its messages will be deleted from all your devices.",
     "leaveChannelTransferOwnerDes": "As Owner, you have to transfer ownership before leaving.",
@@ -108,6 +179,14 @@
     "serverInfoSettingTitle": "Server Overview",
     "serverInfoSettingNameHint": "Server Name",
     "serverInfoSettingDesHint": "Server Description",
+    "serverInfoSettingFooter": "Above updates will only be seen after reopening App or logging back in.",
+
+    "aboutPageTitle":"About VoceChat",
+    "aboutPageCheckUpdates":"Check Updates",
+    "aboutPageChangeLog":"changelog",
+    "aboutPageUpdateTitleUpToDate":"Current Version is Up-to-date",
+    "aboutPageUpdateTitleUpToDateContent":"You are using the latest VoceChat App.",
+    "aboutPageCopyRight":"© Privoce Inc. All Rights Reserved.",
 
     "firebaseEnable": "Enable",
 
@@ -115,6 +194,10 @@
     "savedItemEmptyChannelDes": "This channel doesn't have any saved item.",
 
     "pinnedMsgPageEmptyChannelDes": "This channel doesn't have any pinned message.",
+    "pinnedMsgPageUnPinTitle": "Unpin Message",
+    "pinnedMsgPageUnPinContent": "Are you sure to unpin this message?",
+    "pinnedMsgPageUnPinErrorTitle": "Unpin Message Error",
+    "pinnedMsgPageUnPinErrorContent": "Something wrong when unpinning this pinned message.",
 
     "memberAddPageTitle": "Add Members",
     "memberAddPageAdd": "Add",
@@ -122,5 +205,67 @@
     "memberAddPageInvitationLink": "Invitation Link",
 
     "memberRemovePageTitle": "Remove Members",
-    "memberRemovePageRemove": "Remove"
+    "memberRemovePageRemove": "Remove",
+
+    "chatPageSelectionWarning":"Can't forward or save a forwarded/unsuccessful message in selection mode.",
+    "chatPageCantFindFileWarning":"Can't Find File",
+    "chatPageCantFindFileWarningContent":"File might have been deleted. Please send a new message.",
+    "chatPageCantFindImageWarning":"Can't Find Image File",
+    "chatPageCantFindImageWarningContent":"Image might have been deleted. Please send a new message.",
+    "chatPageResendWarning":"Resend Message",
+    "chatPageResendWarningContent":"Do you want to resend this message?",
+
+    "savedPageDeleteTitle":"Delete Saved Item",
+    "savedPageDeleteContent":"Are you sure to delete this saved item?",
+    "savedPageDeleteErrorTitle":"Delete Saved Item Error",
+    "savedPageDeleteErrorContent":"Something wrong with saved item deletion.",
+
+    "magicLinkLoginSendError":"Magic Link Error",
+    "magicLinkLoginSendErrorContent":"There was an error when sending magic link to the provided email. Please try again or report an issue to us.",
+
+    "appQrCodeScanPageInvalidCodeTitle":"Invalid QR Code",
+    "appQrCodeScanPageInvalidCodeContent":"Please ask for a new invitation link, or check your network.",
+    
+    "settingsAboutPageNetworkError":"Network Error",
+    "settingsAboutPageNetworkErrorContent":"VoceChat cannot fetch latest version information. You may try it later.",
+
+    "chatsBarNetworkError": "Network Error",
+    "chatsBarNetworkErrorContent": "Please check your network settings, or try to log in again.",
+    "chatsBarLoginStatusExpired": "Login Status Expired",
+    "chatsBarLoginStatusExpiredContent": "Please login again.",
+
+    "filePageCantOpenFile":"Can't Open File",
+    "filePageCantOpenFileContent":"VoceChat does not support this file type. Please open with other Apps.",
+    "filePageDownloadFailed":"Download Failed",
+    "filePageDownloadFailedContent":"VoceChat can't download this file. It might have been deleted from server.",
+    "filePageCantFindFile":"Can't Open File",
+    "filePageCantFindFileContent":"VoceChat can't find this file on your device or from the server. It might have been deleted.",
+
+    "chatTextFieldCameraMicrophonePermission":"VoceChat needs camera and microphone permissions",
+    "chatTextFieldCameraMicrophonePermissionContent":"Grant camera and microphone permissions for sending image and video messages.",
+    "chatTextFieldPhotoPermission":"VoceChat needs Photo Album permission",
+    "chatTextFieldPhotoPermissionContent":"Please go to settings -> VoceChat for permission settings.",
+    
+    "loginSessionExpires":"Login Session Expires",
+    "loginSessionExpiresContent":"If you didn't login from another device, please change password immediately, or contact server admins for help.",
+
+    "loginError":"Login Error",
+    "loginErrorContent401":"Invalid account or password.",
+    "loginErrorContent403":"Login method is not supported.",
+    "loginErrorContent404":"User does not exist.",
+    "loginErrorContent409":"Email collision.",
+    "loginErrorContent423":"User has been frozen.",
+    "loginErrorContent451":"License has an issue. Please contact server admin for help.",
+    "loginErrorContentOther":"An error occurred during login.",
+    "loginErrorCopy":"Copy Error",
+
+    "appTextSelectionControlPasteImage":"Paste and Send Image",
+
+    "fcmError":"FCM Error",
+    "fcmErrorContent":"FCM Configuration Failed.",
+    "fcmErrorCopyErrorLog":"Copy Error Log",
+
+    "invitationLinkViewSend":"Send invitation link to your friends."
+    
+    
 }

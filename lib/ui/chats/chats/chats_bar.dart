@@ -306,8 +306,10 @@ class _ChatsBarState extends State<ChatsBar> {
                       Icon(AppIcons.dm, color: AppColors.grey97),
                       AppLocalizations.of(context)!.chatsBarNewDm,
                       AddActions.dm),
-                  _buildItem(Icon(AppIcons.member_add, color: AppColors.grey97),
-                      "Invite People", AddActions.user)
+                  _buildItem(
+                      Icon(AppIcons.member_add, color: AppColors.grey97),
+                      AppLocalizations.of(context)!.inviteNewUsers,
+                      AddActions.user)
                 ];
               },
             ))
@@ -351,16 +353,17 @@ class _ChatsBarState extends State<ChatsBar> {
           onPressed: () {
             showAppAlert(
                 context: context,
-                title: "Login Status Expired",
-                content: "Please login again.",
+                title: AppLocalizations.of(context)!.chatsBarLoginStatusExpired,
+                content: AppLocalizations.of(context)!
+                    .chatsBarLoginStatusExpiredContent,
                 actions: [
                   AppAlertDialogAction(
-                      text: "Cancel",
+                      text: AppLocalizations.of(context)!.cancel,
                       action: (() async {
                         Navigator.of(context).pop();
                       })),
                   AppAlertDialogAction(
-                      text: "OK",
+                      text: AppLocalizations.of(context)!.ok,
                       action: (() async {
                         Navigator.of(context).pop();
                         // Call login page
@@ -380,12 +383,12 @@ class _ChatsBarState extends State<ChatsBar> {
           onPressed: () {
             showAppAlert(
                 context: context,
-                title: "Network Error",
+                title: AppLocalizations.of(context)!.chatsBarNetworkError,
                 content:
-                    "Please check your network settings, or try to log in again.",
+                    AppLocalizations.of(context)!.chatsBarNetworkErrorContent,
                 actions: [
                   AppAlertDialogAction(
-                      text: "OK",
+                      text: AppLocalizations.of(context)!.ok,
                       action: (() async {
                         Navigator.of(context).pop();
                       }))

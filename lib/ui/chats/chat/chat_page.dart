@@ -36,6 +36,7 @@ import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
 import 'package:vocechat_client/models/ui_models/ui_msg.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
 import 'package:vocechat_client/globals.dart' as globals;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
@@ -214,17 +215,23 @@ class _ChatPageState extends State<ChatPage> {
                           key: ValueKey<int>(0),
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              width: 200,
-                              child: Text(
-                                  "Can't forward or save a forwarded/unsuccessful message in selection mode."),
+                            Flexible(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(AppLocalizations.of(context)!
+                                    .chatPageSelectionWarning),
+                              ),
                             ),
-                            _buildIcon(
-                                Icon(
-                                  AppIcons.delete,
-                                  color: AppColors.errorRed,
-                                ),
-                                () => _batchDelete())
+                            Padding(
+                              padding: const EdgeInsets.only(right: 32),
+                              child: _buildIcon(
+                                  Icon(
+                                    AppIcons.delete,
+                                    color: AppColors.errorRed,
+                                  ),
+                                  () => _batchDelete()),
+                            )
                           ]);
                     } else {
                       child = Row(
@@ -916,9 +923,7 @@ class _ChatPageState extends State<ChatPage> {
 
       final messageApi = MessageApi(App.app.chatServerM.fullUrl);
 
-      print("here1");
       await messageApi.delete(old.mid);
-      print("here2");
     } catch (e) {
       App.logger.severe(e);
       final index = _uiMsgList
@@ -932,8 +937,6 @@ class _ChatPageState extends State<ChatPage> {
       }
       return false;
     }
-
-    print(_uiMsgList.map((e) => e.chatMsgM.mid));
     return true;
   }
 
@@ -1068,7 +1071,7 @@ class _ChatPageState extends State<ChatPage> {
                                 MsgSendStatus.success.name)
                               MsgActionTile(
                                   icon: AppIcons.reply,
-                                  title: "Reply",
+                                  title: AppLocalizations.of(context)!.reply,
                                   onTap: () {
                                     _onTapReply(uiMsg.chatMsgM, uiMsg.file);
                                   }),
@@ -1079,7 +1082,7 @@ class _ChatPageState extends State<ChatPage> {
                                     MsgSendStatus.success.name)
                               MsgActionTile(
                                   icon: AppIcons.edit,
-                                  title: "Edit",
+                                  title: AppLocalizations.of(context)!.edit,
                                   onTap: () {
                                     _onTapEdit(uiMsg.chatMsgM);
                                   }),
@@ -1089,7 +1092,7 @@ class _ChatPageState extends State<ChatPage> {
                                     MsgContentType.markdown)
                               MsgActionTile(
                                   icon: Icons.copy,
-                                  title: "Copy",
+                                  title: AppLocalizations.of(context)!.copy,
                                   onTap: () {
                                     _onTapCopy(uiMsg);
                                   }),
@@ -1104,7 +1107,7 @@ class _ChatPageState extends State<ChatPage> {
                                     MsgSendStatus.success.name)
                               MsgActionTile(
                                   icon: AppIcons.bookmark,
-                                  title: "Save",
+                                  title: AppLocalizations.of(context)!.save,
                                   onTap: () {
                                     _onTapSave(uiMsg.chatMsgM);
                                   }),
@@ -1112,20 +1115,20 @@ class _ChatPageState extends State<ChatPage> {
                                 MsgSendStatus.success.name)
                               MsgActionTile(
                                   icon: AppIcons.forward,
-                                  title: "Forward",
+                                  title: AppLocalizations.of(context)!.forward,
                                   onTap: () {
                                     _onTapTileForward(uiMsg.chatMsgM);
                                   }),
                             MsgActionTile(
                                 icon: AppIcons.select,
-                                title: "Select",
+                                title: AppLocalizations.of(context)!.select,
                                 onTap: () {
                                   _onTapSelect(uiMsg.chatMsgM);
                                 }),
                             if (isSelf || isAdmin || isOwner)
                               MsgActionTile(
                                   icon: AppIcons.delete,
-                                  title: "Delete",
+                                  title: AppLocalizations.of(context)!.delete,
                                   color: Colors.red,
                                   onTap: () {
                                     _onDelete(uiMsg.chatMsgM);
@@ -1150,7 +1153,9 @@ class _ChatPageState extends State<ChatPage> {
     bool pinned = pinnedMessages.contains(uiMsg.chatMsgM.mid);
     return MsgActionTile(
         icon: AppIcons.pin,
-        title: pinned ? "Unpin" : "Pin",
+        title: pinned
+            ? AppLocalizations.of(context)!.unpin
+            : AppLocalizations.of(context)!.pin,
         onTap: () {
           _onTapPin(uiMsg, !pinned);
         });
@@ -1223,10 +1228,11 @@ class _ChatPageState extends State<ChatPage> {
           onTap: () async {
             await showAppAlert(
                 context: context,
-                title: "Resend Message",
-                content: "Do you want to resend this message?",
+                title: AppLocalizations.of(context)!.chatPageResendWarning,
+                content:
+                    AppLocalizations.of(context)!.chatPageResendWarningContent,
                 primaryAction: AppAlertDialogAction(
-                    text: "Resend",
+                    text: AppLocalizations.of(context)!.resend,
                     action: () {
                       final chatMsgM = uiMsg.chatMsgM;
                       final content = chatMsgM.msgNormal?.content ??
@@ -1265,7 +1271,8 @@ class _ChatPageState extends State<ChatPage> {
                     isDangerAction: true),
                 actions: [
                   AppAlertDialogAction(
-                      text: "Cancel", action: () => Navigator.of(context).pop())
+                      text: AppLocalizations.of(context)!.cancel,
+                      action: () => Navigator.of(context).pop())
                 ]);
           },
           child:
@@ -1284,11 +1291,13 @@ class _ChatPageState extends State<ChatPage> {
     } else {
       showAppAlert(
           context: context,
-          title: "Can't Find Image File",
-          content: "Image might have been deleted. Please send a new message.",
+          title: AppLocalizations.of(context)!.chatPageCantFindImageWarning,
+          content:
+              AppLocalizations.of(context)!.chatPageCantFindImageWarningContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop())
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
           ]);
     }
   }
@@ -1301,11 +1310,13 @@ class _ChatPageState extends State<ChatPage> {
     } else {
       showAppAlert(
           context: context,
-          title: "Can't Find File",
-          content: "File might have been deleted. Please send a new message.",
+          title: AppLocalizations.of(context)!.chatPageCantFindFileWarning,
+          content:
+              AppLocalizations.of(context)!.chatPageCantFindFileWarningContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop())
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
           ]);
     }
   }

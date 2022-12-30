@@ -12,6 +12,7 @@ import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
@@ -99,6 +100,8 @@ Future<void> main() async {
               App.app.chatServerM.updatedAt =
                   DateTime.now().millisecondsSinceEpoch;
               await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
+
+              // await _updateMaxMid();
             }
           } catch (e) {
             App.logger.severe(e);
@@ -110,6 +113,19 @@ Future<void> main() async {
 
   runApp(VoceChatApp(defaultHome: _defaultHome));
 }
+
+/// This function is only for fixing potential difference in maxMid between
+/// old (calculated from chatMsgDao) and the new (saved separately),
+/// to reduce message duplication.
+// Future<void> _updateMaxMid() async {
+//   final oldMaxMid = await ChatMsgDao().getMaxMid();
+//   if (oldMaxMid > -1) {
+//     final userId = await StatusMDao.dao.getStatus();
+//     if (userId != null) {
+//       await UserDbMDao.dao.updateMaxMid(userId.userDbId, oldMaxMid);
+//     }
+//   }
+// }
 
 Future<void> _setUpFirebaseNotification() async {
   await Firebase.initializeApp(
@@ -146,6 +162,9 @@ class VoceChatApp extends StatefulWidget {
 
   late Widget defaultHome;
 
+  static _VoceChatAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_VoceChatAppState>();
+
   @override
   State<VoceChatApp> createState() => _VoceChatAppState();
 }
@@ -155,6 +174,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   late bool shouldRefresh;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  Locale? _locale;
 
   /// When network changes, such as from wi-fi to data, a relay is set to avoid
   /// [_connect()] function to be called repeatly.
@@ -169,6 +189,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+    _initLocale();
 
     _handleIncomingUniLink();
     _handleInitUniLink();
@@ -218,6 +240,12 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     }
   }
 
+  void setLocale(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Portal(
@@ -262,9 +290,10 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        locale: _locale,
         supportedLocales: const [
           Locale('en', 'US'), // English, no country code
-          // Locale('zh', ''),
+          Locale('zh', ''),
         ],
         home: _defaultHome,
       ),
@@ -301,6 +330,26 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         }
       }
     });
+  }
+
+  Future<void> _initLocale() async {
+    final userDbM = await UserDbMDao.dao.getUserDbById(App.app.userDb!.id);
+    final userLanguageTag = userDbM?.userInfo.language;
+
+    if (userLanguageTag != null && userLanguageTag.isNotEmpty) {
+      final split = userLanguageTag.split("-");
+      String languageTag = "", scriptTag = "", regionTag = "";
+      try {
+        languageTag = split[0];
+        scriptTag = split[1];
+        regionTag = split[2];
+      } catch (e) {
+        App.logger.warning(e);
+      }
+      final locale = Locale(languageTag, regionTag);
+
+      setLocale(locale);
+    }
   }
 
   void _handleMessage(RemoteMessage message) async {
@@ -346,11 +395,13 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   void _showInvalidLinkWarning(BuildContext context) {
     showAppAlert(
         context: context,
-        title: "Invalid Invitation Link",
-        content: "Please contact server admin for a new link or help.",
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
         actions: [
           AppAlertDialogAction(
-              text: "OK", action: (() => Navigator.of(context).pop()))
+              text: AppLocalizations.of(context)!.ok,
+              action: (() => Navigator.of(context).pop()))
         ]);
   }
 

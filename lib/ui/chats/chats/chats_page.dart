@@ -548,13 +548,13 @@ class _ChatsPageState extends State<ChatsPage>
             final name = chatMsgM.msgNormal?.properties?["name"] ?? "";
 
             if (chatMsgM.isImageMsg) {
-              snippet = "[Image] $name";
+              snippet = "[${AppLocalizations.of(context)!.image}] $name";
             } else {
-              snippet = "[File] $name";
+              snippet = "[${AppLocalizations.of(context)!.file}] $name";
             }
             break;
           case MsgContentType.archive:
-            snippet = "[Archive]";
+            snippet = "[${AppLocalizations.of(context)!.archive}]";
             break;
           default:
             snippet =
@@ -568,7 +568,7 @@ class _ChatsPageState extends State<ChatsPage>
             snippet = chatMsgM.msgReaction?.detail["content"] ?? "";
             break;
           default:
-            snippet = "Unsupported Message Type";
+            snippet = AppLocalizations.of(context)!.unsupportedMessageType;
         }
         break;
       case MsgDetailType.reply:
@@ -585,12 +585,12 @@ class _ChatsPageState extends State<ChatsPage>
 
             break;
           default:
-            snippet = "Unsupported Message Type";
+            snippet = AppLocalizations.of(context)!.unsupportedMessageType;
             break;
         }
         break;
       default:
-        snippet = "Unsupported Message Type";
+        snippet = AppLocalizations.of(context)!.unsupportedMessageType;
     }
     return snippet;
   }

@@ -175,7 +175,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       App.app.authService = AuthService(chatServerM: chatServerM);
 
       if (await App.app.authService!.login(email, pswd, rememberMe)) {
-        Navigator.of(context)
+        await Navigator.of(context)
             .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
         return true;
       } else {

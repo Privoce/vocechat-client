@@ -133,7 +133,7 @@ class _ServerInfoSettingsPageState extends State<ServerInfoSettingsPage> {
 
               _doneBtnNotifier.value = _nameEdited || _descriptionEdited;
             },
-            footer: "Updates will only be seen after logging back in.",
+            footer: AppLocalizations.of(context)!.serverInfoSettingFooter,
           )
         ],
       )),

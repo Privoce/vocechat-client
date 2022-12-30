@@ -9,7 +9,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AppQrScanPage extends StatelessWidget {
   @override
@@ -58,19 +58,21 @@ class AppQrScanPage extends StatelessWidget {
   void _onQrCodeDetected(String link, BuildContext context) async {
     showLoaderDialog(context);
     if (await _validateLink(link, context)) {
-      print("success, $link");
+      App.logger.info("success, $link");
     } else {
       // Dismiss loading dialog.
       Navigator.pop(context);
 
       await showAppAlert(
           context: context,
-          title: "Invalid QR Code",
+          title:
+              AppLocalizations.of(context)!.appQrCodeScanPageInvalidCodeTitle,
           content:
-              "Please ask for a new invitation link, or check your network.",
+              AppLocalizations.of(context)!.appQrCodeScanPageInvalidCodeContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop())
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
           ]);
 
       // Pop scan page.

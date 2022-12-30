@@ -10,6 +10,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/send_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AppTextSelectionControls extends CupertinoTextSelectionControls {
   static const channelName = 'clipboard/image';
@@ -105,14 +106,15 @@ class AppTextSelectionControls extends CupertinoTextSelectionControls {
     );
     showAppAlert(
         context: context,
-        title: "Paste and Send Image",
+        title: AppLocalizations.of(context)!.appTextSelectionControlPasteImage,
         contentWidget: imageWidget,
         actions: [
           AppAlertDialogAction(
-              text: "Cancel", action: (() => Navigator.of(context).pop()))
+              text: AppLocalizations.of(context)!.cancel,
+              action: (() => Navigator.of(context).pop()))
         ],
         primaryAction: AppAlertDialogAction(
-            text: "Send",
+            text: AppLocalizations.of(context)!.send,
             action: () {
               // return _send(path, type, uuid());
               SendService.singleton.sendMessage(uuid(), "", SendType.file,

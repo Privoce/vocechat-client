@@ -74,7 +74,8 @@ class PinnedMsgPage extends StatelessWidget {
                                                   listViewContext, msg.mid);
                                             },
                                             icon: AppIcons.delete,
-                                            label: "Unpin",
+                                            label: AppLocalizations.of(context)!
+                                                .unpin,
                                             backgroundColor: Colors.red,
                                             foregroundColor: Colors.white,
                                           )
@@ -97,10 +98,10 @@ class PinnedMsgPage extends StatelessWidget {
   void _onTapUnpin(BuildContext context, int mid) {
     showAppAlert(
         context: context,
-        title: "Unpin Message",
-        content: "Are you sure to unpin this message?",
+        title: AppLocalizations.of(context)!.pinnedMsgPageUnPinTitle,
+        content: AppLocalizations.of(context)!.pinnedMsgPageUnPinContent,
         primaryAction: AppAlertDialogAction(
-          text: "Unpin",
+          text: AppLocalizations.of(context)!.unpin,
           action: () async {
             Navigator.of(context).pop();
             final res = await _unPin(mid);
@@ -109,18 +110,21 @@ class PinnedMsgPage extends StatelessWidget {
             } else {
               showAppAlert(
                   context: context,
-                  title: "Delete Saved Item Error",
-                  content: "Something wrong with saved item deletion.",
+                  title: AppLocalizations.of(context)!
+                      .pinnedMsgPageUnPinErrorTitle,
+                  content: AppLocalizations.of(context)!
+                      .pinnedMsgPageUnPinErrorContent,
                   actions: [
                     AppAlertDialogAction(
-                        text: "OK", action: () => Navigator.of(context).pop())
+                        text: AppLocalizations.of(context)!.ok,
+                        action: () => Navigator.of(context).pop())
                   ]);
             }
           },
         ),
         actions: [
           AppAlertDialogAction(
-            text: "Cancel",
+            text: AppLocalizations.of(context)!.cancel,
             action: () {
               Navigator.of(context).pop();
             },

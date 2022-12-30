@@ -21,6 +21,7 @@ import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatTextField extends StatefulWidget {
   final GroupInfoM? groupInfoM;
@@ -353,7 +354,10 @@ class _ChatTextFieldState extends State<ChatTextField> {
                                 fontWeight: FontWeight.w400,
                                 fontSize: 15),
                             children: [
-                              TextSpan(text: "Replying to "),
+                              TextSpan(
+                                  text:
+                                      AppLocalizations.of(context)!.replyingTo +
+                                          " "),
                               TextSpan(
                                 text: widget.repliedUser!.userInfo.name + "   ",
                                 style: TextStyle(
@@ -434,11 +438,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
     if (status != PermissionStatus.granted) {
       showAppAlert(
           context: context,
-          title: "VoceChat needs Photo Album permission",
-          content: "Please go to settings -> VoceChat for permission settings.",
+          title: AppLocalizations.of(context)!.chatTextFieldPhotoPermission,
+          content:
+              AppLocalizations.of(context)!.chatTextFieldPhotoPermissionContent,
           actions: [
             AppAlertDialogAction(
-                text: "OK", action: () => Navigator.of(context).pop())
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
           ]);
     } else {
       return true;
@@ -481,12 +487,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
                 if (cameraPermissionDenied || microphonePermissionDenied) {
                   showAppAlert(
                       context: context,
-                      title: "VoceChat needs camera and microphone permissions",
-                      content:
-                          "Grant camera and microphone permissions for sending image and video messages.",
+                      title: AppLocalizations.of(context)!
+                          .chatTextFieldCameraMicrophonePermission,
+                      content: AppLocalizations.of(context)!
+                          .chatTextFieldCameraMicrophonePermissionContent,
                       actions: [
                         AppAlertDialogAction(
-                            text: "OK",
+                            text: AppLocalizations.of(context)!.ok,
                             action: () => Navigator.of(context).pop())
                       ]);
                 } else {

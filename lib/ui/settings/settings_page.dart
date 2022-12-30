@@ -1,23 +1,18 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:vocechat_client/api/lib/admin_user_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
-import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/settings/firebase_settings_page.dart';
+import 'package:vocechat_client/ui/settings/language_setting_page.dart';
 import 'package:vocechat_client/ui/settings/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/settings_about_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
@@ -77,6 +72,7 @@ class _SettingPageState extends State<SettingPage> {
                 children: [
                   _buildUserInfo(),
                   _buildServer(context),
+                  _buildLanguage(context),
                   _buildAbout(),
                   if (App.app.userDb?.userInfo.isAdmin ?? false)
                     // _buildConfigs(context),
@@ -134,6 +130,19 @@ class _SettingPageState extends State<SettingPage> {
         title: AppLocalizations.of(context)!.settingsPageServerOverview);
   }
 
+  Widget _buildLanguage(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: BannerTile(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
+              return LanguageSettingPage();
+            })));
+          },
+          title: AppLocalizations.of(context)!.language),
+    );
+  }
+
   Widget _buildConfigs(BuildContext context) {
     return BannerTile(
         onTap: () {
@@ -146,23 +155,6 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildAbout() {
-    // return BannerTile(
-    //     title: AppLocalizations.of(context)!.settingsPageAbout,
-    //     keepArrow: false,
-    //     enableTap: false,
-    //     trailing: FutureBuilder<String>(
-    //         future: _getVersion(),
-    //         builder: (context, snapshot) {
-    //           if (snapshot.hasData) {
-    //             return Text(snapshot.data!,
-    //                 style: TextStyle(
-    //                     fontSize: 15,
-    //                     fontWeight: FontWeight.w400,
-    //                     color: AppColors.grey500));
-    //           } else {
-    //             return SizedBox.shrink();
-    //           }
-    //         }));
     return BannerTile(
         title: AppLocalizations.of(context)!.settingsPageAbout,
         keepArrow: true,
@@ -197,14 +189,14 @@ class _SettingPageState extends State<SettingPage> {
       children: [
         SizedBox(height: 8),
         AppBannerButton(
-          title: "Switch Server",
+          title: AppLocalizations.of(context)!.switchServer,
           onTap: () {
             _onSwitchServerTapped();
           },
         ),
         SizedBox(height: 8),
         AppBannerButton(
-          title: AppLocalizations.of(context)!.settingsPageLogout,
+          title: AppLocalizations.of(context)!.logOut,
           onTap: () {
             _onLogoutTapped(context);
           },
@@ -214,12 +206,12 @@ class _SettingPageState extends State<SettingPage> {
             onTap: () {
               _onResetDbTapped(context);
             },
-            title: AppLocalizations.of(context)!.settingsPageClearData),
+            title: AppLocalizations.of(context)!.clearLocalData),
         SizedBox(height: 8),
         if (App.app.userDb?.uid != 1)
           AppBannerButton(
             onTap: () => _onDeleteAccountTapped(context),
-            title: "Delete Account",
+            title: AppLocalizations.of(context)!.deleteAccount,
           )
       ],
     );
@@ -232,10 +224,10 @@ class _SettingPageState extends State<SettingPage> {
   void _onLogoutTapped(BuildContext context) async {
     showAppAlert(
         context: context,
-        title: "Log Out",
-        content: "Are you sure to log out?",
+        title: AppLocalizations.of(context)!.logOut,
+        content: AppLocalizations.of(context)!.logoutWarningWithQM,
         primaryAction: AppAlertDialogAction(
-            text: 'Log Out',
+            text: AppLocalizations.of(context)!.logOut,
             isDangerAction: true,
             action: () async {
               isBusy.value = true;
@@ -246,33 +238,35 @@ class _SettingPageState extends State<SettingPage> {
             }),
         actions: [
           AppAlertDialogAction(
-              text: 'Cancel', action: () => Navigator.pop(context)),
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.pop(context)),
         ]);
   }
 
   void _onResetDbTapped(BuildContext context) async {
     showAppAlert(
         context: context,
-        title: "Clear Local Data",
-        content:
-            "VoceChat will be terminated. All your data will be deleted locally.",
+        title: AppLocalizations.of(context)!.clearLocalData,
+        content: AppLocalizations.of(context)!.clearLocalDataContent,
         primaryAction: AppAlertDialogAction(
-            text: "OK", isDangerAction: true, action: _onReset),
+            text: AppLocalizations.of(context)!.ok,
+            isDangerAction: true,
+            action: _onReset),
         actions: [
           AppAlertDialogAction(
-              text: "Cancel", action: () => Navigator.pop(context, 'Cancel'))
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.pop(context))
         ]);
   }
 
   void _onDeleteAccountTapped(BuildContext context) async {
     showAppAlert(
         context: context,
-        title: "Are you sure to delete account?",
-        content:
-            "All your data will be deleted locally. Your account information will be deleted on server, but message contents will still be visible to other users. This can not be undone.",
+        title: AppLocalizations.of(context)!.deleteAccountWarning,
+        content: AppLocalizations.of(context)!.deleteAccountWarningContent,
         primaryAction: AppAlertDialogAction(
             isDangerAction: true,
-            text: "Delete",
+            text: AppLocalizations.of(context)!.delete,
             action: () async {
               final api = UserApi(App.app.chatServerM.fullUrl);
               final res = await api.delete();
@@ -289,19 +283,20 @@ class _SettingPageState extends State<SettingPage> {
                 Navigator.of(context).pop(context);
                 showAppAlert(
                     context: context,
-                    title: "Account Deletion Failed",
-                    content:
-                        "Please try again later or contact admin for help.",
+                    title:
+                        AppLocalizations.of(context)!.deleteAccountFailWarning,
+                    content: AppLocalizations.of(context)!
+                        .deleteAccountFailWarningContent,
                     actions: [
                       AppAlertDialogAction(
-                          text: "OK",
+                          text: AppLocalizations.of(context)!.ok,
                           action: () => Navigator.of(context).pop(context))
                     ]);
               }
             }),
         actions: [
           AppAlertDialogAction(
-              text: "Cancel",
+              text: AppLocalizations.of(context)!.cancel,
               action: () {
                 Navigator.of(context).pop(context);
               })

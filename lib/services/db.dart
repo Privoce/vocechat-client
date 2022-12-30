@@ -29,7 +29,30 @@ Future<void> initDb({String? dbFileName}) async {
       orgDb = await databaseFactory.openDatabase(
         path,
         options: OpenDatabaseOptions(
-          version: 2,
+          version: 3,
+          onCreate: (db, version) async {
+            // Check if db table has been created.
+            int? count = firstIntValue(await db.query('sqlite_master',
+                columns: ['COUNT(*)'],
+                where: 'type = ?',
+                whereArgs: ['table']));
+            if (count == null || count < 3) {
+              // Multiple sql strings are not supported in Android, thus change to single
+              // sql string and execute one after another.
+              List<String> sqlList =
+                  (await _initSql('assets/org_db.sql')).split(';');
+              Batch batch = db.batch();
+              for (String sql in sqlList) {
+                sql = sql.trim();
+                if (sql.isNotEmpty) {
+                  batch.execute(sql);
+                }
+              }
+              batch.commit();
+            }
+
+            // orgDb = db;
+          },
           onUpgrade: (db, oldVersion, newVersion) {
             if (oldVersion < newVersion && oldVersion < 2) {
               try {
@@ -38,9 +61,12 @@ Future<void> initDb({String? dbFileName}) async {
               } catch (e) {
                 App.logger.warning(e);
               }
+            }
 
+            if (oldVersion < newVersion && oldVersion < 3) {
               try {
-                db.execute("ALTER TABLE user_db DROP COLUMN max_mid");
+                db.execute(
+                    "ALTER TABLE user_db ADD COLUMN max_mid INTEGER NOT NULL DEFAULT -1");
               } catch (e) {
                 App.logger.warning(e);
               }
@@ -48,23 +74,6 @@ Future<void> initDb({String? dbFileName}) async {
           },
         ),
       );
-
-      // Check if db table has been created.
-      int? count = firstIntValue(await orgDb.query('sqlite_master',
-          columns: ['COUNT(*)'], where: 'type = ?', whereArgs: ['table']));
-      if (count == null || count < 3) {
-        // Multiple sql strings are not supported in Android, thus change to single
-        // sql string and execute one after another.
-        List<String> sqlList = (await _initSql('assets/org_db.sql')).split(';');
-        Batch batch = orgDb.batch();
-        for (String sql in sqlList) {
-          sql = sql.trim();
-          if (sql.isNotEmpty) {
-            batch.execute(sql);
-          }
-        }
-        batch.commit();
-      }
     }
   } catch (e) {
     _logger.severe(e);

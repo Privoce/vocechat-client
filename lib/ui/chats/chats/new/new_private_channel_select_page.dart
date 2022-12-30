@@ -122,7 +122,7 @@ class _NewPrivateChannelSelectPageState
     try {
       String name = widget.nameController.text.trim();
       if (name.isEmpty) {
-        name = "New Private Channel";
+        name = AppLocalizations.of(context)!.newPrivateChannel;
       }
 
       final String description = "";

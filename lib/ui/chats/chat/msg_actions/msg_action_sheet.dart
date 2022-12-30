@@ -5,9 +5,6 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/app_icons_icons.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
 
 class MsgActionsSheet extends StatelessWidget {

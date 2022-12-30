@@ -1,14 +1,19 @@
 {   
     "serverPageWelcomeFirstLine":"欢迎使用",
     "serverPageWelcomeSecondLine":"VoceChat.",
-    "serverPageHostServer": "服务器地址",
+    "serverPageHostServer": "服务器 Url",
     "serverPageHistory": "历史",
-    "serverPageClearLocalData": "清空本地数据",
-    "serverPageClearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
-    "serverPagePasteInvitationLink": "粘贴邀请链接",
+
+    "registerNamingPageWhatsYourName":"您的用户名",
+    "registerNamingPageWhatsYourNameContent":"您希望别人怎样称呼您？此用户名只会对加入本服务器的用户可见。",
+    "registerNamingPageInvalidNameFormat":"无效的用户名格式",
+    "registerNamingPageSignUpFailed":"注册失败",
+    "registerNamingPageSignUpFailedContent":"注册过程中遇到错误，请稍后再试或联系服务器所有者寻求帮助。",
 
     "chatServerHelperServerConnectionError": "服务端连接错误",
     "chatServerHelperServerConnectionErrorContent": "VoceChat 无法获取服务端信息。您可以检查链接格式，如“http”、”https“, 或端口号，或联系服务端拥有者寻求帮助。",
+    "chatServerHelperServerNotInitialized": "服务器未初始化",
+    "chatServerHelperServerNotInitializedContent": "请使用网页端完成初始化。",
 
     "inputInvitationLinkPageInput": "输入",
     "inputInvitationLinkPageInvitationLink": "邀请链接",
@@ -27,6 +32,10 @@
     "passwordRegisterPagePasswordNotMatch": "密码不相同",
     "passwordRegisterPageEmailAlreadyExists": "邮箱已经存在",
     "passwordRegisterPageEmailAlreadyExistsContent": "此邮箱已经被注册过，请移步登入页面。",
+
+    "chatsDrawerServerAndAccount": "服务器及账户",
+    "chatsDrawerServerAndAccountPl": "服务器及账户",
+    "chatsDrawerAddNewAccount":"添加新账户",
     
     "chatsPageSearchHint":"搜索消息及用户",
     "contactsPageSearchHint": "搜索用户",
@@ -51,41 +60,108 @@
     "settingsPageConfigFirebase": "Firebase",
     "settingsPageConfigFooter": "请使用网页端来设置 SMTP、登录方式及第三方App接入。",
     "settingsPageAbout": "关于",
-    "settingsPageLogout": "登出",
+    
     "settingsPageClearData": "清空本地数据",
+
+    "archive":"归档",
 
     "call" : "语音通话",
     "cancel": "取消",
+    "channel":"频道",
+    "confirmPassword": "确认密码",
+    "copy":"复制",
+    "copyUrl":"拷贝 Url",
+    "clearLocalData": "清空本地数据",
+    "clearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
     "continueStr": "继续",
+    
     "delete": "删除",
+    "deleteAccount": "删除账户",
+    "deleteAccountWarning":"您确认要删除账户吗？",
+    "deleteAccountWarningContent":"您的所有数据都将在本地被删除。您的账户信息会从服务器删除，但已发出的消息仍能被其他成员看到。此操作不可逆。",
+    "deleteAccountFailWarning":"删除账户失败",
+    "deleteAccountFailWarningContent":"请稍后重试或联系服务器管理员寻求帮助。",
     "deleteChannel": "删除频道",
     "deleteChannelWarningDes": "此频道将被删除。所有成员都将被移除，且不再可以看到其中的数据。",
+    "description":"描述",
     "done": "完成",
+
     "edit": "编辑",
     "email": "邮箱",
+
+    "file":"文件",
+    "forward":"转发",
+    "forwarded":"被转发",
+    "forwardTo":"转发到",
+    
+    "image":"图片",
+    "inputInvitationLink":"输入邀请链接",
+    "invitationLink": "邀请链接",
+    "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",
+    "inviteNewUsers": "邀请新用户",
+
+    "language": "语言",
     "logIn": "登入",
     "logInTo": "登入中",
+    "logOut":"登出",
+    "logoutWarning":"您确认要登出",
+    "logoutWarningWithQM":"您确认要登出吗？",
+
     "message": "发消息",
     "members":"成员",
     "mute" : "静音",
+    
+    "name":"用户名",
+    "newPrivateChannel":"新私有频道",
+    "newPublicChannel":"新公有频道",
     "next": "下一步",
+    "noContent":"没有内容",
+
     "ok": "好",
+
     "paste": "粘贴",
     "password": "密码",
-    "confirmPassword": "确认密码",
     "pin": "钉选",
+    
+    "privateChannelToPublicTitle":"转为公有频道",
+    "privateChannelToPublicContent":"这将邀请本服务器的所有用户加入此频道。如果您不是管理员，您会失去此频道的所有权。",
+    "publicChannel":"公有频道",
+    "publicChannelToPrivateTitle":"转为私有频道",
+    "publicChannelToPrivateContent":"此频道将不再对新加入此服务器的用户可见。当前的频道成员不会收到影响。",
+
     "rememberMe": "记住我",
+    "reply": "回复",
+    "replyingTo":"回复给",
+    "resend":"重发",
+
+    "save": "保存",
     "savedItems": "保存的消息",
+    "scanQrCodeToRegister": "扫描二维码来注册",
+    "select":"选择",
     "setNewAvatar": "设置新头像",
     "send": "发送",
+    "shareInvitationLink":"分享邀请链接",
+    "shareQrCode": "分享二维码",
     "signIn": "登入",
     "signUp": "注册",
     "signUpTo": "注册",
+    "switchServer": "切换服务器",
+
+    "today":"今天",
+    "transferOwnership":"转让所有权",
+
     "unmute": "取消静音",
+    "unpin":"取消钉选",
+    "unsupportedMessageType":"不支持的消息类型",
+    "uploadError": "上传错误",
+    "uploadErrorContent": "头像图片大小超过限制。",
     "version": "版本",
     "video" : "视频通话",
     "voice" : "语音通话",
+
+    "yesterday":"昨天",
     
+    "leave":"离开",
     "leaveChannel": "离开频道",
     "leaveChannelWarningDes": "此频道及其所有消息都将从您的设备中删除。",
     "leaveChannelTransferOwnerDes": "作为频道所有者，您需要在离开前转让频道所有权。",
@@ -108,6 +184,14 @@
     "serverInfoSettingTitle": "服务器概览",
     "serverInfoSettingNameHint": "服务器名",
     "serverInfoSettingDesHint": "服务器描述",
+    "serverInfoSettingFooter": "以上更新仅会在重新启动 App 或重新登入后可见。",
+
+    "aboutPageTitle":"关于 VoceChat",
+    "aboutPageCheckUpdates":"检查更新",
+    "aboutPageChangeLog":"更新日志",
+    "aboutPageUpdateTitleUpToDate":"此版本为最新",
+    "aboutPageUpdateTitleUpToDateContent":"您使用的是最新版本的 VoceChat。",
+    "aboutPageCopyRight":"© Privoce Inc. 保留所有权利。",
 
     "firebaseEnable": "启用",
 
@@ -115,6 +199,10 @@
     "savedItemEmptyChannelDes": "此频道暂无保存的信息。",
 
     "pinnedMsgPageEmptyChannelDes": "此频道暂无钉选的信息。",
+    "pinnedMsgPageUnPinTitle": "取消钉选",
+    "pinnedMsgPageUnPinContent": "您确定要取消钉选此消息？",
+    "pinnedMsgPageUnPinErrorTitle": "取消钉选错误",
+    "pinnedMsgPageUnPinErrorContent": "在取消钉选的过程中发生了错误。",
 
     "memberAddPageTitle": "添加频道成员",
     "memberAddPageAdd": "添加",
@@ -122,5 +210,67 @@
     "memberAddPageInvitationLink": "邀请链接",
 
     "memberRemovePageTitle": "移除频道成员",
-    "memberRemovePageRemove": "移除"
+    "memberRemovePageRemove": "移除",
+
+    "chatPageSelectionWarning":"多选模式中无法转发或保存被转发的或发送失败的消息。",
+    "chatPageCantFindFileWarning":"无法找到文件",
+    "chatPageCantFindFileWarningContent":"文件也许已被删除。请发一条新消息。",
+    "chatPageCantFindImageWarning":"无法找到图片",
+    "chatPageCantFindImageWarningContent":"图片也许已被删除。请发一条新消息。",
+    "chatPageResendWarning":"重发消息",
+    "chatPageResendWarningContent":"您确认要重发这条消息吗？",
+
+    "savedPageDeleteTitle":"删除保存的项目",
+    "savedPageDeleteContent":"您确定要删除这个保存的项目吗？",
+    "savedPageDeleteErrorTitle":"删除保存的项目时出错",
+    "savedPageDeleteErrorContent":"删除保存项目时出现了问题。",
+
+    "magicLinkLoginSendError":"Magic Link 错误",
+    "magicLinkLoginSendErrorContent":"在发送 Magic Link 到邮箱地址时出错。请稍后再试或向我们报告问题。",
+
+    "appQrCodeScanPageInvalidCodeTitle":"无效的二维码",
+    "appQrCodeScanPageInvalidCodeContent":"请获取一个新的邀请链接二维码，或检查您的网络状况。",
+
+    "settingsAboutPageNetworkError":"网络错误",
+    "settingsAboutPageNetworkErrorContent":"VoceChat 无法获取最新的版本信息。请您稍后再试。",
+
+    "chatsBarNetworkError": "网络错误",
+    "chatsBarNetworkErrorContent": "请检查您的网络状况，或稍后再试。",
+    "chatsBarLoginStatusExpired": "登入状态过期",
+    "chatsBarLoginStatusExpiredContent": "请重新登入。",
+
+    "filePageCantOpenFile":"无法打开文件",
+    "filePageCantOpenFileContent":"VoceChat 不支持此文件类型，请尝试用其他 App 打开。",
+    "filePageDownloadFailed":"下载失败",
+    "filePageDownloadFailedContent":"VoceChat 无法下载此文件。它可能已从服务器删除。",
+    "filePageCantFindFile":"无法找到文件",
+    "filePageCantFindFileContent":"VoceChat 无法在本机或服务器找到此文件。它可能已从服务器删除。",
+
+    "chatTextFieldCameraMicrophonePermission":"VoceChat 需要相机和麦克风权限",
+    "chatTextFieldCameraMicrophonePermissionContent":"授权相机和麦克风权限以发送图片及视频消息。",
+    "chatTextFieldPhotoPermission":"VoceChat 需要系统相册访问权限",
+    "chatTextFieldPhotoPermissionContent":"请到设置 -> VoceChat 开启权限。",
+    
+    "loginSessionExpires":"登入状态过期",
+    "loginSessionExpiresContent":"如果您没有在另一个设备登入，请立刻更改密码，或联系服务器管理员寻求帮助。",
+    
+    "loginError":"登入错误",
+    "loginErrorContent401":"账户或密码无效。",
+    "loginErrorContent403":"不支持此登录方式。",
+    "loginErrorContent404":"用户不存在。",
+    "loginErrorContent409":"邮箱地址重复。",
+    "loginErrorContent423":"用户被冻结。",
+    "loginErrorContent451":"证书存在问题。请联系服务器管理员寻求帮助。",
+    "loginErrorContentOther":"登录过程中出现问题。",
+    "loginErrorCopy":"复制错误信息",
+
+    "appTextSelectionControlPasteImage":"粘贴并发送图片",
+
+    "fcmError":"FCM 错误",
+    "fcmErrorContent":"FCM 配置失败。",
+    "fcmErrorCopyErrorLog":"拷贝错误记录。",
+
+    "invitationLinkViewSend":"向朋友发送邀请链接。"
+    
+    
 }
