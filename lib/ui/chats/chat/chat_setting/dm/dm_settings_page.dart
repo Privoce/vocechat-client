@@ -8,6 +8,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/chats/chat/chat_setting/auto_delete_settings_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/settings_action_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
@@ -71,73 +72,44 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                 name: userInfo.name,
                 uid: userInfoM.uid,
                 avatarBytes: userInfoM.avatarBytes),
-            // title: Text(userInfo.name,
-            //     style: TextStyle(
-            //         fontWeight: FontWeight.w700,
-            //         fontSize: 18,
-            //         color: AppColors.grey800)),
             title: userInfo.name,
             subtitle: userInfo.email,
           );
         });
   }
 
-  Widget _buildActions() {
-    return Container(
-      height: 68,
-      margin: EdgeInsets.only(top: 28),
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+  Widget _buildItems(UserInfoM userInfoM, BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
         children: [
-          SettingsActionButton(
-              icon: Icon(AppIcons.bookmark, size: 24, color: AppColors.grey500),
-              text: AppLocalizations.of(context)!.savedItems,
+          BannerTileGroup(bannerTileList: [
+            BannerTile(
+              title: AppLocalizations.of(context)!.savedItems,
               onTap: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: ((context) {
                   return SavedItemPage(uid: widget.userInfoNotifier.value.uid);
                 })));
-              }),
-          // SettingsActionButton(
-          //     icon: Icon(AppIcons.audio, size: 24, color: AppColors.grey500),
-          //     text: AppLocalizations.of(context)!.call,
-          //     onTap: () {}),
-          // SettingsActionButton(
-          //     icon: Icon(AppIcons.video, size: 24, color: AppColors.grey500),
-          //     text: AppLocalizations.of(context)!.video,
-          //     onTap: () {}),
-          // ValueListenableBuilder<UserInfoM>(
-          //     valueListenable: widget.userInfoNotifier,
-          //     builder: (context, userInfoM, _) {
-          //       String muteStr = AppLocalizations.of(context)!.mute;
-          //       void Function() muteFunc = () => _mute();
-          //       if (userInfoM.properties.enableMute) {
-          //         muteStr = AppLocalizations.of(context)!.unmute;
-          //         muteFunc = () => _unMute();
-          //       }
-          //       return SettingsActionButton(
-          //           icon: Icon(AppIcons.alert,
-          //               size: 24, color: AppColors.grey500),
-          //           text: muteStr,
-          //           onTap: muteFunc);
-          //     }),
+              },
+            )
+          ]),
+          SizedBox(height: 8),
+          BannerTileGroup(bannerTileList: [
+            BannerTile(
+              title: AppLocalizations.of(context)!.autoDeleteMessage,
+              onTap: () async {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(builder: ((context) {
+                  return AutoDeleteSettingsPage(
+                    initExpTime: 0,
+                  );
+                })));
+              },
+            )
+          ]),
         ],
       ),
     );
-  }
-
-  Widget _buildItems(UserInfoM userInfoM, BuildContext context) {
-    return BannerTileGroup(bannerTileList: [
-      BannerTile(
-        title: AppLocalizations.of(context)!.savedItems,
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-            return SavedItemPage(uid: widget.userInfoNotifier.value.uid);
-          })));
-        },
-      )
-    ]);
   }
 
   Future<bool> _mute({int? expiredAt}) async {

@@ -64,6 +64,9 @@
     "settingsPageClearData": "清空本地数据",
 
     "archive":"归档",
+    "autoDeleteMessage":"自动删除消息",
+    "autoDeleteMessageTitle":"在一段时间后自动删除由我发出的消息",
+    "autoDeleteMessageDes":"消息将在客户端和服务端彻底删除。",
 
     "call" : "语音通话",
     "cancel": "取消",
@@ -75,6 +78,8 @@
     "clearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
     "continueStr": "继续",
     
+    "day":"天",
+    "days":"天",
     "delete": "删除",
     "deleteAccount": "删除账户",
     "deleteAccountWarning":"您确认要删除账户吗？",
@@ -93,6 +98,9 @@
     "forward":"转发",
     "forwarded":"被转发",
     "forwardTo":"转发到",
+
+    "hour":"小时",
+    "hours":"小时",
     
     "image":"图片",
     "inputInvitationLink":"输入邀请链接",
@@ -109,6 +117,8 @@
 
     "message": "发消息",
     "members":"成员",
+    "minute":"分钟",
+    "minutes":"分钟",
     "mute" : "静音",
     
     "name":"用户名",
@@ -117,6 +127,7 @@
     "next": "下一步",
     "noContent":"没有内容",
 
+    "off":"关闭",
     "ok": "好",
 
     "paste": "粘贴",
@@ -137,6 +148,8 @@
     "save": "保存",
     "savedItems": "保存的消息",
     "scanQrCodeToRegister": "扫描二维码来注册",
+    "second":"秒",
+    "seconds":"秒",
     "select":"选择",
     "setNewAvatar": "设置新头像",
     "send": "发送",
@@ -158,6 +171,9 @@
     "version": "版本",
     "video" : "视频通话",
     "voice" : "语音通话",
+    "week":"周",
+    "weeks":"周",
+
 
     "yesterday":"昨天",
     
