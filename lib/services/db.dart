@@ -92,26 +92,30 @@ Future<void> initCurrentDb(String dbName) async {
     await Directory(databasesPath)
         .create(recursive: true); // App will terminate if create fails.
     db = await databaseFactory.openDatabase(path,
-        options: OpenDatabaseOptions(version: 1));
-    {
-      // Multiple sql strings are not supported in Android, thus change to single
-      // sql string and execute one after another.
-      int? count = firstIntValue(await db.query('sqlite_master',
-          columns: ['COUNT(*)'], where: 'type = ?', whereArgs: ['table']));
-      if (count == null || count < 7) {
-        _logger.info("Database [$dbName] not created");
-        List<String> sqlList =
-            (await _initSql('assets/init_db.sql')).split(';');
-        Batch batch = db.batch();
-        for (String sql in sqlList) {
-          sql = sql.trim();
-          if (sql.isNotEmpty) {
-            batch.execute(sql);
-          }
-        }
-        batch.commit();
-      }
-    }
+        options: OpenDatabaseOptions(
+          version: 1,
+          onCreate: (db, version) async {
+            // Multiple sql strings are not supported in Android, thus change to single
+            // sql string and execute one after another.
+            int? count = firstIntValue(await db.query('sqlite_master',
+                columns: ['COUNT(*)'],
+                where: 'type = ?',
+                whereArgs: ['table']));
+            if (count == null || count < 7) {
+              _logger.info("Database [$dbName] not created");
+              List<String> sqlList =
+                  (await _initSql('assets/init_db.sql')).split(';');
+              Batch batch = db.batch();
+              for (String sql in sqlList) {
+                sql = sql.trim();
+                if (sql.isNotEmpty) {
+                  batch.execute(sql);
+                }
+              }
+              batch.commit();
+            }
+          },
+        ));
   } catch (e) {
     _logger.severe(e);
   }
