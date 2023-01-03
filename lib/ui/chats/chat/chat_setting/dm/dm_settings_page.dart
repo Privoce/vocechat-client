@@ -6,6 +6,7 @@ import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/auto_delete_settings_tile.dart';
@@ -98,10 +99,16 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             BannerTile(
               title: AppLocalizations.of(context)!.autoDeleteMessage,
               onTap: () async {
+                // This is not the read burn_after_read, but is auto-deletion.
+                // Name is consistant with server names.
+                final burnAfterReadSecond = widget
+                    .userInfoNotifier.value.properties.burnAfterReadSecond;
+
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: ((context) {
                   return AutoDeleteSettingsPage(
-                    initExpTime: 0,
+                    initExpTime: burnAfterReadSecond,
+                    onSubmit: _changeBurnAfterReadingSettings,
                   );
                 })));
               },
@@ -110,6 +117,23 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
         ],
       ),
     );
+  }
+
+  Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {
+    final res = await UserApi(App.app.chatServerM.fullUrl)
+        .postBurnAfterReadingSetting(
+            uid: widget.userInfoNotifier.value.uid, expiresIn: expiresIn);
+    if (res.statusCode == 200) {
+      final userInfoM = await UserInfoDao().updateProperties(
+          widget.userInfoNotifier.value.uid,
+          burnAfterReadSecond: expiresIn);
+      if (userInfoM != null) {
+        App.app.chatService.fireUser(userInfoM, EventActions.update);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   Future<bool> _mute({int? expiredAt}) async {

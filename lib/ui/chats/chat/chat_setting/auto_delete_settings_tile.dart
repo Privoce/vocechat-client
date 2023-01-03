@@ -1,29 +1,38 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';
 
 class AutoDeleteSettingsPage extends StatefulWidget {
-  final int? gid;
-  final int? uid;
   final int initExpTime;
+  final Future<bool> Function(int expiresIn) onSubmit;
 
-  AutoDeleteSettingsPage({this.gid, this.uid, required this.initExpTime});
+  AutoDeleteSettingsPage({required this.initExpTime, required this.onSubmit});
   @override
   State<AutoDeleteSettingsPage> createState() => _AutoDeleteSettingsPageState();
 }
 
 class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
   final ValueNotifier<bool> _isUpdating = ValueNotifier(false);
+  final ValueNotifier<bool> _enableDoneBtn = ValueNotifier(false);
 
   // close, 30s, 10min, 1hr, 1d, 1week
   final List<int> timeList = [0, 30, 600, 3600, 86400, 604800];
-  int _selectedTime = 0;
+  late int _selectedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTime = widget.initExpTime;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,13 +70,19 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
             },
             child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
         actions: [
-          CupertinoButton(
-              onPressed: _onSubmit,
-              child: Text(AppLocalizations.of(context)!.done,
-                  style: TextStyle(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 17,
-                      color: AppColors.primary400)))
+          ValueListenableBuilder<bool>(
+              valueListenable: _enableDoneBtn,
+              builder: (context, enable, _) {
+                return CupertinoButton(
+                    onPressed: enable ? _onSubmit : null,
+                    child: Text(AppLocalizations.of(context)!.done,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 17,
+                            color: enable
+                                ? AppColors.primary400
+                                : AppColors.grey300)));
+              })
         ],
       ),
       body: SafeArea(child: _buildBody()),
@@ -98,10 +113,33 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
     setState(() {
       _selectedTime = time;
     });
+
+    _enableDoneBtn.value = _selectedTime != widget.initExpTime;
   }
 
   void _onSubmit() async {
-    // TODO
+    _isUpdating.value = true;
+    try {
+      final success = await widget.onSubmit(_selectedTime);
+      if (success) {
+        Navigator.of(context).pop();
+        return;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    _isUpdating.value = false;
+    await showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.networkError,
+        content: AppLocalizations.of(context)!.networkErrorDes,
+        actions: [
+          AppAlertDialogAction(
+            text: AppLocalizations.of(context)!.ok,
+            action: () => Navigator.of(context).pop(),
+          )
+        ]);
   }
 
   String _translateTime(int seconds) {

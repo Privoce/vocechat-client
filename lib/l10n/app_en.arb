@@ -63,7 +63,7 @@
 
     "archive":"Archive",
     "autoDeleteMessage":"Auto-delete Messages",
-    "autoDeleteMessageTitle":"Delete messages sent by myself after a certain time period.",
+    "autoDeleteMessageTitle":"Delete messages sent by myself in this chat after a certain time period.",
     "autoDeleteMessageDes":"This will remove the message data stored on both the server and client side.",
 
     "call" : "Call",
@@ -118,6 +118,8 @@
     "mute" : "Mute",
 
     "name":"Name",
+    "networkError":"Network Error",
+    "networkErrorDes":"Please check your network settings.",
     "newPrivateChannel":"New Private Channel",
     "newPublicChannel":"New Public Channel",
     "next": "Next",
@@ -178,7 +180,7 @@
     
     "chatsBarNewChannel": "New Channel",
     "chatsBarNewDm": "New Direct Message",
-
+    
     "newChannelPageTitle": "Create Channel",
     "newChannelPageName": "Channel Name",
     "newChannelPageDes": "Description",

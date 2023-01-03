@@ -65,7 +65,7 @@
 
     "archive":"归档",
     "autoDeleteMessage":"自动删除消息",
-    "autoDeleteMessageTitle":"在一段时间后自动删除由我发出的消息",
+    "autoDeleteMessageTitle":"在一段时间后自动删除本会话中由我发出的消息",
     "autoDeleteMessageDes":"消息将在客户端和服务端彻底删除。",
 
     "call" : "语音通话",
@@ -122,6 +122,8 @@
     "mute" : "静音",
     
     "name":"用户名",
+    "networkError":"网络错误",
+    "networkErrorDes":"请检查您的网络设置。",
     "newPrivateChannel":"新私有频道",
     "newPublicChannel":"新公有频道",
     "next": "下一步",
