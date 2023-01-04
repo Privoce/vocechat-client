@@ -9,9 +9,11 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/chats/chat/chat_setting/auto_delete_settings_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_info_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/owner_transfer_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
@@ -68,7 +70,10 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
             child: Column(
               children: [
                 _buildChannelInfo(context),
-                _buildActions(),
+                SizedBox(height: 8),
+                _buildMsgActions(),
+                SizedBox(height: 8),
+                _buildBurnAfterReading(context),
                 SizedBox(height: 8),
                 ValueListenableBuilder<GroupInfoM>(
                     valueListenable: widget.groupInfoNotifier,
@@ -147,45 +152,77 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         });
   }
 
-  Widget _buildActions() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: BannerTileGroup(
-        bannerTileList: [
-          BannerTile(
+  Widget _buildMsgActions() {
+    return BannerTileGroup(
+      bannerTileList: [
+        BannerTile(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
+              return PinnedMsgPage(widget.groupInfoNotifier);
+            }))).then((value) {
+              // _pinCountFuture);
+            });
+          },
+          title: AppLocalizations.of(context)!.pin,
+          trailing: ValueListenableBuilder<GroupInfoM>(
+              valueListenable: widget.groupInfoNotifier,
+              builder: (context, groupInfoM, _) {
+                if (groupInfoM.groupInfo.pinnedMessages.isEmpty) {
+                  return SizedBox.shrink();
+                }
+                return Text(
+                    groupInfoM.groupInfo.pinnedMessages.length.toString(),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 17,
+                        color: AppColors.labelColorLightSec));
+              }),
+        ),
+        BannerTile(
             onTap: () {
               Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-                return PinnedMsgPage(widget.groupInfoNotifier);
-              }))).then((value) {
-                // _pinCountFuture);
-              });
+                return SavedItemPage(gid: widget.groupInfoNotifier.value.gid);
+              })));
             },
-            title: AppLocalizations.of(context)!.pin,
-            trailing: ValueListenableBuilder<GroupInfoM>(
-                valueListenable: widget.groupInfoNotifier,
-                builder: (context, groupInfoM, _) {
-                  if (groupInfoM.groupInfo.pinnedMessages.isEmpty) {
-                    return SizedBox.shrink();
-                  }
-                  return Text(
-                      groupInfoM.groupInfo.pinnedMessages.length.toString(),
-                      style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 17,
-                          color: AppColors.labelColorLightSec));
-                }),
-          ),
-          BannerTile(
-              onTap: () {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: ((context) {
-                  return SavedItemPage(gid: widget.groupInfoNotifier.value.gid);
-                })));
-              },
-              title: AppLocalizations.of(context)!.savedItems)
-        ],
-      ),
+            title: AppLocalizations.of(context)!.savedItems)
+      ],
     );
+  }
+
+  Widget _buildBurnAfterReading(BuildContext context) {
+    return BannerTileGroup(
+      bannerTileList: [
+        BannerTile(
+          onTap: () async {
+            // final initExpTime = await GroupInfoDao().
+            final initExpTime =
+                widget.groupInfoNotifier.value.properties.burnAfterReadSecond;
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => AutoDeleteSettingsPage(
+                  initExpTime: initExpTime,
+                  onSubmit: _changeBurnAfterReadingSettings),
+            ));
+          },
+          title: AppLocalizations.of(context)!.autoDeleteMessage,
+        ),
+      ],
+    );
+  }
+
+  Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {
+    final res = await UserApi(App.app.chatServerM.fullUrl)
+        .postBurnAfterReadingSetting(
+            expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
+    if (res.statusCode == 200) {
+      final groupInfoM = await GroupInfoDao().updateProperties(
+          widget.groupInfoNotifier.value.gid,
+          burnAfterReadSecond: expiresIn);
+      if (groupInfoM != null) {
+        App.app.chatService.fireChannel(groupInfoM, EventActions.update);
+        return true;
+      }
+    }
+    return false;
   }
 
   Widget _buildChannelVisibiliy() {
