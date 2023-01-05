@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -17,6 +20,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart'
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
+import 'package:vocechat_client/ui/widgets/app_icon.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -47,6 +51,9 @@ class MessageTile extends StatefulWidget {
 
   final double avatarSize;
 
+  // Auto-deletion variables.
+  final ValueNotifier<int> _autoDeletionCountDown = ValueNotifier(0);
+
   MessageTile(
       {Key? key,
       // required this.shouldShowAvatar,
@@ -68,10 +75,49 @@ class MessageTile extends StatefulWidget {
       this.archive,
       required this.onSendReaction,
       this.avatarSize = AvatarSize.s48})
-      : super(key: key);
+      : super(key: key) {
+    if (_isAutoDeletionMsg(chatMsgM)) {
+      _autoDeletionCountDown.value = _getAutoDeletionRemains(chatMsgM);
+      if (_autoDeletionCountDown.value > 0) {
+        Timer.periodic(Duration(seconds: 1), (timer) {
+          _autoDeletionCountDown.value -= 1000;
+
+          if (_autoDeletionCountDown.value < 0) {
+            ChatMsgDao().deleteMsgByMid(chatMsgM).then((value) {
+              FileHandler.singleton.deleteWithChatMsgM(chatMsgM);
+              App.app.chatService
+                  .fireReaction(ReactionTypes.delete, chatMsgM.mid);
+            });
+            timer.cancel();
+          }
+        });
+      }
+    }
+  }
 
   @override
   State<MessageTile> createState() => _MessageTileState();
+
+  bool _isAutoDeletionMsg(ChatMsgM chatMsgM) {
+    final isMsgNormalAutoDeletion = chatMsgM.msgNormal?.expiresIn != null &&
+        chatMsgM.msgNormal?.expiresIn != 0;
+
+    return isMsgNormalAutoDeletion;
+  }
+
+  int _getAutoDeletionRemains(ChatMsgM chatMsgM) {
+    if (_isAutoDeletionMsg(chatMsgM)) {
+      final expiresIn = chatMsgM.msgNormal?.expiresIn;
+      if (expiresIn != null && expiresIn > 0) {
+        final currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
+        final msgTimeStamp = chatMsgM.createdAt;
+        // print("msgTimeStamp: $msgTimeStamp, expiresIn: $expiresIn");
+        return min(msgTimeStamp + expiresIn * 1000 - currentTimeStamp,
+            expiresIn * 1000);
+      }
+    }
+    return -1;
+  }
 }
 
 class _MessageTileState extends State<MessageTile> {
@@ -87,6 +133,11 @@ class _MessageTileState extends State<MessageTile> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget._isAutoDeletionMsg(widget.chatMsgM) &&
+        widget._autoDeletionCountDown.value <= 0) {
+      return SizedBox.shrink();
+    }
+
     // left padding + avatar      + gap + right padding + status
     // 16           + avatarSize  + 8   + 16            + 50
     double contentWidth =
@@ -193,7 +244,9 @@ class _MessageTileState extends State<MessageTile> {
               constraints: BoxConstraints(minHeight: 20),
               width: contentWidth,
               child: _buildReactions(context),
-            )
+            ),
+          if (widget._autoDeletionCountDown.value > 0)
+            _buildAutoDeletionCountDown(context, contentWidth)
         ],
       );
     } catch (e) {
@@ -324,6 +377,51 @@ class _MessageTileState extends State<MessageTile> {
         content: "Unsupported Message Type",
         hasMention: false,
         enableShowMoreBtn: false);
+  }
+
+  Widget _buildAutoDeletionCountDown(
+      BuildContext context, double contentWidth) {
+    return ValueListenableBuilder<int>(
+        valueListenable: widget._autoDeletionCountDown,
+        builder: (context, countDown, _) {
+          return SizedBox(
+            height: 36,
+            width: contentWidth,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Icon(Icons.access_time, size: 14, color: AppColors.grey400),
+                SizedBox(width: 4),
+                SizedBox(
+                  child: Text(
+                    translateAutoDeletionCountDown(countDown),
+                    textAlign: TextAlign.end,
+                    style: TextStyle(color: AppColors.grey400, fontSize: 14),
+                  ),
+                )
+              ],
+            ),
+          );
+        });
+  }
+
+  String translateAutoDeletionCountDown(int millisecs) {
+    final seconds = millisecs ~/ 1000;
+    final days = seconds ~/ 86400;
+    final remainingDuration = Duration(seconds: seconds % 86400);
+
+    String daysStr = days > 1
+        ? "$days ${AppLocalizations.of(context)!.days}"
+        : (days == 1 ? "$days ${AppLocalizations.of(context)!.day}" : "");
+
+    return daysStr + " " + _printDuration(remainingDuration);
+  }
+
+  String _printDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
   }
 
   bool _isLink(String input) {

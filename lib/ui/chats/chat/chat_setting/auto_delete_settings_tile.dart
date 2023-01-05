@@ -96,7 +96,7 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
       footer: AppLocalizations.of(context)!.autoDeleteMessageDes,
       bannerTileList: List.generate(timeList.length, (index) {
         final time = timeList[index];
-        final title = translateAutoDeletionTime(time, context);
+        final title = translateAutoDeletionSettingTime(time, context);
 
         return BannerTile(
           title: title,

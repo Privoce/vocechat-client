@@ -103,7 +103,7 @@ SendType getSendType(ChatMsgM chatMsgM) {
   return SendType.normal;
 }
 
-String translateAutoDeletionTime(int seconds, BuildContext context) {
+String translateAutoDeletionSettingTime(int seconds, BuildContext context) {
   if (seconds == 0) {
     return AppLocalizations.of(context)!.off;
   } else if (seconds >= 1 && seconds < 60) {
@@ -142,6 +142,10 @@ String translateAutoDeletionTime(int seconds, BuildContext context) {
     }
   }
 }
+
+// String translateAutoDeletionRemainingTime(int millisec) {
+
+// }
 
 EventBus eventBus = EventBus();
 

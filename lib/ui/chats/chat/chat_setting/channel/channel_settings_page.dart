@@ -205,7 +205,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                   ));
                 },
                 title: AppLocalizations.of(context)!.autoDeleteMessage,
-                trailing: Text(translateAutoDeletionTime(initExpTime, context),
+                trailing: Text(
+                    translateAutoDeletionSettingTime(initExpTime, context),
                     style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 17,

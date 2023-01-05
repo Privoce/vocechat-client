@@ -108,7 +108,8 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                   BannerTile(
                     title: AppLocalizations.of(context)!.autoDeleteMessage,
                     trailing: Text(
-                        translateAutoDeletionTime(burnAfterReadSecond, context),
+                        translateAutoDeletionSettingTime(
+                            burnAfterReadSecond, context),
                         style: TextStyle(
                             fontWeight: FontWeight.w400,
                             fontSize: 17,

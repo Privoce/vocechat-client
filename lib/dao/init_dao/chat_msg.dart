@@ -65,6 +65,10 @@ class ChatMsgM with M {
     return Set<ReactionInfo>.from(l.map((e) => ReactionInfo.fromJson(e)));
   }
 
+  // int get serverCreatedAt {
+  //   return
+  // }
+
   bool get isGroupMsg {
     return dmUid == -1 && gid != -1;
   }
