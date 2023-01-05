@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -95,25 +96,35 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             )
           ]),
           SizedBox(height: 8),
-          BannerTileGroup(bannerTileList: [
-            BannerTile(
-              title: AppLocalizations.of(context)!.autoDeleteMessage,
-              onTap: () async {
+          ValueListenableBuilder<UserInfoM>(
+              valueListenable: widget.userInfoNotifier,
+              builder: (context, userInfoM, _) {
                 // This is not the read burn_after_read, but is auto-deletion.
                 // Name is consistant with server names.
-                final burnAfterReadSecond = widget
-                    .userInfoNotifier.value.properties.burnAfterReadSecond;
+                final burnAfterReadSecond =
+                    userInfoM.properties.burnAfterReadSecond;
 
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: ((context) {
-                  return AutoDeleteSettingsPage(
-                    initExpTime: burnAfterReadSecond,
-                    onSubmit: _changeBurnAfterReadingSettings,
-                  );
-                })));
-              },
-            )
-          ]),
+                return BannerTileGroup(bannerTileList: [
+                  BannerTile(
+                    title: AppLocalizations.of(context)!.autoDeleteMessage,
+                    trailing: Text(
+                        translateAutoDeletionTime(burnAfterReadSecond, context),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 17,
+                            color: AppColors.labelColorLightSec)),
+                    onTap: () async {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: ((context) {
+                        return AutoDeleteSettingsPage(
+                          initExpTime: burnAfterReadSecond,
+                          onSubmit: _changeBurnAfterReadingSettings,
+                        );
+                      })));
+                    },
+                  )
+                ]);
+              }),
         ],
       ),
     );

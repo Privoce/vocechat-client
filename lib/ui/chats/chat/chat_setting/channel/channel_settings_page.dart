@@ -190,23 +190,30 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   }
 
   Widget _buildBurnAfterReading(BuildContext context) {
-    return BannerTileGroup(
-      bannerTileList: [
-        BannerTile(
-          onTap: () async {
-            // final initExpTime = await GroupInfoDao().
-            final initExpTime =
-                widget.groupInfoNotifier.value.properties.burnAfterReadSecond;
-            Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => AutoDeleteSettingsPage(
-                  initExpTime: initExpTime,
-                  onSubmit: _changeBurnAfterReadingSettings),
-            ));
-          },
-          title: AppLocalizations.of(context)!.autoDeleteMessage,
-        ),
-      ],
-    );
+    return ValueListenableBuilder<GroupInfoM>(
+        valueListenable: widget.groupInfoNotifier,
+        builder: (context, groupInfoM, _) {
+          final initExpTime = groupInfoM.properties.burnAfterReadSecond;
+          return BannerTileGroup(
+            bannerTileList: [
+              BannerTile(
+                onTap: () async {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => AutoDeleteSettingsPage(
+                        initExpTime: initExpTime,
+                        onSubmit: _changeBurnAfterReadingSettings),
+                  ));
+                },
+                title: AppLocalizations.of(context)!.autoDeleteMessage,
+                trailing: Text(translateAutoDeletionTime(initExpTime, context),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 17,
+                        color: AppColors.labelColorLightSec)),
+              ),
+            ],
+          );
+        });
   }
 
   Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {

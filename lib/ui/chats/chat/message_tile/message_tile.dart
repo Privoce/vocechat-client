@@ -334,13 +334,9 @@ class _MessageTileState extends State<MessageTile> {
 
   String getFileSizeString(int bytes) {
     const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    var i = (log(bytes) / log(1024)).floor();
-    return ((bytes / pow(1024, i)).toStringAsFixed(1)) +
+    var i = (log(bytes) / log(1000)).floor();
+    return ((bytes / pow(1000, i)).toStringAsFixed(1)) +
         suffixes[i].toUpperCase();
-  }
-
-  Widget _buildDeletedBubble(BuildContext context) {
-    return Text('This message has been deleted.');
   }
 
   Widget _buildReactions(BuildContext context) {
@@ -399,8 +395,6 @@ class _MessageTileState extends State<MessageTile> {
           )),
     );
   }
-
-  // Future<Uint8List?> getImage()
 }
 
 class ReactionItem {

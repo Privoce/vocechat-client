@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -95,7 +96,7 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
       footer: AppLocalizations.of(context)!.autoDeleteMessageDes,
       bannerTileList: List.generate(timeList.length, (index) {
         final time = timeList[index];
-        final title = _translateTime(time);
+        final title = translateAutoDeletionTime(time, context);
 
         return BannerTile(
           title: title,
@@ -140,45 +141,5 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
             action: () => Navigator.of(context).pop(),
           )
         ]);
-  }
-
-  String _translateTime(int seconds) {
-    if (seconds == 0) {
-      return AppLocalizations.of(context)!.off;
-    } else if (seconds >= 1 && seconds < 60) {
-      if (seconds == 1) {
-        return "1 ${AppLocalizations.of(context)!.second}";
-      } else {
-        return "$seconds ${AppLocalizations.of(context)!.seconds}";
-      }
-    } else if (seconds >= 60 && seconds < 3600) {
-      final minute = seconds ~/ 60;
-      if (minute == 1) {
-        return "1 ${AppLocalizations.of(context)!.minute}";
-      } else {
-        return "$minute ${AppLocalizations.of(context)!.minutes}";
-      }
-    } else if (seconds >= 3600 && seconds < 86400) {
-      final hour = seconds ~/ 3600;
-      if (hour == 1) {
-        return "1 ${AppLocalizations.of(context)!.hour}";
-      } else {
-        return "$hour ${AppLocalizations.of(context)!.hours}";
-      }
-    } else if (seconds >= 86400 && seconds < 604800) {
-      final day = seconds ~/ 86400;
-      if (day == 1) {
-        return "1 ${AppLocalizations.of(context)!.day}";
-      } else {
-        return "$day ${AppLocalizations.of(context)!.days}";
-      }
-    } else {
-      final week = seconds ~/ 604800;
-      if (week == 1) {
-        return "1 ${AppLocalizations.of(context)!.week}";
-      } else {
-        return "$week ${AppLocalizations.of(context)!.weeks}";
-      }
-    }
   }
 }
