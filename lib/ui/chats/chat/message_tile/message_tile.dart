@@ -111,9 +111,14 @@ class MessageTile extends StatefulWidget {
       if (expiresIn != null && expiresIn > 0) {
         final currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
         final msgTimeStamp = chatMsgM.createdAt;
-        // print("msgTimeStamp: $msgTimeStamp, expiresIn: $expiresIn");
-        return min(msgTimeStamp + expiresIn * 1000 - currentTimeStamp,
-            expiresIn * 1000);
+
+        final dif = msgTimeStamp + expiresIn * 1000 - currentTimeStamp;
+        if (dif < 0) {
+          return expiresIn * 1000;
+        } else {
+          return min(msgTimeStamp + expiresIn * 1000 - currentTimeStamp,
+              expiresIn * 1000);
+        }
       }
     }
     return -1;
