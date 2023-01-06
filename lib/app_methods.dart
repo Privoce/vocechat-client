@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // Global functions should be put here.
 
@@ -102,6 +102,50 @@ SendType getSendType(ChatMsgM chatMsgM) {
   }
   return SendType.normal;
 }
+
+String translateAutoDeletionSettingTime(int seconds, BuildContext context) {
+  if (seconds == 0) {
+    return AppLocalizations.of(context)!.off;
+  } else if (seconds >= 1 && seconds < 60) {
+    if (seconds == 1) {
+      return "1 ${AppLocalizations.of(context)!.second}";
+    } else {
+      return "$seconds ${AppLocalizations.of(context)!.seconds}";
+    }
+  } else if (seconds >= 60 && seconds < 3600) {
+    final minute = seconds ~/ 60;
+    if (minute == 1) {
+      return "1 ${AppLocalizations.of(context)!.minute}";
+    } else {
+      return "$minute ${AppLocalizations.of(context)!.minutes}";
+    }
+  } else if (seconds >= 3600 && seconds < 86400) {
+    final hour = seconds ~/ 3600;
+    if (hour == 1) {
+      return "1 ${AppLocalizations.of(context)!.hour}";
+    } else {
+      return "$hour ${AppLocalizations.of(context)!.hours}";
+    }
+  } else if (seconds >= 86400 && seconds < 604800) {
+    final day = seconds ~/ 86400;
+    if (day == 1) {
+      return "1 ${AppLocalizations.of(context)!.day}";
+    } else {
+      return "$day ${AppLocalizations.of(context)!.days}";
+    }
+  } else {
+    final week = seconds ~/ 604800;
+    if (week == 1) {
+      return "1 ${AppLocalizations.of(context)!.week}";
+    } else {
+      return "$week ${AppLocalizations.of(context)!.weeks}";
+    }
+  }
+}
+
+// String translateAutoDeletionRemainingTime(int millisec) {
+
+// }
 
 EventBus eventBus = EventBus();
 

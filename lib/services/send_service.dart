@@ -22,6 +22,9 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:path/path.dart' as p;
+import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
@@ -72,7 +75,7 @@ abstract class AbstractSend {
       void Function(double progress)? progress});
 
   static Future<int> getFakeMid() async {
-    return (await ChatMsgDao().getMaxMid()) + 1;
+    return (await UserDbMDao.dao.getMaxMid(App.app.userDb!.id)) + 1;
   }
 }
 
@@ -104,9 +107,14 @@ class SendText implements AbstractSend {
       }
     }
 
+    final expiresIn = (await GroupInfoDao().getGroupByGid(gid))
+        ?.properties
+        .burnAfterReadSecond;
+
     final detail = MsgNormal(
         properties: {"cid": localMid, 'mentions': mentions},
         contentType: typeText,
+        expiresIn: expiresIn,
         content: msg);
     ChatMsg message = ChatMsg(
         target: MsgTargetGroup(gid).toJson(),
@@ -163,8 +171,14 @@ class SendText implements AbstractSend {
   }
 
   Future<bool> _sendUserText(String msg, int uid, String localMid) async {
+    final expiresIn =
+        (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
+
     final detail = MsgNormal(
-        properties: {"cid": localMid}, contentType: typeText, content: msg);
+        properties: {"cid": localMid},
+        contentType: typeText,
+        expiresIn: expiresIn,
+        content: msg);
     final message = ChatMsg(
         target: MsgTargetUser(uid).toJson(),
         mid: await AbstractSend.getFakeMid(),
@@ -457,11 +471,17 @@ class SendFile implements AbstractSend {
           .addAll({'height': decodedImage.height, 'width': decodedImage.width});
     }
 
-    final detail = MsgNormal(
-        properties: properties, contentType: typeFile, content: filename);
-
     ChatMsg message;
     if (gid != null && gid != -1) {
+      final expiresIn = (await GroupInfoDao().getGroupByGid(gid))
+          ?.properties
+          .burnAfterReadSecond;
+      final detail = MsgNormal(
+          properties: properties,
+          contentType: typeFile,
+          expiresIn: expiresIn,
+          content: filename);
+
       message = ChatMsg(
           target: MsgTargetGroup(gid).toJson(),
           mid: await AbstractSend.getFakeMid(),
@@ -469,8 +489,17 @@ class SendFile implements AbstractSend {
           createdAt: DateTime.now().millisecondsSinceEpoch,
           detail: detail.toJson());
     } else {
+      final expiresIn = (await UserInfoDao().getUserByUid(uid!))
+          ?.properties
+          .burnAfterReadSecond;
+      final detail = MsgNormal(
+          properties: properties,
+          contentType: typeFile,
+          expiresIn: expiresIn,
+          content: filename);
+
       message = ChatMsg(
-          target: MsgTargetUser(uid!).toJson(),
+          target: MsgTargetUser(uid).toJson(),
           mid: await AbstractSend.getFakeMid(),
           fromUid: App.app.userDb!.uid,
           createdAt: DateTime.now().millisecondsSinceEpoch,

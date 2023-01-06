@@ -62,6 +62,9 @@
     "settingsPageAbout": "About",
 
     "archive":"Archive",
+    "autoDeleteMessage":"Auto-delete Messages",
+    "autoDeleteMessageTitle":"Delete messages sent by myself in this chat after a certain time period.",
+    "autoDeleteMessageDes":"This will remove the message data stored on both the server and client side.",
 
     "call" : "Call",
     "cancel": "Cancel",
@@ -72,6 +75,8 @@
     "copy":"Copy",
     "copyUrl":"Copy Url",
 
+    "day":"day",
+    "days":"days",
     "delete": "Delete",
     "deleteAccount": "Delete Account",
     "deleteAccountWarning":"Are you sure to delete account?",
@@ -90,6 +95,9 @@
     "forwarded":"forwarded",
     "forwardTo":"Forward to",
 
+    "hour":"hour",
+    "hours":"hours",
+
     "image":"Image",
     "inputInvitationLink":"Input Invitation Link",
     "invitationLink": "Invitation Link",
@@ -105,14 +113,19 @@
 
     "message": "Message",
     "members":"Members",
+    "minute":"minute",
+    "minutes":"minutes",
     "mute" : "Mute",
 
     "name":"Name",
+    "networkError":"Network Error",
+    "networkErrorDes":"Please check your network settings.",
     "newPrivateChannel":"New Private Channel",
     "newPublicChannel":"New Public Channel",
     "next": "Next",
     "noContent":"No Content",
 
+    "off":"Off",
     "ok": "OK",
     "paste": "Paste",
     "password": "Password",
@@ -132,6 +145,8 @@
     "scanQrCodeToRegister": "Scan this QR Code to register",
     "save": "Save",
     "savedItems": "Saved Items",
+    "second":"second",
+    "seconds":"seconds",
     "select":"Select",
     "setNewAvatar": "Set a new avatar",
     "send": "Send",
@@ -153,8 +168,11 @@
     "version": "Version",
     "video" : "Video",
     "voice" : "Voice",
+    "week":"week",
+    "weeks":"weeks",
 
     "yesterday":"yesterday",
+    "you":"You",
     
     "leave":"Leave",
     "leaveChannel": "Leave Channel",
@@ -163,7 +181,7 @@
     
     "chatsBarNewChannel": "New Channel",
     "chatsBarNewDm": "New Direct Message",
-
+    
     "newChannelPageTitle": "Create Channel",
     "newChannelPageName": "Channel Name",
     "newChannelPageDes": "Description",

@@ -65,6 +65,10 @@ class ChatMsgM with M {
     return Set<ReactionInfo>.from(l.map((e) => ReactionInfo.fromJson(e)));
   }
 
+  // int get serverCreatedAt {
+  //   return
+  // }
+
   bool get isGroupMsg {
     return dmUid == -1 && gid != -1;
   }
@@ -329,8 +333,6 @@ class ChatMsgDao extends Dao<ChatMsgM> {
         where: '${ChatMsgM.F_localMid} = ?', whereArgs: [m.localMid]);
     if (old != null) {
       m.id = old.id;
-      // print("Old ${old.createdAt}");
-      // print("new ${m.createdAt}");
       m.createdAt = max(old.createdAt, m.createdAt);
 
       await super.update(m);

@@ -461,7 +461,7 @@ class _ChatsPageState extends State<ChatsPage>
           // Prepare snippet.
           String s = await parseMention(snippet);
           if (userInfoM.userInfo.uid == App.app.userDb!.uid) {
-            s = "you: " + s;
+            s = "${AppLocalizations.of(context)!.you}: " + s;
           } else {
             s = "${userInfoM.userInfo.name}: $s";
           }
@@ -643,7 +643,7 @@ class _ChatsPageState extends State<ChatsPage>
               await UserInfoDao().getUserByUid(latestMsgM.fromUid);
           if (userInfoM != null) {
             if (userInfoM.uid == App.app.userDb!.uid) {
-              s = "you: " + s;
+              s = "${AppLocalizations.of(context)!.you}: " + s;
             } else {
               s = userInfoM.userInfo.name + ": " + s;
             }

@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -17,6 +21,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart'
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
+import 'package:vocechat_client/ui/widgets/app_icon.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -76,6 +81,12 @@ class MessageTile extends StatefulWidget {
 
 class _MessageTileState extends State<MessageTile> {
   late bool selected;
+
+  // Auto-deletion variables.
+  final ValueNotifier<int> _autoDeletionCountDown = ValueNotifier(0);
+  Timer? _autoDeletionTimer;
+  bool _isTimerOn = false;
+
   @override
   void initState() {
     super.initState();
@@ -83,10 +94,95 @@ class _MessageTileState extends State<MessageTile> {
     selected = widget.selectNotifier.value
         .map((e) => e.mid)
         .contains(widget.chatMsgM.mid);
+
+    initTimer(widget.chatMsgM);
+  }
+
+  @override
+  void dispose() {
+    _autoDeletionTimer?.cancel();
+    super.dispose();
+  }
+
+  void initTimer(ChatMsgM chatMsgM) {
+    if (_isAutoDeletionMsg(chatMsgM)) {
+      _autoDeletionTimer?.cancel();
+      _autoDeletionCountDown.value = _getAutoDeletionRemains(chatMsgM);
+      if (_autoDeletionCountDown.value > 0) {
+        if (!_isTimerOn) {
+          _isTimerOn = true;
+          _autoDeletionTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+            _autoDeletionCountDown.value -= 1000;
+            if (_autoDeletionCountDown.value <= 0) {
+              ChatMsgDao().deleteMsgByLocalMid(chatMsgM).then((value) async {
+                FileHandler.singleton.deleteWithChatMsgM(chatMsgM);
+                App.app.chatService
+                    .fireReaction(ReactionTypes.delete, chatMsgM.mid);
+
+                if (chatMsgM.isGroupMsg) {
+                  final curMaxMid =
+                      await ChatMsgDao().getChannelMaxMid(chatMsgM.gid);
+                  if (curMaxMid > -1) {
+                    final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+                    if (msg != null) {
+                      App.app.chatService.fireSnippet(msg);
+                    }
+                  }
+                } else {
+                  final curMaxMid =
+                      await ChatMsgDao().getDmMaxMid(chatMsgM.dmUid);
+                  if (curMaxMid > -1) {
+                    final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+                    if (msg != null) {
+                      App.app.chatService.fireSnippet(msg);
+                    }
+                  }
+                }
+              });
+              _autoDeletionTimer?.cancel();
+            }
+          });
+        }
+      }
+    }
+  }
+
+  bool _isAutoDeletionMsg(ChatMsgM chatMsgM) {
+    final isMsgNormalAutoDeletion = chatMsgM.msgNormal?.expiresIn != null &&
+        chatMsgM.msgNormal?.expiresIn != 0;
+
+    return isMsgNormalAutoDeletion;
+  }
+
+  int _getAutoDeletionRemains(ChatMsgM chatMsgM) {
+    if (_isAutoDeletionMsg(chatMsgM)) {
+      final expiresIn = chatMsgM.msgNormal?.expiresIn;
+      if (expiresIn != null && expiresIn > 0) {
+        final currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
+        final msgTimeStamp = chatMsgM.createdAt;
+
+        final dif = msgTimeStamp + expiresIn * 1000 - currentTimeStamp;
+        if (dif < 0) {
+          // return expiresIn * 1000;
+          return 0;
+        } else {
+          // return min(dif, expiresIn * 1000);
+          return dif;
+        }
+      }
+    }
+    return -1;
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isAutoDeletionMsg(widget.chatMsgM) &&
+        _autoDeletionCountDown.value <= 0) {
+      return SizedBox.shrink();
+    }
+
     // left padding + avatar      + gap + right padding + status
     // 16           + avatarSize  + 8   + 16            + 50
     double contentWidth =
@@ -102,8 +198,9 @@ class _MessageTileState extends State<MessageTile> {
             ? BoxConstraints(minHeight: 20)
             : BoxConstraints(minHeight: 40),
         padding: widget.isFollowing
-            ? EdgeInsets.symmetric(horizontal: 16, vertical: 5)
-            : EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+            ? EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+            : EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        margin: EdgeInsets.symmetric(vertical: 4),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -193,7 +290,9 @@ class _MessageTileState extends State<MessageTile> {
               constraints: BoxConstraints(minHeight: 20),
               width: contentWidth,
               child: _buildReactions(context),
-            )
+            ),
+          if (_autoDeletionCountDown.value > 0)
+            _buildAutoDeletionCountDown(context, contentWidth)
         ],
       );
     } catch (e) {
@@ -326,6 +425,96 @@ class _MessageTileState extends State<MessageTile> {
         enableShowMoreBtn: false);
   }
 
+  Widget _buildAutoDeletionCountDown(
+      BuildContext context, double contentWidth) {
+    return ValueListenableBuilder<int>(
+        valueListenable: _autoDeletionCountDown,
+        builder: (context, countDown, _) {
+          return SizedBox(
+            height: 20,
+            width: contentWidth,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Icon(Icons.access_time, size: 14, color: AppColors.grey400),
+                SizedBox(width: 4),
+                SizedBox(
+                  child: Text(
+                    _printDuration(Duration(milliseconds: countDown)),
+                    textAlign: TextAlign.end,
+                    style: TextStyle(
+                      color: AppColors.grey400,
+                      fontSize: 14,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          );
+        });
+  }
+
+  String _printDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+
+    // Days
+    if (duration.inDays > 1) {
+      final remains = duration - Duration(days: duration.inDays);
+      if (remains.inHours > 12) {
+        return (duration.inDays + 1).toString() +
+            AppLocalizations.of(context)!.days;
+      } else {
+        return duration.inDays.toString() + AppLocalizations.of(context)!.days;
+      }
+    } else if (duration.inDays > 0) {
+      final remains = duration - Duration(days: duration.inDays);
+      if (remains.inHours > 12) {
+        return "2" + AppLocalizations.of(context)!.days;
+      } else {
+        return "1" + AppLocalizations.of(context)!.day;
+      }
+    }
+
+    // Hours
+    else if (duration.inHours > 1) {
+      final remains = duration - Duration(hours: duration.inHours);
+      if (remains.inMinutes > 30) {
+        return (duration.inHours + 1).toString() +
+            AppLocalizations.of(context)!.hours;
+      } else {
+        return duration.inHours.toString() +
+            AppLocalizations.of(context)!.hours;
+      }
+    } else if (duration.inHours > 0) {
+      final remains = duration - Duration(hours: duration.inHours);
+      if (remains.inMinutes > 30) {
+        return "2" + AppLocalizations.of(context)!.hours;
+      } else {
+        return "1" + AppLocalizations.of(context)!.hour;
+      }
+    }
+
+    // Minutes
+    else if (duration.inMinutes > 1) {
+      final remains = duration - Duration(minutes: duration.inMinutes);
+      if (remains.inSeconds > 30) {
+        return (duration.inMinutes + 1).toString() +
+            AppLocalizations.of(context)!.minutes;
+      } else {
+        return duration.inMinutes.toString() +
+            AppLocalizations.of(context)!.minutes;
+      }
+    } else if (duration.inMinutes > 0) {
+      return "1" + AppLocalizations.of(context)!.minute;
+    }
+
+    // Last minute
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return twoDigitSeconds;
+  }
+
   bool _isLink(String input) {
     final matcher = RegExp(
         r"(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)");
@@ -334,13 +523,9 @@ class _MessageTileState extends State<MessageTile> {
 
   String getFileSizeString(int bytes) {
     const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    var i = (log(bytes) / log(1024)).floor();
-    return ((bytes / pow(1024, i)).toStringAsFixed(1)) +
+    var i = (log(bytes) / log(1000)).floor();
+    return ((bytes / pow(1000, i)).toStringAsFixed(1)) +
         suffixes[i].toUpperCase();
-  }
-
-  Widget _buildDeletedBubble(BuildContext context) {
-    return Text('This message has been deleted.');
   }
 
   Widget _buildReactions(BuildContext context) {
@@ -399,8 +584,6 @@ class _MessageTileState extends State<MessageTile> {
           )),
     );
   }
-
-  // Future<Uint8List?> getImage()
 }
 
 class ReactionItem {
