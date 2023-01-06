@@ -108,5 +108,6 @@ CREATE TABLE IF NOT EXISTS unmatched_reaction (
   reaction_list TEXT NOT NULL,
   created_at INTEGER NOT NULL
 );
+
 CREATE UNIQUE INDEX IF NOT EXISTS index_target_mid ON unmatched_reaction(target_mid);
 

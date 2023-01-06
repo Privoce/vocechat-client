@@ -937,6 +937,48 @@ class ChatService {
         }
       } else {}
     }
+
+    {
+      // add burn_after_reading_groups
+      final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
+      if (burnAfterReadingGroups != null && burnAfterReadingGroups.isNotEmpty) {
+        for (var each in burnAfterReadingGroups) {
+          final expiresIn = each["expires_in"] as int?;
+          final gid = each["gid"];
+
+          if (expiresIn != null && gid != null) {
+            await GroupInfoDao()
+                .updateProperties(gid, burnAfterReadSecond: expiresIn)
+                .then((value) {
+              if (value != null) {
+                fireChannel(value, EventActions.update);
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // add burn_after_reading_users
+      final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
+      if (burnAfterReadingUsers != null && burnAfterReadingUsers.isNotEmpty) {
+        for (var each in burnAfterReadingUsers) {
+          final expiresIn = each["expires_in"] as int?;
+          final uid = each["uid"];
+
+          if (expiresIn != null && uid != null) {
+            await UserInfoDao()
+                .updateProperties(uid, burnAfterReadSecond: expiresIn)
+                .then((value) {
+              if (value != null) {
+                fireUser(value, EventActions.update);
+              }
+            });
+          }
+        }
+      }
+    }
   }
 
   Future<void> _handleUserSettingsChanged(Map<String, dynamic> map) async {
@@ -1046,6 +1088,48 @@ class ChatService {
           if (uid != null) {
             await UserInfoDao()
                 .updateProperties(uid, enableMute: false, muteExpiresAt: null)
+                .then((value) {
+              if (value != null) {
+                fireUser(value, EventActions.update);
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // add burn_after_reading_groups
+      final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
+      if (burnAfterReadingGroups != null && burnAfterReadingGroups.isNotEmpty) {
+        for (var each in burnAfterReadingGroups) {
+          final expiresIn = each["expires_in"] as int?;
+          final gid = each["gid"];
+
+          if (expiresIn != null && gid != null) {
+            await GroupInfoDao()
+                .updateProperties(gid, burnAfterReadSecond: expiresIn)
+                .then((value) {
+              if (value != null) {
+                fireChannel(value, EventActions.update);
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // add burn_after_reading_users
+      final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
+      if (burnAfterReadingUsers != null && burnAfterReadingUsers.isNotEmpty) {
+        for (var each in burnAfterReadingUsers) {
+          final expiresIn = each["expires_in"] as int?;
+          final uid = each["uid"];
+
+          if (expiresIn != null && uid != null) {
+            await UserInfoDao()
+                .updateProperties(uid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
                 fireUser(value, EventActions.update);

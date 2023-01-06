@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/chats/chat/chat_setting/auto_delete_settings_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/settings_action_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
@@ -71,73 +74,78 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                 name: userInfo.name,
                 uid: userInfoM.uid,
                 avatarBytes: userInfoM.avatarBytes),
-            // title: Text(userInfo.name,
-            //     style: TextStyle(
-            //         fontWeight: FontWeight.w700,
-            //         fontSize: 18,
-            //         color: AppColors.grey800)),
             title: userInfo.name,
             subtitle: userInfo.email,
           );
         });
   }
 
-  Widget _buildActions() {
-    return Container(
-      height: 68,
-      margin: EdgeInsets.only(top: 28),
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+  Widget _buildItems(UserInfoM userInfoM, BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
         children: [
-          SettingsActionButton(
-              icon: Icon(AppIcons.bookmark, size: 24, color: AppColors.grey500),
-              text: AppLocalizations.of(context)!.savedItems,
+          BannerTileGroup(bannerTileList: [
+            BannerTile(
+              title: AppLocalizations.of(context)!.savedItems,
               onTap: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: ((context) {
                   return SavedItemPage(uid: widget.userInfoNotifier.value.uid);
                 })));
+              },
+            )
+          ]),
+          SizedBox(height: 8),
+          ValueListenableBuilder<UserInfoM>(
+              valueListenable: widget.userInfoNotifier,
+              builder: (context, userInfoM, _) {
+                // This is not the read burn_after_read, but is auto-deletion.
+                // Name is consistant with server names.
+                final burnAfterReadSecond =
+                    userInfoM.properties.burnAfterReadSecond;
+
+                return BannerTileGroup(bannerTileList: [
+                  BannerTile(
+                    title: AppLocalizations.of(context)!.autoDeleteMessage,
+                    trailing: Text(
+                        translateAutoDeletionSettingTime(
+                            burnAfterReadSecond, context),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 17,
+                            color: AppColors.labelColorLightSec)),
+                    onTap: () async {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: ((context) {
+                        return AutoDeleteSettingsPage(
+                          initExpTime: burnAfterReadSecond,
+                          onSubmit: _changeBurnAfterReadingSettings,
+                        );
+                      })));
+                    },
+                  )
+                ]);
               }),
-          // SettingsActionButton(
-          //     icon: Icon(AppIcons.audio, size: 24, color: AppColors.grey500),
-          //     text: AppLocalizations.of(context)!.call,
-          //     onTap: () {}),
-          // SettingsActionButton(
-          //     icon: Icon(AppIcons.video, size: 24, color: AppColors.grey500),
-          //     text: AppLocalizations.of(context)!.video,
-          //     onTap: () {}),
-          // ValueListenableBuilder<UserInfoM>(
-          //     valueListenable: widget.userInfoNotifier,
-          //     builder: (context, userInfoM, _) {
-          //       String muteStr = AppLocalizations.of(context)!.mute;
-          //       void Function() muteFunc = () => _mute();
-          //       if (userInfoM.properties.enableMute) {
-          //         muteStr = AppLocalizations.of(context)!.unmute;
-          //         muteFunc = () => _unMute();
-          //       }
-          //       return SettingsActionButton(
-          //           icon: Icon(AppIcons.alert,
-          //               size: 24, color: AppColors.grey500),
-          //           text: muteStr,
-          //           onTap: muteFunc);
-          //     }),
         ],
       ),
     );
   }
 
-  Widget _buildItems(UserInfoM userInfoM, BuildContext context) {
-    return BannerTileGroup(bannerTileList: [
-      BannerTile(
-        title: AppLocalizations.of(context)!.savedItems,
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-            return SavedItemPage(uid: widget.userInfoNotifier.value.uid);
-          })));
-        },
-      )
-    ]);
+  Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {
+    final res = await UserApi(App.app.chatServerM.fullUrl)
+        .postBurnAfterReadingSetting(
+            uid: widget.userInfoNotifier.value.uid, expiresIn: expiresIn);
+    if (res.statusCode == 200) {
+      final userInfoM = await UserInfoDao().updateProperties(
+          widget.userInfoNotifier.value.uid,
+          burnAfterReadSecond: expiresIn);
+      if (userInfoM != null) {
+        App.app.chatService.fireUser(userInfoM, EventActions.update);
+        return true;
+      }
+    }
+
+    return false;
   }
 
   Future<bool> _mute({int? expiredAt}) async {

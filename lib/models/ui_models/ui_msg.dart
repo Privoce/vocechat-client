@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -18,6 +19,9 @@ class UiMsg {
   UserInfoM? repliedUserInfoM;
   File? repliedThumbFile;
 
+  // Timer? _autoDeletionTimer;
+  // ValueNotifier<int>? _autoDeletionCountDown;
+
   UiMsg(
       {required this.chatMsgM,
       // required this.status,
@@ -30,26 +34,28 @@ class UiMsg {
         SendTaskQueue.singleton.isWaitingOrExecuting(chatMsgM.localMid)
             ? MsgSendStatus.sending
             : getMsgSendStatus(chatMsgM.status);
+
+    // Set auto deletion.
   }
 
-  // Includes pure text and markdown messages.
-  UiMsg.text({required this.chatMsgM})
-      : file = null,
-        archive = null,
-        repliedMsgM = null,
-        repliedUserInfoM = null,
-        repliedThumbFile = null;
+  // // Includes pure text and markdown messages.
+  // UiMsg.text({required this.chatMsgM})
+  //     : file = null,
+  //       archive = null,
+  //       repliedMsgM = null,
+  //       repliedUserInfoM = null,
+  //       repliedThumbFile = null;
 
-  UiMsg.textWithTextReply(
-      {required this.chatMsgM, this.repliedMsgM, this.repliedUserInfoM})
-      : archive = null,
-        repliedThumbFile = null;
+  // UiMsg.textWithTextReply(
+  //     {required this.chatMsgM, this.repliedMsgM, this.repliedUserInfoM})
+  //     : archive = null,
+  //       repliedThumbFile = null;
 
-  // UiMsg.textWithImageReply()
+  // // UiMsg.textWithImageReply()
 
-  // Includes image and corresponding chatMsgM
-  UiMsg.image({required this.chatMsgM, this.file})
-      : archive = null,
-        repliedMsgM = null,
-        repliedThumbFile = null;
+  // // Includes image and corresponding chatMsgM
+  // UiMsg.image({required this.chatMsgM, this.file})
+  //     : archive = null,
+  //       repliedMsgM = null,
+  //       repliedThumbFile = null;
 }

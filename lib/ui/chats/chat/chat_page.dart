@@ -1,5 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
@@ -951,27 +952,15 @@ class _ChatPageState extends State<ChatPage> {
   Widget _buildMsgList() {
     return Scrollbar(
       controller: _scrollController,
-      child: ListView.separated(
+      child: ListView.builder(
         scrollDirection: scrollDirection,
         controller: _scrollController,
-        padding: EdgeInsets.only(left: 0, right: 0, top: 8, bottom: 8),
         physics: AlwaysScrollableScrollPhysics(),
         reverse: true,
         shrinkWrap: true,
-        separatorBuilder: (context, index) {
-          return SizedBox(height: 12);
-        },
         // Additional 1 tile for retriving history messages
         itemCount: _uiMsgList.length + 1,
         itemBuilder: (context, index) {
-          // If reaches very top, show channel start widget.
-          // if (index == widget.msgCount) {
-          //   if (widget._isGroup) {
-          //     return ChannelStart(widget.groupInfoNotifier!);
-          //   } else {
-          //     return SizedBox.shrink();
-          //   }
-          // } else
           if (index == _uiMsgList.length) {
             if (_isLoadingHistory) {
               return SizedBox(
@@ -1002,7 +991,11 @@ class _ChatPageState extends State<ChatPage> {
                 : 0;
 
             Widget msgTile = Container(
-              color: pinnedBy != 0 ? Color(0xFFECFDFF) : Colors.white,
+              // padding: EdgeInsets.symmetric(vertical: 4),?
+              margin: EdgeInsets.symmetric(vertical: 4),
+              color: _getMsgTileBgColor(
+                  isPinned: pinnedBy != 0,
+                  isAutoDeletion: _isAutoDeletionMsg(uiMsg.chatMsgM)),
               child: Row(
                 children: [
                   MessageTile(
@@ -1143,6 +1136,24 @@ class _ChatPageState extends State<ChatPage> {
         },
       ),
     );
+  }
+
+  Color _getMsgTileBgColor(
+      {required bool isPinned, required bool isAutoDeletion}) {
+    if (isAutoDeletion) {
+      return Color.fromRGBO(249, 241, 239, 1);
+    } else if (isPinned) {
+      return Color.fromRGBO(239, 252, 255, 1);
+    } else {
+      return Colors.white;
+    }
+  }
+
+  bool _isAutoDeletionMsg(ChatMsgM chatMsgM) {
+    final isMsgNormalAutoDeletion = chatMsgM.msgNormal?.expiresIn != null &&
+        chatMsgM.msgNormal?.expiresIn != 0;
+
+    return isMsgNormalAutoDeletion;
   }
 
   MsgActionTile _buildPinAction(UiMsg uiMsg) {
