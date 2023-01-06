@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
@@ -51,9 +52,6 @@ class MessageTile extends StatefulWidget {
 
   final double avatarSize;
 
-  // Auto-deletion variables.
-  final ValueNotifier<int> _autoDeletionCountDown = ValueNotifier(0);
-
   MessageTile(
       {Key? key,
       // required this.shouldShowAvatar,
@@ -75,28 +73,59 @@ class MessageTile extends StatefulWidget {
       this.archive,
       required this.onSendReaction,
       this.avatarSize = AvatarSize.s48})
-      : super(key: key) {
-    if (_isAutoDeletionMsg(chatMsgM)) {
-      _autoDeletionCountDown.value = _getAutoDeletionRemains(chatMsgM);
-      if (_autoDeletionCountDown.value > 0) {
-        Timer.periodic(Duration(seconds: 1), (timer) {
-          _autoDeletionCountDown.value -= 1000;
-
-          if (_autoDeletionCountDown.value < 0) {
-            ChatMsgDao().deleteMsgByMid(chatMsgM).then((value) {
-              FileHandler.singleton.deleteWithChatMsgM(chatMsgM);
-              App.app.chatService
-                  .fireReaction(ReactionTypes.delete, chatMsgM.mid);
-            });
-            timer.cancel();
-          }
-        });
-      }
-    }
-  }
+      : super(key: key);
 
   @override
   State<MessageTile> createState() => _MessageTileState();
+}
+
+class _MessageTileState extends State<MessageTile> {
+  late bool selected;
+
+  // Auto-deletion variables.
+  final ValueNotifier<int> _autoDeletionCountDown = ValueNotifier(0);
+  Timer? _autoDeletionTimer;
+  bool _isTimerOn = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    selected = widget.selectNotifier.value
+        .map((e) => e.mid)
+        .contains(widget.chatMsgM.mid);
+
+    initTimer(widget.chatMsgM);
+  }
+
+  @override
+  void dispose() {
+    _autoDeletionTimer?.cancel();
+    super.dispose();
+  }
+
+  void initTimer(ChatMsgM chatMsgM) {
+    if (_isAutoDeletionMsg(chatMsgM)) {
+      _autoDeletionTimer?.cancel();
+      _autoDeletionCountDown.value = _getAutoDeletionRemains(chatMsgM);
+      if (_autoDeletionCountDown.value > 0) {
+        if (!_isTimerOn) {
+          _isTimerOn = true;
+          _autoDeletionTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+            _autoDeletionCountDown.value -= 1000;
+            if (_autoDeletionCountDown.value <= 0) {
+              ChatMsgDao().deleteMsgByLocalMid(chatMsgM).then((value) {
+                FileHandler.singleton.deleteWithChatMsgM(chatMsgM);
+                App.app.chatService
+                    .fireReaction(ReactionTypes.delete, chatMsgM.mid);
+              });
+              _autoDeletionTimer?.cancel();
+            }
+          });
+        }
+      }
+    }
+  }
 
   bool _isAutoDeletionMsg(ChatMsgM chatMsgM) {
     final isMsgNormalAutoDeletion = chatMsgM.msgNormal?.expiresIn != null &&
@@ -117,29 +146,18 @@ class MessageTile extends StatefulWidget {
           // return expiresIn * 1000;
           return 0;
         } else {
-          return min(dif, expiresIn * 1000);
+          // return min(dif, expiresIn * 1000);
+          return dif;
         }
       }
     }
     return -1;
   }
-}
-
-class _MessageTileState extends State<MessageTile> {
-  late bool selected;
-  @override
-  void initState() {
-    super.initState();
-
-    selected = widget.selectNotifier.value
-        .map((e) => e.mid)
-        .contains(widget.chatMsgM.mid);
-  }
 
   @override
   Widget build(BuildContext context) {
-    if (widget._isAutoDeletionMsg(widget.chatMsgM) &&
-        widget._autoDeletionCountDown.value <= 0) {
+    if (_isAutoDeletionMsg(widget.chatMsgM) &&
+        _autoDeletionCountDown.value <= 0) {
       return SizedBox.shrink();
     }
 
@@ -158,8 +176,9 @@ class _MessageTileState extends State<MessageTile> {
             ? BoxConstraints(minHeight: 20)
             : BoxConstraints(minHeight: 40),
         padding: widget.isFollowing
-            ? EdgeInsets.symmetric(horizontal: 16, vertical: 5)
-            : EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+            ? EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+            : EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        margin: EdgeInsets.symmetric(vertical: 4),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -250,7 +269,7 @@ class _MessageTileState extends State<MessageTile> {
               width: contentWidth,
               child: _buildReactions(context),
             ),
-          if (widget._autoDeletionCountDown.value > 0)
+          if (_autoDeletionCountDown.value > 0)
             _buildAutoDeletionCountDown(context, contentWidth)
         ],
       );
@@ -387,21 +406,26 @@ class _MessageTileState extends State<MessageTile> {
   Widget _buildAutoDeletionCountDown(
       BuildContext context, double contentWidth) {
     return ValueListenableBuilder<int>(
-        valueListenable: widget._autoDeletionCountDown,
+        valueListenable: _autoDeletionCountDown,
         builder: (context, countDown, _) {
           return SizedBox(
-            height: 36,
+            height: 20,
             width: contentWidth,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Icon(Icons.access_time, size: 14, color: AppColors.grey400),
                 SizedBox(width: 4),
                 SizedBox(
                   child: Text(
-                    translateAutoDeletionCountDown(countDown),
+                    _printDuration(Duration(milliseconds: countDown)),
                     textAlign: TextAlign.end,
-                    style: TextStyle(color: AppColors.grey400, fontSize: 14),
+                    style: TextStyle(
+                      color: AppColors.grey400,
+                      fontSize: 14,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                 )
               ],
@@ -410,20 +434,30 @@ class _MessageTileState extends State<MessageTile> {
         });
   }
 
-  String translateAutoDeletionCountDown(int millisecs) {
-    final seconds = millisecs ~/ 1000;
-    final days = seconds ~/ 86400;
-    final remainingDuration = Duration(seconds: seconds % 86400);
-
-    String daysStr = days > 1
-        ? "$days ${AppLocalizations.of(context)!.days}"
-        : (days == 1 ? "$days ${AppLocalizations.of(context)!.day}" : "");
-
-    return daysStr + " " + _printDuration(remainingDuration);
-  }
-
   String _printDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
+
+    // Days
+    if (duration.inDays > 1) {
+      return duration.inDays.toString() + AppLocalizations.of(context)!.days;
+    } else if (duration.inDays > 0) {
+      return "1" + AppLocalizations.of(context)!.day;
+    }
+
+    // Hours
+    else if (duration.inHours > 1) {
+      return duration.inHours.toString() + AppLocalizations.of(context)!.hours;
+    } else if (duration.inHours > 0 || duration.inMinutes >= 50) {
+      return "1" + AppLocalizations.of(context)!.hour;
+    }
+
+    // Minutes
+    else if (duration.inMinutes < 50) {
+      String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+      String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+      return "$twoDigitMinutes:$twoDigitSeconds";
+    }
+
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
     return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";

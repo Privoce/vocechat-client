@@ -24,6 +24,7 @@ import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:path/path.dart' as p;
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
@@ -74,7 +75,7 @@ abstract class AbstractSend {
       void Function(double progress)? progress});
 
   static Future<int> getFakeMid() async {
-    return (await ChatMsgDao().getMaxMid()) + 1;
+    return (await UserDbMDao.dao.getMaxMid(App.app.userDb!.id)) + 1;
   }
 }
 

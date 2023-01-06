@@ -25,8 +25,8 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
   final ValueNotifier<bool> _isUpdating = ValueNotifier(false);
   final ValueNotifier<bool> _enableDoneBtn = ValueNotifier(false);
 
-  // close, 30s, 10min, 1hr, 1d, 1week
-  final List<int> timeList = [0, 30, 600, 3600, 86400, 604800];
+  // close, 5min, 10min, 1hr, 1d, 1week
+  final List<int> timeList = [0, 300, 600, 3600, 86400, 604800];
   late int _selectedTime;
 
   @override
