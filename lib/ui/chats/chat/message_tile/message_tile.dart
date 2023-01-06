@@ -114,10 +114,10 @@ class MessageTile extends StatefulWidget {
 
         final dif = msgTimeStamp + expiresIn * 1000 - currentTimeStamp;
         if (dif < 0) {
-          return expiresIn * 1000;
+          // return expiresIn * 1000;
+          return 0;
         } else {
-          return min(msgTimeStamp + expiresIn * 1000 - currentTimeStamp,
-              expiresIn * 1000);
+          return min(dif, expiresIn * 1000);
         }
       }
     }
