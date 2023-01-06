@@ -114,10 +114,32 @@ class _MessageTileState extends State<MessageTile> {
           _autoDeletionTimer = Timer.periodic(Duration(seconds: 1), (timer) {
             _autoDeletionCountDown.value -= 1000;
             if (_autoDeletionCountDown.value <= 0) {
-              ChatMsgDao().deleteMsgByLocalMid(chatMsgM).then((value) {
+              ChatMsgDao().deleteMsgByLocalMid(chatMsgM).then((value) async {
                 FileHandler.singleton.deleteWithChatMsgM(chatMsgM);
                 App.app.chatService
                     .fireReaction(ReactionTypes.delete, chatMsgM.mid);
+
+                if (chatMsgM.isGroupMsg) {
+                  final curMaxMid =
+                      await ChatMsgDao().getChannelMaxMid(chatMsgM.gid);
+                  if (curMaxMid > -1) {
+                    final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+                    if (msg != null) {
+                      App.app.chatService.fireSnippet(msg);
+                    }
+                  }
+                } else {
+                  final curMaxMid =
+                      await ChatMsgDao().getDmMaxMid(chatMsgM.dmUid);
+                  if (curMaxMid > -1) {
+                    final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+                    if (msg != null) {
+                      App.app.chatService.fireSnippet(msg);
+                    }
+                  }
+                }
               });
               _autoDeletionTimer?.cancel();
             }
@@ -439,28 +461,58 @@ class _MessageTileState extends State<MessageTile> {
 
     // Days
     if (duration.inDays > 1) {
-      return duration.inDays.toString() + AppLocalizations.of(context)!.days;
+      final remains = duration - Duration(days: duration.inDays);
+      if (remains.inHours > 12) {
+        return (duration.inDays + 1).toString() +
+            AppLocalizations.of(context)!.days;
+      } else {
+        return duration.inDays.toString() + AppLocalizations.of(context)!.days;
+      }
     } else if (duration.inDays > 0) {
-      return "1" + AppLocalizations.of(context)!.day;
+      final remains = duration - Duration(days: duration.inDays);
+      if (remains.inHours > 12) {
+        return "2" + AppLocalizations.of(context)!.days;
+      } else {
+        return "1" + AppLocalizations.of(context)!.day;
+      }
     }
 
     // Hours
     else if (duration.inHours > 1) {
-      return duration.inHours.toString() + AppLocalizations.of(context)!.hours;
-    } else if (duration.inHours > 0 || duration.inMinutes >= 50) {
-      return "1" + AppLocalizations.of(context)!.hour;
+      final remains = duration - Duration(hours: duration.inHours);
+      if (remains.inMinutes > 30) {
+        return (duration.inHours + 1).toString() +
+            AppLocalizations.of(context)!.hours;
+      } else {
+        return duration.inHours.toString() +
+            AppLocalizations.of(context)!.hours;
+      }
+    } else if (duration.inHours > 0) {
+      final remains = duration - Duration(hours: duration.inHours);
+      if (remains.inMinutes > 30) {
+        return "2" + AppLocalizations.of(context)!.hours;
+      } else {
+        return "1" + AppLocalizations.of(context)!.hour;
+      }
     }
 
     // Minutes
-    else if (duration.inMinutes < 50) {
-      String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-      String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-      return "$twoDigitMinutes:$twoDigitSeconds";
+    else if (duration.inMinutes > 1) {
+      final remains = duration - Duration(minutes: duration.inMinutes);
+      if (remains.inSeconds > 30) {
+        return (duration.inMinutes + 1).toString() +
+            AppLocalizations.of(context)!.minutes;
+      } else {
+        return duration.inMinutes.toString() +
+            AppLocalizations.of(context)!.minutes;
+      }
+    } else if (duration.inMinutes > 0) {
+      return "1" + AppLocalizations.of(context)!.minute;
     }
 
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    // Last minute
     String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
+    return twoDigitSeconds;
   }
 
   bool _isLink(String input) {
