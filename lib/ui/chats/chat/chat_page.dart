@@ -327,6 +327,33 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _onMsg(
       ChatMsgM chatMsgM, String localMid, dynamic data, bool afterReady,
       {bool frontInsert = true}) async {
+    // Check if the message is an auto-deletion one and is out-of-date
+    // print(
+    //     "content: ${chatMsgM.msgNormal?.content}  expires?:${chatMsgM.expires}");
+    if (chatMsgM.expires) {
+      await ChatMsgDao().deleteMsgByLocalMid(chatMsgM);
+      if (chatMsgM.isGroupMsg) {
+        final curMaxMid = await ChatMsgDao().getChannelMaxMid(chatMsgM.gid);
+        if (curMaxMid > -1) {
+          final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+          if (msg != null) {
+            App.app.chatService.fireSnippet(msg);
+          }
+        }
+      } else {
+        final curMaxMid = await ChatMsgDao().getDmMaxMid(chatMsgM.dmUid);
+        if (curMaxMid > -1) {
+          final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+          if (msg != null) {
+            App.app.chatService.fireSnippet(msg);
+          }
+        }
+      }
+      return;
+    }
+
     if (widget._isGroup) {
       if (chatMsgM.gid != widget.groupInfoNotifier?.value.gid) {
         return;
@@ -991,7 +1018,6 @@ class _ChatPageState extends State<ChatPage> {
                 : 0;
 
             Widget msgTile = Container(
-              // padding: EdgeInsets.symmetric(vertical: 4),?
               margin: EdgeInsets.symmetric(vertical: 4),
               color: _getMsgTileBgColor(
                   isPinned: pinnedBy != 0,
@@ -1365,52 +1391,66 @@ class _ChatPageState extends State<ChatPage> {
           _pageMeta..pageNumber += 1, '', widget.userInfoNotifier!.value.uid);
     }
 
-    if (page.records.isNotEmpty) {
-      for (ChatMsgM m in page.records.reversed) {
-        switch (m.type) {
-          case MsgDetailType.normal:
-            switch (m.detailType) {
-              case MsgContentType.text:
-              case MsgContentType.markdown:
-              case MsgContentType.file:
-                if (m.isImageMsg) {
-                  final thumbFile =
-                      await FileHandler.singleton.getImageThumb(m);
+    for (ChatMsgM m in page.records.reversed) {
+      switch (m.type) {
+        case MsgDetailType.normal:
+          switch (m.detailType) {
+            case MsgContentType.text:
+            case MsgContentType.markdown:
+            case MsgContentType.file:
+              if (m.isImageMsg) {
+                final thumbFile = await FileHandler.singleton.getImageThumb(m);
 
-                  if (thumbFile != null) {
-                    await _onMsg(m, m.localMid, thumbFile, false,
-                        frontInsert: false);
-                  } else {
-                    await _onMsg(m, m.localMid, null, false,
-                        frontInsert: false);
-                  }
-                } else {
-                  await _onMsg(m, m.localMid, null, false, frontInsert: false);
-                  break;
-                }
-                break;
-              case MsgContentType.archive:
-                final archiveId = m.msgNormal!.content;
-                final archiveM = await ArchiveDao().getArchive(archiveId);
-
-                if (archiveM != null) {
-                  await _onMsg(m, m.localMid, archiveM.archive, false,
+                if (thumbFile != null) {
+                  await _onMsg(m, m.localMid, thumbFile, false,
                       frontInsert: false);
                 } else {
                   await _onMsg(m, m.localMid, null, false, frontInsert: false);
-                  App.logger.severe("archive missing. Id: $archiveId");
                 }
-
+              } else {
+                await _onMsg(m, m.localMid, null, false, frontInsert: false);
                 break;
+              }
+              break;
+            case MsgContentType.archive:
+              final archiveId = m.msgNormal!.content;
+              final archiveM = await ArchiveDao().getArchive(archiveId);
 
-              default:
-            }
-            break;
-          case MsgDetailType.reply:
-            await _onMsg(m, m.localMid, null, false, frontInsert: false);
-            break;
-          default:
+              if (archiveM != null) {
+                await _onMsg(m, m.localMid, archiveM.archive, false,
+                    frontInsert: false);
+              } else {
+                await _onMsg(m, m.localMid, null, false, frontInsert: false);
+                App.logger.severe("archive missing. Id: $archiveId");
+              }
+
+              break;
+
+            default:
+          }
+          break;
+        case MsgDetailType.reply:
+          await _onMsg(m, m.localMid, null, false, frontInsert: false);
+          break;
+        default:
+      }
+    }
+
+    // Check if all messages in this page are valid.
+    // If some messages are invalid, which means the first page might be empty.
+    // We need a full first page, so do recursion on [_loadHistory] function.
+    {
+      List<ChatMsgM> valids = page.records;
+      valids.retainWhere((element) => element.expires);
+      final validsCount = valids.length;
+
+      if (_uiMsgList.length < validsCount) {
+        if (mounted) {
+          setState(() {
+            _isLoadingHistory = false;
+          });
         }
+        _loadHistory();
       }
     }
 

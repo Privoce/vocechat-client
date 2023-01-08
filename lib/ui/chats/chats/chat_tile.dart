@@ -191,6 +191,7 @@ class _ChatTileState extends State<ChatTile> {
                         }
                         return Container(
                             constraints: BoxConstraints(minWidth: 16),
+                            margin: EdgeInsets.only(left: 4),
                             height: 16,
                             decoration: BoxDecoration(
                                 color: AppColors.primaryHover,

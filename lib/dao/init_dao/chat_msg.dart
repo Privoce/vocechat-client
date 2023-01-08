@@ -155,6 +155,16 @@ class ChatMsgM with M {
     }
   }
 
+  bool get expires {
+    try {
+      final expiresIn = json.decode(detail)["expires_in"];
+      if (expiresIn != null && expiresIn != 0) {
+        return createdAt + expiresIn < DateTime.now().millisecondsSinceEpoch;
+      }
+    } catch (e) {}
+    return false;
+  }
+
   ChatMsgM();
 
   ChatMsgM.item(
