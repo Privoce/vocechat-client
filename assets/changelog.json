@@ -1,6 +1,12 @@
 {   
-    "latest": {"version": "0.2.63", "build_num": 33},
+    "latest": {"version": "0.2.65", "build_num": 35},
     "logs":  [
+        {"time": 1673224599051, "version": "0.2.65", "build_num": 35, "updates": [
+            "- fix: bugs related with auto-delete messages."
+        ]},
+        {"time": 1673183104078, "version": "0.2.64", "build_num": 34, "updates": [
+            "- fix: bugs related with auto-delete messages."
+        ]},
         {"time": 1672993881513, "version": "0.2.63", "build_num": 33, "updates": [
             "- add: auto-delete messages.",
             "- fix: some simplified Chinese translation."

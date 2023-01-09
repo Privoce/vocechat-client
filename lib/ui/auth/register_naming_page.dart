@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'package:async/async.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -233,15 +235,8 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
     widget.req.name = username;
 
     try {
-      String deviceToken = "";
+      String deviceToken = await _getFirebaseDeviceToken();
       String device;
-      try {
-        deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
-      } catch (e) {
-        App.logger.warning(e);
-        // TODO: alert firebase not working, no notification.
-        deviceToken = "";
-      }
 
       if (Platform.isIOS) {
         device = "iOS";
@@ -285,5 +280,32 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
           )
         ]);
     return false;
+  }
+
+  Future<String> _getFirebaseDeviceToken() async {
+    String deviceToken = "";
+
+    try {
+      final cancellableOperation = CancelableOperation.fromFuture(
+        FirebaseMessaging.instance.getToken(),
+        onCancel: () {
+          deviceToken = "";
+          return;
+        },
+      ).then((token) {
+        deviceToken = token ?? "";
+      });
+
+      Timer(Duration(seconds: 3), (() {
+        App.logger.info("FCM timeout (3s), handled by VoceChat");
+        cancellableOperation.cancel();
+      }));
+      // deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+      return deviceToken;
+    } catch (e) {
+      App.logger.warning(e);
+      deviceToken = "";
+    }
+    return deviceToken;
   }
 }
