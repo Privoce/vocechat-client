@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.64", "build_num": 34},
+    "latest": {"version": "0.2.65", "build_num": 35},
     "logs":  [
+        {"time": 1673224599051, "version": "0.2.65", "build_num": 35, "updates": [
+            "- fix: bugs related with auto-delete messages."
+        ]},
         {"time": 1673183104078, "version": "0.2.64", "build_num": 34, "updates": [
             "- fix: bugs related with auto-delete messages."
         ]},
