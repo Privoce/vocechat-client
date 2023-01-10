@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/fade_page_route.dart';
 import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/ui/chats/chat/image_page.dart';
+import 'package:vocechat_client/ui/chats/chat/image_page_test.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 
 class ImageBubble extends StatefulWidget {
@@ -42,9 +43,9 @@ class _ImageBubbleState extends State<ImageBubble> {
                 onTap: () {
                   Navigator.of(context).push(FadePageRoute(
                       interBarrierColor: Colors.black,
-                      child: ImagePage(
+                      child: ImagePageTest(
                           initImageFile: widget.imageFile!,
-                          heroTag: widget.localMid,
+                          localMid: widget.localMid,
                           getImage: widget.getImage)));
                 },
               ));

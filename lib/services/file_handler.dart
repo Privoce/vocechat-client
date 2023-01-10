@@ -25,6 +25,9 @@ class FileHandler {
     return directory.path;
   }
 
+  /// Get image thumb with [chatId] and [localMid].
+  ///
+  /// [fileName] is used to get file extension.
   Future<String> imageThumbPath(
       String chatId, String localMid, String fileName) async {
     // Use localMid as filename to avoid special chars.
