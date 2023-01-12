@@ -288,7 +288,8 @@
     "fcmErrorContent":"FCM 配置失败。",
     "fcmErrorCopyErrorLog":"拷贝错误记录。",
 
-    "invitationLinkViewSend":"向朋友发送邀请链接。"
+    "invitationLinkViewSend":"向朋友发送邀请链接。",
     
-    
+    "noFCMTokenTitle":"Firebase 错误",
+    "noFCMTokenDes":"登录流程将继续，但推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。"
 }

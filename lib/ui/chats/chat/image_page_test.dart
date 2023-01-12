@@ -8,23 +8,23 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 
-class ImagePage extends StatefulWidget {
+class ImagePageTest extends StatefulWidget {
   final File initImageFile;
-  final String heroTag;
+  final String localMid;
   final Future<File?> Function() getImage;
 
-  ImagePage(
+  ImagePageTest(
       {required this.initImageFile,
-      required this.heroTag,
+      required this.localMid,
       required this.getImage});
 
   @override
-  State<ImagePage> createState() => _ImagePageState();
+  State<ImagePageTest> createState() => _ImagePageTestState();
 }
 
-class _ImagePageState extends State<ImagePage> {
-  File? imageFile;
-  late bool isFetching;
+class _ImagePageTestState extends State<ImagePageTest> {
+  late File imageFile;
+  final ValueNotifier<bool> _isFetching = ValueNotifier(false);
   late NavigatorState _navigator;
 
   ValueNotifier<ButtonStatus> saveStatus = ValueNotifier(ButtonStatus.normal);
@@ -38,7 +38,8 @@ class _ImagePageState extends State<ImagePage> {
   @override
   void initState() {
     super.initState();
-    isFetching = false;
+
+    imageFile = widget.initImageFile;
 
     _getImage();
   }
@@ -62,11 +63,7 @@ class _ImagePageState extends State<ImagePage> {
     return Stack(
       children: [
         GestureDetector(
-            // behavior: HitTestBehavior.,
             onTap: () async {
-              setState(() {
-                imageFile = null;
-              });
               _navigator.pop();
             },
             child: Center(child: _buildImage())),
@@ -87,11 +84,7 @@ class _ImagePageState extends State<ImagePage> {
                   size: 20,
                   status: status,
                   onPressed: (() {
-                    if (imageFile != null) {
-                      _saveImage(imageFile!);
-                    } else {
-                      _saveImage(widget.initImageFile);
-                    }
+                    _saveImage(imageFile);
                   }));
             }),
         _buildNavBarButton(
@@ -99,7 +92,7 @@ class _ImagePageState extends State<ImagePage> {
             size: 24,
             status: ButtonStatus.normal,
             onPressed: (() {
-              Share.shareFiles([imageFile?.path ?? widget.initImageFile.path]);
+              Share.shareFiles([imageFile.path]);
             }))
       ]),
     );
@@ -159,46 +152,34 @@ class _ImagePageState extends State<ImagePage> {
           minScale: PhotoViewComputedScale.contained,
           maxScale: PhotoViewComputedScale.covered * 2.5,
           child: Hero(
-              tag: widget.heroTag,
-              child: Image.file(widget.initImageFile, fit: BoxFit.contain)),
+              tag: widget.localMid,
+              child: Image.file(imageFile, fit: BoxFit.contain)),
         ),
-        if (imageFile != null)
-          PhotoView.customChild(
-              minScale: PhotoViewComputedScale.contained,
-              maxScale: PhotoViewComputedScale.covered * 2.5,
-              child: Image.file(imageFile!, frameBuilder:
-                  (context, child, frame, wasSynchronouslyLoaded) {
-                if (wasSynchronouslyLoaded) {
-                  return child;
-                } else {
-                  return AnimatedSwitcher(
-                      duration: Duration(milliseconds: 0),
-                      child: frame != null
-                          ? child
-                          : Image.file(widget.initImageFile,
-                              fit: BoxFit.contain));
-                }
-              }, fit: BoxFit.contain)),
-        if (isFetching)
-          Center(
-              child: Container(
-            decoration: BoxDecoration(
-                color: AppColors.coolGrey700.withAlpha(200),
-                borderRadius: BorderRadius.circular(10)),
-            padding: EdgeInsets.all(10),
-            child: CupertinoActivityIndicator(
-              color: Colors.white,
-              radius: 20,
-            ),
-          )),
+        ValueListenableBuilder<bool>(
+            valueListenable: _isFetching,
+            builder: (context, isFetching, _) {
+              if (isFetching) {
+                return Center(
+                    child: Container(
+                  decoration: BoxDecoration(
+                      color: AppColors.coolGrey700.withAlpha(200),
+                      borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.all(10),
+                  child: CupertinoActivityIndicator(
+                    color: Colors.white,
+                    radius: 20,
+                  ),
+                ));
+              }
+
+              return SizedBox.shrink();
+            }),
       ],
     );
   }
 
   Future<File?> _getImage() async {
-    setState(() {
-      isFetching = true;
-    });
+    _isFetching.value = true;
 
     // A bit quicker than PageRoute transitionDuration (300 for FadePageRoute)
     await Future.delayed(Duration(milliseconds: 200));
@@ -208,19 +189,15 @@ class _ImagePageState extends State<ImagePage> {
       if (imageFile != null) {
         setState(() {
           this.imageFile = imageFile;
-          isFetching = false;
+          _isFetching.value = false;
         });
         return imageFile;
       } else {
-        setState(() {
-          isFetching = false;
-        });
+        _isFetching.value = false;
       }
     } catch (e) {
       App.logger.severe(e);
-      setState(() {
-        isFetching = false;
-      });
+      _isFetching.value = false;
     }
     return null;
   }
