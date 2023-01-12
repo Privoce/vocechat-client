@@ -191,6 +191,9 @@ class AuthService {
   }
 
   Future<String> _getFirebaseDeviceToken() async {
+    const int waitingSecs = 8;
+
+    App.logger.info("starts fetching Firebase Token");
     String deviceToken = "";
 
     try {
@@ -202,13 +205,18 @@ class AuthService {
         },
       ).then((token) {
         deviceToken = token ?? "";
+        print("############## token: $token");
       });
 
-      Timer(Duration(seconds: 3), (() {
-        App.logger.info("FCM timeout (3s), handled by VoceChat");
-        cancellableOperation.cancel();
+      Timer(Duration(seconds: waitingSecs), (() {
+        if (deviceToken.isEmpty) {
+          App.logger.info("FCM timeout (${waitingSecs}s), handled by VoceChat");
+          cancellableOperation.cancel();
+        }
       }));
       // deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+      await Future.delayed(Duration(seconds: waitingSecs));
+      App.logger.info("finishes fetching Firebase Token");
       return deviceToken;
     } catch (e) {
       App.logger.warning(e);
@@ -220,6 +228,21 @@ class AuthService {
   Future<TokenLoginRequest> _preparePswdLoginRequest(
       String email, String pswd) async {
     final deviceToken = await _getFirebaseDeviceToken();
+    final context = navigatorKey.currentContext!;
+
+    if (deviceToken.isEmpty) {
+      await showAppAlert(
+          context: context,
+          title: AppLocalizations.of(navigatorKey.currentContext!)!
+              .noFCMTokenTitle,
+          content:
+              AppLocalizations.of(navigatorKey.currentContext!)!.noFCMTokenDes,
+          actions: [
+            AppAlertDialogAction(
+                text: AppLocalizations.of(context)!.ok,
+                action: (() => Navigator.of(context).pop()))
+          ]);
+    }
 
     String device;
 

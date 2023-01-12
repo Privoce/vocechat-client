@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/fade_page_route.dart';
-import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/ui/chats/chat/image_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 
@@ -34,7 +33,14 @@ class _ImageBubbleState extends State<ImageBubble> {
         child: widget.imageFile == null
             ? TextBubble(
                 content: "Image might have been deleted.", hasMention: false)
-            : GestureDetector(
+            :
+            // InstaImageViewer(
+            //     child: Image(
+            //         image:
+            //             // Image.network("https://picsum.photos/id/507/1000").image,
+            //             Image.file(widget.imageFile!).image),
+            // )
+            GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 child: Hero(
                     tag: widget.localMid,

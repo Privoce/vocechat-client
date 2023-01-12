@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.65", "build_num": 35},
+    "latest": {"version": "0.2.66", "build_num": 36},
     "logs":  [
+        {"time": 1673530707447, "version": "0.2.66", "build_num": 36, "updates": [
+            "- fix: bugs related with FCM Push Notifications."
+        ]},
         {"time": 1673224599051, "version": "0.2.65", "build_num": 35, "updates": [
             "- fix: bugs related with auto-delete messages."
         ]},
