@@ -87,7 +87,6 @@ dependencies:
   qr_flutter: ^4.0.0
   mobile_scanner: ^2.1.0
   async: ^2.9.0
-  insta_image_viewer: ^1.0.2
   
   # for debug use.
   # azlistview: 
