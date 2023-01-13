@@ -11,7 +11,6 @@ import 'package:vocechat_client/ui/chats/chat/chat_setting/dm/dm_settings_page.d
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
-import 'package:swipeable_page_route/swipeable_page_route.dart';
 
 class ChatBar extends StatefulWidget implements PreferredSizeWidget {
   final ValueNotifier<GroupInfoM>? groupInfoNotifier;
@@ -52,7 +51,7 @@ class _ChatBarState extends State<ChatBar> {
 
   @override
   Widget build(BuildContext context) {
-    return MorphingAppBar(
+    return AppBar(
         elevation: 0,
         backgroundColor: AppColors.barBg,
         titleSpacing: 0,
