@@ -382,6 +382,51 @@ class FileHandler {
     return readImageThumb(chatId, localMid, fileName);
   }
 
+  // /// Retrieve the previous thumb file before the current one from
+  // /// local document storage.
+  // Future<SingleImageItem?> getPreLocalImageThumb(ChatMsgM chatMsgM) async {
+  //   final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+  //   if (chatId == null) {
+  //     App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+  //     return null;
+  //   }
+
+  //   final preChatMsgM = await ChatMsgDao().getImageMsgBeforeMid(chatMsgM.mid);
+  //   if (preChatMsgM != null) {
+  //     String localMid = preChatMsgM.localMid;
+  //     String? fileName = preChatMsgM.msgNormal?.properties?["name"];
+  //     print(preChatMsgM.values);
+  //     if (fileName != null) {
+  //       final file = await readImageThumb(chatId, localMid, fileName);
+  //       if (file != null) {
+  //         return SingleImageItem(initImageFile: file, chatMsgM: preChatMsgM);
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
+
+  // /// Retrieve the next thumb file before the current one from
+  // /// local document storage.
+  // Future<SingleImageItem?> getNextLocalImageThumb(ChatMsgM chatMsgM) async {
+  //   final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+  //   if (chatId == null) {
+  //     App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+  //     return null;
+  //   }
+
+  //   final nextChatMsgM = await ChatMsgDao().getImageMsgAfterMid(chatMsgM.mid);
+  //   if (nextChatMsgM != null) {
+  //     String localMid = nextChatMsgM.localMid;
+  //     String fileName = nextChatMsgM.msgNormal?.properties?["name"];
+  //     final file = await readImageThumb(chatId, localMid, fileName);
+  //     if (file != null) {
+  //       return SingleImageItem(initImageFile: file, chatMsgM: nextChatMsgM);
+  //     }
+  //   }
+  //   return null;
+  // }
+
   /// Thumb, image use filePath as filename, instead of original filaName.
   ///
   /// Original file name can be retrieved from corresponding chat message.

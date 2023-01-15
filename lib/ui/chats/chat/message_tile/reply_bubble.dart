@@ -10,7 +10,7 @@ import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';

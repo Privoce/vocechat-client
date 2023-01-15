@@ -1,7 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/fade_page_route.dart';
 import 'package:vocechat_client/ui/chats/chat/image_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 
@@ -33,25 +33,28 @@ class _ImageBubbleState extends State<ImageBubble> {
         child: widget.imageFile == null
             ? TextBubble(
                 content: "Image might have been deleted.", hasMention: false)
-            :
-            // InstaImageViewer(
-            //     child: Image(
-            //         image:
-            //             // Image.network("https://picsum.photos/id/507/1000").image,
-            //             Image.file(widget.imageFile!).image),
-            // )
-            GestureDetector(
+            : GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                child: Hero(
-                    tag: widget.localMid,
-                    child: Image.file(widget.imageFile!, fit: BoxFit.contain)),
+                child: Image.file(widget.imageFile!, fit: BoxFit.contain,
+                    frameBuilder:
+                        (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded) {
+                    return child;
+                  } else {
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 100),
+                      child: frame != null
+                          ? child
+                          : const CupertinoActivityIndicator(),
+                    );
+                  }
+                }),
                 onTap: () {
-                  Navigator.of(context).push(FadePageRoute(
-                      interBarrierColor: Colors.black,
-                      child: ImagePage(
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (context) => ImagePage(
                           initImageFile: widget.imageFile!,
-                          heroTag: widget.localMid,
-                          getImage: widget.getImage)));
+                          getImage: widget.getImage));
                 },
               ));
   }

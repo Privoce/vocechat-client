@@ -547,6 +547,14 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return super.first(where: "${ChatMsgM.F_mid} = ?", whereArgs: [mid]);
   }
 
+  // Future<ChatMsgM?> getImageMsgBeforeMid(int mid) async {
+  //   return super.first(where: "${ChatMsgM.F_mid} < ?", whereArgs: [mid]);
+  // }
+
+  // Future<ChatMsgM?> getImageMsgAfterMid(int mid) async {
+  //   return super.first(where: "${ChatMsgM.F_mid} > ?", whereArgs: [mid]);
+  // }
+
   Future<ChatMsgM?> getMsgBylocalMid(String localMid) async {
     return super
         .first(where: "${ChatMsgM.F_localMid} = ?", whereArgs: [localMid]);

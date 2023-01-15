@@ -7,7 +7,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';

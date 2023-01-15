@@ -10,13 +10,9 @@ import 'package:vocechat_client/ui/app_icons_icons.dart';
 
 class ImagePage extends StatefulWidget {
   final File initImageFile;
-  final String heroTag;
   final Future<File?> Function() getImage;
 
-  ImagePage(
-      {required this.initImageFile,
-      required this.heroTag,
-      required this.getImage});
+  ImagePage({required this.initImageFile, required this.getImage});
 
   @override
   State<ImagePage> createState() => _ImagePageState();
@@ -155,13 +151,7 @@ class _ImagePageState extends State<ImagePage> {
   Widget _buildImage() {
     return Stack(
       children: [
-        PhotoView.customChild(
-          minScale: PhotoViewComputedScale.contained,
-          maxScale: PhotoViewComputedScale.covered * 2.5,
-          child: Hero(
-              tag: widget.heroTag,
-              child: Image.file(widget.initImageFile, fit: BoxFit.contain)),
-        ),
+        Image.file(widget.initImageFile, fit: BoxFit.contain),
         if (imageFile != null)
           PhotoView.customChild(
               minScale: PhotoViewComputedScale.contained,
