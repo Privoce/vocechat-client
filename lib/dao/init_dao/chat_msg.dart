@@ -547,13 +547,44 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return super.first(where: "${ChatMsgM.F_mid} = ?", whereArgs: [mid]);
   }
 
-  // Future<ChatMsgM?> getImageMsgBeforeMid(int mid) async {
-  //   return super.first(where: "${ChatMsgM.F_mid} < ?", whereArgs: [mid]);
-  // }
+  Future<ChatMsgM?> getPreImageMsgBeforeMid(int mid,
+      {int? uid, int? gid}) async {
+    String chatIdStr = "";
+    if (uid != null && uid >= 0) {
+      chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
+    } else if (gid != null && gid >= 0) {
+      chatIdStr = "${ChatMsgM.F_gid} = $gid";
+    }
 
-  // Future<ChatMsgM?> getImageMsgAfterMid(int mid) async {
-  //   return super.first(where: "${ChatMsgM.F_mid} > ?", whereArgs: [mid]);
-  // }
+    String sqlStr =
+        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} < $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} DESC LIMIT 1";
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+
+    if (records.isNotEmpty) {
+      final msg = records.first;
+      return ChatMsgM.fromMap(msg);
+    }
+    return null;
+  }
+
+  Future<ChatMsgM?> getNextImageMsgAfterMid(int mid,
+      {int? uid, int? gid}) async {
+    String chatIdStr = "";
+    if (uid != null && uid >= 0) {
+      chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
+    } else if (gid != null && gid >= 0) {
+      chatIdStr = "${ChatMsgM.F_gid} = $gid";
+    }
+    String sqlStr =
+        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} > $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} ASC LIMIT 1";
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+
+    if (records.isNotEmpty) {
+      final msg = records.first;
+      return ChatMsgM.fromMap(msg);
+    }
+    return null;
+  }
 
   Future<ChatMsgM?> getMsgBylocalMid(String localMid) async {
     return super
