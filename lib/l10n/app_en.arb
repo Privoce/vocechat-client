@@ -87,7 +87,9 @@
     "deleteChannelWarningDes": "This channel will be dismissed. All members will have no access to its data.",
     "description":"Description",
     "done": "Done",
+    "download": "Download",
     "edit": "Edit",
+    "edited":"edited",
     "email": "Email",
 
     "file":"File",
@@ -127,6 +129,8 @@
 
     "off":"Off",
     "ok": "OK",
+    "open":"Open",
+    "openWithOtherApps":"Open with other Apps",
     "paste": "Paste",
     "password": "Password",
     "confirmPassword": "Confirm Password",
@@ -150,6 +154,7 @@
     "select":"Select",
     "setNewAvatar": "Set a new avatar",
     "send": "Send",
+    "share":"Share",
     "shareInvitationLink":"Share Invitation Link",
     "shareQrCode": "Share QR Code",
     "signIn": "Sign In",
