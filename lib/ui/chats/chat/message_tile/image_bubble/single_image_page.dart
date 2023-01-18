@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/services/file_handler.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_share_sheet.dart';
 
 class SingleImagePage extends StatefulWidget {
   final File initImageFile;
@@ -83,6 +84,16 @@ class _SingleImagePageState extends State<SingleImagePage>
     _animationController.forward(from: 0);
   }
 
+  void _onLongPress(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return ImageShareSheet(path: "123");
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final child = ValueListenableBuilder<File>(
@@ -117,6 +128,7 @@ class _SingleImagePageState extends State<SingleImagePage>
       onTap: () => Navigator.of(context).pop(),
       onDoubleTap: _onDoubleTap,
       onDoubleTapDown: _onDoubleTapDown,
+      // onLongPress: () => _onLongPress(context),
       child: Container(
           color: Colors.black,
           child: InteractiveViewer(
@@ -154,6 +166,24 @@ class _SingleImagePageState extends State<SingleImagePage>
         _isOriginal = false;
         return serverImageThumb;
       }
+    }
+    return null;
+  }
+
+  /// Keep this function for future refactor.
+  Future<File?> _getOriginalImage(ChatMsgM chatMsgM) async {
+    if (_isOriginal) return null;
+
+    final serverImageNormal = await FileHandler.singleton.getServerImageNormal(
+      chatMsgM,
+      onReceiveProgress: (progress, total) {
+        _progressNotifier.value = progress / total;
+      },
+    );
+    if (serverImageNormal != null) {
+      _imageNotifier.value = serverImageNormal;
+      _isOriginal = true;
+      return serverImageNormal;
     }
     return null;
   }
