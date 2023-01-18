@@ -3,27 +3,26 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/ui/chats/chat/image_page.dart';
+
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 
-class ImageBubbleTest extends StatefulWidget {
+class ChatImageBubble extends StatefulWidget {
   final ChatMsgM chatMsgM;
   final File? imageFile;
   final Future<File?> Function() getImage;
 
-  ImageBubbleTest(
+  ChatImageBubble(
       {required this.imageFile,
       required this.chatMsgM,
       required this.getImage});
 
   @override
-  State<ImageBubbleTest> createState() => _ImageBubbleTestState();
+  State<ChatImageBubble> createState() => _ChatImageBubbleState();
 }
 
-class _ImageBubbleTestState extends State<ImageBubbleTest> {
+class _ChatImageBubbleState extends State<ChatImageBubble> {
   @override
   initState() {
     super.initState();
@@ -57,11 +56,49 @@ class _ImageBubbleTestState extends State<ImageBubbleTest> {
                   showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
-                      builder: (context) => ImageGalleryPage(
-                          initImageItem: SingleImageItem(
-                              initImageFile: widget.imageFile!,
-                              chatMsgM: widget.chatMsgM)));
+                      builder: (context) => FutureBuilder<ImageGalleryData?>(
+                          future: _getImageList(widget.chatMsgM,
+                              uid: widget.chatMsgM.dmUid,
+                              gid: widget.chatMsgM.gid),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return ImageGalleryPage(data: snapshot.data!);
+                            } else {
+                              return Text("Empty");
+                            }
+                          }));
                 },
               ));
   }
+
+  Future<ImageGalleryData> _getImageList(ChatMsgM centerMsgM,
+      {int? uid, int? gid}) async {
+    final centerMid = centerMsgM.mid;
+    final preList = await ChatMsgDao()
+        .getPreImageMsgBeforeMid(centerMid, uid: uid, gid: gid);
+
+    final afterList = await ChatMsgDao()
+        .getNextImageMsgAfterMid(centerMid, uid: uid, gid: gid);
+
+    final initPage = preList != null ? preList.length : 0;
+
+    return ImageGalleryData(
+        imageItemList: (preList
+                    ?.map((e) => SingleImageItem(chatMsgM: e))
+                    .toList()
+                    .reversed
+                    .toList() ??
+                []) +
+            [SingleImageItem(chatMsgM: centerMsgM)] +
+            (afterList?.map((e) => SingleImageItem(chatMsgM: e)).toList() ??
+                []),
+        initialPage: initPage);
+  }
+}
+
+class ImageGalleryData {
+  final List<SingleImageItem> imageItemList;
+  final int initialPage;
+
+  ImageGalleryData({required this.imageItemList, required this.initialPage});
 }

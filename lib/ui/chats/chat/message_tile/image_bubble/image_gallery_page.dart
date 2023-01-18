@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/services/file_handler.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble_test.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_page.dart';
 
 class ImageGalleryPage extends StatefulWidget {
-  const ImageGalleryPage({Key? key, required this.initImageItem})
-      : super(key: key);
+  const ImageGalleryPage({Key? key, required this.data}) : super(key: key);
 
-  final SingleImageItem initImageItem;
+  final ImageGalleryData data;
 
   @override
   State<ImageGalleryPage> createState() => _ImageGalleryPageState();
@@ -18,53 +18,19 @@ class ImageGalleryPage extends StatefulWidget {
 
 class _ImageGalleryPageState extends State<ImageGalleryPage> {
   late final PageController _controller;
-  final List<SingleImageItem> _imageList = [];
-  final Set<String> _imageLocalMidSet = {};
+  late final List<SingleImageItem> _imageList;
 
   @override
   void initState() {
     super.initState();
 
-    _initialize(widget.initImageItem);
-
-    // _loadFrontBackImages(widget.initImageItem);
+    _initController();
+    _imageList = widget.data.imageItemList;
   }
 
   void _initController() {
-    _controller = PageController(keepPage: true);
-
-    _controller.addListener(() {
-      final currentIndex = _controller.page!.round();
-      SingleImageItem currItem = _imageList[_controller.page!.round()];
-      print("listener _currentIndex: $currentIndex");
-      if (currentIndex == 0) {
-        _loadPreImages(currItem);
-      }
-
-      if (currentIndex == _imageList.length) {
-        _loadNextImages(currItem);
-      }
-
-      // setState(() {});
-    });
-  }
-
-  void _addToFront(SingleImageItem item) {
-    if (!_imageLocalMidSet.contains(item.chatMsgM.localMid)) {
-      _imageLocalMidSet.add(item.chatMsgM.localMid);
-      _imageList.insert(0, item);
-
-      // _imageList.sort(((a, b) => a.chatMsgM.mid.compareTo(b.chatMsgM.mid)));
-    }
-  }
-
-  void _addToEnd(SingleImageItem item) {
-    if (!_imageLocalMidSet.contains(item.chatMsgM.localMid)) {
-      _imageLocalMidSet.add(item.chatMsgM.localMid);
-      _imageList.add(item);
-
-      // _imageList.sort(((a, b) => a.chatMsgM.mid.compareTo(b.chatMsgM.mid)));
-    }
+    _controller =
+        PageController(keepPage: true, initialPage: widget.data.initialPage);
   }
 
   @override
@@ -73,7 +39,6 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
         color: Colors.black,
         child: PageView.builder(
           controller: _controller,
-          // allowImplicitScrolling: true,
           itemCount: _imageList.length,
           physics: Platform.isIOS
               ? BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics())
@@ -84,58 +49,43 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
 
   Widget _buildItem(BuildContext context, int index) {
     final item = _imageList[index];
-    print("builder index $index");
-    // print("length: ${_imageList.length}");
 
-    return SingleImagePage(
-        initImageFile: item.initImageFile,
-        loadOriginalImageFileCallBack: ((progressIndicator) {}));
+    return Builder(builder: (context) {
+      return FutureBuilder<_SingleImageData?>(
+          future: _getImageFileData(item.chatMsgM),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data != null) {
+              return SingleImagePage(
+                  initImageFile: snapshot.data!.imageFile,
+                  chatMsgM: item.chatMsgM,
+                  isOriginal: snapshot.data!.isOriginal);
+            } else {
+              return Center(child: Text("cant find file"));
+            }
+          });
+    });
+    // }
   }
 
-  void _initialize(SingleImageItem currItem) async {
-    _initController();
-
-    await _loadPreImages(currItem);
-    await _loadNextImages(currItem);
-  }
-
-  Future<void> _loadPreImages(SingleImageItem currItem) async {
-    final preMsg = await ChatMsgDao().getPreImageMsgBeforeMid(
-        currItem.chatMsgM.mid,
-        uid: currItem.chatMsgM.dmUid,
-        gid: currItem.chatMsgM.gid);
-    if (preMsg != null) {
-      final imageFile = await _getImageFile(preMsg);
-      if (imageFile != null && mounted) {
-        print("currMid: ${currItem.chatMsgM.mid}, preMid: ${preMsg.mid}");
-        setState(() {
-          _addToFront(
-              SingleImageItem(initImageFile: imageFile, chatMsgM: preMsg));
-          // _controller.jumpToPage(_controller.page!.round() + 1);
-          // _currentIndex += 1;
-        });
+  Future<_SingleImageData?> _getImageFileData(ChatMsgM chatMsgM) async {
+    final localImageNormal =
+        await FileHandler.singleton.getLocalImageNormal(chatMsgM);
+    if (localImageNormal != null) {
+      return _SingleImageData(imageFile: localImageNormal, isOriginal: true);
+    } else {
+      final localImageThumb =
+          await FileHandler.singleton.getLocalImageThumb(chatMsgM);
+      if (localImageThumb != null) {
+        return _SingleImageData(imageFile: localImageThumb, isOriginal: false);
       }
     }
+    return null;
   }
+}
 
-  Future<void> _loadNextImages(SingleImageItem currItem) async {
-    final nextMsg = await ChatMsgDao().getNextImageMsgAfterMid(
-        currItem.chatMsgM.mid,
-        uid: currItem.chatMsgM.dmUid,
-        gid: currItem.chatMsgM.gid);
-    if (nextMsg != null) {
-      final imageFile = await _getImageFile(nextMsg);
-      if (imageFile != null && mounted) {
-        setState(() {
-          _addToEnd(
-              SingleImageItem(initImageFile: imageFile, chatMsgM: nextMsg));
-        });
-      }
-    }
-  }
+class _SingleImageData {
+  final bool isOriginal;
+  final File imageFile;
 
-  Future<File?> _getImageFile(ChatMsgM chatMsgM) async {
-    return (await FileHandler.singleton.getImageNormal(chatMsgM)) ??
-        (await FileHandler.singleton.getImageThumb(chatMsgM));
-  }
+  _SingleImageData({required this.imageFile, required this.isOriginal});
 }

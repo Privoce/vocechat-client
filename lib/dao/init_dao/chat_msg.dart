@@ -412,7 +412,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       msgM.status == status.name;
       await super.update(msgM);
       App.logger.info(
-          "Chat Msg Updated. mid: ${msgM.mid}, localMid: ${msgM.localMid}");
+          "Chat Msg status updated. mid: ${msgM.mid}, localMid: ${msgM.localMid}, status: $status");
       return true;
     }
     return false;
@@ -547,8 +547,8 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return super.first(where: "${ChatMsgM.F_mid} = ?", whereArgs: [mid]);
   }
 
-  Future<ChatMsgM?> getPreImageMsgBeforeMid(int mid,
-      {int? uid, int? gid}) async {
+  Future<List<ChatMsgM>?> getPreImageMsgBeforeMid(int mid,
+      {int? limit, int? uid, int? gid}) async {
     String chatIdStr = "";
     if (uid != null && uid >= 0) {
       chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
@@ -557,18 +557,28 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     }
 
     String sqlStr =
-        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} < $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} DESC LIMIT 1";
+        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} < $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} DESC ${limit != null ? "LIMIT $limit" : ""}";
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
 
     if (records.isNotEmpty) {
-      final msg = records.first;
-      return ChatMsgM.fromMap(msg);
+      final msgList = records
+          .map((e) {
+            final msgM = ChatMsgM.fromMap(e);
+            if (!msgM.expires) {
+              return msgM;
+            }
+          })
+          .toList()
+          .whereType<ChatMsgM>()
+          .toList();
+
+      return msgList;
     }
     return null;
   }
 
-  Future<ChatMsgM?> getNextImageMsgAfterMid(int mid,
-      {int? uid, int? gid}) async {
+  Future<List<ChatMsgM>?> getNextImageMsgAfterMid(int mid,
+      {int? limit, int? uid, int? gid}) async {
     String chatIdStr = "";
     if (uid != null && uid >= 0) {
       chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
@@ -576,12 +586,22 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       chatIdStr = "${ChatMsgM.F_gid} = $gid";
     }
     String sqlStr =
-        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} > $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} ASC LIMIT 1";
+        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} > $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} ASC ${limit != null ? "LIMIT $limit" : ""}";
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
 
     if (records.isNotEmpty) {
-      final msg = records.first;
-      return ChatMsgM.fromMap(msg);
+      final msgList = records
+          .map((e) {
+            final msgM = ChatMsgM.fromMap(e);
+            if (!msgM.expires) {
+              return msgM;
+            }
+          })
+          .toList()
+          .whereType<ChatMsgM>()
+          .toList();
+
+      return msgList;
     }
     return null;
   }

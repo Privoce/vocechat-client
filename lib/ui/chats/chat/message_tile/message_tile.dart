@@ -359,7 +359,7 @@ class _MessageTileState extends State<MessageTile> {
 
           case MsgContentType.file:
             if (widget.chatMsgM.isImageMsg) {
-              return ImageBubbleTest(
+              return ChatImageBubble(
                   imageFile: widget.image,
                   chatMsgM: widget.chatMsgM,
                   getImage: () async {

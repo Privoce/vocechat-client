@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 
 class SingleImageItem {
-  final File initImageFile;
+  // final File initImageFile;
   final ChatMsgM chatMsgM;
 
   // TODO: change logic of this function to:
@@ -25,5 +25,8 @@ class SingleImageItem {
     // final String localMid =
   }
 
-  SingleImageItem({required this.initImageFile, required this.chatMsgM});
+  SingleImageItem(
+      {
+      // required this.initImageFile,
+      required this.chatMsgM});
 }

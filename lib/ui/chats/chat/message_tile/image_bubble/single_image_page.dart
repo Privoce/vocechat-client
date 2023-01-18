@@ -1,19 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/services/file_handler.dart';
 
 class SingleImagePage extends StatefulWidget {
   final File initImageFile;
-  final Future<File?>? Function(
-          Function(int progress, int size)? progressIndicator)?
-      loadOriginalImageFileCallBack;
-
-  final int? originalImageSize;
+  final ChatMsgM chatMsgM;
+  final bool isOriginal;
 
   const SingleImagePage(
       {Key? key,
       required this.initImageFile,
-      required this.loadOriginalImageFileCallBack,
-      this.originalImageSize})
+      required this.chatMsgM,
+      required this.isOriginal})
       : super(key: key);
 
   @override
@@ -24,6 +23,7 @@ class _SingleImagePageState extends State<SingleImagePage>
     with SingleTickerProviderStateMixin {
   late ValueNotifier<File> _imageNotifier;
   final ValueNotifier<double> _progressNotifier = ValueNotifier(0);
+  late bool _isOriginal;
 
   // For zoom in and out.
   final TransformationController _transformationController =
@@ -40,8 +40,9 @@ class _SingleImagePageState extends State<SingleImagePage>
     super.initState();
     _initImageNotifier();
     _initAnimationController();
+    _isOriginal = widget.isOriginal;
 
-    _loadOriginalImageFile();
+    _getServerImageFile(widget.chatMsgM);
   }
 
   void _initImageNotifier() {
@@ -55,21 +56,6 @@ class _SingleImagePageState extends State<SingleImagePage>
     )..addListener(() {
         _transformationController.value = _animation.value;
       });
-  }
-
-  Future<void> _loadOriginalImageFile() async {
-    if (widget.loadOriginalImageFileCallBack != null) {
-      final originalImageFile =
-          await widget.loadOriginalImageFileCallBack!(((progress, size) {
-        print("progress: $progress, size: $size");
-        _progressNotifier.value = progress / size;
-      }));
-
-      if (originalImageFile != null) {
-        _progressNotifier.value = 1;
-        _imageNotifier.value = originalImageFile;
-      }
-    }
   }
 
   void _onDoubleTapDown(TapDownDetails details) {
@@ -107,7 +93,7 @@ class _SingleImagePageState extends State<SingleImagePage>
               Center(
                   child: Image.file(
                 imageFile,
-                fit: BoxFit.fitWidth,
+                fit: BoxFit.contain,
                 height: double.infinity,
                 width: double.infinity,
                 alignment: Alignment.center,
@@ -139,5 +125,36 @@ class _SingleImagePageState extends State<SingleImagePage>
               transformationController: _transformationController,
               child: child)),
     );
+  }
+
+  Future<File?> _getServerImageFile(ChatMsgM chatMsgM) async {
+    if (_isOriginal) {
+      return null;
+    }
+
+    final serverImageNormal = await FileHandler.singleton.getServerImageNormal(
+      chatMsgM,
+      onReceiveProgress: (progress, total) {
+        _progressNotifier.value = progress / total;
+      },
+    );
+    if (serverImageNormal != null) {
+      _imageNotifier.value = serverImageNormal;
+      _isOriginal = true;
+      return serverImageNormal;
+    } else {
+      final serverImageThumb = await FileHandler.singleton.getServerImageThumb(
+        chatMsgM,
+        onReceiveProgress: (progress, total) {
+          _progressNotifier.value = progress / total;
+        },
+      );
+      if (serverImageThumb != null) {
+        _imageNotifier.value = serverImageThumb;
+        _isOriginal = false;
+        return serverImageThumb;
+      }
+    }
+    return null;
   }
 }

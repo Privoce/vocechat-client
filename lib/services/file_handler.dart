@@ -461,6 +461,33 @@ class FileHandler {
     return null;
   }
 
+  Future<File?> getServerImageThumb(ChatMsgM chatMsgM,
+      {void Function(int progress, int total)? onReceiveProgress}) async {
+    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    if (chatId == null) {
+      App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+      return null;
+    }
+
+    String filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply!.content;
+    String localMid = chatMsgM.localMid;
+    String fileName = chatMsgM.msgNormal?.properties?["name"];
+
+    // try server.
+    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+
+    try {
+      final res =
+          await resourceApi.getFile(filePath, true, true, onReceiveProgress);
+      if (res.statusCode == 200 && res.data != null) {
+        return saveImageThumb(chatId, res.data!, localMid, fileName);
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
+  }
+
   /// Retrieve original image file from local document storage.
   Future<File?> getLocalImageNormal(ChatMsgM chatMsgM) async {
     final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
@@ -497,6 +524,32 @@ class FileHandler {
 
     try {
       final res = await resourceApi.getFile(filePath, false, true);
+      if (res.statusCode == 200 && res.data != null) {
+        return saveImageNormal(chatId, res.data!, localMid, fileName);
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
+  }
+
+  Future<File?> getServerImageNormal(ChatMsgM chatMsgM,
+      {void Function(int progress, int total)? onReceiveProgress}) async {
+    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    if (chatId == null) {
+      App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+      return null;
+    }
+
+    String filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply!.content;
+    String localMid = chatMsgM.localMid;
+    String fileName = chatMsgM.msgNormal?.properties?["name"];
+
+    // try server.
+    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    try {
+      final res =
+          await resourceApi.getFile(filePath, false, true, onReceiveProgress);
       if (res.statusCode == 200 && res.data != null) {
         return saveImageNormal(chatId, res.data!, localMid, fileName);
       }
