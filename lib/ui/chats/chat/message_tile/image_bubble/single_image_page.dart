@@ -8,12 +8,14 @@ class SingleImagePage extends StatefulWidget {
   final File initImageFile;
   final ChatMsgM chatMsgM;
   final bool isOriginal;
+  final void Function(double)? onScaleChanged;
 
   const SingleImagePage(
       {Key? key,
       required this.initImageFile,
       required this.chatMsgM,
-      required this.isOriginal})
+      required this.isOriginal,
+      required this.onScaleChanged})
       : super(key: key);
 
   @override
@@ -128,13 +130,23 @@ class _SingleImagePageState extends State<SingleImagePage>
       onTap: () => Navigator.of(context).pop(),
       onDoubleTap: _onDoubleTap,
       onDoubleTapDown: _onDoubleTapDown,
+
       // onLongPress: () => _onLongPress(context),
       child: Container(
           color: Colors.black,
           child: InteractiveViewer(
               maxScale: _zoomInMaxScale,
-              boundaryMargin: EdgeInsets.zero,
+              panEnabled: true,
+              // boundaryMargin: EdgeInsets.all(double.infinity),
               transformationController: _transformationController,
+              onInteractionEnd: (details) {
+                double scale =
+                    _transformationController.value.getMaxScaleOnAxis();
+
+                if (widget.onScaleChanged != null) {
+                  widget.onScaleChanged!(scale);
+                }
+              },
               child: child)),
     );
   }
