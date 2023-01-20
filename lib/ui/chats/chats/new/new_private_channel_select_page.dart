@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/models/group/group_create_request.dart';
 import 'package:vocechat_client/api/models/group/group_create_response.dart';
@@ -120,38 +121,96 @@ class _NewPrivateChannelSelectPageState
   }
 
   void createChannel() async {
-    // try {
-    String name = widget.nameController.text.trim();
-    if (name.isEmpty) {
-      name = AppLocalizations.of(context)!.newPrivateChannel;
+    try {
+      String name = widget.nameController.text.trim();
+      if (name.isEmpty) {
+        name = AppLocalizations.of(context)!.newPrivateChannel;
+      }
+
+      String description = widget.desController.text.trim();
+      List<int>? members = widget.selectedNotifier.value;
+
+      if (members.length < 2) {
+        App.logger.severe("Member count not enough: ${members.length}");
+        return;
+      }
+
+      final req = GroupCreateRequest(
+          name: name,
+          description: description,
+          isPublic: false,
+          members: members);
+
+      final serverVersionRes =
+          await AdminSystemApi(App.app.chatServerM.fullUrl).getServerVersion();
+      if (serverVersionRes.statusCode == 200) {
+        final serverVersion = serverVersionRes.data!;
+
+        if ("0.3.3".compareTo(serverVersion) > 0) {
+          await _createGroupBfe033(req);
+        } else {
+          await _createGroupAft033(req);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      App.logger.severe(e);
     }
+  }
 
-    final String description = "";
-
-    List<int>? members;
-
-    members = widget.selectedNotifier.value;
-
-    if (members.length < 2) {
-      App.logger.severe("Member count not enough: ${members.length}");
-      // TODO: add alert.
-      return;
+  Future<int?> createGroupBfe033(GroupCreateRequest req) async {
+    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final res = await groupApi.createBfe033(req);
+    if (res.statusCode == 200 && res.data != null) {
+      return res.data!;
     }
+    return null;
+  }
 
-    final req = GroupCreateRequest(
-        name: name,
-        description: description,
-        isPublic: false,
-        members: members);
+  Future<GroupCreateResponse?> createGroupAft033(GroupCreateRequest req) async {
+    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final res = await groupApi.createAft033(req);
+    if (res.statusCode == 200 && res.data != null) {
+      return res.data!;
+    }
+    return null;
+  }
 
-    App.logger.info(req.toJson());
-
-    final groupCreateResponse = await createGroup(req);
-    if (groupCreateResponse == null || groupCreateResponse.gid == -1) {
-      App.logger.severe("Group Creation Failed");
+  Future<void> _createGroupBfe033(GroupCreateRequest req) async {
+    final gid = await createGroupBfe033(req);
+    if (gid == null || gid == -1) {
+      App.logger.severe("Group Creation (before 0.3.4) Failed");
     } else {
-      GroupInfo groupInfo = GroupInfo(groupCreateResponse.gid,
-          App.app.userDb!.uid, name, description, members, false, 0, []);
+      GroupInfo groupInfo = GroupInfo(gid, App.app.userDb!.uid, req.name,
+          req.description, req.members, false, 0, []);
+      GroupInfoM groupInfoM = GroupInfoM.item(gid, "", jsonEncode(groupInfo),
+          Uint8List(0), "", 0, 1, DateTime.now().millisecondsSinceEpoch);
+
+      try {
+        await GroupInfoDao()
+            .addOrNotUpdate(groupInfoM)
+            .then((value) => Navigator.pop(context, value));
+      } catch (e) {
+        App.logger.severe(e);
+        Navigator.pop(context, groupInfoM);
+      }
+    }
+  }
+
+  Future<void> _createGroupAft033(GroupCreateRequest req) async {
+    final groupCreateResponse = await createGroupAft033(req);
+    if (groupCreateResponse == null || groupCreateResponse.gid == -1) {
+      App.logger.severe("Group Creation (after 0.3.4) Failed");
+    } else {
+      GroupInfo groupInfo = GroupInfo(
+          groupCreateResponse.gid,
+          App.app.userDb!.uid,
+          req.name,
+          req.description,
+          req.members,
+          false,
+          0, []);
       GroupInfoM groupInfoM = GroupInfoM.item(
           groupCreateResponse.gid,
           "",
@@ -171,17 +230,5 @@ class _NewPrivateChannelSelectPageState
         Navigator.pop(context, groupInfoM);
       }
     }
-    // } catch (e) {
-    //   App.logger.severe(e);
-    // }
-  }
-
-  Future<GroupCreateResponse?> createGroup(GroupCreateRequest req) async {
-    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
-    final res = await groupApi.create(req);
-    if (res.statusCode == 200 && res.data != null) {
-      return res.data!;
-    }
-    return null;
   }
 }
