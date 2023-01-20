@@ -12,6 +12,7 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/chat_image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
@@ -108,6 +109,7 @@ class PinnedMsgTile extends StatelessWidget {
           future: getMsgThumb(chatId!, msg.content, imageName),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
+              // return ChatImageBubble(imageFile: snapshot.data!, getImageList: getImageList)
               return ImageBubble(
                   imageFile: snapshot.data!,
                   localMid: msg.content,

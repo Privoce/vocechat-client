@@ -7,13 +7,13 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_i
 
 class SingleImagePage extends StatefulWidget {
   final File initImageFile;
-  final SingleImageItem singleImageItem;
+  final SingleImageGetters singleImageGetters;
   final void Function(double)? onScaleChanged;
 
   const SingleImagePage(
       {Key? key,
       required this.initImageFile,
-      required this.singleImageItem,
+      required this.singleImageGetters,
       required this.onScaleChanged})
       : super(key: key);
 
@@ -42,15 +42,16 @@ class _SingleImagePageState extends State<SingleImagePage>
     super.initState();
     _initImageNotifier();
     _initAnimationController();
-    _isOriginal = widget.singleImageItem.isOriginal;
+    _isOriginal = widget.singleImageGetters.isOriginal;
 
-    widget.singleImageItem.getServerImageFile(_imageNotifier,
+    widget.singleImageGetters.getServerImageFile(_isOriginal, _imageNotifier,
         ((progress, total) {
       final p = progress / total;
       _progressNotifier.value = p;
     }));
 
-    _getServerImageFile(widget.singleImageItem.chatMsgM);
+    // _getServerImageFile(widget.singleImageGetters.chatMsgM);
+    // widget.singleImageGetters.getServerImageFile();
   }
 
   void _initImageNotifier() {

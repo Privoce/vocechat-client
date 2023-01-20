@@ -9,10 +9,11 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_i
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 
 class ChatImageBubble extends StatefulWidget {
-  final ChatMsgM chatMsgM;
+  // final ChatMsgM chatMsgM;
+  final Future<ImageGalleryData> Function() getImageList;
   final File? imageFile;
 
-  ChatImageBubble({required this.imageFile, required this.chatMsgM});
+  ChatImageBubble({required this.imageFile, required this.getImageList});
 
   @override
   State<ChatImageBubble> createState() => _ChatImageBubbleState();
@@ -54,9 +55,7 @@ class _ChatImageBubbleState extends State<ChatImageBubble> {
                       context: context,
                       isScrollControlled: true,
                       builder: (context) => FutureBuilder<ImageGalleryData?>(
-                          future: _getImageList(widget.chatMsgM,
-                              uid: widget.chatMsgM.dmUid,
-                              gid: widget.chatMsgM.gid),
+                          future: widget.getImageList(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData) {
                               return ImageGalleryPage(data: snapshot.data!);
@@ -67,34 +66,10 @@ class _ChatImageBubbleState extends State<ChatImageBubble> {
                 },
               ));
   }
-
-  Future<ImageGalleryData> _getImageList(ChatMsgM centerMsgM,
-      {int? uid, int? gid}) async {
-    final centerMid = centerMsgM.mid;
-    final preList = await ChatMsgDao()
-        .getPreImageMsgBeforeMid(centerMid, uid: uid, gid: gid);
-
-    final afterList = await ChatMsgDao()
-        .getNextImageMsgAfterMid(centerMid, uid: uid, gid: gid);
-
-    final initPage = preList != null ? preList.length : 0;
-
-    return ImageGalleryData(
-        imageItemList: (preList
-                    ?.map((e) => SingleImageItem(chatMsgM: e))
-                    .toList()
-                    .reversed
-                    .toList() ??
-                []) +
-            [SingleImageItem(chatMsgM: centerMsgM)] +
-            (afterList?.map((e) => SingleImageItem(chatMsgM: e)).toList() ??
-                []),
-        initialPage: initPage);
-  }
 }
 
 class ImageGalleryData {
-  final List<SingleImageItem> imageItemList;
+  final List<SingleImageGetters> imageItemList;
   final int initialPage;
 
   ImageGalleryData({required this.imageItemList, required this.initialPage});

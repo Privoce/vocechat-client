@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ class ImageGalleryPage extends StatefulWidget {
 
 class _ImageGalleryPageState extends State<ImageGalleryPage> {
   late final PageController _controller;
-  late final List<SingleImageItem> _imageList;
+  late final List<SingleImageGetters> _imageList;
 
   late final ValueNotifier<bool> _showButtons;
   final ValueNotifier<ButtonStatus> _saveBtnStatus =
@@ -98,7 +99,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
           if (snapshot.hasData && snapshot.data != null) {
             return SingleImagePage(
               initImageFile: snapshot.data!.imageFile,
-              singleImageItem: item,
+              singleImageGetters: item,
               onScaleChanged: (scale) {
                 setState(() {
                   _enablePageView = scale <= 1.0;
@@ -157,10 +158,14 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
   void _share() async {
     final index = _controller.page?.round() ?? widget.data.initialPage;
 
+    final singleImageData = await _imageList[index].getLocalImageFile();
+
+    if (singleImageData == null) return;
+
     showModalBottomSheet(
         context: context,
         builder: (context) {
-          return ImageShareSheet(chatMsgM: _imageList[index].chatMsgM);
+          return ImageShareSheet(imageFile: singleImageData.imageFile);
         });
   }
 
@@ -213,11 +218,9 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
 
     try {
       final index = _controller.page?.round() ?? widget.data.initialPage;
+      final singleImageData = await _imageList[index].getLocalImageFile();
 
-      final imageFile =
-          (await _getLocalImageFileData(_imageList[index].chatMsgM))?.imageFile;
-
-      if (imageFile == null) {
+      if (singleImageData?.imageFile == null) {
         _saveBtnStatus.value = ButtonStatus.error;
         await Future.delayed(Duration(seconds: 2)).then((_) async {
           _saveBtnStatus.value = ButtonStatus.normal;
@@ -225,7 +228,8 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
         return;
       }
 
-      final result = await ImageGallerySaver.saveFile(imageFile.path);
+      final result =
+          await ImageGallerySaver.saveFile(singleImageData!.imageFile.path);
       if (result["isSuccess"]) {
         _saveBtnStatus.value = ButtonStatus.success;
         await Future.delayed(Duration(seconds: 2)).then((_) async {
