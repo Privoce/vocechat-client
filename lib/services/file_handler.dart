@@ -382,6 +382,51 @@ class FileHandler {
     return readImageThumb(chatId, localMid, fileName);
   }
 
+  // /// Retrieve the previous thumb file before the current one from
+  // /// local document storage.
+  // Future<SingleImageItem?> getPreLocalImageThumb(ChatMsgM chatMsgM) async {
+  //   final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+  //   if (chatId == null) {
+  //     App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+  //     return null;
+  //   }
+
+  //   final preChatMsgM = await ChatMsgDao().getImageMsgBeforeMid(chatMsgM.mid);
+  //   if (preChatMsgM != null) {
+  //     String localMid = preChatMsgM.localMid;
+  //     String? fileName = preChatMsgM.msgNormal?.properties?["name"];
+  //     print(preChatMsgM.values);
+  //     if (fileName != null) {
+  //       final file = await readImageThumb(chatId, localMid, fileName);
+  //       if (file != null) {
+  //         return SingleImageItem(initImageFile: file, chatMsgM: preChatMsgM);
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
+
+  // /// Retrieve the next thumb file before the current one from
+  // /// local document storage.
+  // Future<SingleImageItem?> getNextLocalImageThumb(ChatMsgM chatMsgM) async {
+  //   final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+  //   if (chatId == null) {
+  //     App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+  //     return null;
+  //   }
+
+  //   final nextChatMsgM = await ChatMsgDao().getImageMsgAfterMid(chatMsgM.mid);
+  //   if (nextChatMsgM != null) {
+  //     String localMid = nextChatMsgM.localMid;
+  //     String fileName = nextChatMsgM.msgNormal?.properties?["name"];
+  //     final file = await readImageThumb(chatId, localMid, fileName);
+  //     if (file != null) {
+  //       return SingleImageItem(initImageFile: file, chatMsgM: nextChatMsgM);
+  //     }
+  //   }
+  //   return null;
+  // }
+
   /// Thumb, image use filePath as filename, instead of original filaName.
   ///
   /// Original file name can be retrieved from corresponding chat message.
@@ -407,6 +452,33 @@ class FileHandler {
 
     try {
       final res = await resourceApi.getFile(filePath, true, true);
+      if (res.statusCode == 200 && res.data != null) {
+        return saveImageThumb(chatId, res.data!, localMid, fileName);
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
+  }
+
+  Future<File?> getServerImageThumb(ChatMsgM chatMsgM,
+      {void Function(int progress, int total)? onReceiveProgress}) async {
+    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    if (chatId == null) {
+      App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+      return null;
+    }
+
+    String filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply!.content;
+    String localMid = chatMsgM.localMid;
+    String fileName = chatMsgM.msgNormal?.properties?["name"];
+
+    // try server.
+    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+
+    try {
+      final res =
+          await resourceApi.getFile(filePath, true, true, onReceiveProgress);
       if (res.statusCode == 200 && res.data != null) {
         return saveImageThumb(chatId, res.data!, localMid, fileName);
       }
@@ -459,6 +531,41 @@ class FileHandler {
       App.logger.severe(e);
     }
     return null;
+  }
+
+  Future<File?> getServerImageNormal(ChatMsgM chatMsgM,
+      {void Function(int progress, int total)? onReceiveProgress}) async {
+    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    if (chatId == null) {
+      App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
+      return null;
+    }
+
+    String filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply!.content;
+    String localMid = chatMsgM.localMid;
+    String fileName = chatMsgM.msgNormal?.properties?["name"];
+
+    // try server.
+    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    try {
+      final res =
+          await resourceApi.getFile(filePath, false, true, onReceiveProgress);
+      if (res.statusCode == 200 && res.data != null) {
+        return saveImageNormal(chatId, res.data!, localMid, fileName);
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
+  }
+
+  /// Get image file saved locally.
+  ///
+  /// Will return imageNormal if exists, otherwise return imageThumb.
+  /// If these two files are not available, return null.
+  Future<File?> getLocalImage(ChatMsgM chatMsgM) async {
+    return (await getLocalImageNormal(chatMsgM)) ??
+        (await getLocalImageThumb(chatMsgM));
   }
 
   // Future<File?> getVideoThumb(ChatMsgM chatMsgM) async {

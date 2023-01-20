@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/models/group/group_create_request.dart';
+import 'package:vocechat_client/api/models/group/group_create_response.dart';
 import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -209,14 +210,21 @@ class _NewChannelPageState extends State<NewChannelPage> {
 
       App.logger.info(req.toJson());
 
-      final gid = await createGroup(req);
-      if (gid == -1) {
+      final groupCreateResponse = await createGroup(req);
+      if (groupCreateResponse == null || groupCreateResponse.gid == -1) {
         App.logger.severe("Group Creation Failed");
       } else {
-        GroupInfo groupInfo = GroupInfo(
-            gid, App.app.userDb!.uid, name, description, [], true, 0, []);
-        GroupInfoM groupInfoM = GroupInfoM.item(gid, "", jsonEncode(groupInfo),
-            Uint8List(0), "", 1, 1, DateTime.now().millisecondsSinceEpoch);
+        GroupInfo groupInfo = GroupInfo(groupCreateResponse.gid,
+            App.app.userDb!.uid, name, description, [], true, 0, []);
+        GroupInfoM groupInfoM = GroupInfoM.item(
+            groupCreateResponse.gid,
+            "",
+            jsonEncode(groupInfo),
+            Uint8List(0),
+            "",
+            1,
+            1,
+            groupCreateResponse.createdAt);
         await GroupInfoDao()
             .addOrNotUpdate(groupInfoM)
             .then((value) => Navigator.pop(context, value));
@@ -226,13 +234,12 @@ class _NewChannelPageState extends State<NewChannelPage> {
     }
   }
 
-  Future<int> createGroup(GroupCreateRequest req) async {
+  Future<GroupCreateResponse?> createGroup(GroupCreateRequest req) async {
     final groupApi = GroupApi(App.app.chatServerM.fullUrl);
     final res = await groupApi.create(req);
     if (res.statusCode == 200 && res.data != null) {
-      final gid = res.data!;
-      return gid;
+      return res.data!;
     }
-    return -1;
+    return null;
   }
 }

@@ -412,7 +412,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       msgM.status == status.name;
       await super.update(msgM);
       App.logger.info(
-          "Chat Msg Updated. mid: ${msgM.mid}, localMid: ${msgM.localMid}");
+          "Chat Msg status updated. mid: ${msgM.mid}, localMid: ${msgM.localMid}, status: $status");
       return true;
     }
     return false;
@@ -545,6 +545,65 @@ class ChatMsgDao extends Dao<ChatMsgM> {
 
   Future<ChatMsgM?> getMsgByMid(int mid) async {
     return super.first(where: "${ChatMsgM.F_mid} = ?", whereArgs: [mid]);
+  }
+
+  Future<List<ChatMsgM>?> getPreImageMsgBeforeMid(int mid,
+      {int? limit, int? uid, int? gid}) async {
+    String chatIdStr = "";
+    if (uid != null && uid >= 0) {
+      chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
+    } else if (gid != null && gid >= 0) {
+      chatIdStr = "${ChatMsgM.F_gid} = $gid";
+    }
+
+    String sqlStr =
+        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} < $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} DESC ${limit != null ? "LIMIT $limit" : ""}";
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+
+    if (records.isNotEmpty) {
+      final msgList = records
+          .map((e) {
+            final msgM = ChatMsgM.fromMap(e);
+            if (!msgM.expires) {
+              return msgM;
+            }
+          })
+          .toList()
+          .whereType<ChatMsgM>()
+          .toList();
+
+      return msgList;
+    }
+    return null;
+  }
+
+  Future<List<ChatMsgM>?> getNextImageMsgAfterMid(int mid,
+      {int? limit, int? uid, int? gid}) async {
+    String chatIdStr = "";
+    if (uid != null && uid >= 0) {
+      chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
+    } else if (gid != null && gid >= 0) {
+      chatIdStr = "${ChatMsgM.F_gid} = $gid";
+    }
+    String sqlStr =
+        "SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_mid} > $mid AND $chatIdStr AND json_extract(${ChatMsgM.F_detail}, '\$.properties.content_type') LIKE 'image/%' ORDER BY ${ChatMsgM.F_mid} ASC ${limit != null ? "LIMIT $limit" : ""}";
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+
+    if (records.isNotEmpty) {
+      final msgList = records
+          .map((e) {
+            final msgM = ChatMsgM.fromMap(e);
+            if (!msgM.expires) {
+              return msgM;
+            }
+          })
+          .toList()
+          .whereType<ChatMsgM>()
+          .toList();
+
+      return msgList;
+    }
+    return null;
   }
 
   Future<ChatMsgM?> getMsgBylocalMid(String localMid) async {

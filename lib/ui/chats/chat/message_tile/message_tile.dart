@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
@@ -16,12 +15,12 @@ import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/chat_image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:vocechat_client/ui/widgets/app_icon.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -360,9 +359,9 @@ class _MessageTileState extends State<MessageTile> {
 
           case MsgContentType.file:
             if (widget.chatMsgM.isImageMsg) {
-              return ImageBubble(
+              return ChatImageBubble(
                   imageFile: widget.image,
-                  localMid: widget.chatMsgM.localMid,
+                  chatMsgM: widget.chatMsgM,
                   getImage: () async {
                     final imageFile = await FileHandler.singleton
                         .getImageNormal(widget.chatMsgM);
@@ -372,6 +371,7 @@ class _MessageTileState extends State<MessageTile> {
                     }
                     return null;
                   });
+              // return ImageBubbleTest(chatMsgM: widget.chatMsgM);
             }
             // else if (widget.chatMsgM.isVideoMsg) {
             //   return VideoBubble(

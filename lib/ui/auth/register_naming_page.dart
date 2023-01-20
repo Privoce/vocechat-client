@@ -11,6 +11,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_alert_dialog.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
+import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -238,6 +239,20 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       String deviceToken = await _getFirebaseDeviceToken();
       String device;
 
+      if (deviceToken.isEmpty) {
+        await showAppAlert(
+            context: context,
+            title: AppLocalizations.of(navigatorKey.currentContext!)!
+                .noFCMTokenTitle,
+            content: AppLocalizations.of(navigatorKey.currentContext!)!
+                .noFCMTokenDes,
+            actions: [
+              AppAlertDialogAction(
+                  text: AppLocalizations.of(context)!.ok,
+                  action: (() => Navigator.of(context).pop()))
+            ]);
+      }
+
       if (Platform.isIOS) {
         device = "iOS";
       } else if (Platform.isAndroid) {
@@ -283,6 +298,9 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
   }
 
   Future<String> _getFirebaseDeviceToken() async {
+    const int waitingSecs = 3;
+
+    App.logger.info("starts fetching Firebase Token");
     String deviceToken = "";
 
     try {
@@ -296,11 +314,15 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         deviceToken = token ?? "";
       });
 
-      Timer(Duration(seconds: 3), (() {
-        App.logger.info("FCM timeout (3s), handled by VoceChat");
-        cancellableOperation.cancel();
+      Timer(Duration(seconds: waitingSecs), (() {
+        if (deviceToken.isEmpty) {
+          App.logger.info("FCM timeout (${waitingSecs}s), handled by VoceChat");
+          cancellableOperation.cancel();
+        }
       }));
-      // deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+
+      await Future.delayed(Duration(seconds: waitingSecs));
+      App.logger.info("finishes fetching Firebase Token");
       return deviceToken;
     } catch (e) {
       App.logger.warning(e);

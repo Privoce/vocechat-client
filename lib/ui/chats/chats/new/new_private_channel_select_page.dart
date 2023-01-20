@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/models/group/group_create_request.dart';
+import 'package:vocechat_client/api/models/group/group_create_response.dart';
 import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -119,62 +120,68 @@ class _NewPrivateChannelSelectPageState
   }
 
   void createChannel() async {
-    try {
-      String name = widget.nameController.text.trim();
-      if (name.isEmpty) {
-        name = AppLocalizations.of(context)!.newPrivateChannel;
-      }
-
-      final String description = "";
-
-      List<int>? members;
-
-      members = widget.selectedNotifier.value;
-
-      if (members.length < 2) {
-        App.logger.severe("Member count not enough: ${members.length}");
-        // TODO: add alert.
-        return;
-      }
-
-      final req = GroupCreateRequest(
-          name: name,
-          description: description,
-          isPublic: false,
-          members: members);
-
-      App.logger.info(req.toJson());
-
-      final gid = await createGroup(req);
-      if (gid == -1) {
-        App.logger.severe("Group Creation Failed");
-      } else {
-        GroupInfo groupInfo = GroupInfo(
-            gid, App.app.userDb!.uid, name, description, members, false, 0, []);
-        GroupInfoM groupInfoM = GroupInfoM.item(gid, "", jsonEncode(groupInfo),
-            Uint8List(0), "", 0, 1, DateTime.now().millisecondsSinceEpoch);
-
-        try {
-          await GroupInfoDao()
-              .addOrNotUpdate(groupInfoM)
-              .then((value) => Navigator.pop(context, value));
-        } catch (e) {
-          App.logger.severe(e);
-          Navigator.pop(context, groupInfoM);
-        }
-      }
-    } catch (e) {
-      App.logger.severe(e);
+    // try {
+    String name = widget.nameController.text.trim();
+    if (name.isEmpty) {
+      name = AppLocalizations.of(context)!.newPrivateChannel;
     }
+
+    final String description = "";
+
+    List<int>? members;
+
+    members = widget.selectedNotifier.value;
+
+    if (members.length < 2) {
+      App.logger.severe("Member count not enough: ${members.length}");
+      // TODO: add alert.
+      return;
+    }
+
+    final req = GroupCreateRequest(
+        name: name,
+        description: description,
+        isPublic: false,
+        members: members);
+
+    App.logger.info(req.toJson());
+
+    final groupCreateResponse = await createGroup(req);
+    if (groupCreateResponse == null || groupCreateResponse.gid == -1) {
+      App.logger.severe("Group Creation Failed");
+    } else {
+      GroupInfo groupInfo = GroupInfo(groupCreateResponse.gid,
+          App.app.userDb!.uid, name, description, members, false, 0, []);
+      GroupInfoM groupInfoM = GroupInfoM.item(
+          groupCreateResponse.gid,
+          "",
+          jsonEncode(groupInfo),
+          Uint8List(0),
+          "",
+          0,
+          1,
+          groupCreateResponse.createdAt);
+
+      try {
+        await GroupInfoDao()
+            .addOrNotUpdate(groupInfoM)
+            .then((value) => Navigator.pop(context, value));
+      } catch (e) {
+        App.logger.severe(e);
+        Navigator.pop(context, groupInfoM);
+      }
+    }
+    // } catch (e) {
+    //   App.logger.severe(e);
+    // }
   }
 
-  Future<int> createGroup(GroupCreateRequest req) async {
+  Future<GroupCreateResponse?> createGroup(GroupCreateRequest req) async {
     final groupApi = GroupApi(App.app.chatServerM.fullUrl);
     final res = await groupApi.create(req);
     if (res.statusCode == 200 && res.data != null) {
-      final gid = res.data!;
-      return gid;
+      return res.data!;
     }
-    return -1;
+    return null;
   }
 }
