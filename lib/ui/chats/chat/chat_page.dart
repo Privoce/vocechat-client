@@ -33,12 +33,12 @@ import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_bar.dart';
-import 'package:vocechat_client/ui/chats/chat/forward/forward_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
 import 'package:vocechat_client/models/ui_models/ui_msg.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 
 // ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
@@ -781,10 +781,25 @@ class _ChatPageState extends State<ChatPage> {
                   topLeft: Radius.circular(8), topRight: Radius.circular(8))),
           builder: (context) {
             return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.75,
-                child: ForwardSheet(
-                  archiveId: archiveId,
-                ));
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: ChatSelectionSheet(
+                title: AppLocalizations.of(context)!.forwardTo,
+                onSubmit: (uidNotifier, gidNotifier, buttonStatus) async {
+                  buttonStatus.value = ButtonStatus.inProgress;
+
+                  final res = await App.app.chatService.sendArchiveForward(
+                      archiveId, uidNotifier.value, gidNotifier.value);
+                  if (res) {
+                    buttonStatus.value = ButtonStatus.success;
+                  } else {
+                    buttonStatus.value = ButtonStatus.error;
+                  }
+                  Future.delayed(Duration(seconds: 2)).then((value) {
+                    buttonStatus.value = ButtonStatus.normal;
+                  });
+                },
+              ),
+            );
           });
       return;
     }
@@ -825,8 +840,24 @@ class _ChatPageState extends State<ChatPage> {
                 topLeft: Radius.circular(8), topRight: Radius.circular(8))),
         builder: (context) {
           return SizedBox(
-              height: MediaQuery.of(context).size.height * 0.75,
-              child: ForwardSheet(midList: midList));
+            height: MediaQuery.of(context).size.height * 0.75,
+            child: ChatSelectionSheet(
+              title: AppLocalizations.of(context)!.forwardTo,
+              onSubmit: (uidNotifier, gidNotifier, buttonStatus) async {
+                buttonStatus.value = ButtonStatus.inProgress;
+                final res = await App.app.chatService
+                    .sendForward(midList, uidNotifier.value, gidNotifier.value);
+                if (res) {
+                  buttonStatus.value = ButtonStatus.success;
+                } else {
+                  buttonStatus.value = ButtonStatus.error;
+                }
+                Future.delayed(Duration(seconds: 2)).then((value) {
+                  buttonStatus.value = ButtonStatus.normal;
+                });
+              },
+            ),
+          );
         });
     if (mounted) {
       setState(() {

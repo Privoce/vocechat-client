@@ -94,6 +94,8 @@
 
     "file":"File",
     "forward":"Forward",
+    "forwardAsImage":"Forward as image",
+    "forwardAsArchive":"Forward as archive",
     "forwarded":"forwarded",
     "forwardTo":"Forward to",
 
@@ -162,6 +164,7 @@
     "signUpTo": "Sign Up to",
     "switchServer": "Switch Server",
 
+    "to":"to",
     "today":"Today",
     "transferOwnership":"Transfer Ownership",
 

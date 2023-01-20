@@ -97,6 +97,8 @@
 
     "file":"文件",
     "forward":"转发",
+    "forwardAsImage":"转发图片",
+    "forwardAsArchive":"以归档转发",
     "forwarded":"被转发",
     "forwardTo":"转发到",
 
@@ -165,6 +167,7 @@
     "signUpTo": "注册",
     "switchServer": "切换服务器",
 
+    "to":"至",
     "today":"今天",
     "transferOwnership":"转让所有权",
 
