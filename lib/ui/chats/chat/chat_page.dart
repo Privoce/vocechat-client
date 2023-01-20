@@ -15,6 +15,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
+import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
@@ -720,14 +721,13 @@ class _ChatPageState extends State<ChatPage> {
   /// Copy texts to clipboard.
   ///
   /// Only executes for text and markdown messages.
-  void _onTapCopy(UiMsg uiMsg) async {
-    assert(uiMsg.chatMsgM.detailType == MsgContentType.text ||
-        uiMsg.chatMsgM.detailType == MsgContentType.markdown);
+  void _onTapCopy(ChatMsgM chatMsgM) async {
+    assert(chatMsgM.detailType == MsgContentType.text ||
+        chatMsgM.detailType == MsgContentType.markdown);
 
-    String content = uiMsg.chatMsgM.msgNormal?.content ??
-        uiMsg.chatMsgM.msgReply?.content ??
-        "";
-    if (uiMsg.chatMsgM.detailType == MsgContentType.text) {
+    String content =
+        chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
+    if (chatMsgM.detailType == MsgContentType.text) {
       content = await parseMention(content);
     }
 
@@ -735,10 +735,10 @@ class _ChatPageState extends State<ChatPage> {
     Navigator.of(context).pop();
   }
 
-  void _onTapPin(UiMsg uiMsg, bool toPin) async {
+  void _onTapPin(ChatMsgM chatMsgM, bool toPin) async {
     Navigator.of(context).pop();
-    final gid = uiMsg.chatMsgM.gid;
-    final mid = uiMsg.chatMsgM.mid;
+    final gid = chatMsgM.gid;
+    final mid = chatMsgM.mid;
 
     try {
       final groupApi = GroupApi(App.app.chatServerM.fullUrl);
@@ -748,7 +748,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  _onTapSave(ChatMsgM chatMsgM) async {
+  void _onTapSave(ChatMsgM chatMsgM) async {
     assert(chatMsgM.detailType != MsgContentType.archive);
 
     List<int> midList = [];
@@ -1113,13 +1113,13 @@ class _ChatPageState extends State<ChatPage> {
                                   icon: Icons.copy,
                                   title: AppLocalizations.of(context)!.copy,
                                   onTap: () {
-                                    _onTapCopy(uiMsg);
+                                    _onTapCopy(uiMsg.chatMsgM);
                                   }),
                             if ((isAdmin || isOwner) &&
                                 widget._isGroup &&
                                 uiMsg.chatMsgM.status ==
                                     MsgSendStatus.success.name)
-                              _buildPinAction(uiMsg),
+                              _buildPinAction(uiMsg.chatMsgM),
                             if (uiMsg.chatMsgM.detailType !=
                                     MsgContentType.archive &&
                                 uiMsg.chatMsgM.status ==
@@ -1182,19 +1182,19 @@ class _ChatPageState extends State<ChatPage> {
     return isMsgNormalAutoDeletion;
   }
 
-  MsgActionTile _buildPinAction(UiMsg uiMsg) {
+  MsgActionTile _buildPinAction(ChatMsgM chatMsgM) {
     final pinnedMessages = widget
             .groupInfoNotifier?.value.groupInfo.pinnedMessages
             .map((e) => e.mid) ??
         [];
-    bool pinned = pinnedMessages.contains(uiMsg.chatMsgM.mid);
+    bool pinned = pinnedMessages.contains(chatMsgM.mid);
     return MsgActionTile(
         icon: AppIcons.pin,
         title: pinned
             ? AppLocalizations.of(context)!.unpin
             : AppLocalizations.of(context)!.pin,
         onTap: () {
-          _onTapPin(uiMsg, !pinned);
+          _onTapPin(chatMsgM, !pinned);
         });
   }
 

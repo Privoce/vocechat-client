@@ -91,7 +91,7 @@ class _SingleImagePageState extends State<SingleImagePage>
       context: context,
       isScrollControlled: true,
       builder: (context) {
-        return ImageShareSheet(path: "123");
+        return ImageShareSheet(chatMsgM: widget.chatMsgM);
       },
     );
   }

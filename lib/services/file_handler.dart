@@ -559,6 +559,15 @@ class FileHandler {
     return null;
   }
 
+  /// Get image file saved locally.
+  ///
+  /// Will return imageNormal if exists, otherwise return imageThumb.
+  /// If these two files are not available, return null.
+  Future<File?> getLocalImage(ChatMsgM chatMsgM) async {
+    return (await getLocalImageNormal(chatMsgM)) ??
+        (await getLocalImageThumb(chatMsgM));
+  }
+
   // Future<File?> getVideoThumb(ChatMsgM chatMsgM) async {
   //   final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
   //   if (chatId == null) {
