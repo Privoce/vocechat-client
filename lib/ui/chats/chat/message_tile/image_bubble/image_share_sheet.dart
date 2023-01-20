@@ -18,7 +18,6 @@ import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';

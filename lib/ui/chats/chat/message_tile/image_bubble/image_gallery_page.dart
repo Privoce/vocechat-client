@@ -61,7 +61,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
         child: Stack(
           children: [
             GestureDetector(
-              onLongPress: () => _share(),
+              onLongPress: _share,
               child: PageView.builder(
                 controller: _controller,
                 allowImplicitScrolling: true,
@@ -92,14 +92,13 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
   Widget _buildItem(BuildContext context, int index) {
     final item = _imageList[index];
 
-    return FutureBuilder<_SingleImageData?>(
-        future: _getLocalImageFileData(item.chatMsgM),
+    return FutureBuilder<SingleImageData?>(
+        future: item.getLocalImageFile(),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null) {
             return SingleImagePage(
               initImageFile: snapshot.data!.imageFile,
-              chatMsgM: item.chatMsgM,
-              isOriginal: snapshot.data!.isOriginal,
+              singleImageItem: item,
               onScaleChanged: (scale) {
                 setState(() {
                   _enablePageView = scale <= 1.0;
@@ -114,16 +113,16 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
     // }
   }
 
-  Future<_SingleImageData?> _getLocalImageFileData(ChatMsgM chatMsgM) async {
+  Future<SingleImageData?> _getLocalImageFileData(ChatMsgM chatMsgM) async {
     final localImageNormal =
         await FileHandler.singleton.getLocalImageNormal(chatMsgM);
     if (localImageNormal != null) {
-      return _SingleImageData(imageFile: localImageNormal, isOriginal: true);
+      return SingleImageData(imageFile: localImageNormal, isOriginal: true);
     } else {
       final localImageThumb =
           await FileHandler.singleton.getLocalImageThumb(chatMsgM);
       if (localImageThumb != null) {
-        return _SingleImageData(imageFile: localImageThumb, isOriginal: false);
+        return SingleImageData(imageFile: localImageThumb, isOriginal: false);
       }
     }
     return null;
@@ -244,9 +243,9 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
   }
 }
 
-class _SingleImageData {
+class SingleImageData {
   final bool isOriginal;
   final File imageFile;
 
-  _SingleImageData({required this.imageFile, required this.isOriginal});
+  SingleImageData({required this.imageFile, required this.isOriginal});
 }

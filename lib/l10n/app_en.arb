@@ -103,6 +103,7 @@
     "hours":"hours",
 
     "image":"Image",
+    "imageBeDeletedDes":"Image might have been deleted.",
     "inputInvitationLink":"Input Invitation Link",
     "invitationLink": "Invitation Link",
     "invitationLinkGenerationError": "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
