@@ -12,8 +12,9 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/chat_image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
@@ -106,15 +107,26 @@ class PinnedMsgTile extends StatelessWidget {
           DateTime.now().millisecondsSinceEpoch.toString();
 
       return FutureBuilder<File?>(
-          future: getMsgThumb(chatId!, msg.content, imageName),
+          future: getThumbImage(chatId!, msg.content, imageName),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              // return ChatImageBubble(imageFile: snapshot.data!, getImageList: getImageList)
               return ImageBubble(
-                  imageFile: snapshot.data!,
-                  localMid: msg.content,
-                  getImage: () =>
-                      getMsgImageThumb(chatId, msg.content, imageName));
+                imageFile: snapshot.data!,
+                getImageList: () async {
+                  return ImageGalleryData(imageItemList: [
+                    SingleImageGetters(
+                      getInitImageFile: () async {
+                        final originalImage = await getOriginalImage(
+                            chatId, msg.content, imageName);
+                        if (originalImage != null) {
+                          return SingleImageData(
+                              imageFile: originalImage, isOriginal: true);
+                        }
+                      },
+                    )
+                  ], initialPage: 0);
+                },
+              );
             }
             return CupertinoActivityIndicator();
           });
@@ -124,10 +136,7 @@ class PinnedMsgTile extends StatelessWidget {
     }
   }
 
-  /// Fetch thumb of Normal messages.
-  /// It'll first find in File database, return if exists.
-  /// If not, it will find it from server. Returns null if nothing found.
-  Future<File?> getMsgThumb(
+  Future<File?> getThumbImage(
       String chatId, String filePath, String imageName) async {
     final thumbFile =
         await FileHandler.singleton.readImageThumb(chatId, filePath, imageName);
@@ -149,10 +158,7 @@ class PinnedMsgTile extends StatelessWidget {
     return null;
   }
 
-  /// Fetch thumb of Normal messages.
-  /// It'll first find in File database, return if exists.
-  /// If not, it will find it from server. Returns null if nothing found.
-  Future<File?> getMsgImageThumb(
+  Future<File?> getOriginalImage(
       String chatId, String filePath, String imageName) async {
     final imageFile = await FileHandler.singleton
         .readImageNormal(chatId, filePath, imageName);

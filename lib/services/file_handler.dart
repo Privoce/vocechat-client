@@ -672,6 +672,8 @@ class FileHandler {
     return null;
   }
 
+  // Future<File?>
+
   Future<File?> getArchiveFile(String archiveId, int attachmentId,
       [String? fileName, Function(int, int)? onProgress]) async {
     String _fileName =

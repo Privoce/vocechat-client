@@ -16,7 +16,6 @@ import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/chat_image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
@@ -361,7 +360,7 @@ class _MessageTileState extends State<MessageTile> {
 
           case MsgContentType.file:
             if (widget.chatMsgM.isImageMsg) {
-              return ChatImageBubble(
+              return ImageBubble(
                   imageFile: widget.image,
                   getImageList: () => _getImageList(widget.chatMsgM,
                       uid: widget.chatMsgM.dmUid, gid: widget.chatMsgM.gid));
@@ -463,7 +462,7 @@ class _MessageTileState extends State<MessageTile> {
     return ImageGalleryData(
         imageItemList: (preList
                     ?.map((e) => SingleImageGetters(
-                          getLocalImageFile: () => _getLocalImageFileData(e),
+                          getInitImageFile: () => _getLocalImageFileData(e),
                           getServerImageFile:
                               (isOriginal, imageNotifier, onReceiveProgress) =>
                                   _getServerImageFileData(isOriginal, e,
@@ -475,7 +474,7 @@ class _MessageTileState extends State<MessageTile> {
                 []) +
             [
               SingleImageGetters(
-                getLocalImageFile: () => _getLocalImageFileData(centerMsgM),
+                getInitImageFile: () => _getLocalImageFileData(centerMsgM),
                 getServerImageFile:
                     (isOriginal, imageNotifier, onReceiveProgress) =>
                         _getServerImageFileData(isOriginal, centerMsgM,
@@ -484,7 +483,7 @@ class _MessageTileState extends State<MessageTile> {
             ] +
             (afterList
                     ?.map((e) => SingleImageGetters(
-                          getLocalImageFile: () => _getLocalImageFileData(e),
+                          getInitImageFile: () => _getLocalImageFileData(e),
                           getServerImageFile:
                               (isOriginal, imageNotifier, onReceiveProgress) =>
                                   _getServerImageFileData(isOriginal, e,

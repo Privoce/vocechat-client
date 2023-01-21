@@ -14,27 +14,31 @@ class SingleImageGetters {
   late Future<SingleImageData?> Function(
       bool isOriginal,
       ValueNotifier<File> imageNotifier,
-      Function(int progress, int total) onReceiveProgress) getServerImageFile;
+      Function(int progress, int total) onReceiveProgress)? getServerImageFile;
 
   SingleImageGetters(
-      {required Future<SingleImageData?> Function() getLocalImageFile,
-      required Future<SingleImageData?> Function(
+      {required Future<SingleImageData?> Function() getInitImageFile,
+      Future<SingleImageData?> Function(
               bool isOriginal,
               ValueNotifier<File> imageNotifier,
-              Function(int progress, int total) onReceiveProgress)
+              Function(int progress, int total) onReceiveProgress)?
           getServerImageFile}) {
     this.getLocalImageFile = () async {
-      final data = await getLocalImageFile();
+      final data = await getInitImageFile();
       isOriginal = data?.isOriginal ?? false;
       return data;
     };
 
-    this.getServerImageFile =
-        (isOriginal, imageNotifier, onReceiveProgress) async {
-      final data = await getServerImageFile(
-          isOriginal, imageNotifier, onReceiveProgress);
-      isOriginal = data?.isOriginal ?? false;
-      return data;
-    };
+    if (getServerImageFile != null) {
+      this.getServerImageFile =
+          (isOriginal, imageNotifier, onReceiveProgress) async {
+        final data = await getServerImageFile(
+            isOriginal, imageNotifier, onReceiveProgress);
+        isOriginal = data?.isOriginal ?? false;
+        return data;
+      };
+    } else {
+      this.getServerImageFile = null;
+    }
   }
 }

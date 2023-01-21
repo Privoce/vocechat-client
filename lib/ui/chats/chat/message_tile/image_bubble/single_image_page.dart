@@ -44,11 +44,13 @@ class _SingleImagePageState extends State<SingleImagePage>
     _initAnimationController();
     _isOriginal = widget.singleImageGetters.isOriginal;
 
-    widget.singleImageGetters.getServerImageFile(_isOriginal, _imageNotifier,
-        ((progress, total) {
-      final p = progress / total;
-      _progressNotifier.value = p;
-    }));
+    if (widget.singleImageGetters.getServerImageFile != null) {
+      widget.singleImageGetters.getServerImageFile!(_isOriginal, _imageNotifier,
+          ((progress, total) {
+        final p = progress / total;
+        _progressNotifier.value = p;
+      }));
+    }
 
     // _getServerImageFile(widget.singleImageGetters.chatMsgM);
     // widget.singleImageGetters.getServerImageFile();
