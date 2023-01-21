@@ -106,6 +106,7 @@
     "hours":"小时",
     
     "image":"图片",
+    "imageBeDeletedDes":"图片可能已被删除。",
     "inputInvitationLink":"输入邀请链接",
     "invitationLink": "邀请链接",
     "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",

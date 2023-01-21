@@ -16,7 +16,8 @@ import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/chat_image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
@@ -359,19 +360,10 @@ class _MessageTileState extends State<MessageTile> {
 
           case MsgContentType.file:
             if (widget.chatMsgM.isImageMsg) {
-              return ChatImageBubble(
+              return ImageBubble(
                   imageFile: widget.image,
-                  chatMsgM: widget.chatMsgM,
-                  getImage: () async {
-                    final imageFile = await FileHandler.singleton
-                        .getImageNormal(widget.chatMsgM);
-
-                    if (imageFile != null) {
-                      return imageFile;
-                    }
-                    return null;
-                  });
-              // return ImageBubbleTest(chatMsgM: widget.chatMsgM);
+                  getImageList: () => _getImageList(widget.chatMsgM,
+                      uid: widget.chatMsgM.dmUid, gid: widget.chatMsgM.gid));
             }
             // else if (widget.chatMsgM.isVideoMsg) {
             //   return VideoBubble(
@@ -454,6 +446,95 @@ class _MessageTileState extends State<MessageTile> {
             ),
           );
         });
+  }
+
+  Future<ImageGalleryData> _getImageList(ChatMsgM centerMsgM,
+      {int? uid, int? gid}) async {
+    final centerMid = centerMsgM.mid;
+    final preList = await ChatMsgDao()
+        .getPreImageMsgBeforeMid(centerMid, uid: uid, gid: gid);
+
+    final afterList = await ChatMsgDao()
+        .getNextImageMsgAfterMid(centerMid, uid: uid, gid: gid);
+
+    final initPage = preList != null ? preList.length : 0;
+
+    return ImageGalleryData(
+        imageItemList: (preList
+                    ?.map((e) => SingleImageGetters(
+                          getInitImageFile: () => _getLocalImageFileData(e),
+                          getServerImageFile:
+                              (isOriginal, imageNotifier, onReceiveProgress) =>
+                                  _getServerImageFileData(isOriginal, e,
+                                      imageNotifier, onReceiveProgress),
+                        ))
+                    .toList()
+                    .reversed
+                    .toList() ??
+                []) +
+            [
+              SingleImageGetters(
+                getInitImageFile: () => _getLocalImageFileData(centerMsgM),
+                getServerImageFile:
+                    (isOriginal, imageNotifier, onReceiveProgress) =>
+                        _getServerImageFileData(isOriginal, centerMsgM,
+                            imageNotifier, onReceiveProgress),
+              )
+            ] +
+            (afterList
+                    ?.map((e) => SingleImageGetters(
+                          getInitImageFile: () => _getLocalImageFileData(e),
+                          getServerImageFile:
+                              (isOriginal, imageNotifier, onReceiveProgress) =>
+                                  _getServerImageFileData(isOriginal, e,
+                                      imageNotifier, onReceiveProgress),
+                        ))
+                    .toList() ??
+                []),
+        initialPage: initPage);
+  }
+
+  Future<SingleImageData?> _getLocalImageFileData(ChatMsgM chatMsgM) async {
+    final localImageNormal =
+        await FileHandler.singleton.getLocalImageNormal(chatMsgM);
+    if (localImageNormal != null) {
+      return SingleImageData(imageFile: localImageNormal, isOriginal: true);
+    } else {
+      final localImageThumb =
+          await FileHandler.singleton.getLocalImageThumb(chatMsgM);
+      if (localImageThumb != null) {
+        return SingleImageData(imageFile: localImageThumb, isOriginal: false);
+      }
+    }
+    return null;
+  }
+
+  Future<SingleImageData?> _getServerImageFileData(bool isOriginal,
+      ChatMsgM chatMsgM, imageNotifier, onReceiveProgress) async {
+    if (isOriginal) {
+      return null;
+    }
+
+    final serverImageNormal = await FileHandler.singleton.getServerImageNormal(
+      chatMsgM,
+      onReceiveProgress: onReceiveProgress,
+    );
+    if (serverImageNormal != null) {
+      imageNotifier.value = serverImageNormal;
+
+      return SingleImageData(imageFile: serverImageNormal, isOriginal: true);
+    } else {
+      final serverImageThumb = await FileHandler.singleton.getServerImageThumb(
+        chatMsgM,
+        onReceiveProgress: onReceiveProgress,
+      );
+      if (serverImageThumb != null) {
+        imageNotifier.value = serverImageThumb;
+        isOriginal = false;
+        return SingleImageData(imageFile: serverImageThumb, isOriginal: false);
+      }
+    }
+    return null;
   }
 
   String _printDuration(Duration duration) {

@@ -3,18 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_share_sheet.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 
 class SingleImagePage extends StatefulWidget {
   final File initImageFile;
-  final ChatMsgM chatMsgM;
-  final bool isOriginal;
+  final SingleImageGetters singleImageGetters;
   final void Function(double)? onScaleChanged;
 
   const SingleImagePage(
       {Key? key,
       required this.initImageFile,
-      required this.chatMsgM,
-      required this.isOriginal,
+      required this.singleImageGetters,
       required this.onScaleChanged})
       : super(key: key);
 
@@ -43,9 +42,18 @@ class _SingleImagePageState extends State<SingleImagePage>
     super.initState();
     _initImageNotifier();
     _initAnimationController();
-    _isOriginal = widget.isOriginal;
+    _isOriginal = widget.singleImageGetters.isOriginal;
 
-    _getServerImageFile(widget.chatMsgM);
+    if (widget.singleImageGetters.getServerImageFile != null) {
+      widget.singleImageGetters.getServerImageFile!(_isOriginal, _imageNotifier,
+          ((progress, total) {
+        final p = progress / total;
+        _progressNotifier.value = p;
+      }));
+    }
+
+    // _getServerImageFile(widget.singleImageGetters.chatMsgM);
+    // widget.singleImageGetters.getServerImageFile();
   }
 
   void _initImageNotifier() {
@@ -84,16 +92,6 @@ class _SingleImagePageState extends State<SingleImagePage>
       CurveTween(curve: Curves.decelerate).animate(_animationController),
     );
     _animationController.forward(from: 0);
-  }
-
-  void _onLongPress(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) {
-        return ImageShareSheet(chatMsgM: widget.chatMsgM);
-      },
-    );
   }
 
   @override

@@ -18,16 +18,15 @@ import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 
 class ImageShareSheet extends StatefulWidget {
-  final ChatMsgM chatMsgM;
+  final File imageFile;
 
-  ImageShareSheet({required this.chatMsgM});
+  ImageShareSheet({required this.imageFile});
 
   @override
   State<ImageShareSheet> createState() => _ImageShareSheetState();
@@ -92,7 +91,7 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
                     onPressed: () => _forwardImageToChat(
                         uid: chat.userInfoM?.uid,
                         gid: chat.groupInfoM?.gid,
-                        chatMsgM: widget.chatMsgM,
+                        imageFile: widget.imageFile,
                         targetName: chat.title),
                     child: SizedBox(
                       width: 76,
@@ -203,17 +202,13 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
     _saveBtnStatus.value = ButtonStatus.inProgress;
 
     try {
-      final imageFile =
-          await FileHandler.singleton.getLocalImage(widget.chatMsgM);
-      if (imageFile != null) {
-        final result = await ImageGallerySaver.saveFile(imageFile.path);
-        if (result["isSuccess"]) {
-          _saveBtnStatus.value = ButtonStatus.success;
-          await Future.delayed(Duration(seconds: 2)).then((_) async {
-            _saveBtnStatus.value = ButtonStatus.normal;
-          });
-          return;
-        }
+      final result = await ImageGallerySaver.saveFile(widget.imageFile.path);
+      if (result["isSuccess"]) {
+        _saveBtnStatus.value = ButtonStatus.success;
+        await Future.delayed(Duration(seconds: 2)).then((_) async {
+          _saveBtnStatus.value = ButtonStatus.normal;
+        });
+        return;
       }
     } catch (e) {
       App.logger.severe(e);
@@ -253,18 +248,16 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
     final gidList = gidNotifier.value;
 
     try {
-      final imageFile =
-          await FileHandler.singleton.getLocalImage(widget.chatMsgM);
-      if (imageFile != null) {
-        for (final uid in uidList) {
-          SendService.singleton
-              .sendMessage(uuid(), imageFile.path, SendType.file, uid: uid);
-        }
+      for (final uid in uidList) {
+        SendService.singleton.sendMessage(
+            uuid(), widget.imageFile.path, SendType.file,
+            uid: uid);
+      }
 
-        for (final gid in gidList) {
-          SendService.singleton
-              .sendMessage(uuid(), imageFile.path, SendType.file, gid: gid);
-        }
+      for (final gid in gidList) {
+        SendService.singleton.sendMessage(
+            uuid(), widget.imageFile.path, SendType.file,
+            gid: gid);
       }
     } catch (e) {
       App.logger.severe(e);
@@ -274,43 +267,36 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
   }
 
   void _forwardImageToChat(
-      {int? uid,
-      int? gid,
-      required ChatMsgM chatMsgM,
-      String? targetName}) async {
+      {int? uid, int? gid, required File imageFile, String? targetName}) async {
     try {
-      final imageFile =
-          await FileHandler.singleton.getLocalImage(widget.chatMsgM);
-      if (imageFile != null) {
-        final title = AppLocalizations.of(context)!.forwardAsImage +
-            ((targetName != null && targetName.isNotEmpty)
-                ? " " + AppLocalizations.of(context)!.to + " " + targetName
-                : "");
+      final title = AppLocalizations.of(context)!.forwardAsImage +
+          ((targetName != null && targetName.isNotEmpty)
+              ? " " + AppLocalizations.of(context)!.to + " " + targetName
+              : "");
 
-        await showAppAlert(
-            context: context,
-            title: title,
-            contentWidget: Image.file(imageFile),
-            actions: [
-              AppAlertDialogAction(
-                text: AppLocalizations.of(context)!.cancel,
-                action: () => Navigator.of(context).pop(),
-              ),
-              AppAlertDialogAction(
-                text: AppLocalizations.of(context)!.continueStr,
-                action: () {
-                  SendService.singleton.sendMessage(
-                    uuid(),
-                    imageFile.path,
-                    SendType.file,
-                    gid: gid,
-                    uid: uid,
-                  );
-                  Navigator.of(context).pop();
-                },
-              )
-            ]);
-      }
+      await showAppAlert(
+          context: context,
+          title: title,
+          contentWidget: Image.file(imageFile),
+          actions: [
+            AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.of(context).pop(),
+            ),
+            AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.continueStr,
+              action: () {
+                SendService.singleton.sendMessage(
+                  uuid(),
+                  imageFile.path,
+                  SendType.file,
+                  gid: gid,
+                  uid: uid,
+                );
+                Navigator.of(context).pop();
+              },
+            )
+          ]);
     } catch (e) {
       App.logger.severe(e);
     }
@@ -319,11 +305,7 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
   void _share() async {
     Navigator.of(context).pop();
     try {
-      final imageFile =
-          await FileHandler.singleton.getLocalImage(widget.chatMsgM);
-      if (imageFile != null) {
-        Share.shareFiles([imageFile.path]);
-      }
+      Share.shareFiles([widget.imageFile.path]);
     } catch (e) {
       App.logger.severe(e);
     }

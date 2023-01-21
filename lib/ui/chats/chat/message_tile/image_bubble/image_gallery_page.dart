@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,7 @@ import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/chat_image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_share_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_page.dart';
@@ -25,7 +26,7 @@ class ImageGalleryPage extends StatefulWidget {
 
 class _ImageGalleryPageState extends State<ImageGalleryPage> {
   late final PageController _controller;
-  late final List<SingleImageItem> _imageList;
+  late final List<SingleImageGetters> _imageList;
 
   late final ValueNotifier<bool> _showButtons;
   final ValueNotifier<ButtonStatus> _saveBtnStatus =
@@ -61,7 +62,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
         child: Stack(
           children: [
             GestureDetector(
-              onLongPress: () => _share(),
+              onLongPress: _share,
               child: PageView.builder(
                 controller: _controller,
                 allowImplicitScrolling: true,
@@ -92,14 +93,13 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
   Widget _buildItem(BuildContext context, int index) {
     final item = _imageList[index];
 
-    return FutureBuilder<_SingleImageData?>(
-        future: _getLocalImageFileData(item.chatMsgM),
+    return FutureBuilder<SingleImageData?>(
+        future: item.getLocalImageFile(),
         builder: (context, snapshot) {
           if (snapshot.hasData && snapshot.data != null) {
             return SingleImagePage(
               initImageFile: snapshot.data!.imageFile,
-              chatMsgM: item.chatMsgM,
-              isOriginal: snapshot.data!.isOriginal,
+              singleImageGetters: item,
               onScaleChanged: (scale) {
                 setState(() {
                   _enablePageView = scale <= 1.0;
@@ -114,16 +114,16 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
     // }
   }
 
-  Future<_SingleImageData?> _getLocalImageFileData(ChatMsgM chatMsgM) async {
+  Future<SingleImageData?> _getLocalImageFileData(ChatMsgM chatMsgM) async {
     final localImageNormal =
         await FileHandler.singleton.getLocalImageNormal(chatMsgM);
     if (localImageNormal != null) {
-      return _SingleImageData(imageFile: localImageNormal, isOriginal: true);
+      return SingleImageData(imageFile: localImageNormal, isOriginal: true);
     } else {
       final localImageThumb =
           await FileHandler.singleton.getLocalImageThumb(chatMsgM);
       if (localImageThumb != null) {
-        return _SingleImageData(imageFile: localImageThumb, isOriginal: false);
+        return SingleImageData(imageFile: localImageThumb, isOriginal: false);
       }
     }
     return null;
@@ -158,10 +158,14 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
   void _share() async {
     final index = _controller.page?.round() ?? widget.data.initialPage;
 
+    final singleImageData = await _imageList[index].getLocalImageFile();
+
+    if (singleImageData == null) return;
+
     showModalBottomSheet(
         context: context,
         builder: (context) {
-          return ImageShareSheet(chatMsgM: _imageList[index].chatMsgM);
+          return ImageShareSheet(imageFile: singleImageData.imageFile);
         });
   }
 
@@ -214,11 +218,9 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
 
     try {
       final index = _controller.page?.round() ?? widget.data.initialPage;
+      final singleImageData = await _imageList[index].getLocalImageFile();
 
-      final imageFile =
-          (await _getLocalImageFileData(_imageList[index].chatMsgM))?.imageFile;
-
-      if (imageFile == null) {
+      if (singleImageData?.imageFile == null) {
         _saveBtnStatus.value = ButtonStatus.error;
         await Future.delayed(Duration(seconds: 2)).then((_) async {
           _saveBtnStatus.value = ButtonStatus.normal;
@@ -226,7 +228,8 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
         return;
       }
 
-      final result = await ImageGallerySaver.saveFile(imageFile.path);
+      final result =
+          await ImageGallerySaver.saveFile(singleImageData!.imageFile.path);
       if (result["isSuccess"]) {
         _saveBtnStatus.value = ButtonStatus.success;
         await Future.delayed(Duration(seconds: 2)).then((_) async {
@@ -244,9 +247,9 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
   }
 }
 
-class _SingleImageData {
+class SingleImageData {
   final bool isOriginal;
   final File imageFile;
 
-  _SingleImageData({required this.imageFile, required this.isOriginal});
+  SingleImageData({required this.imageFile, required this.isOriginal});
 }
