@@ -191,7 +191,7 @@ class AuthService {
   }
 
   Future<String> _getFirebaseDeviceToken() async {
-    const int waitingSecs = 8;
+    const int waitingSecs = 3;
 
     App.logger.info("starts fetching Firebase Token");
     String deviceToken = "";
@@ -205,7 +205,6 @@ class AuthService {
         },
       ).then((token) {
         deviceToken = token ?? "";
-        print("############## token: $token");
       });
 
       Timer(Duration(seconds: waitingSecs), (() {
@@ -214,7 +213,7 @@ class AuthService {
           cancellableOperation.cancel();
         }
       }));
-      // deviceToken = await FirebaseMessaging.instance.getToken() ?? "";
+
       await Future.delayed(Duration(seconds: waitingSecs));
       App.logger.info("finishes fetching Firebase Token");
       return deviceToken;

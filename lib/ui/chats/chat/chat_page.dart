@@ -15,6 +15,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
+import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
@@ -32,12 +33,12 @@ import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_bar.dart';
-import 'package:vocechat_client/ui/chats/chat/forward/forward_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
 import 'package:vocechat_client/models/ui_models/ui_msg.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 
 // ignore: must_be_immutable
 class ChatPage extends StatefulWidget {
@@ -720,14 +721,13 @@ class _ChatPageState extends State<ChatPage> {
   /// Copy texts to clipboard.
   ///
   /// Only executes for text and markdown messages.
-  void _onTapCopy(UiMsg uiMsg) async {
-    assert(uiMsg.chatMsgM.detailType == MsgContentType.text ||
-        uiMsg.chatMsgM.detailType == MsgContentType.markdown);
+  void _onTapCopy(ChatMsgM chatMsgM) async {
+    assert(chatMsgM.detailType == MsgContentType.text ||
+        chatMsgM.detailType == MsgContentType.markdown);
 
-    String content = uiMsg.chatMsgM.msgNormal?.content ??
-        uiMsg.chatMsgM.msgReply?.content ??
-        "";
-    if (uiMsg.chatMsgM.detailType == MsgContentType.text) {
+    String content =
+        chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
+    if (chatMsgM.detailType == MsgContentType.text) {
       content = await parseMention(content);
     }
 
@@ -735,10 +735,10 @@ class _ChatPageState extends State<ChatPage> {
     Navigator.of(context).pop();
   }
 
-  void _onTapPin(UiMsg uiMsg, bool toPin) async {
+  void _onTapPin(ChatMsgM chatMsgM, bool toPin) async {
     Navigator.of(context).pop();
-    final gid = uiMsg.chatMsgM.gid;
-    final mid = uiMsg.chatMsgM.mid;
+    final gid = chatMsgM.gid;
+    final mid = chatMsgM.mid;
 
     try {
       final groupApi = GroupApi(App.app.chatServerM.fullUrl);
@@ -748,7 +748,7 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  _onTapSave(ChatMsgM chatMsgM) async {
+  void _onTapSave(ChatMsgM chatMsgM) async {
     assert(chatMsgM.detailType != MsgContentType.archive);
 
     List<int> midList = [];
@@ -781,10 +781,25 @@ class _ChatPageState extends State<ChatPage> {
                   topLeft: Radius.circular(8), topRight: Radius.circular(8))),
           builder: (context) {
             return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.75,
-                child: ForwardSheet(
-                  archiveId: archiveId,
-                ));
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: ChatSelectionSheet(
+                title: AppLocalizations.of(context)!.forwardTo,
+                onSubmit: (uidNotifier, gidNotifier, buttonStatus) async {
+                  buttonStatus.value = ButtonStatus.inProgress;
+
+                  final res = await App.app.chatService.sendArchiveForward(
+                      archiveId, uidNotifier.value, gidNotifier.value);
+                  if (res) {
+                    buttonStatus.value = ButtonStatus.success;
+                  } else {
+                    buttonStatus.value = ButtonStatus.error;
+                  }
+                  Future.delayed(Duration(seconds: 2)).then((value) {
+                    buttonStatus.value = ButtonStatus.normal;
+                  });
+                },
+              ),
+            );
           });
       return;
     }
@@ -825,8 +840,24 @@ class _ChatPageState extends State<ChatPage> {
                 topLeft: Radius.circular(8), topRight: Radius.circular(8))),
         builder: (context) {
           return SizedBox(
-              height: MediaQuery.of(context).size.height * 0.75,
-              child: ForwardSheet(midList: midList));
+            height: MediaQuery.of(context).size.height * 0.75,
+            child: ChatSelectionSheet(
+              title: AppLocalizations.of(context)!.forwardTo,
+              onSubmit: (uidNotifier, gidNotifier, buttonStatus) async {
+                buttonStatus.value = ButtonStatus.inProgress;
+                final res = await App.app.chatService
+                    .sendForward(midList, uidNotifier.value, gidNotifier.value);
+                if (res) {
+                  buttonStatus.value = ButtonStatus.success;
+                } else {
+                  buttonStatus.value = ButtonStatus.error;
+                }
+                Future.delayed(Duration(seconds: 2)).then((value) {
+                  buttonStatus.value = ButtonStatus.normal;
+                });
+              },
+            ),
+          );
         });
     if (mounted) {
       setState(() {
@@ -1113,13 +1144,13 @@ class _ChatPageState extends State<ChatPage> {
                                   icon: Icons.copy,
                                   title: AppLocalizations.of(context)!.copy,
                                   onTap: () {
-                                    _onTapCopy(uiMsg);
+                                    _onTapCopy(uiMsg.chatMsgM);
                                   }),
                             if ((isAdmin || isOwner) &&
                                 widget._isGroup &&
                                 uiMsg.chatMsgM.status ==
                                     MsgSendStatus.success.name)
-                              _buildPinAction(uiMsg),
+                              _buildPinAction(uiMsg.chatMsgM),
                             if (uiMsg.chatMsgM.detailType !=
                                     MsgContentType.archive &&
                                 uiMsg.chatMsgM.status ==
@@ -1182,19 +1213,19 @@ class _ChatPageState extends State<ChatPage> {
     return isMsgNormalAutoDeletion;
   }
 
-  MsgActionTile _buildPinAction(UiMsg uiMsg) {
+  MsgActionTile _buildPinAction(ChatMsgM chatMsgM) {
     final pinnedMessages = widget
             .groupInfoNotifier?.value.groupInfo.pinnedMessages
             .map((e) => e.mid) ??
         [];
-    bool pinned = pinnedMessages.contains(uiMsg.chatMsgM.mid);
+    bool pinned = pinnedMessages.contains(chatMsgM.mid);
     return MsgActionTile(
         icon: AppIcons.pin,
         title: pinned
             ? AppLocalizations.of(context)!.unpin
             : AppLocalizations.of(context)!.pin,
         onTap: () {
-          _onTapPin(uiMsg, !pinned);
+          _onTapPin(chatMsgM, !pinned);
         });
   }
 

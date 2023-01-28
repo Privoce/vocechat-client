@@ -11,6 +11,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/full_text_page.dart';
 
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TextBubble extends StatefulWidget {
   final String content;
@@ -221,16 +222,9 @@ class _TextBubbleState extends State<TextBubble> {
             color: AppColors.coolGrey700,
             fontWeight: FontWeight.w400),
       ),
-      // TextSpan(
-      //   text: "| " + (widget.chatMsgM?.createdAt.toString() ?? ""),
-      //   style: TextStyle(
-      //       fontSize: 16,
-      //       color: AppColors.coolGrey700,
-      //       fontWeight: FontWeight.w400),
-      // ),
       if (widget.edited && !widget.enableCopy)
         TextSpan(
-            text: "(edited)",
+            text: " (${AppLocalizations.of(context)!.edited})",
             style: TextStyle(
                 // backgroundColor: Colors.cyan,
                 fontSize: 14,

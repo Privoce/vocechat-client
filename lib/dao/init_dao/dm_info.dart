@@ -76,10 +76,6 @@ class DmInfoDao extends Dao<DmInfoM> {
     return m;
   }
 
-  /// Get a list of Users in UserInfo
-  ///
-  /// Result shown in
-  /// uid, ascending order
   Future<List<DmInfoM>?> getDmList() async {
     String orderBy = "${DmInfoM.F_updatedAt} ASC";
     return super.list(orderBy: orderBy);

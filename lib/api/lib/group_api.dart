@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/group/group_create_request.dart';
+import 'package:vocechat_client/api/models/group/group_create_response.dart';
 import 'package:vocechat_client/api/models/group/group_update_request.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -18,10 +19,47 @@ class GroupApi {
     _baseUrl = serverUrl + "/api/group";
   }
 
-  Future<Response<int>> create(GroupCreateRequest req) async {
+  Future<Response<int>> createBfe033(GroupCreateRequest req) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
 
-    return await dio.post("", data: req);
+    final res = await dio.post("", data: req);
+
+    var newRes = Response<int>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final data = res.data as int;
+      newRes.data = data;
+    }
+    return newRes;
+  }
+
+  Future<Response<GroupCreateResponse>> createAft033(
+      GroupCreateRequest req) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    final res = await dio.post("", data: req);
+
+    var newRes = Response<GroupCreateResponse>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final data = GroupCreateResponse.fromJson(res.data);
+      newRes.data = data;
+    }
+    return newRes;
   }
 
   Future<Response> addMembers(int gid, List<int> adds) async {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vocechat_client/api/models/msg/reaction_info.dart';
@@ -5,7 +7,9 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MsgActionsSheet extends StatelessWidget {
   final void Function(String reaction) onReaction;

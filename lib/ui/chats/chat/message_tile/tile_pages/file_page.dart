@@ -74,7 +74,7 @@ class _FilePageState extends State<FilePage> {
         elevation: 0,
         backgroundColor: AppColors.barBg,
         title: Text(
-          "File",
+          AppLocalizations.of(context)!.file,
           style: AppTextStyles.titleLarge,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -129,19 +129,21 @@ class _FilePageState extends State<FilePage> {
                       switch (status) {
                         case FilePageStatus.download:
                           return CupertinoButton.filled(
-                              child: Text("Download"),
+                              child:
+                                  Text(AppLocalizations.of(context)!.download),
                               onPressed: () {
                                 _download(widget.filePath, context);
                               });
                         case FilePageStatus.open:
                           return CupertinoButton.filled(
-                              child: Text("Open"),
+                              child: Text(AppLocalizations.of(context)!.open),
                               onPressed: () async {
                                 _open(_localFile!);
                               });
                         case FilePageStatus.share:
                           return CupertinoButton.filled(
-                              child: Text("Open with Other Apps"),
+                              child: Text(AppLocalizations.of(context)!
+                                  .openWithOtherApps),
                               onPressed: () async {
                                 Share.shareFiles([_localFile!.path]);
                               });
@@ -169,7 +171,7 @@ class _FilePageState extends State<FilePage> {
                     builder: (context, value, child) {
                       if (value) {
                         return CupertinoButton.filled(
-                            child: Text("Share"),
+                            child: Text(AppLocalizations.of(context)!.share),
                             onPressed: () async {
                               _shareFile(_localFile!,
                                   "${widget.fileName}.${widget.extension}");

@@ -87,11 +87,15 @@
     "deleteChannelWarningDes": "This channel will be dismissed. All members will have no access to its data.",
     "description":"Description",
     "done": "Done",
+    "download": "Download",
     "edit": "Edit",
+    "edited":"edited",
     "email": "Email",
 
     "file":"File",
     "forward":"Forward",
+    "forwardAsImage":"Forward as image",
+    "forwardAsArchive":"Forward as archive",
     "forwarded":"forwarded",
     "forwardTo":"Forward to",
 
@@ -99,6 +103,7 @@
     "hours":"hours",
 
     "image":"Image",
+    "imageBeDeletedDes":"Image might have been deleted.",
     "inputInvitationLink":"Input Invitation Link",
     "invitationLink": "Invitation Link",
     "invitationLinkGenerationError": "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
@@ -127,6 +132,8 @@
 
     "off":"Off",
     "ok": "OK",
+    "open":"Open",
+    "openWithOtherApps":"Open with other Apps",
     "paste": "Paste",
     "password": "Password",
     "confirmPassword": "Confirm Password",
@@ -150,6 +157,7 @@
     "select":"Select",
     "setNewAvatar": "Set a new avatar",
     "send": "Send",
+    "share":"Share",
     "shareInvitationLink":"Share Invitation Link",
     "shareQrCode": "Share QR Code",
     "signIn": "Sign In",
@@ -157,6 +165,7 @@
     "signUpTo": "Sign Up to",
     "switchServer": "Switch Server",
 
+    "to":"to",
     "today":"Today",
     "transferOwnership":"Transfer Ownership",
 

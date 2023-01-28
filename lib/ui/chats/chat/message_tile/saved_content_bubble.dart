@@ -7,7 +7,9 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -49,19 +51,26 @@ class SavedContentBubble extends StatelessWidget {
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
                     final tag = archiveId + archiveMsg.thumbnailId.toString();
+
                     return ImageBubble(
                         imageFile: snapshot.data!,
-                        localMid: tag,
-                        getImage: () async {
-                          final archiveByte = await getSavedFiles(
-                              App.app.userDb!.uid,
-                              archiveId,
-                              archiveMsg.fileId!,
-                              false);
-                          if (archiveByte != null) {
-                            return archiveByte;
-                          }
-                          return null;
+                        getImageList: () async {
+                          return ImageGalleryData(imageItemList: [
+                            SingleImageGetters(
+                              getInitImageFile: () async {
+                                final imageFile = await getSavedFiles(
+                                    App.app.userDb!.uid,
+                                    archiveId,
+                                    archiveMsg.fileId!,
+                                    false);
+                                if (imageFile != null) {
+                                  return SingleImageData(
+                                      imageFile: imageFile, isOriginal: true);
+                                }
+                                return null;
+                              },
+                            )
+                          ], initialPage: 0);
                         });
                   } else {
                     return TextBubble(

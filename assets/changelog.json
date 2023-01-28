@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.66", "build_num": 36},
+    "latest": {"version": "0.2.67", "build_num": 37},
     "logs":  [
+        {"time": 1674267919945, "version": "0.2.67", "build_num": 37, "updates": [
+            "- refactor: image widget, support viewing all images in a chat.",
+            "- add: support to new server version with channel creation api change."
+        ]},
         {"time": 1673530707447, "version": "0.2.66", "build_num": 36, "updates": [
             "- fix: bugs related with FCM Push Notifications."
         ]},

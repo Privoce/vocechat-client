@@ -9,31 +9,36 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/ui_models/ui_forward.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/chats/chat/image_page.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class ForwardSheet extends StatefulWidget {
-  List<int>? midList;
-  String? archiveId;
+class ChatSelectionSheet extends StatefulWidget {
+  const ChatSelectionSheet(
+      {Key? key, required this.title, required this.onSubmit})
+      : super(key: key);
 
-  ForwardSheet({this.midList, this.archiveId}) {
-    assert((midList == null) ^ (archiveId == null));
-  }
+  final void Function(
+      ValueNotifier<List<int>> uidNotifier,
+      ValueNotifier<List<int>> gidNotifier,
+      ValueNotifier<ButtonStatus> buttonStatus) onSubmit;
+  final String title;
 
   @override
-  State<ForwardSheet> createState() => _ForwardSheetState();
+  State<ChatSelectionSheet> createState() => _ChatSelectionSheetState();
 }
 
-class _ForwardSheetState extends State<ForwardSheet> {
+class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
   final ValueNotifier<List<int>> uidNotifier = ValueNotifier([]);
   final ValueNotifier<List<int>> gidNotifier = ValueNotifier([]);
-  late bool _isSending;
+
+  final ValueNotifier<ButtonStatus> sumbitBtnStatus =
+      ValueNotifier(ButtonStatus.normal);
 
   @override
   void initState() {
     super.initState();
-    _isSending = false;
   }
 
   @override
@@ -60,57 +65,58 @@ class _ForwardSheetState extends State<ForwardSheet> {
                       },
                       child: Icon(Icons.close)),
                   actions: [
-                    _isSending
-                        ? Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: CupertinoActivityIndicator(),
-                          )
-                        : CupertinoButton(
-                            child: Text(
-                              AppLocalizations.of(context)!.select,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 16,
-                                  color: AppColors.primary400),
-                            ),
-                            onPressed: () async {
-                              setState(() {
-                                _isSending = true;
-                              });
+                    _buildSubmitButton()
+                    // _isSending
+                    //     ? Padding(
+                    //         padding: const EdgeInsets.only(right: 8.0),
+                    //         child: CupertinoActivityIndicator(),
+                    //       )
+                    //     : CupertinoButton(
+                    //         child: Text(
+                    //           AppLocalizations.of(context)!.select,
+                    //           style: TextStyle(
+                    //               fontWeight: FontWeight.w400,
+                    //               fontSize: 16,
+                    //               color: AppColors.primary400),
+                    //         ),
+                    //         onPressed: () async {
+                    //           setState(() {
+                    //             _isSending = true;
+                    //           });
 
-                              try {
-                                bool hasSent = false;
-                                if (widget.midList != null) {
-                                  hasSent = await App.app.chatService
-                                      .sendForward(widget.midList!,
-                                          uidNotifier.value, gidNotifier.value);
-                                } else if (widget.archiveId != null) {
-                                  hasSent = await App.app.chatService
-                                      .sendArchiveForward(widget.archiveId!,
-                                          uidNotifier.value, gidNotifier.value);
-                                }
+                    //           try {
+                    //             bool hasSent = false;
+                    //             if (widget.midList != null) {
+                    //               hasSent = await App.app.chatService
+                    //                   .sendForward(widget.midList!,
+                    //                       uidNotifier.value, gidNotifier.value);
+                    //             } else if (widget.archiveId != null) {
+                    //               hasSent = await App.app.chatService
+                    //                   .sendArchiveForward(widget.archiveId!,
+                    //                       uidNotifier.value, gidNotifier.value);
+                    //             }
 
-                                if (hasSent) {
-                                  setState(() {
-                                    _isSending = false;
-                                    Navigator.of(context).pop();
-                                  });
-                                } else {
-                                  App.logger.severe("Send failed");
-                                  setState(() {
-                                    _isSending = false;
-                                    Navigator.of(context).pop();
-                                  });
-                                }
-                              } catch (e) {
-                                App.logger.severe(e);
+                    //             if (hasSent) {
+                    //               setState(() {
+                    //                 _isSending = false;
+                    //                 Navigator.of(context).pop();
+                    //               });
+                    //             } else {
+                    //               App.logger.severe("Send failed");
+                    //               setState(() {
+                    //                 _isSending = false;
+                    //                 Navigator.of(context).pop();
+                    //               });
+                    //             }
+                    //           } catch (e) {
+                    //             App.logger.severe(e);
 
-                                setState(() {
-                                  _isSending = false;
-                                  Navigator.of(context).pop();
-                                });
-                              }
-                            })
+                    //             setState(() {
+                    //               _isSending = false;
+                    //               Navigator.of(context).pop();
+                    //             });
+                    //           }
+                    //         })
                   ]),
               SizedBox(
                 height: 36,
@@ -141,6 +147,57 @@ class _ForwardSheetState extends State<ForwardSheet> {
         ),
       ),
     );
+  }
+
+  Widget _buildSubmitButton() {
+    return ValueListenableBuilder<ButtonStatus>(
+        valueListenable: sumbitBtnStatus,
+        builder: (context, status, _) {
+          Widget child;
+          double size = 32;
+
+          switch (status) {
+            case ButtonStatus.normal:
+              child = Text(
+                AppLocalizations.of(context)!.select,
+                style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: AppColors.primary400),
+              );
+              break;
+            case ButtonStatus.inProgress:
+              child = CupertinoActivityIndicator(
+                  radius: size / 2, color: Colors.white);
+              break;
+            case ButtonStatus.success:
+              child = Icon(Icons.check, color: Colors.white, size: size);
+              break;
+            case ButtonStatus.error:
+              child = Icon(CupertinoIcons.exclamationmark,
+                  color: Colors.white, size: size);
+              break;
+
+            default:
+              child = Text(
+                AppLocalizations.of(context)!.select,
+                style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 16,
+                    color: AppColors.primary400),
+              );
+          }
+          return CupertinoButton(
+              padding: EdgeInsets.all(8),
+              onPressed: status != ButtonStatus.normal
+                  ? null
+                  : () {
+                      widget.onSubmit(
+                          uidNotifier, gidNotifier, sumbitBtnStatus);
+                      Navigator.of(context).pop();
+                    },
+              child: child);
+        });
   }
 
   Widget _buildRecents() {

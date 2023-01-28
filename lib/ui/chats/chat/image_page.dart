@@ -5,12 +5,14 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 
 class ImagePage extends StatefulWidget {
   final File initImageFile;
   final String heroTag;
+
   final Future<File?> Function() getImage;
 
   ImagePage(
@@ -245,5 +247,3 @@ class _ImagePageState extends State<ImagePage> {
     saveStatus.value = ButtonStatus.normal;
   }
 }
-
-enum ButtonStatus { normal, inProgress, success, error }
