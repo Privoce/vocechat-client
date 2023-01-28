@@ -613,6 +613,7 @@ class SendFile implements AbstractSend {
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
         if (await ChatMsgDao()
             .updateMsgStatusByLocalMid(msgM, MsgSendStatus.success)) {
+          SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
           App.app.chatService.fireSnippet(msgM);
           App.app.chatService.fireMsg(msgM, localMid, file);
           return true;
@@ -620,16 +621,20 @@ class SendFile implements AbstractSend {
       } else {
         App.logger.severe(res.statusCode);
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+        SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
         App.app.chatService.fireMsg(msgM, localMid, file);
         App.app.chatService.fireSnippet(msgM);
       }
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+      SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
       App.app.chatService.fireMsg(msgM, localMid, file);
       App.app.chatService.fireSnippet(msgM);
       return false;
     }
+
+    SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
     return true;
   }
 

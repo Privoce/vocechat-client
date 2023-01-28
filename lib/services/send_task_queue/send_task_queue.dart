@@ -19,20 +19,30 @@ class SendTaskQueue {
     _process();
   }
 
+  void removeTask(SendTask task) {
+    _sendTaskQueue.remove(task);
+  }
+
+  void removeTaskByLocalMid(String localMid) {
+    _sendTaskQueue.removeWhere((element) => element.localMid == localMid);
+  }
+
   Future _process() async {
     if (!isProcessing) {
       isProcessing = true;
 
       await Future.doWhile(() async {
         SendTask topTask = _sendTaskQueue.removeFirst();
-        _sendTaskQueue.addFirst(topTask..status.value = MsgSendStatus.sending);
+        topTask.status.value = MsgSendStatus.sending;
+        _sendTaskQueue.addFirst(topTask);
 
         try {
           await topTask.sendTask();
         } catch (e) {
           App.logger.severe(e);
         }
-        _sendTaskQueue.removeFirst();
+        // _sendTaskQueue.removeFirst();
+        _sendTaskQueue.remove(topTask);
 
         return _sendTaskQueue.isNotEmpty;
       });
