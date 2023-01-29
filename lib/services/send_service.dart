@@ -75,7 +75,9 @@ abstract class AbstractSend {
       void Function(double progress)? progress});
 
   static Future<int> getFakeMid() async {
-    return (await UserDbMDao.dao.getMaxMid(App.app.userDb!.id)) + 1;
+    final maxMid = await ChatMsgDao().getMaxMid();
+    final awaitingTaskCount = SendTaskQueue.singleton.length;
+    return maxMid + awaitingTaskCount + 1;
   }
 }
 
@@ -511,6 +513,18 @@ class SendFile implements AbstractSend {
 
     Uint8List fileBytes = file.readAsBytesSync();
 
+    // Put task into sending queue first to avoid empty sending status in
+    // chat page
+    ValueNotifier<double> _progress = ValueNotifier(0);
+    final task = SendTask(
+        localMid: localMid,
+        sendTask: () => _apiSendFile(contentType, filename, message, chatMsgM,
+                fileBytes, localMid, file, uid, gid, (progress) {
+              _progress.value = progress;
+            }));
+    task.progress = _progress;
+    SendTaskQueue.singleton.addTask(task);
+
     // Compress and save thumb if is image.
     if (isImage) {
       final chatId = getChatId(gid: gid, uid: uid);
@@ -539,15 +553,6 @@ class SendFile implements AbstractSend {
       App.app.chatService.fireSnippet(chatMsgM);
     }
 
-    ValueNotifier<double> _progress = ValueNotifier(0);
-    final task = SendTask(
-        localMid: localMid,
-        sendTask: () => _apiSendFile(contentType, filename, message, chatMsgM,
-                fileBytes, localMid, file, uid, gid, (progress) {
-              _progress.value = progress;
-            }));
-    task.progress = _progress;
-    SendTaskQueue.singleton.addTask(task);
     return true;
   }
 
@@ -613,6 +618,7 @@ class SendFile implements AbstractSend {
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
         if (await ChatMsgDao()
             .updateMsgStatusByLocalMid(msgM, MsgSendStatus.success)) {
+          SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
           App.app.chatService.fireSnippet(msgM);
           App.app.chatService.fireMsg(msgM, localMid, file);
           return true;
@@ -620,16 +626,20 @@ class SendFile implements AbstractSend {
       } else {
         App.logger.severe(res.statusCode);
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+        SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
         App.app.chatService.fireMsg(msgM, localMid, file);
         App.app.chatService.fireSnippet(msgM);
       }
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+      SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
       App.app.chatService.fireMsg(msgM, localMid, file);
       App.app.chatService.fireSnippet(msgM);
       return false;
     }
+
+    SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
     return true;
   }
 
