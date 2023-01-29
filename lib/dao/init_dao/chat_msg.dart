@@ -409,7 +409,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
         where: '${ChatMsgM.F_localMid} = ?', whereArgs: [msgM.localMid]);
     if (old != null) {
       msgM = old;
-      msgM.status == status.name;
+      msgM.status = status.name;
       await super.update(msgM);
       App.logger.info(
           "Chat Msg status updated. mid: ${msgM.mid}, localMid: ${msgM.localMid}, status: $status");
