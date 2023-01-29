@@ -75,7 +75,9 @@ abstract class AbstractSend {
       void Function(double progress)? progress});
 
   static Future<int> getFakeMid() async {
-    return (await UserDbMDao.dao.getMaxMid(App.app.userDb!.id)) + 1;
+    final maxMid = await ChatMsgDao().getMaxMid();
+    final awaitingTaskCount = SendTaskQueue.singleton.length;
+    return maxMid + awaitingTaskCount + 1;
   }
 }
 

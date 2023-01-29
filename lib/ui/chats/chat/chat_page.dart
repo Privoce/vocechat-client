@@ -1266,8 +1266,6 @@ class _ChatPageState extends State<ChatPage> {
     if (uiMsg.chatMsgM.detailContentType == typeFile) {
       if (status == MsgSendStatus.sending) {
         final task = SendTaskQueue.singleton.getTask(uiMsg.chatMsgM.localMid);
-        print(
-            "task is not null: ${task != null}, task progress: ${task?.progress}");
         if (task != null && task.progress != null) {
           return ValueListenableBuilder<double>(
             valueListenable: task.progress!,

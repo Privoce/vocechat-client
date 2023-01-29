@@ -14,6 +14,8 @@ class SendTaskQueue {
   final Queue<SendTask> _sendTaskQueue = Queue();
   bool isProcessing = false;
 
+  int get length => _sendTaskQueue.length;
+
   void addTask(SendTask task) {
     _sendTaskQueue.add(task);
     _process();
