@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 0.2.67+37
+version: 0.2.68+38
 
 environment:
   sdk: ">=2.15.1 <3.0.0"
@@ -38,7 +38,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  flutter_slidable: ^1.1.0
+  flutter_slidable: ^2.0.0
   sqflite: ^2.0.1
   simple_logger: ^1.9.0
   image: ^3.1.0
@@ -51,34 +51,35 @@ dependencies:
   dio: ^4.0.6
   image_picker: ^0.8.4+8
   flutter_image_compress: ^1.1.0
-  package_info_plus: ^1.3.1
+  package_info_plus: ^3.0.2
   lpinyin: ^2.0.3
-  firebase_core: ^1.12.0
-  firebase_messaging: ^11.2.6
+  firebase_core: ^2.4.1
+  firebase_messaging: ^14.2.1
+  firebase_core_platform_interface: ^4.5.2
   image_gallery_saver: ^1.7.1
-  connectivity_plus: ^2.2.1
+  connectivity_plus: ^3.0.2
   flutter_svg: ^1.0.3
   flutter_markdown: ^0.6.9+1
   url_launcher: ^6.0.20
-  file_picker: ^4.5.1
+  file_picker: ^5.2.5
   mime: ^1.0.1
   http_parser: ^4.0.0
   flutter_portal: ^1.0.0
-  share_plus: ^4.0.4
+  share_plus: ^6.3.0
   event_bus: ^2.0.0
   universal_html: ^2.0.8
-  permission_handler: ^9.2.0
+  permission_handler: ^10.2.0
   path_provider: ^2.0.11
   flutter_pdfview: ^1.2.3
-  wechat_assets_picker: ^7.3.2
+  wechat_assets_picker: ^8.3.1+1
   wechat_camera_picker: ^3.4.0
-  any_link_preview: ^2.0.9
+  any_link_preview: ^3.0.0
   chewie: ^1.3.4
   video_player: ^2.4.8
   scroll_to_index: ^3.0.1
   sqflite_common_ffi: ^2.1.1+1
   sqlite3_flutter_libs: ^0.5.8
-  flutter_secure_storage: ^6.0.0
+  flutter_secure_storage: ^7.0.1
   uni_links: ^0.5.1
   qr_flutter: ^4.0.0
   mobile_scanner: ^2.1.0
@@ -126,11 +127,11 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^1.0.0
+  flutter_lints: ^2.0.1
 
 
   # To Generate app icons for iOS and Android
-  flutter_launcher_icons: ^0.9.3
+  flutter_launcher_icons: ^0.11.0
 
 flutter_icons:
   android: "launcher_icon"

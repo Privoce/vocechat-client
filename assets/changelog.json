@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.67", "build_num": 37},
+    "latest": {"version": "0.2.68", "build_num": 38},
     "logs":  [
+        {"time": 1675157838355, "version": "0.2.68", "build_num": 38, "updates": [
+            "- fix: image sending status issue."            
+        ]},
         {"time": 1674267919945, "version": "0.2.67", "build_num": 37, "updates": [
             "- refactor: image widget, support viewing all images in a chat.",
             "- add: support to new server version with channel creation api change."
