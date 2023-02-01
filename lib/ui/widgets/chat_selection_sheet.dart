@@ -9,7 +9,7 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/ui_models/ui_forward.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
-import 'package:vocechat_client/ui/chats/chat/image_page.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/image_page.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
