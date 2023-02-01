@@ -120,6 +120,7 @@
     "logoutWarningWithQM":"您确认要登出吗？",
 
     "message": "发消息",
+    "messageDetail":"消息全文",
     "members":"成员",
     "minute":"分钟",
     "minutes":"分钟",
@@ -168,6 +169,7 @@
     "signUpTo": "注册",
     "switchServer": "切换服务器",
 
+    "tapForMore":"点按查看更多",
     "to":"至",
     "today":"今天",
     "transferOwnership":"转让所有权",
