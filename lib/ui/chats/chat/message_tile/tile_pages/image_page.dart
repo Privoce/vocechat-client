@@ -101,7 +101,8 @@ class _ImagePageState extends State<ImagePage> {
             size: 24,
             status: ButtonStatus.normal,
             onPressed: (() {
-              Share.shareFiles([imageFile?.path ?? widget.initImageFile.path]);
+              Share.shareXFiles(
+                  [XFile(imageFile?.path ?? widget.initImageFile.path)]);
             }))
       ]),
     );

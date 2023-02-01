@@ -104,8 +104,9 @@ class _FilePageState extends State<FilePage> {
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Text(
-                widget.fileName + "." + widget.extension,
+                "${widget.fileName}.${widget.extension}",
                 maxLines: 3,
+                textAlign: TextAlign.center,
                 style: AppTextStyles.titleLarge,
               ),
             ),
@@ -145,7 +146,7 @@ class _FilePageState extends State<FilePage> {
                               child: Text(AppLocalizations.of(context)!
                                   .openWithOtherApps),
                               onPressed: () async {
-                                Share.shareFiles([_localFile!.path]);
+                                Share.shareXFiles([XFile(_localFile!.path)]);
                               });
                         case FilePageStatus.downloading:
                           return Center(
@@ -191,9 +192,9 @@ class _FilePageState extends State<FilePage> {
   /// To replace internal filename (localMid) with real name, making shared file
   /// consistant with the original one.
   void _shareFile(File file, String filename) async {
-    final tempPath = (await getTemporaryDirectory()).path + "/$filename";
+    final tempPath = "${(await getTemporaryDirectory()).path}/$filename";
     final tempFile = await file.copy(tempPath);
-    Share.shareFiles([tempFile.path]);
+    Share.shareXFiles([XFile(tempFile.path)]);
   }
 
   void checkFileExist() async {
@@ -344,9 +345,10 @@ class _FilePageState extends State<FilePage> {
   }
 
   String _getFileSizeString(int bytes) {
+    const int base = 1000;
     const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    var i = (log(bytes) / log(1024)).floor();
-    return ((bytes / pow(1024, i)).toStringAsFixed(1)) +
+    var i = (log(bytes) / log(base)).floor();
+    return ((bytes / pow(base, i)).toStringAsFixed(1)) +
         suffixes[i].toUpperCase();
   }
 }

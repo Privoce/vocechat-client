@@ -305,7 +305,7 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
   void _share() async {
     Navigator.of(context).pop();
     try {
-      Share.shareFiles([widget.imageFile.path]);
+      Share.shareXFiles([XFile(widget.imageFile.path)]);
     } catch (e) {
       App.logger.severe(e);
     }
