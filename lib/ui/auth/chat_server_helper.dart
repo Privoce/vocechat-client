@@ -4,7 +4,7 @@ import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';

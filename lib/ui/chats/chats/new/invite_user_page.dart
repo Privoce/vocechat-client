@@ -12,7 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/ui/app_colors.dart';

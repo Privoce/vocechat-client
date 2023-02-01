@@ -10,7 +10,7 @@ import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/message_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
@@ -757,7 +757,6 @@ class _ChatPageState extends State<ChatPage> {
       final savedApi = SavedApi(App.app.chatServerM.fullUrl);
       await savedApi.createSaved(midList);
       // Navigator.of(context).pop();
-
     } catch (e) {
       App.logger.severe(e);
     }

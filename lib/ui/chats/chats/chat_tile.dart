@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';

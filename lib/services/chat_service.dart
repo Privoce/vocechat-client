@@ -13,7 +13,7 @@ import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';

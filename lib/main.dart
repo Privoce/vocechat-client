@@ -11,7 +11,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/sse.dart';

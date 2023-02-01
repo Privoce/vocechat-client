@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
