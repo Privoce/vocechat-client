@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:universal_html/js.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';

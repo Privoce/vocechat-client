@@ -6,9 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/models/local_kits.dart';
+import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -16,7 +20,6 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/ui/chats/chat/input_field/app_text_selection_controls.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -66,13 +69,12 @@ class _ChatTextFieldState extends State<ChatTextField> {
   late ValueNotifier<Set<UserInfoM>> memberSetNotifier = ValueNotifier({});
   final selectedMention = ValueNotifier<LengthMap?>(null);
   List<Map<String, dynamic>> memberList = <Map<String, dynamic>>[];
-  AppTextSelectionControls controls = AppTextSelectionControls();
+  TextEditingController controller = TextEditingController();
 
   Set markupSet = {};
   @override
   void initState() {
     super.initState();
-    controls.setChatInfo(widget.userInfoM?.uid, widget.groupInfoM?.gid);
   }
 
   @override
@@ -118,8 +120,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
         return AppMentions(
           defaultText: widget.draft,
           key: widget.mentionsKey,
-          selectionControls: controls,
           enableMention: widget.groupInfoM != null,
+          // selectionControls: controls,
+          contextMenuBuilder: _buildContextMenu,
           leading: [
             SizedBox(
               width: widget._height,
@@ -298,6 +301,101 @@ class _ChatTextFieldState extends State<ChatTextField> {
     );
   }
 
+  Widget _buildContextMenu(BuildContext context, EditableTextState state) {
+    // return AdaptiveTextSelectionToolbar.buttonItems(
+    //   anchors: state.contextMenuAnchors,
+    //   buttonItems: buttonItems,
+    // );
+
+    return FutureBuilder<Uint8List?>(
+      future: _getClipboardImage(),
+      builder: (context, snapshot) {
+        final List<ContextMenuButtonItem> buttonItems =
+            state.contextMenuButtonItems;
+        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+          // state.clipboardStatus?.value = ClipboardStatus.pasteable;
+
+          // final index = buttonItems.indexWhere(
+          //     (element) => element.type == ContextMenuButtonType.paste);
+          // if (index != -1) {
+          //   final replacePasteButton = ContextMenuButtonItem(
+          //     // type: ContextMenuButtonType.paste,,
+          //     onPressed: () => _onPasteImage(),
+          //   );
+          //   buttonItems[index] = replacePasteButton;
+          // }
+          buttonItems.add(ContextMenuButtonItem(
+            type: ContextMenuButtonType.paste,
+            onPressed: () => _onPasteImage(),
+          ));
+        }
+
+        return AdaptiveTextSelectionToolbar.buttonItems(
+          anchors: state.contextMenuAnchors,
+          buttonItems: buttonItems,
+        );
+      },
+    );
+  }
+
+  void _onPasteImage() async {
+    if (Platform.isIOS) {
+      try {
+        final image = await _getClipboardImage();
+        if (image != null) {
+          _pasteImage(image);
+        }
+      } catch (e) {
+        App.logger.severe(e);
+      }
+    }
+    final TextEditingValue value =
+        controller.value; // Snapshot the input before using `await`.
+    final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+
+    if (data != null) {
+      final updatedValue = TextEditingValue(
+          text: value.selection.textBefore(value.text) + (data.text ?? ""),
+          selection: TextSelection.collapsed(
+              offset: value.selection.start + (data.text?.length ?? 0)));
+      controller.value = updatedValue;
+    }
+
+    ContextMenuController.removeAny();
+
+    // delegate.bringIntoView(delegate.textEditingValue.selection.extent);
+    // delegate.hideToolbar();
+  }
+
+  void _pasteImage(Uint8List imageBytes) async {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    final imageWidget = Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Image.memory(imageBytes),
+    );
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.appTextSelectionControlPasteImage,
+        contentWidget: imageWidget,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.cancel,
+              action: (() => Navigator.of(context).pop()))
+        ],
+        primaryAction: AppAlertDialogAction(
+            text: AppLocalizations.of(context)!.send,
+            action: () {
+              // return _send(path, type, uuid());
+              SendService.singleton.sendMessage(uuid(), "", SendType.file,
+                  blob: imageBytes,
+                  gid: widget.groupInfoM?.gid,
+                  uid: widget.userInfoM?.uid);
+              Navigator.of(context).pop();
+            }));
+  }
+
   Widget _buildReply(BuildContext context) {
     if (widget.repliedMsgM != null && widget.repliedUser != null) {
       switch (widget.repliedMsgM!.detailContentType) {
@@ -426,6 +524,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
   }
 
   final taskQueue = TaskQueue(enableStatusDisplay: false);
+
   Future<bool> requestPermission() async {
     late PermissionStatus status;
 
@@ -607,5 +706,17 @@ class _ChatTextFieldState extends State<ChatTextField> {
       widget.mentionsKey.currentState!.controller?.clear();
       widget.sendText(msg, SendType.reply);
     }
+  }
+
+  Future<Uint8List?> _getClipboardImage() async {
+    try {
+      final methodChannel = MethodChannel('clipboard/image');
+      final result = await methodChannel.invokeMethod('getClipboardImage');
+      if (result != null) return result as Uint8List;
+    } on PlatformException catch (e) {
+      App.logger.severe(e);
+    }
+
+    return null;
   }
 }

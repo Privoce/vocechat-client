@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';

@@ -6,10 +6,10 @@ import 'package:vocechat_client/api/lib/admin_firebase_api.dart';
 
 import 'package:vocechat_client/api/models/admin/fcm/fcm.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
-import 'package:vocechat_client/app_text_styles.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';

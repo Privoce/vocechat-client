@@ -167,7 +167,8 @@ class AppMentions extends StatefulWidget {
       this.hideSuggestionList = false,
       this.onSuggestionVisibleChanged,
       this.inputFormatters,
-      this.selectionControls})
+      this.selectionControls,
+      this.contextMenuBuilder})
       : super(key: key);
 
   final bool hideSuggestionList;
@@ -368,6 +369,10 @@ class AppMentions extends StatefulWidget {
   List<TextInputFormatter>? inputFormatters;
 
   final TextSelectionControls? selectionControls;
+
+  /// {@macro flutter.widgets.EditableText.contextMenuBuilder}
+  final Widget Function(BuildContext context, EditableTextState state)?
+      contextMenuBuilder;
 
   @override
   AppMentionsState createState() => AppMentionsState();
@@ -579,6 +584,7 @@ class AppMentionsState extends State<AppMentions> {
             scrollPhysics: widget.scrollPhysics,
             controller: controller,
             inputFormatters: widget.inputFormatters,
+            contextMenuBuilder: widget.contextMenuBuilder,
           ),
         ),
         ...widget.trailing,
