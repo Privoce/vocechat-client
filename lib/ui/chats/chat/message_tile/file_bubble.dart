@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/file_page.dart';
 
@@ -127,13 +128,6 @@ class FileBubble extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String getFileSizeString(int bytes) {
-    const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    var i = (log(bytes) / log(1024)).floor();
-    return ((bytes / pow(1024, i)).toStringAsFixed(1)) +
-        suffixes[i].toUpperCase();
   }
 
   bool _isAudio(String extension) {

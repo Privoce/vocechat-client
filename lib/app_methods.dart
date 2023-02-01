@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,6 +44,15 @@ Future<String> parseMention(String snippet) async {
   });
 
   return text;
+}
+
+/// Translate bytes to readable file size string.
+String getFileSizeString(int bytes) {
+  const suffixes = ["b", "kb", "mb", "gb", "tb"];
+  const int base = 1000;
+  var i = (log(bytes) / log(base)).floor();
+  return ((bytes / pow(base, i)).toStringAsFixed(1)) +
+      suffixes[i].toUpperCase();
 }
 
 /// Get first, or first two, if exists, initials of a name string, used for
