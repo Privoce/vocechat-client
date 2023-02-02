@@ -3,10 +3,13 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/mixins/orientation_mixins.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -24,7 +27,9 @@ class ImageGalleryPage extends StatefulWidget {
   State<ImageGalleryPage> createState() => _ImageGalleryPageState();
 }
 
-class _ImageGalleryPageState extends State<ImageGalleryPage> {
+class _ImageGalleryPageState extends State<ImageGalleryPage>
+// with LandscapeStatefulModeMixin<ImageGalleryPage>
+{
   late final PageController _controller;
   late final List<SingleImageGetters> _imageList;
 
@@ -42,6 +47,11 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
 
     _showButtons = ValueNotifier(true);
     _imageList = widget.data.imageItemList;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void _initController() {
@@ -143,6 +153,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
   Widget _buildShareButton() {
     return CupertinoButton(
         padding: EdgeInsets.zero,
+        onPressed: _share,
         child: Container(
             width: 36,
             height: 36,
@@ -151,8 +162,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
               borderRadius: BorderRadius.circular(24),
             ),
             child: Center(
-                child: Icon(AppIcons.share, size: 20, color: Colors.white))),
-        onPressed: _share);
+                child: Icon(AppIcons.share, size: 20, color: Colors.white))));
   }
 
   void _share() async {
@@ -163,7 +173,8 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
     if (singleImageData == null) return;
 
     showModalBottomSheet(
-        context: context,
+        context: navigatorKey.currentContext!,
+        isScrollControlled: true,
         builder: (context) {
           return ImageShareSheet(imageFile: singleImageData.imageFile);
         });
@@ -198,6 +209,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
 
         return CupertinoButton(
             padding: EdgeInsets.zero,
+            onPressed: status == ButtonStatus.normal ? _saveImage : null,
             child: Container(
                 width: 36,
                 height: 36,
@@ -207,8 +219,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage> {
                       : AppColors.grey600,
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: Center(child: child)),
-            onPressed: status == ButtonStatus.normal ? _saveImage : null);
+                child: Center(child: child)));
       },
     );
   }

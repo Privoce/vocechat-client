@@ -26,6 +26,7 @@
     "loginPageLoggingin": "正在登入",
     "loginPageNoAccount": "还没有账号？",
     "loginPageSignUp": "注册",
+    "loginPageOnlyInvitedDes":"只有被邀请的用户可以在此服务器注册。请向服务器成员索要邀请链接。",
 
     "passwordRegisterPageInvalidEmailFormat": "邮箱格式无效",
     "passwordRegisterPageInvalidPasswordFormat": "密码格式无效",
@@ -120,6 +121,7 @@
     "logoutWarningWithQM":"您确认要登出吗？",
 
     "message": "发消息",
+    "messageDetail":"消息全文",
     "members":"成员",
     "minute":"分钟",
     "minutes":"分钟",
@@ -168,6 +170,7 @@
     "signUpTo": "注册",
     "switchServer": "切换服务器",
 
+    "tapForMore":"点按查看更多",
     "to":"至",
     "today":"今天",
     "transferOwnership":"转让所有权",
