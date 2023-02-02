@@ -41,11 +41,6 @@ class ReloadNotificationPage extends StatelessWidget {
             child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
       ),
       body: SafeArea(child: _buildBody(context)),
-      bottomNavigationBar: SafeArea(
-          child: Text(
-        AppLocalizations.of(context)!.aboutPageCopyRight,
-        textAlign: TextAlign.center,
-      )),
     );
   }
 
