@@ -26,6 +26,7 @@
     "loginPageLoggingin": "Logging In",
     "loginPageNoAccount": "Don't have an account?",
     "loginPageSignUp": "Sign Up",
+    "loginPageOnlyInvitedDes":"Only invited user can sign up to this server. Please seek help from server admin for sign up link.",
 
     "passwordRegisterPageInvalidEmailFormat": "Invalid Email Format",
     "passwordRegisterPageInvalidPasswordFormat": "Invalid Password Format",
