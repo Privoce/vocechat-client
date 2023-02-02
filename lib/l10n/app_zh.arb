@@ -153,6 +153,8 @@
     "reply": "回复",
     "replyingTo":"回复给",
     "resend":"重发",
+    "resetFcmToken":"重设通知",
+    "resetFcmTokenFooter":"如果登录过程中出现通知错误提示，您可以在这里尝试重新向服务端注册设备信息。此过程需要连接谷歌服务，请确认您的网络状况。",
 
     "save": "保存",
     "savedItems": "保存的消息",
@@ -299,7 +301,12 @@
     "fcmErrorCopyErrorLog":"拷贝错误记录。",
 
     "invitationLinkViewSend":"向朋友发送邀请链接。",
+
     
-    "noFCMTokenTitle":"Firebase 错误",
-    "noFCMTokenDes":"登录流程将继续，但推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。"
+   
+    
+    "noFCMTokenLoginTitle":"推送通知",
+    "noFCMTokenLoginDes":"登录流程将继续，但推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。",
+    "noFCMTokenReloadTitle":"推送通知",
+    "noFCMTokenReloadDes":"注册通知信息时出错，推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。"
 }

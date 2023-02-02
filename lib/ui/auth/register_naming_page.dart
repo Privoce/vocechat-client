@@ -243,9 +243,9 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         await showAppAlert(
             context: context,
             title: AppLocalizations.of(navigatorKey.currentContext!)!
-                .noFCMTokenTitle,
+                .noFCMTokenLoginTitle,
             content: AppLocalizations.of(navigatorKey.currentContext!)!
-                .noFCMTokenDes,
+                .noFCMTokenLoginDes,
             actions: [
               AppAlertDialogAction(
                   text: AppLocalizations.of(context)!.ok,

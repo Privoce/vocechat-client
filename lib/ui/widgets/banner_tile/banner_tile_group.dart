@@ -26,7 +26,7 @@ class BannerTileGroup extends StatelessWidget {
       children: [
         if (header != null && header!.isNotEmpty)
           Padding(
-              padding: EdgeInsets.only(left: 16, top: 8, bottom: 4),
+              padding: EdgeInsets.only(left: 16, top: 8, bottom: 4, right: 8),
               child: Text(header!,
                   style: TextStyle(
                       color: AppColors.grey400,
@@ -51,7 +51,7 @@ class BannerTileGroup extends StatelessWidget {
         ),
         if (footer != null && footer!.isNotEmpty)
           Padding(
-              padding: EdgeInsets.only(left: 16, top: 4, bottom: 8),
+              padding: EdgeInsets.only(left: 16, top: 4, bottom: 8, right: 8),
               child: Text(footer!,
                   style: TextStyle(
                       color: AppColors.grey400,

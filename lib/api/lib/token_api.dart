@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
@@ -10,7 +12,7 @@ class TokenApi {
   late final String _baseUrl;
 
   TokenApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/token";
+    _baseUrl = "$serverUrl/api/token";
   }
 
   /// Do login.
@@ -70,6 +72,12 @@ class TokenApi {
       newRes.data = data;
     }
     return newRes;
+  }
+
+  Future<Response> updateFcmDeviceToken(String deviceToken) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    return dio.put("/device_token", data: {"device_token": deviceToken});
   }
 
   Future<Response> getLogout() async {
