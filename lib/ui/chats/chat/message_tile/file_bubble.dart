@@ -42,7 +42,7 @@ class FileBubble extends StatelessWidget {
     try {
       extension = p.extension(name).substring(1);
     } catch (e) {
-      App.logger.severe(e);
+      // App.logger.severe(e);
       extension = "";
     }
 
