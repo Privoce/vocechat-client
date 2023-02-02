@@ -190,7 +190,7 @@ class AuthService {
     return login(userdb.userInfo.email!, pswd, true, true);
   }
 
-  Future<String> _getFirebaseDeviceToken() async {
+  Future<String> getFirebaseDeviceToken() async {
     const int waitingSecs = 3;
 
     App.logger.info("starts fetching Firebase Token");
@@ -226,20 +226,20 @@ class AuthService {
 
   Future<TokenLoginRequest> _preparePswdLoginRequest(
       String email, String pswd) async {
-    final deviceToken = await _getFirebaseDeviceToken();
-    final context = navigatorKey.currentContext!;
+    final deviceToken = await getFirebaseDeviceToken();
+    final currentContext = navigatorKey.currentContext!;
 
-    if (deviceToken.isEmpty) {
+    if (deviceToken.isEmpty && currentContext.mounted) {
       await showAppAlert(
-          context: context,
+          context: currentContext,
           title: AppLocalizations.of(navigatorKey.currentContext!)!
-              .noFCMTokenTitle,
-          content:
-              AppLocalizations.of(navigatorKey.currentContext!)!.noFCMTokenDes,
+              .noFCMTokenLoginTitle,
+          content: AppLocalizations.of(navigatorKey.currentContext!)!
+              .noFCMTokenLoginDes,
           actions: [
             AppAlertDialogAction(
-                text: AppLocalizations.of(context)!.ok,
-                action: (() => Navigator.of(context).pop()))
+                text: AppLocalizations.of(currentContext)!.ok,
+                action: (() => Navigator.of(currentContext).pop()))
           ]);
     }
 

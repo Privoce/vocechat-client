@@ -11,7 +11,7 @@ import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/settings/changelog_models.dart/change_log.dart';
-import 'package:vocechat_client/ui/settings/settings_changelog_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/settings_changelog_page.dart';
 import 'package:vocechat_client/ui/widgets/app_icon.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';

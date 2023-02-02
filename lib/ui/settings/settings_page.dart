@@ -12,12 +12,13 @@ import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/settings/firebase_settings_page.dart';
-import 'package:vocechat_client/ui/settings/language_setting_page.dart';
-import 'package:vocechat_client/ui/settings/server_info_settings_page.dart';
-import 'package:vocechat_client/ui/settings/settings_about_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/firebase_settings_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/language_setting_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/reload_notification_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/server_info_settings_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
-import 'package:vocechat_client/ui/settings/userinfo_setting_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/userinfo_setting_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
@@ -74,6 +75,7 @@ class _SettingPageState extends State<SettingPage> {
                   _buildUserInfo(),
                   _buildServer(context),
                   _buildLanguage(context),
+                  _buildPushNotificationToken(context),
                   _buildAbout(),
                   if (App.app.userDb?.userInfo.isAdmin ?? false)
                     // _buildConfigs(context),
@@ -141,6 +143,19 @@ class _SettingPageState extends State<SettingPage> {
             })));
           },
           title: AppLocalizations.of(context)!.language),
+    );
+  }
+
+  Widget _buildPushNotificationToken(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: BannerTile(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
+              return ReloadNotificationPage();
+            })));
+          },
+          title: AppLocalizations.of(context)!.resetFcmToken),
     );
   }
 
