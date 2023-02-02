@@ -43,7 +43,7 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
       child: SafeArea(
         child: SizedBox(
           height: 257,
-          child: Column(
+          child: ListView(
             children: [
               _buildRecentChats(),
               Padding(
@@ -51,7 +51,7 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
                 child:
                     Divider(color: AppColors.grey600, indent: 8, endIndent: 8),
               ),
-              _buildButtons(context)
+              _buildButtons(context),
             ],
           ),
         ),

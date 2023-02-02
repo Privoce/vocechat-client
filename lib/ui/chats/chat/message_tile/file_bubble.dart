@@ -104,15 +104,16 @@ class FileBubble extends StatelessWidget {
                               fontWeight: FontWeight.w600),
                         ),
                       ),
-                      Text(
-                        "." + extension,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            color: Color.fromRGBO(28, 28, 30, 1),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600),
-                      )
+                      if (extension.isNotEmpty)
+                        Text(
+                          ".$extension",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              color: Color.fromRGBO(28, 28, 30, 1),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600),
+                        )
                     ],
                   ),
                   SizedBox(height: 4),
