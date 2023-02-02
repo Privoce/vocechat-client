@@ -20,6 +20,7 @@ import 'package:http/http.dart' as http;
 
 class SettingsAboutPage extends StatelessWidget {
   final ValueNotifier<bool> _isCheckingUpdates = ValueNotifier(false);
+  final ValueNotifier<bool> _isFetchingLog = ValueNotifier(false);
 
   final appStoreUrl = "https://apps.apple.com/app/vocechat/id1631779678";
   final googlePlayUrl =
@@ -104,8 +105,24 @@ class SettingsAboutPage extends StatelessWidget {
       ),
       BannerTile(
         title: AppLocalizations.of(context)!.aboutPageChangeLog,
-        onTap: (() => _goToChangelog(context)),
-      )
+        titleWidget: ValueListenableBuilder<bool>(
+          valueListenable: _isFetchingLog,
+          builder: (context, value, child) {
+            if (value) {
+              return CupertinoActivityIndicator();
+            } else {
+              return SizedBox.shrink();
+            }
+          },
+        ),
+        onTap: () {
+          _goToChangelog(context);
+        },
+      ),
+      // BannerTile(
+      //   title: AppLocalizations.of(context)!.aboutPageChangeLog,
+      //   onTap: (() => _goToChangelog(context)),
+      // )
     ]);
   }
 
@@ -152,9 +169,17 @@ class SettingsAboutPage extends StatelessWidget {
   }
 
   void _goToChangelog(BuildContext context) async {
-    final changeLog = await _getChangeLog();
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => SettingsChangelogPage(changeLog: changeLog)));
+    _isFetchingLog.value = true;
+
+    try {
+      await _getChangeLog().then((value) => Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) => SettingsChangelogPage(changeLog: value))));
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    _isFetchingLog.value = false;
   }
 
   Future<ChangeLog?> _getChangeLog() async {

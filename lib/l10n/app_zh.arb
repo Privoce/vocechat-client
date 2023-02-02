@@ -300,6 +300,6 @@
 
     "invitationLinkViewSend":"向朋友发送邀请链接。",
     
-    "noFCMTokenTitle":"Firebase 错误",
+    "noFCMTokenTitle":"推送通知",
     "noFCMTokenDes":"登录流程将继续，但推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。"
 }

@@ -297,7 +297,7 @@
 
     "invitationLinkViewSend":"Send invitation link to your friends.",
     
-    "noFCMTokenTitle":"Firebase Error",
+    "noFCMTokenTitle":"Push Notification",
     "noFCMTokenDes":"Login process will continue, but Push notification service will not be available. You may check your network condition (VoceChat needs to visit Google service)."
     
 }
