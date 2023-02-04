@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.68", "build_num": 38},
+    "latest": {"version": "0.2.69", "build_num": 39},
     "logs":  [
+        {"time": 1675495401212, "version": "0.2.69", "build_num": 39, "updates": [
+            "- fix: multiple bug fixes and performance improvement.",
+            "- add: Push notification re-register page."         
+        ]},
         {"time": 1675157838355, "version": "0.2.68", "build_num": 38, "updates": [
             "- fix: image sending status issue."            
         ]},
