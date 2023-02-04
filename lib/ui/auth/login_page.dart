@@ -124,8 +124,7 @@ class _LoginPageState extends State<LoginPage> {
     if (widget.chatServerM.properties.config?.whoCanSignUp != "EveryOne") {
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(
-              "Only invited user can sign up to this server. Please seek help from server admin for sign up link.",
+          child: Text(AppLocalizations.of(context)!.loginPageOnlyInvitedDes,
               style: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 14,

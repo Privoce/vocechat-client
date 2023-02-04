@@ -26,6 +26,7 @@
     "loginPageLoggingin": "Logging In",
     "loginPageNoAccount": "Don't have an account?",
     "loginPageSignUp": "Sign Up",
+    "loginPageOnlyInvitedDes":"Only invited user can sign up to this server. Please seek help from server admin for sign up link.",
 
     "passwordRegisterPageInvalidEmailFormat": "Invalid Email Format",
     "passwordRegisterPageInvalidPasswordFormat": "Invalid Password Format",
@@ -117,6 +118,7 @@
     "logoutWarningWithQM":"Are you sure to log out?",
 
     "message": "Message",
+    "messageDetail":"Message Detail",
     "members":"Members",
     "minute":"minute",
     "minutes":"minutes",
@@ -148,6 +150,8 @@
     "reply": "Reply",
     "replyingTo":"Replying to",
     "resend":"Resend",
+    "resetFcmToken":"Reset Push Notification",
+    "resetFcmTokenFooter":"You may re-register Firebase device token for Push Notifications, if a push notification error occurred during login process. Please check your network condition, as it needs to connect Google service.",
 
     "scanQrCodeToRegister": "Scan this QR Code to register",
     "save": "Save",
@@ -165,6 +169,7 @@
     "signUpTo": "Sign Up to",
     "switchServer": "Switch Server",
 
+    "tapForMore":"Tap for more",
     "to":"to",
     "today":"Today",
     "transferOwnership":"Transfer Ownership",
@@ -294,7 +299,9 @@
 
     "invitationLinkViewSend":"Send invitation link to your friends.",
     
-    "noFCMTokenTitle":"Firebase Error",
-    "noFCMTokenDes":"Login process will continue, but Push notification service will not be available. You may check your network condition (VoceChat needs to visit Google service)."
+    "noFCMTokenLoginTitle":"Push Notification",
+    "noFCMTokenLoginDes":"Login process will continue, but Push notification service will not be available. You may check your network condition (VoceChat needs to visit Google service).",
+    "noFCMTokenReloadTitle":"Push Notification",
+    "noFCMTokenReloadDes":"Failed to register device info. Push notification service will not be available. You may check your network condition (VoceChat needs to visit Google service)."
     
 }

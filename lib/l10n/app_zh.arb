@@ -26,6 +26,7 @@
     "loginPageLoggingin": "正在登入",
     "loginPageNoAccount": "还没有账号？",
     "loginPageSignUp": "注册",
+    "loginPageOnlyInvitedDes":"只有被邀请的用户可以在此服务器注册。请向服务器成员索要邀请链接。",
 
     "passwordRegisterPageInvalidEmailFormat": "邮箱格式无效",
     "passwordRegisterPageInvalidPasswordFormat": "密码格式无效",
@@ -120,6 +121,7 @@
     "logoutWarningWithQM":"您确认要登出吗？",
 
     "message": "发消息",
+    "messageDetail":"消息全文",
     "members":"成员",
     "minute":"分钟",
     "minutes":"分钟",
@@ -151,6 +153,8 @@
     "reply": "回复",
     "replyingTo":"回复给",
     "resend":"重发",
+    "resetFcmToken":"重设通知",
+    "resetFcmTokenFooter":"如果登录过程中出现通知错误提示，您可以在这里尝试重新向服务端注册设备信息。此过程需要连接谷歌服务，请确认您的网络状况。",
 
     "save": "保存",
     "savedItems": "保存的消息",
@@ -168,6 +172,7 @@
     "signUpTo": "注册",
     "switchServer": "切换服务器",
 
+    "tapForMore":"点按查看更多",
     "to":"至",
     "today":"今天",
     "transferOwnership":"转让所有权",
@@ -296,7 +301,12 @@
     "fcmErrorCopyErrorLog":"拷贝错误记录。",
 
     "invitationLinkViewSend":"向朋友发送邀请链接。",
+
     
-    "noFCMTokenTitle":"Firebase 错误",
-    "noFCMTokenDes":"登录流程将继续，但推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。"
+   
+    
+    "noFCMTokenLoginTitle":"推送通知",
+    "noFCMTokenLoginDes":"登录流程将继续，但推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。",
+    "noFCMTokenReloadTitle":"推送通知",
+    "noFCMTokenReloadDes":"注册通知信息时出错，推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。"
 }

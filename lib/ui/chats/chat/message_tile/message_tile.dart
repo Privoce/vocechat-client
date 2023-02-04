@@ -602,13 +602,6 @@ class _MessageTileState extends State<MessageTile> {
     return matcher.hasMatch(input);
   }
 
-  String getFileSizeString(int bytes) {
-    const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    var i = (log(bytes) / log(1000)).floor();
-    return ((bytes / pow(1000, i)).toStringAsFixed(1)) +
-        suffixes[i].toUpperCase();
-  }
-
   Widget _buildReactions(BuildContext context) {
     var map = <String, ReactionItem>{}; // emoji: quantity
 

@@ -7,11 +7,11 @@ import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/full_text_page.dart';
 
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/full_text_page.dart';
 
 class TextBubble extends StatefulWidget {
   final String content;
@@ -226,7 +226,6 @@ class _TextBubbleState extends State<TextBubble> {
         TextSpan(
             text: " (${AppLocalizations.of(context)!.edited})",
             style: TextStyle(
-                // backgroundColor: Colors.cyan,
                 fontSize: 14,
                 color: AppColors.navLink,
                 fontWeight: FontWeight.w400))
@@ -275,8 +274,9 @@ class _TextBubbleState extends State<TextBubble> {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children: const [
-                        Text("Tap for more...", style: TextStyle(fontSize: 14))
+                      children: [
+                        Text("${AppLocalizations.of(context)!.tapForMore}...",
+                            style: TextStyle(fontSize: 14))
                       ],
                     ),
                   )

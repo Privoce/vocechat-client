@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/mixins/orientation_mixins.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_share_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
@@ -99,16 +100,40 @@ class _SingleImagePageState extends State<SingleImagePage>
     final child = ValueListenableBuilder<File>(
         valueListenable: _imageNotifier,
         builder: (context, imageFile, _) {
-          return Stack(
+          return Center(
+              child: Image.file(
+            imageFile,
+            fit: BoxFit.contain,
+            height: double.infinity,
+            width: double.infinity,
+            alignment: Alignment.center,
+          ));
+        });
+
+    return GestureDetector(
+      onTap: () => Navigator.of(context).pop(),
+      onDoubleTap: _onDoubleTap,
+      onDoubleTapDown: _onDoubleTapDown,
+
+      // onLongPress: () => _onLongPress(context),
+      child: Container(
+          color: Colors.black,
+          child: Stack(
             children: [
-              Center(
-                  child: Image.file(
-                imageFile,
-                fit: BoxFit.contain,
-                height: double.infinity,
-                width: double.infinity,
-                alignment: Alignment.center,
-              )),
+              InteractiveViewer(
+                  maxScale: _zoomInMaxScale,
+                  panEnabled: true,
+                  // boundaryMargin: EdgeInsets.all(double.infinity),
+                  transformationController: _transformationController,
+                  onInteractionEnd: (details) {
+                    double scale =
+                        _transformationController.value.getMaxScaleOnAxis();
+
+                    if (widget.onScaleChanged != null) {
+                      widget.onScaleChanged!(scale);
+                    }
+                  },
+                  child: child),
               ValueListenableBuilder<double>(
                 valueListenable: _progressNotifier,
                 builder: (context, value, child) {
@@ -121,31 +146,7 @@ class _SingleImagePageState extends State<SingleImagePage>
                 },
               )
             ],
-          );
-        });
-
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      onDoubleTap: _onDoubleTap,
-      onDoubleTapDown: _onDoubleTapDown,
-
-      // onLongPress: () => _onLongPress(context),
-      child: Container(
-          color: Colors.black,
-          child: InteractiveViewer(
-              maxScale: _zoomInMaxScale,
-              panEnabled: true,
-              // boundaryMargin: EdgeInsets.all(double.infinity),
-              transformationController: _transformationController,
-              onInteractionEnd: (details) {
-                double scale =
-                    _transformationController.value.getMaxScaleOnAxis();
-
-                if (widget.onScaleChanged != null) {
-                  widget.onScaleChanged!(scale);
-                }
-              },
-              child: child)),
+          )),
     );
   }
 

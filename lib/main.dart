@@ -11,6 +11,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/mixins/orientation_mixins.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
@@ -111,7 +112,11 @@ Future<void> main() async {
     }
   }
 
-  runApp(VoceChatApp(defaultHome: _defaultHome));
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((value) {
+    runApp(VoceChatApp(defaultHome: _defaultHome));
+  });
+  // runApp(VoceChatApp(defaultHome: _defaultHome));
 }
 
 /// This function is only for fixing potential difference in maxMid between

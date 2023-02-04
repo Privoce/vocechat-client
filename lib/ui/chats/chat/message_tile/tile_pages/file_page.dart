@@ -9,6 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/mixins/orientation_mixins.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -104,15 +106,16 @@ class _FilePageState extends State<FilePage> {
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: Text(
-                widget.fileName + "." + widget.extension,
+                "${widget.fileName}.${widget.extension}",
                 maxLines: 3,
+                textAlign: TextAlign.center,
                 style: AppTextStyles.titleLarge,
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                _getFileSizeString(widget.size),
+                getFileSizeString(widget.size),
                 style: AppTextStyles.labelMedium,
               ),
             ),
@@ -145,7 +148,7 @@ class _FilePageState extends State<FilePage> {
                               child: Text(AppLocalizations.of(context)!
                                   .openWithOtherApps),
                               onPressed: () async {
-                                Share.shareFiles([_localFile!.path]);
+                                Share.shareXFiles([XFile(_localFile!.path)]);
                               });
                         case FilePageStatus.downloading:
                           return Center(
@@ -191,9 +194,9 @@ class _FilePageState extends State<FilePage> {
   /// To replace internal filename (localMid) with real name, making shared file
   /// consistant with the original one.
   void _shareFile(File file, String filename) async {
-    final tempPath = (await getTemporaryDirectory()).path + "/$filename";
+    final tempPath = "${(await getTemporaryDirectory()).path}/$filename";
     final tempFile = await file.copy(tempPath);
-    Share.shareFiles([tempFile.path]);
+    Share.shareXFiles([XFile(tempFile.path)]);
   }
 
   void checkFileExist() async {
@@ -341,12 +344,5 @@ class _FilePageState extends State<FilePage> {
 
   bool _isCode(String extension) {
     return codeExts.contains(extension.toLowerCase());
-  }
-
-  String _getFileSizeString(int bytes) {
-    const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    var i = (log(bytes) / log(1024)).floor();
-    return ((bytes / pow(1024, i)).toStringAsFixed(1)) +
-        suffixes[i].toUpperCase();
   }
 }
