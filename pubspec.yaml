@@ -84,6 +84,7 @@ dependencies:
   qr_flutter: ^4.0.0
   mobile_scanner: ^2.1.0
   async: ^2.9.0
+  shared_preferences: ^2.0.17
 
   # voce_image_viewer:
   #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/
