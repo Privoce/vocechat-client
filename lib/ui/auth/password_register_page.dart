@@ -287,7 +287,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
   }
 
   Future<bool> _onTapSignUpBtn() async {
-    UserApi userApi = UserApi(widget.chatServer.fullUrl);
+    UserApi userApi = UserApi(serverUrl: widget.chatServer.fullUrl);
 
     final email = _emailController.text.trim().toLowerCase();
 

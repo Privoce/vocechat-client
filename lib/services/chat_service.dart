@@ -151,12 +151,12 @@ class ChatService {
 
       if (readIndexMap.isNotEmpty) {
         App.logger.info(readIndexMap);
-        final userApi = UserApi(App.app.chatServerM.fullUrl);
+        final userApi = UserApi();
         final res = await userApi.updateReadIndex(json.encode(readIndexMap));
-        if (res.statusCode == 200) {
-          readIndexUser.clear();
-          readIndexGroup.clear();
-        }
+        // if (res.statusCode == 200) {
+        readIndexUser.clear();
+        readIndexGroup.clear();
+        // }
       }
     });
   }
@@ -1570,7 +1570,7 @@ class ChatService {
 
       for (final uid in uidList) {
         try {
-          final userApi = UserApi(App.app.chatServerM.fullUrl);
+          final userApi = UserApi();
           await userApi
               .sendArchiveMsg(uid, localMid, archiveId)
               .then((value) {});
@@ -1606,7 +1606,7 @@ class ChatService {
 
     for (final uid in uidList) {
       try {
-        final userApi = UserApi(App.app.chatServerM.fullUrl);
+        final userApi = UserApi();
         await userApi.sendArchiveMsg(uid, localMid, archiveId).then((value) {});
       } catch (e) {
         App.logger.severe(e);

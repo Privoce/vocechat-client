@@ -267,7 +267,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       App.app.statusService = StatusService();
       App.app.authService = AuthService(chatServerM: widget.chatServer);
 
-      UserApi userApi = UserApi(widget.chatServer.fullUrl);
+      UserApi userApi = UserApi(serverUrl: widget.chatServer.fullUrl);
       final res = await userApi.register(widget.req);
       if (res.statusCode == 200 && res.data != null) {
         final registerResponse = res.data!;

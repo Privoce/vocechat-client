@@ -284,7 +284,7 @@ class _SettingPageState extends State<SettingPage> {
             isDangerAction: true,
             text: AppLocalizations.of(context)!.delete,
             action: () async {
-              final api = UserApi(App.app.chatServerM.fullUrl);
+              final api = UserApi();
               final res = await api.delete();
               if (res.statusCode == 200) {
                 App.app.authService!.selfDelete().then((value) async {

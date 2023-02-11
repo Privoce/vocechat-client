@@ -205,7 +205,7 @@ class SendText implements AbstractSend {
   Future<bool> _apiSendUserText(ChatMsg message, String localMid, int uid,
       String msg, Map<String, dynamic>? properties) async {
     // Send to server.
-    UserApi api = UserApi(App.app.chatServerM.fullUrl);
+    UserApi api = UserApi();
     try {
       final res = await api.sendTextMsg(uid, msg, localMid);
       if (res.statusCode == 200 && res.data != null) {
@@ -607,7 +607,7 @@ class SendFile implements AbstractSend {
             width: chatMsgM.msgNormal?.properties?["width"],
             height: chatMsgM.msgNormal?.properties?["height"]);
       } else {
-        final userApi = UserApi(App.app.chatServerM.fullUrl);
+        final userApi = UserApi();
         res = await userApi.sendFileMsg(
             chatMsgM.dmUid, chatMsgM.localMid, uploadRes.path,
             width: chatMsgM.msgNormal?.properties?["width"],

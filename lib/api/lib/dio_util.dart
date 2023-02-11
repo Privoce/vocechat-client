@@ -10,23 +10,29 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class DioUtil {
   final String baseUrl;
 
-  static final _dio = Dio();
+  final _dio = Dio();
 
-  DioUtil({required this.baseUrl}) {
-    _init();
+  DioUtil({required this.baseUrl, bool enableRetry = true}) {
+    _init(enableRetry: enableRetry);
   }
 
-  DioUtil.token({required this.baseUrl, bool withRetry = true}) {
-    _init(withRetry: withRetry);
+  DioUtil.token(
+      {required this.baseUrl,
+      bool enableRetry = true,
+      bool enableTokenHandler = true}) {
+    _init(enableRetry: enableRetry);
     _dio.options.headers["x-api-key"] = App.app.userDb!.token;
-    _addInvalidTokenInterceptor();
+
+    if (enableTokenHandler) {
+      _addInvalidTokenInterceptor();
+    }
   }
 
-  void _init({bool withRetry = true}) {
+  void _init({bool enableRetry = true}) {
     // _dio.httpClientAdapter = Http2Adapter(ConnectionManager());
     _dio.options.headers = {'referer': App.app.chatServerM.fullUrl};
 
-    if (withRetry) {
+    if (enableRetry) {
       _dio.interceptors.add(RetryInterceptor(
           dio: _dio,
           options:
@@ -43,6 +49,12 @@ class DioUtil {
   /// refresh token.
   void _addInvalidTokenInterceptor() async {
     _dio.interceptors.add(InterceptorsWrapper(
+      onResponse: (response, handler) async {
+        if (response.statusCode == 401 || response.statusCode == 403) {
+          final res = (await App.app.authService?.renewAuthToken()) ?? false;
+          print(res);
+        }
+      },
       onError: (e, handler) async {
         if (e.response != null && e.response!.statusCode == 401) {
           final res = (await App.app.authService?.renewAuthToken()) ?? false;
@@ -142,5 +154,7 @@ class DioUtil {
         onReceiveProgress: onReceiveProgress);
   }
 
-  BaseOptions options = _dio.options;
+  BaseOptions get options {
+    return _dio.options;
+  }
 }

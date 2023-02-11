@@ -218,9 +218,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   }
 
   Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {
-    final res = await UserApi(App.app.chatServerM.fullUrl)
-        .postBurnAfterReadingSetting(
-            expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
+    final res = await UserApi().postBurnAfterReadingSetting(
+        expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
     if (res.statusCode == 200) {
       final groupInfoM = await GroupInfoDao().updateProperties(
           widget.groupInfoNotifier.value.gid,
@@ -505,7 +504,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     };
 
     try {
-      final userApi = UserApi(App.app.chatServerM.fullUrl);
+      final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
         await App.app.chatService.mute(
@@ -523,7 +522,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
       "remove_groups": [widget.groupInfoNotifier.value.gid]
     };
     try {
-      final userApi = UserApi(App.app.chatServerM.fullUrl);
+      final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
         await App.app.chatService

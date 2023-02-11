@@ -113,7 +113,7 @@ class _MagiclinkLoginState extends State<MagiclinkLogin> {
       isSending = true;
     });
 
-    UserApi userApi = UserApi(widget.chatServer.fullUrl);
+    UserApi userApi = UserApi(serverUrl: widget.chatServer.fullUrl);
 
     String email = emailController.text;
 

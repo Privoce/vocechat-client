@@ -423,7 +423,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   Future<bool> _validateMagicToken(String url, String magicToken) async {
     try {
-      final res = await UserApi(url).checkMagicToken(magicToken);
+      final res = await UserApi(serverUrl: url).checkMagicToken(magicToken);
       return (res.statusCode == 200 && res.data == true);
     } catch (e) {
       App.logger.severe(e);

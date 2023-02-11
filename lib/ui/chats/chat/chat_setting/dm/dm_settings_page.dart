@@ -132,9 +132,8 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
   }
 
   Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {
-    final res = await UserApi(App.app.chatServerM.fullUrl)
-        .postBurnAfterReadingSetting(
-            uid: widget.userInfoNotifier.value.uid, expiresIn: expiresIn);
+    final res = await UserApi().postBurnAfterReadingSetting(
+        uid: widget.userInfoNotifier.value.uid, expiresIn: expiresIn);
     if (res.statusCode == 200) {
       final userInfoM = await UserInfoDao().updateProperties(
           widget.userInfoNotifier.value.uid,
@@ -156,7 +155,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
     };
 
     try {
-      final userApi = UserApi(App.app.chatServerM.fullUrl);
+      final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
         await App.app.chatService
@@ -175,7 +174,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
     };
 
     try {
-      final userApi = UserApi(App.app.chatServerM.fullUrl);
+      final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
         await App.app.chatService
