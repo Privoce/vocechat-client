@@ -19,7 +19,7 @@ class DioUtil {
   DioUtil.token({required this.baseUrl, bool withRetry = true}) {
     _init(withRetry: withRetry);
     _dio.options.headers["x-api-key"] = App.app.userDb!.token;
-    _add401Handling();
+    _addInvalidTokenInterceptor();
   }
 
   void _init({bool withRetry = true}) {
@@ -37,33 +37,38 @@ class DioUtil {
     // _dio.options.receiveTimeout = 10000;
   }
 
-  void _add401Handling() async {
+  /// Handle http status 401  (token invalid)
+  ///
+  /// Will request new tokens (both access token and refresh token) using
+  /// refresh token.
+  void _addInvalidTokenInterceptor() async {
     _dio.interceptors.add(InterceptorsWrapper(
       onError: (e, handler) async {
         if (e.response != null && e.response!.statusCode == 401) {
           final res = (await App.app.authService?.renewAuthToken()) ?? false;
+          print(res);
           if (!res) {
             // alert and jump to login if failed.
-            if (navigatorKey.currentContext != null) {
-              final context = navigatorKey.currentContext!;
-              showAppAlert(
-                  context: context,
-                  title: "Authentication Error",
-                  content: "Please login again.",
-                  primaryAction: AppAlertDialogAction(
-                      text: "Continue",
-                      action: () {
-                        Navigator.of(navigatorKey.currentContext!).pop();
-                        App.app.authService?.logout();
-                      }),
-                  actions: [
-                    AppAlertDialogAction(
-                        text: AppLocalizations.of(navigatorKey.currentContext!)!
-                            .cancel,
-                        action: () =>
-                            Navigator.of(navigatorKey.currentContext!).pop())
-                  ]);
-            }
+            // if (navigatorKey.currentContext != null) {
+            //   final context = navigatorKey.currentContext!;
+            //   showAppAlert(
+            //       context: context,
+            //       title: "Authentication Error",
+            //       content: "Please login again.",
+            //       primaryAction: AppAlertDialogAction(
+            //           text: "Continue",
+            //           action: () {
+            //             Navigator.of(navigatorKey.currentContext!).pop();
+            //             App.app.authService?.logout();
+            //           }),
+            //       actions: [
+            //         AppAlertDialogAction(
+            //             text: AppLocalizations.of(navigatorKey.currentContext!)!
+            //                 .cancel,
+            //             action: () =>
+            //                 Navigator.of(navigatorKey.currentContext!).pop())
+            //       ]);
+            // }
           }
         }
       },

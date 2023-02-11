@@ -109,8 +109,8 @@ class AuthService {
       final req = TokenRenewRequest(
           App.app.userDb!.token, App.app.userDb!.refreshToken);
 
-      final _tokenApi = TokenApi(chatServerM.fullUrl);
-      final res = await _tokenApi.tokenRenewPost(req);
+      final tokenApi = TokenApi(chatServerM.fullUrl);
+      final res = await tokenApi.tokenRenewPost(req);
 
       if (res.statusCode == 200 && res.data != null) {
         _resetRetryInterval();

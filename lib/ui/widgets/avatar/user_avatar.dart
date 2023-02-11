@@ -68,7 +68,7 @@ class _UserAvatarState extends State<UserAvatar> {
     }
   }
 
-  Future<void> _onUserStatus(int uid, bool isOnline, bool afterReady) async {
+  Future<void> _onUserStatus(int uid, bool isOnline) async {
     if (uid != widget.uid) {
       return;
     }

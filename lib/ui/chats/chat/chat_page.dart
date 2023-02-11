@@ -329,8 +329,7 @@ class _ChatPageState extends State<ChatPage>
     );
   }
 
-  Future<void> _onMsg(
-      ChatMsgM chatMsgM, String localMid, dynamic data, bool afterReady,
+  Future<void> _onMsg(ChatMsgM chatMsgM, String localMid, dynamic data,
       {bool frontInsert = true}) async {
     // Check if the message is an auto-deletion one and is out-of-date
     // print(
@@ -582,12 +581,12 @@ class _ChatPageState extends State<ChatPage>
 
     _uiMsgList.sort((a, b) => b.chatMsgM.mid.compareTo(a.chatMsgM.mid));
 
-    if (mounted && afterReady) {
+    if (mounted) {
       setState(() {});
     }
   }
 
-  Future<void> _onReaction(ReactionTypes type, int mid, bool afterReady,
+  Future<void> _onReaction(ReactionTypes type, int mid,
       [ChatMsgM? chatMsgM]) async {
     switch (type) {
       case ReactionTypes.edit:
@@ -630,13 +629,12 @@ class _ChatPageState extends State<ChatPage>
       default:
     }
 
-    if (mounted && afterReady) {
+    if (mounted) {
       setState(() {});
     }
   }
 
-  Future<void> _onUser(
-      UserInfoM m, EventActions action, bool afterReady) async {
+  Future<void> _onUser(UserInfoM m, EventActions action) async {
     if (_userInfoMMap.containsKey(m.uid)) {
       _userInfoMMap[m.uid] = m;
     }
@@ -652,14 +650,13 @@ class _ChatPageState extends State<ChatPage>
     return;
   }
 
-  Future<void> _onGroup(
-      GroupInfoM m, EventActions action, bool afterReady) async {
+  Future<void> _onGroup(GroupInfoM m, EventActions action) async {
     if (widget.groupInfoNotifier?.value.gid == m.gid) {
       switch (action) {
         case EventActions.update:
           widget.groupInfoNotifier!.value = m;
 
-          if (mounted && afterReady) {
+          if (mounted) {
             setState(() {});
           }
 
@@ -1436,13 +1433,12 @@ class _ChatPageState extends State<ChatPage>
                 final thumbFile = await FileHandler.singleton.getImageThumb(m);
 
                 if (thumbFile != null) {
-                  await _onMsg(m, m.localMid, thumbFile, false,
-                      frontInsert: false);
+                  await _onMsg(m, m.localMid, thumbFile, frontInsert: false);
                 } else {
-                  await _onMsg(m, m.localMid, null, false, frontInsert: false);
+                  await _onMsg(m, m.localMid, null, frontInsert: false);
                 }
               } else {
-                await _onMsg(m, m.localMid, null, false, frontInsert: false);
+                await _onMsg(m, m.localMid, null, frontInsert: false);
                 break;
               }
               break;
@@ -1451,10 +1447,10 @@ class _ChatPageState extends State<ChatPage>
               final archiveM = await ArchiveDao().getArchive(archiveId);
 
               if (archiveM != null) {
-                await _onMsg(m, m.localMid, archiveM.archive, false,
+                await _onMsg(m, m.localMid, archiveM.archive,
                     frontInsert: false);
               } else {
-                await _onMsg(m, m.localMid, null, false, frontInsert: false);
+                await _onMsg(m, m.localMid, null, frontInsert: false);
                 App.logger.severe("archive missing. Id: $archiveId");
               }
 
@@ -1464,7 +1460,7 @@ class _ChatPageState extends State<ChatPage>
           }
           break;
         case MsgDetailType.reply:
-          await _onMsg(m, m.localMid, null, false, frontInsert: false);
+          await _onMsg(m, m.localMid, null, frontInsert: false);
           break;
         default:
       }

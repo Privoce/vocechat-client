@@ -342,8 +342,7 @@ class _SettingPageState extends State<SettingPage> {
     }
   }
 
-  Future<void> _onUser(
-      UserInfoM userInfoM, EventActions action, bool afterReady) async {
+  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
     if (userInfoM.uid == App.app.userDb?.uid) {
       userInfoNotifier.value = userInfoM;
 

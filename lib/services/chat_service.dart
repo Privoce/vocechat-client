@@ -38,16 +38,15 @@ enum EventActions { create, delete, update }
 enum ReactionTypes { edit, like, delete }
 
 typedef UsersAware = Future<void> Function(
-    UserInfoM userInfoM, EventActions action, bool ready);
+    UserInfoM userInfoM, EventActions action);
 typedef GroupAware = Future<void> Function(
-    GroupInfoM groupInfoM, EventActions action, bool ready);
+    GroupInfoM groupInfoM, EventActions action);
 typedef MsgAware = Future<void> Function(
-    ChatMsgM chatMsgM, String localMid, dynamic data, bool ready);
-typedef ReactionAware = Future<void>
-    Function(ReactionTypes reaction, int mid, bool ready, [ChatMsgM? content]);
-typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM, bool ready);
-typedef UserStatusAware = Future<void> Function(
-    int uid, bool isOnline, bool ready);
+    ChatMsgM chatMsgM, String localMid, dynamic data);
+typedef ReactionAware = Future<void> Function(ReactionTypes reaction, int mid,
+    [ChatMsgM? content]);
+typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM);
+typedef UserStatusAware = Future<void> Function(int uid, bool isOnline);
 
 class ChatService {
   ChatService() {
@@ -66,8 +65,6 @@ class ChatService {
     sseQueue.clear();
     readIndexTimer.cancel();
     Sse.sse.close();
-
-    _afterReady = false;
   }
 
   final Set<UsersAware> _userListeners = {};
@@ -85,13 +82,7 @@ class ChatService {
   /// Used to avoid duplicated messages.
   final Set<int> midSet = {};
 
-  /// Whether SSE has received 'ready' message.
-  ///
-  /// 'Ready' message means backend has pushed all accumulated messages.
-  bool _afterReady = false;
-
   void initSse() async {
-    _afterReady = false;
     Sse.sse.close();
     App.app.statusService.fireSseLoading(SseStatus.connecting);
 
@@ -239,7 +230,7 @@ class ChatService {
     }
     for (UsersAware userAware in _userListeners) {
       try {
-        userAware(userInfoM, action, _afterReady);
+        userAware(userInfoM, action);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -249,7 +240,7 @@ class ChatService {
   void fireChannel(GroupInfoM groupInfoM, EventActions action) {
     for (GroupAware groupAware in _groupListeners) {
       try {
-        groupAware(groupInfoM, action, _afterReady);
+        groupAware(groupInfoM, action);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -259,7 +250,7 @@ class ChatService {
   void fireMsg(ChatMsgM chatMsgM, String localMid, dynamic data) {
     for (MsgAware msgAware in _normalMsgListeners) {
       try {
-        msgAware(chatMsgM, localMid, data, _afterReady);
+        msgAware(chatMsgM, localMid, data);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -269,7 +260,7 @@ class ChatService {
   void fireReaction(ReactionTypes reaction, int mid, [ChatMsgM? chatMsgM]) {
     for (ReactionAware reactionAware in _reactionListeners) {
       try {
-        reactionAware(reaction, mid, _afterReady, chatMsgM);
+        reactionAware(reaction, mid, chatMsgM);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -289,7 +280,7 @@ class ChatService {
   void fireSnippet(ChatMsgM chatMsgM) {
     for (SnippetAware snippetAware in _snippetListeners) {
       try {
-        snippetAware(chatMsgM, _afterReady);
+        snippetAware(chatMsgM);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -299,7 +290,7 @@ class ChatService {
   void fireUserStatus(int uid, bool isOnline) {
     for (UserStatusAware statusAware in _userStatusListeners) {
       try {
-        statusAware(uid, isOnline, _afterReady);
+        statusAware(uid, isOnline);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -596,8 +587,6 @@ class ChatService {
 
   Future<void> _handleReady() async {
     App.app.statusService.fireSseLoading(SseStatus.successful);
-
-    _afterReady = true;
 
     // find DMs with draft and fire user to chats page.
     final usersWithDraft = await UserInfoDao().getUsersWithDraft();

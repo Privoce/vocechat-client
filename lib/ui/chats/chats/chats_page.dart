@@ -343,8 +343,7 @@ class _ChatsPageState extends State<ChatsPage>
     });
   }
 
-  Future<void> _onChannel(
-      GroupInfoM groupInfoM, EventActions action, bool afterReady) async {
+  Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
     taskQueue.add(() async {
       switch (action) {
         case EventActions.create:
@@ -383,8 +382,7 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   /// Only response to update and delete. User initiazed in [onSnippet].
-  Future<void> _onUser(
-      UserInfoM userInfoM, EventActions action, bool afterReady) async {
+  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
     taskQueue.add(() async {
       _userInfoMap.addAll({userInfoM.uid: userInfoM});
 
@@ -438,7 +436,7 @@ class _ChatsPageState extends State<ChatsPage>
     });
   }
 
-  Future<void> _onSnippet(ChatMsgM chatMsgM, bool afterReady) async {
+  Future<void> _onSnippet(ChatMsgM chatMsgM) async {
     taskQueue.add(() async {
       final uid = chatMsgM.isGroupMsg ? chatMsgM.fromUid : chatMsgM.dmUid;
 
@@ -521,7 +519,7 @@ class _ChatsPageState extends State<ChatsPage>
       }
       globals.unreadCountSum.value = calUnreadCountSum();
 
-      if (mounted && afterReady) {
+      if (mounted) {
         setState(() {});
       }
     });
@@ -595,7 +593,7 @@ class _ChatsPageState extends State<ChatsPage>
     return snippet;
   }
 
-  Future<void> _onUserStatus(int uid, bool isOnline, bool afterReady) async {
+  Future<void> _onUserStatus(int uid, bool isOnline) async {
     final index = getUiChatIndex(uid: uid);
     if (index > -1) {
       _uiChats[index].onlineNotifier?.value = isOnline;
