@@ -48,40 +48,29 @@ class DioUtil {
   /// Will request new tokens (both access token and refresh token) using
   /// refresh token.
   void _addInvalidTokenInterceptor() async {
+    print("_addInvalidTokenInterceptor");
+
     _dio.interceptors.add(InterceptorsWrapper(
-      onResponse: (response, handler) async {
-        if (response.statusCode == 401 || response.statusCode == 403) {
-          final res = (await App.app.authService?.renewAuthToken()) ?? false;
-          print(res);
-        }
-      },
+      // onResponse: (response, handler) async {
+
+      // },
       onError: (e, handler) async {
-        if (e.response != null && e.response!.statusCode == 401) {
-          final res = (await App.app.authService?.renewAuthToken()) ?? false;
-          print(res);
-          if (!res) {
-            // alert and jump to login if failed.
-            // if (navigatorKey.currentContext != null) {
-            //   final context = navigatorKey.currentContext!;
-            //   showAppAlert(
-            //       context: context,
-            //       title: "Authentication Error",
-            //       content: "Please login again.",
-            //       primaryAction: AppAlertDialogAction(
-            //           text: "Continue",
-            //           action: () {
-            //             Navigator.of(navigatorKey.currentContext!).pop();
-            //             App.app.authService?.logout();
-            //           }),
-            //       actions: [
-            //         AppAlertDialogAction(
-            //             text: AppLocalizations.of(navigatorKey.currentContext!)!
-            //                 .cancel,
-            //             action: () =>
-            //                 Navigator.of(navigatorKey.currentContext!).pop())
-            //       ]);
-            // }
+        App.logger.severe(e);
+
+        if (e.response != null &&
+            (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+          final isSuccessful =
+              (await App.app.authService?.renewAuthToken()) ?? false;
+          if (isSuccessful) {
+            final res = await _retry(e.response!.requestOptions);
+            handler.resolve(res);
+          } else {
+            handler.resolve(e.response!);
           }
+        } else {
+          handler.resolve(Response(
+              requestOptions: e.requestOptions,
+              statusCode: e.response?.statusCode ?? 599));
         }
       },
     ));
@@ -156,5 +145,19 @@ class DioUtil {
 
   BaseOptions get options {
     return _dio.options;
+  }
+
+  Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
+    final options = Options(
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+    );
+
+    _dio.interceptors.clear();
+
+    return _dio.request<dynamic>(requestOptions.path,
+        data: requestOptions.data,
+        queryParameters: requestOptions.queryParameters,
+        options: options);
   }
 }
