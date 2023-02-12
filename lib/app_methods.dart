@@ -36,7 +36,7 @@ Future<String> parseMention(String snippet) async {
     final uidStr = match[0]?.substring(2);
     if (uidStr != null && uidStr.isNotEmpty) {
       final uid = int.parse(uidStr);
-      return " @" + (nameMap[uid] ?? uidStr) + " ";
+      return " @${nameMap[uid] ?? uidStr} ";
     }
     return '';
   }, onNonMatch: (String text) {
@@ -152,10 +152,6 @@ String translateAutoDeletionSettingTime(int seconds, BuildContext context) {
     }
   }
 }
-
-// String translateAutoDeletionRemainingTime(int millisec) {
-
-// }
 
 EventBus eventBus = EventBus();
 

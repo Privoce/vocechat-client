@@ -149,7 +149,6 @@ class SettingsAboutPage extends StatelessWidget {
     final localVersion = await _getAppVersion();
 
     if (latestVersion.compareTo(localVersion) > 0) {
-      // if (true) {
       _showUpdates(context, latestVersion);
     } else {
       _showUpToDate(context);

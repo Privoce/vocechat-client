@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/app_methods.dart';
@@ -26,9 +28,8 @@ enum AddActions { channel, private, dm, user }
 enum ConnectionStates { disconnected, connecting, successful }
 
 class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
-  late final Widget _avatar;
   late final bool _isAdmin;
-  late final String _serverDescription;
+
   final VoidCallback showDrawer;
 
   // If enabled, Server description will be displayed, instead of member count.
@@ -51,25 +52,8 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
       required this.showDrawer,
       Key? key})
       : super(key: key) {
-    if (App.app.chatServerM.logo.isEmpty) {
-      _avatar = CircleAvatar(
-        child: Text(App.app.chatServerM.properties.serverName[0].toUpperCase()),
-      );
-    } else {
-      _avatar = Container(
-        decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white,
-            image: DecorationImage(
-                fit: BoxFit.scaleDown,
-                image: MemoryImage(App.app.chatServerM.logo))),
-      );
-    }
-
     _isAdmin =
         UserInfo.fromJson(jsonDecode(App.app.userDb!.info)).isAdmin ?? false;
-
-    _serverDescription = App.app.chatServerM.properties.description ?? "";
   }
 
   @override
@@ -82,17 +66,28 @@ class _ChatsBarState extends State<ChatsBar> {
   late TokenStatus _tokenStatus;
   late LoadingStatus _taskStatus;
 
+  late Widget _avatar;
+
+  late Uint8List _logoBytes;
+  late String _serverName;
+  late String _serverDescription;
+
   final GlobalKey<ScaffoldState> _key = GlobalKey();
 
   @override
   void initState() {
     super.initState();
+
+    _initServerInfoWidgets();
+
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
     App.app.statusService.subscribeSseLoading(_onSse);
     App.app.statusService.subscribeTokenLoading(_onToken);
     App.app.statusService.subscribeTaskLoading(_onTask);
+
+    App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
 
     eventBus.on<UserChangeEvent>().listen((event) {
       resubscribe();
@@ -104,6 +99,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService.unsubscribeSseLoading(_onSse);
     App.app.statusService.unsubscribeTokenLoading(_onToken);
     App.app.statusService.unsubscribeTaskLoading(_onTask);
+    App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
     super.dispose();
   }
 
@@ -111,6 +107,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService.unsubscribeSseLoading(_onSse);
     App.app.statusService.unsubscribeTokenLoading(_onToken);
     App.app.statusService.unsubscribeTaskLoading(_onTask);
+    App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
 
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
@@ -118,6 +115,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService.subscribeSseLoading(_onSse);
     App.app.statusService.subscribeTokenLoading(_onToken);
     App.app.statusService.subscribeTaskLoading(_onTask);
+    App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
   }
 
   Future<void> _onSse(SseStatus status) async {
@@ -144,6 +142,73 @@ class _ChatsBarState extends State<ChatsBar> {
     }
   }
 
+  Future<void> _onServerInfo(ChatServerM chatServerM) async {
+    if (chatServerM.properties.serverName != _serverName) {
+      _serverName = chatServerM.properties.serverName;
+    }
+
+    if (chatServerM.properties.description != _serverDescription) {
+      _serverDescription = chatServerM.properties.description ?? "";
+    }
+
+    if (!memEquals(_logoBytes, chatServerM.logo)) {
+      _logoBytes = chatServerM.logo;
+    }
+
+    setState(() {});
+  }
+
+  /// Compares two [Uint8List]s by comparing 8 bytes at a time.
+  bool memEquals(Uint8List bytes1, Uint8List bytes2) {
+    if (identical(bytes1, bytes2)) {
+      return true;
+    }
+
+    if (bytes1.lengthInBytes != bytes2.lengthInBytes) {
+      return false;
+    }
+
+    // Treat the original byte lists as lists of 8-byte words.
+    var numWords = bytes1.lengthInBytes ~/ 8;
+    var words1 = bytes1.buffer.asUint64List(0, numWords);
+    var words2 = bytes2.buffer.asUint64List(0, numWords);
+
+    for (var i = 0; i < words1.length; i += 1) {
+      if (words1[i] != words2[i]) {
+        return false;
+      }
+    }
+
+    // Compare any remaining bytes.
+    for (var i = words1.lengthInBytes; i < bytes1.lengthInBytes; i += 1) {
+      if (bytes1[i] != bytes2[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  void _initServerInfoWidgets() {
+    _serverName = App.app.chatServerM.properties.serverName;
+    _serverDescription = App.app.chatServerM.properties.description ?? "";
+    _logoBytes = App.app.chatServerM.logo;
+
+    if (_logoBytes.isEmpty) {
+      _avatar = CircleAvatar(
+        child: Text(_serverName[0].toUpperCase()),
+      );
+    } else {
+      _avatar = Container(
+        decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white,
+            image: DecorationImage(
+                fit: BoxFit.scaleDown, image: MemoryImage(_logoBytes))),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -155,7 +220,7 @@ class _ChatsBarState extends State<ChatsBar> {
         child: CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: () => widget.showDrawer(),
-            child: widget._avatar),
+            child: _avatar),
       ),
       title: Row(
         children: [
@@ -169,10 +234,9 @@ class _ChatsBarState extends State<ChatsBar> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (widget.enableDescription &&
-                    widget._serverDescription.isNotEmpty)
+                if (widget.enableDescription && _serverDescription.isNotEmpty)
                   Text(
-                    widget._serverDescription,
+                    _serverDescription,
                     style: AppTextStyles.labelSmall,
                   )
                 else

@@ -81,32 +81,6 @@ Future<void> main() async {
           App.app.authService = AuthService(chatServerM: App.app.chatServerM);
 
           App.app.chatService = ChatService();
-
-          // Get / update org info.
-          try {
-            final orgInfoRes =
-                await App.app.authService!.adminSystemApi.getOrgInfo();
-            if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
-              final orgInfo = orgInfoRes.data!;
-              App.app.chatServerM.properties = ChatServerProperties(
-                  serverName: orgInfo.name,
-                  description: orgInfo.description ?? "");
-
-              final resourceApi = ResourceApi();
-              final logoRes = await resourceApi.getOrgLogo();
-              if (logoRes.statusCode == 200 && logoRes.data != null) {
-                App.app.chatServerM.logo = logoRes.data!;
-              }
-
-              App.app.chatServerM.updatedAt =
-                  DateTime.now().millisecondsSinceEpoch;
-              await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
-
-              // await _updateMaxMid();
-            }
-          } catch (e) {
-            App.logger.severe(e);
-          }
         }
       }
     }

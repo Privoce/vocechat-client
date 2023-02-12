@@ -33,6 +33,8 @@ import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
 import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../dao/org_dao/chat_server.dart';
+
 enum EventActions { create, delete, update }
 
 enum ReactionTypes { edit, like, delete }
@@ -47,6 +49,7 @@ typedef ReactionAware = Future<void> Function(ReactionTypes reaction, int mid,
     [ChatMsgM? content]);
 typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM);
 typedef UserStatusAware = Future<void> Function(int uid, bool isOnline);
+typedef OrgInfoAware = Future<void> Function(ChatServerM chatServerM);
 
 class ChatService {
   ChatService() {
@@ -74,6 +77,7 @@ class ChatService {
   final Set<VoidCallback> _readyListeners = {};
   final Set<SnippetAware> _snippetListeners = {};
   final Set<UserStatusAware> _userStatusListeners = {};
+  final Set<OrgInfoAware> _orgInfoListeners = {};
 
   late SseQueue sseQueue;
   late TaskQueue taskQueue;
@@ -224,6 +228,15 @@ class ChatService {
     _userStatusListeners.remove(statusAware);
   }
 
+  void subscribeOrgInfoStatus(OrgInfoAware orgInfoAware) {
+    unsubscribeOrgInfoStatus(orgInfoAware);
+    _orgInfoListeners.add(orgInfoAware);
+  }
+
+  void unsubscribeOrgInfoStatus(OrgInfoAware orgInfoAware) {
+    _orgInfoListeners.remove(orgInfoAware);
+  }
+
   void fireUser(UserInfoM userInfoM, EventActions action) {
     if (userInfoM.uid == App.app.userDb?.uid) {
       App.app.userDb!.info = userInfoM.info;
@@ -291,6 +304,16 @@ class ChatService {
     for (UserStatusAware statusAware in _userStatusListeners) {
       try {
         statusAware(uid, isOnline);
+      } catch (e) {
+        App.logger.severe(e);
+      }
+    }
+  }
+
+  void fireOrgInfo(ChatServerM chatServerM) {
+    for (OrgInfoAware orgInfoAware in _orgInfoListeners) {
+      try {
+        orgInfoAware(chatServerM);
       } catch (e) {
         App.logger.severe(e);
       }

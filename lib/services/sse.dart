@@ -8,6 +8,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 typedef SseEventAware = void Function(dynamic);
 
@@ -26,11 +27,6 @@ class Sse {
 
   Timer? _reconnectTimer;
 
-  /// shows whether sse has received 'ready' message from server.
-  bool _afterReady = false;
-
-  bool get afterReady => _afterReady;
-
   void connect() async {
     if (isConnecting) return;
 
@@ -42,6 +38,7 @@ class Sse {
 
     final eventSource =
         html.EventSource(Uri.parse(await prepareUrl()).toString());
+    await SharedFuncs.updateServerInfo();
 
     try {
       eventSource.onMessage.listen((event) {
