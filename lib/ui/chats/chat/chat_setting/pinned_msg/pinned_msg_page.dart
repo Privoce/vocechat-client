@@ -134,7 +134,7 @@ class PinnedMsgPage extends StatelessWidget {
 
   Future<bool> _unPin(int mid) async {
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.pin(groupInfoMNotifier.value.gid, mid, false);
       if (res.statusCode == 200) {
         return true;

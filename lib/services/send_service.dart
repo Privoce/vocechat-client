@@ -142,7 +142,7 @@ class SendText implements AbstractSend {
 
   Future<bool> _apiSendGroupText(ChatMsg message, String localMid, int gid,
       String msg, Map<String, dynamic>? properties) async {
-    GroupApi api = GroupApi(App.app.chatServerM.fullUrl);
+    GroupApi api = GroupApi();
     try {
       final res = await api.sendTextMsg(gid, msg, properties);
       if (res.statusCode == 200 && res.data != null) {
@@ -256,7 +256,7 @@ class SendEdit implements AbstractSend {
     App.app.chatService.fireReaction(ReactionTypes.edit, targetMid, msgM);
 
     // Send to server.
-    MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
+    MessageApi api = MessageApi();
     try {
       final res = await api.edit(targetMid, msg);
       if (res.statusCode == 200 && res.data != null) {
@@ -343,7 +343,7 @@ class SendReply implements AbstractSend {
             }));
 
     // Send to server.
-    MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
+    MessageApi api = MessageApi();
     try {
       final res = await api.reply(targetMid, msg, detail.properties);
       if (res.statusCode == 200 && res.data != null) {
@@ -399,7 +399,7 @@ class SendReply implements AbstractSend {
             }));
 
     // Send to server.
-    MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
+    MessageApi api = MessageApi();
     try {
       final res = await api.reply(targetMid, msg, detail.properties);
       if (res.statusCode == 200 && res.data != null) {
@@ -573,7 +573,7 @@ class SendFile implements AbstractSend {
     String fileId;
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       fileId = (await resourceApi.prepareFile(prepareReq)).data!;
     } catch (e) {
       App.logger.severe(e);
@@ -602,7 +602,7 @@ class SendFile implements AbstractSend {
       Response<int> res;
 
       if (gid != null && gid != -1) {
-        final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+        final groupApi = GroupApi();
         res = await groupApi.sendFileMsg(gid, localMid, uploadRes.path,
             width: chatMsgM.msgNormal?.properties?["width"],
             height: chatMsgM.msgNormal?.properties?["height"]);

@@ -136,7 +136,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
 
     final req = GroupUpdateRequest(owner: _selectNotifier.value.first);
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.updateGroup(widget.groupInfoM.gid, req);
       if (res.statusCode == 200) {
         // success
@@ -150,7 +150,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
 
   Future<bool> _leave() async {
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.leaveGroup(widget.groupInfoM.gid);
       if (res.statusCode == 200) {
         await FileHandler.singleton

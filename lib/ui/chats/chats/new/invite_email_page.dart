@@ -120,7 +120,7 @@ class _InviteEmailPageState extends State<InviteEmailPage> {
   }
 
   void checkSmtpEnabled() async {
-    final adminSmtpApi = AdminSmtpApi(App.app.chatServerM.fullUrl);
+    final adminSmtpApi = AdminSmtpApi();
     final res = await adminSmtpApi.getSmtpEnableStatus();
 
     if (res.statusCode == 200 && res.data == true) {

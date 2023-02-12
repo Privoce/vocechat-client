@@ -46,14 +46,7 @@ class RetryInterceptor extends Interceptor {
       }
     } else {
       App.logger.severe(err);
-
-      // return handler.resolve(Response(
-      //     requestOptions: err.requestOptions,
-      //     statusCode: err.response?.statusCode ?? 599));
-
       return handler.next(err);
     }
-
-    // return super.onError(err, handler);
   }
 }

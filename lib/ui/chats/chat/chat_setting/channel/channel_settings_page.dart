@@ -302,7 +302,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
   Future<bool> _apiChangeChannelVisibility(bool isPublic) async {
     final gid = widget.groupInfoNotifier.value.gid;
-    final api = GroupApi(App.app.chatServerM.fullUrl);
+    final api = GroupApi();
 
     try {
       final res = await api.changeType(gid, isPublic);
@@ -458,7 +458,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     isLeaveBusy.value = true;
     int gid = widget.groupInfoNotifier.value.gid;
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.leaveGroup(widget.groupInfoNotifier.value.gid);
       if (res.statusCode == 200) {
         await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
@@ -479,7 +479,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     isDeleteBusy.value = true;
     int gid = widget.groupInfoNotifier.value.gid;
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.delete(widget.groupInfoNotifier.value.gid);
       if (res.statusCode == 200) {
         await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);

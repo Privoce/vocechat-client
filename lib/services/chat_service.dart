@@ -678,7 +678,7 @@ class ChatService {
 
   Future<void> getGroupAvatar(int gid) async {
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getGroupAvatar(gid);
       if (res != null &&
           res.statusCode == 200 &&
@@ -758,7 +758,7 @@ class ChatService {
             await UserDbMDao.dao.updateUserInfo(userInfo);
 
             if (userInfo.avatarUpdatedAt != 0) {
-              final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+              final resourceApi = ResourceApi();
               final avatarRes = await resourceApi.getUserAvatar(m.uid);
               if (avatarRes.statusCode == 200 && avatarRes.data != null) {
                 App.logger.info("UID ${m.uid} Avatar obtained");
@@ -793,7 +793,7 @@ class ChatService {
 
               if (newInfo.avatarUpdatedAt != 0 &&
                   update.avatarUpdatedAt != null) {
-                final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+                final resourceApi = ResourceApi();
                 final avatarRes = await resourceApi.getUserAvatar(m.uid);
                 if (avatarRes.statusCode == 200 && avatarRes.data != null) {
                   App.logger.info("UID ${m.uid} Avatar obtained.");
@@ -1149,7 +1149,7 @@ class ChatService {
           await UserDbMDao.dao.updateUserInfo(userInfo);
 
           if (userInfo.avatarUpdatedAt != 0) {
-            final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+            final resourceApi = ResourceApi();
             resourceApi.getUserAvatar(m.uid).then((avatarRes) async {
               App.logger.info("UID ${m.uid} Avatar obtained.");
               if (avatarRes.statusCode == 200 && avatarRes.data != null) {
@@ -1463,7 +1463,7 @@ class ChatService {
           element = 'http://' + element;
         }
         // try {
-        final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+        final resourceApi = ResourceApi();
         final res = await resourceApi.getOpenGraphicParse(element);
 
         if (res.statusCode == 200 && res.data != null) {
@@ -1535,7 +1535,7 @@ class ChatService {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getArchive(archiveId);
       if (res.statusCode == 200 && res.data != null) {
         final archive = res.data!;
@@ -1557,7 +1557,7 @@ class ChatService {
       List<int> midList, List<int> uidList, List<int> gidList) async {
     String archiveId;
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       archiveId = (await resourceApi.archive(midList)).data!;
     } catch (e) {
       App.logger.severe(e);
@@ -1582,7 +1582,7 @@ class ChatService {
 
       for (final gid in gidList) {
         try {
-          final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+          final groupApi = GroupApi();
           await groupApi
               .sendArchiveMsg(gid, localMid, archiveId)
               .then((value) {});
@@ -1616,7 +1616,7 @@ class ChatService {
 
     for (final gid in gidList) {
       try {
-        final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+        final groupApi = GroupApi();
         await groupApi
             .sendArchiveMsg(gid, localMid, archiveId)
             .then((value) {});
@@ -1666,7 +1666,7 @@ class ChatService {
   }
 
   Future getOpenGraphicParse(url) async {
-    final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    final resourceApi = ResourceApi();
     return (await resourceApi.getOpenGraphicParse(url)).data;
   }
 }

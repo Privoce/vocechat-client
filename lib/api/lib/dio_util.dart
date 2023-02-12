@@ -48,12 +48,7 @@ class DioUtil {
   /// Will request new tokens (both access token and refresh token) using
   /// refresh token.
   void _addInvalidTokenInterceptor() async {
-    print("_addInvalidTokenInterceptor");
-
     _dio.interceptors.add(InterceptorsWrapper(
-      // onResponse: (response, handler) async {
-
-      // },
       onError: (e, handler) async {
         App.logger.severe(e);
 
@@ -62,8 +57,8 @@ class DioUtil {
           final isSuccessful =
               (await App.app.authService?.renewAuthToken()) ?? false;
           if (isSuccessful) {
-            final res = await _retry(e.response!.requestOptions);
-            handler.resolve(res);
+            await _retry(e.response!.requestOptions)
+                .then((res) => handler.resolve(res));
           } else {
             handler.resolve(e.response!);
           }

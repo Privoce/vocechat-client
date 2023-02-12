@@ -36,7 +36,7 @@ class AuthService {
 
   factory AuthService({required ChatServerM chatServerM}) {
     _service.chatServerM = chatServerM;
-    _service.adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+    _service.adminSystemApi = AdminSystemApi(serverUrl: chatServerM.fullUrl);
 
     App.app.chatServerM = chatServerM;
 
@@ -109,7 +109,7 @@ class AuthService {
       final req = TokenRenewRequest(
           App.app.userDb!.token, App.app.userDb!.refreshToken);
 
-      final tokenApi = TokenApi(chatServerM.fullUrl);
+      final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
       final res = await tokenApi.tokenRenewPost(req);
 
       if (res.statusCode == 200 && res.data != null) {
@@ -264,10 +264,10 @@ class AuthService {
       [bool isReLogin = false]) async {
     String errorContent = "";
     try {
-      final _tokenApi = TokenApi(chatServerM.fullUrl);
+      final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
 
       final req = await _preparePswdLoginRequest(email, pswd);
-      final res = await _tokenApi.tokenLoginPost(req);
+      final res = await tokenApi.tokenLoginPost(req);
 
       if (res.statusCode != 200) {
         switch (res.statusCode) {
@@ -358,9 +358,7 @@ class AuthService {
 
       final avatarBytes = userInfo.avatarUpdatedAt == 0
           ? Uint8List(0)
-          : (await ResourceApi(App.app.chatServerM.fullUrl)
-                      .getUserAvatar(userInfo.uid))
-                  .data ??
+          : (await ResourceApi().getUserAvatar(userInfo.uid)).data ??
               Uint8List(0);
 
       final chatServerId = App.app.chatServerM.id;
@@ -467,8 +465,8 @@ class AuthService {
         await closeUserDb();
       }
 
-      final _tokenApi = TokenApi(chatServerM.fullUrl);
-      final res = await _tokenApi.getLogout();
+      final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
+      final res = await tokenApi.getLogout();
 
       if (res.statusCode == 200) {
         return true;

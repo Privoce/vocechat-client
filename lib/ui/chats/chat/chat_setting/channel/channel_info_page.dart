@@ -171,7 +171,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
       _uploadNotifier.value = true;
       Uint8List bytes = await image.readAsBytes();
       bytes = await FlutterImageCompress.compressWithList(bytes, quality: 25);
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.uploadGroupAvatar(
           widget.groupInfoNotifier.value.gid, bytes);
       if (res.statusCode == 200) {
@@ -207,7 +207,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
     final req = GroupUpdateRequest(name: name, description: des);
 
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res =
           await groupApi.updateGroup(widget.groupInfoNotifier.value.gid, req);
       if (res.statusCode == 200) {

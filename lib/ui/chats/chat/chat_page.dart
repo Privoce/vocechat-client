@@ -742,7 +742,7 @@ class _ChatPageState extends State<ChatPage>
     final mid = chatMsgM.mid;
 
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       await groupApi.pin(gid, mid, toPin);
     } catch (e) {
       App.logger.severe(e);
@@ -755,7 +755,7 @@ class _ChatPageState extends State<ChatPage>
     List<int> midList = [];
     midList.add(chatMsgM.mid);
     try {
-      final savedApi = SavedApi(App.app.chatServerM.fullUrl);
+      final savedApi = SavedApi();
       await savedApi.createSaved(midList);
       // Navigator.of(context).pop();
     } catch (e) {
@@ -874,7 +874,7 @@ class _ChatPageState extends State<ChatPage>
     }
     try {
       for (var mid in midList) {
-        final savedApi = SavedApi(App.app.chatServerM.fullUrl);
+        final savedApi = SavedApi();
         savedApi.createSaved([mid]);
       }
     } catch (e) {
@@ -920,7 +920,7 @@ class _ChatPageState extends State<ChatPage>
     }
 
     try {
-      final messageApi = MessageApi(App.app.chatServerM.fullUrl);
+      final messageApi = MessageApi();
       await messageApi.react(old.mid, reaction);
     } catch (e) {
       App.logger.severe(e);
@@ -980,7 +980,7 @@ class _ChatPageState extends State<ChatPage>
 
       await FileHandler.singleton.deleteWithChatMsgM(old);
 
-      final messageApi = MessageApi(App.app.chatServerM.fullUrl);
+      final messageApi = MessageApi();
 
       await messageApi.delete(old.mid);
     } catch (e) {
@@ -1503,7 +1503,7 @@ class _ChatPageState extends State<ChatPage>
 
     final minMid = await ChatMsgDao().getMinMidInChannel(gid);
 
-    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final groupApi = GroupApi();
     final res = await groupApi.getHistory(gid, minMid);
 
     if (res.statusCode != 200 || res.data == null) return;

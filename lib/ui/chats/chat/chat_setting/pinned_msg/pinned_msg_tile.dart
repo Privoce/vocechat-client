@@ -145,7 +145,7 @@ class PinnedMsgTile extends StatelessWidget {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getFile(filePath, true, false);
 
       if (res.statusCode == 200 && res.data != null) {
@@ -167,7 +167,7 @@ class PinnedMsgTile extends StatelessWidget {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getFile(filePath, false, false);
 
       if (res.statusCode == 200 && res.data != null) {
@@ -198,7 +198,7 @@ class PinnedMsgTile extends StatelessWidget {
       return file;
     }
 
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     try {
       final res = await resourceApi.getFile(filePath, false, true, onProgress);
       if (res.statusCode == 200 && res.data != null) {

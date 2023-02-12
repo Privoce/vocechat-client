@@ -134,16 +134,6 @@ class SettingsAboutPage extends StatelessWidget {
     return version;
   }
 
-  Future<String?> _getServerVersion() async {
-    final res =
-        await AdminSystemApi(App.app.chatServerM.fullUrl).getServerVersion();
-    if (res.statusCode == 200 && res.data != null) {
-      return res.data!;
-    }
-
-    return null;
-  }
-
   void _checkUpdates(BuildContext context) async {
     _isCheckingUpdates.value = true;
 

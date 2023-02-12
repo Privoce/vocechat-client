@@ -1,16 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import '../models/token/token_agora_response.dart';
-import 'dio_retry/options.dart';
-import 'dio_retry/retry_interceptor.dart';
 
 class AgoraApi {
   late final String _baseUrl;
 
-  AgoraApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/group";
+  AgoraApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/group";
   }
 
   Future<Response<TokenAgoraResponse>> generatesAgoraToken(int gid) async {

@@ -73,7 +73,7 @@ class ChatServerHelper {
     }
 
     try {
-      final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+      final adminSystemApi = AdminSystemApi(serverUrl: chatServerM.fullUrl);
 
       final orgInfoRes = await adminSystemApi.getOrgInfo();
       if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
@@ -82,13 +82,14 @@ class ChatServerHelper {
         chatServerM.properties = ChatServerProperties(
             serverName: orgInfo.name, description: orgInfo.description ?? "");
 
-        final resourceApi = ResourceApi(chatServerM.fullUrl);
+        final resourceApi = ResourceApi(serverUrl: chatServerM.fullUrl);
         final logoRes = await resourceApi.getOrgLogo();
         if (logoRes.statusCode == 200 && logoRes.data != null) {
           chatServerM.logo = logoRes.data!;
         }
 
-        final AdminLoginApi adminLoginApi = AdminLoginApi(chatServerM.fullUrl);
+        final AdminLoginApi adminLoginApi =
+            AdminLoginApi(serverUrl: chatServerM.fullUrl);
         final adminLoginRes = await adminLoginApi.getConfig();
         if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
           chatServerM.properties = ChatServerProperties(
@@ -125,7 +126,7 @@ class ChatServerHelper {
           status: ServerStatus.error, chatServerM: chatServerM);
     }
 
-    final adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+    final adminSystemApi = AdminSystemApi(serverUrl: chatServerM.fullUrl);
 
     // Check if server has been initialized
     final initializedRes = await adminSystemApi.getInitialized();

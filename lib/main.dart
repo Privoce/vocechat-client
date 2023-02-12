@@ -92,7 +92,7 @@ Future<void> main() async {
                   serverName: orgInfo.name,
                   description: orgInfo.description ?? "");
 
-              final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+              final resourceApi = ResourceApi();
               final logoRes = await resourceApi.getOrgLogo();
               if (logoRes.statusCode == 200 && logoRes.data != null) {
                 App.app.chatServerM.logo = logoRes.data!;

@@ -167,7 +167,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
 
                 try {
                   final removes = selectNotifier.value;
-                  final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+                  final groupApi = GroupApi();
                   final hasSent = await groupApi.removeMembers(
                       widget.groupInfoMNotifier.value.gid, removes.toList());
                   if (hasSent.statusCode == 200) {

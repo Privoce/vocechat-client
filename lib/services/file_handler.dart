@@ -448,7 +448,7 @@ class FileHandler {
     }
 
     // try server.
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
 
     try {
       final res = await resourceApi.getFile(filePath, true, true);
@@ -474,7 +474,7 @@ class FileHandler {
     String fileName = chatMsgM.msgNormal?.properties?["name"];
 
     // try server.
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
 
     try {
       final res =
@@ -516,7 +516,7 @@ class FileHandler {
     String localMid = chatMsgM.localMid;
     String fileName = chatMsgM.msgNormal?.properties?["name"];
 
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     if (await imageNormalExists(chatId, localMid, fileName)) {
       final file = await readImageNormal(chatId, localMid, fileName);
       return file;
@@ -546,7 +546,7 @@ class FileHandler {
     String fileName = chatMsgM.msgNormal?.properties?["name"];
 
     // try server.
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     try {
       final res =
           await resourceApi.getFile(filePath, false, true, onReceiveProgress);
@@ -650,7 +650,7 @@ class FileHandler {
       return file;
     }
 
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     try {
       final res = await resourceApi.getFile(filePath, false, true, onProgress);
       if (res.statusCode == 200 && res.data != null) {
@@ -683,7 +683,7 @@ class FileHandler {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getArchiveAttachment(
           archiveId, attachmentId, true, onProgress);
       if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
@@ -716,7 +716,7 @@ class FileHandler {
     }
 
     try {
-      final savedItemsApi = SavedApi(App.app.chatServerM.fullUrl);
+      final savedItemsApi = SavedApi();
       final res = await savedItemsApi.getSavedAttachment(
           uid, archiveId, attachmentId, true, onProgress);
       if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {

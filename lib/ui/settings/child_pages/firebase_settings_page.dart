@@ -153,7 +153,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
     }
 
     try {
-      final adminFirebaseApi = AdminFirebaseApi(App.app.chatServerM.fullUrl);
+      final adminFirebaseApi = AdminFirebaseApi();
       final res = await adminFirebaseApi.postFcmConfigs(req);
       if (res.statusCode == 200) {
         App.logger.info("FCM Config successful.");
@@ -169,7 +169,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
     setState(() {
       _loading = true;
     });
-    final adminFirebaseApi = AdminFirebaseApi(App.app.chatServerM.fullUrl);
+    final adminFirebaseApi = AdminFirebaseApi();
     final res = await adminFirebaseApi.getFcmConfigs();
     if (res.statusCode == 200 && res.data != null) {
       final fcmConfigs = res.data!;

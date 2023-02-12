@@ -11,8 +11,9 @@ import 'package:vocechat_client/app.dart';
 class TokenApi {
   late final String _baseUrl;
 
-  TokenApi(String serverUrl) {
-    _baseUrl = "$serverUrl/api/token";
+  TokenApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/token";
   }
 
   /// Do login.
