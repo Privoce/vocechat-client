@@ -1,8 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 
@@ -55,7 +54,7 @@ class _ChannelAvatarState extends State<ChannelAvatar> {
         ],
       );
     } else if (widget.name != null && widget.name!.isNotEmpty) {
-      final initials = getInitials(widget.name!);
+      final initials = SharedFuncs.getInitials(widget.name!);
       if (initials.length > 3) {
         widget.fontSize = widget.avatarSize / 3.5;
       } else {

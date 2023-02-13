@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/services/chat_service.dart';
@@ -206,7 +206,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                 },
                 title: AppLocalizations.of(context)!.autoDeleteMessage,
                 trailing: Text(
-                    translateAutoDeletionSettingTime(initExpTime, context),
+                    SharedFuncs.translateAutoDeletionSettingTime(
+                        initExpTime, context),
                     style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 17,
@@ -461,7 +462,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
       final groupApi = GroupApi();
       final res = await groupApi.leaveGroup(widget.groupInfoNotifier.value.gid);
       if (res.statusCode == 200) {
-        await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
+        await FileHandler.singleton
+            .deleteChatDirectory(SharedFuncs.getChatId(gid: gid)!);
         await ChatMsgDao().deleteMsgByGid(gid);
 
         isLeaveBusy.value = false;
@@ -482,7 +484,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
       final groupApi = GroupApi();
       final res = await groupApi.delete(widget.groupInfoNotifier.value.gid);
       if (res.statusCode == 200) {
-        await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
+        await FileHandler.singleton
+            .deleteChatDirectory(SharedFuncs.getChatId(gid: gid)!);
         await ChatMsgDao().deleteMsgByGid(gid);
         await GroupInfoDao().deleteGroupByGid(gid);
         isDeleteBusy.value = false;

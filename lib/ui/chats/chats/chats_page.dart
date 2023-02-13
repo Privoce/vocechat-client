@@ -5,14 +5,16 @@ import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/models/ui_models/ui_chat.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/task_queue.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
@@ -457,9 +459,9 @@ class _ChatsPageState extends State<ChatsPage>
           }
 
           // Prepare snippet.
-          String s = await parseMention(snippet);
+          String s = await SharedFuncs.parseMention(snippet);
           if (userInfoM.userInfo.uid == App.app.userDb!.uid) {
-            s = "${AppLocalizations.of(context)!.you}: " + s;
+            s = "${AppLocalizations.of(context)!.you}: $s";
           } else {
             s = "${userInfoM.userInfo.name}: $s";
           }
@@ -635,7 +637,8 @@ class _ChatsPageState extends State<ChatsPage>
         final draft = groupInfoM.properties.draft;
 
         if (latestMsgM != null) {
-          String s = await parseMention(_processSnippet(latestMsgM));
+          String s =
+              await SharedFuncs.parseMention(_processSnippet(latestMsgM));
 
           final userInfoM =
               await UserInfoDao().getUserByUid(latestMsgM.fromUid);

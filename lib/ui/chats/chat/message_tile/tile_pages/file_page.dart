@@ -9,8 +9,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -115,7 +116,7 @@ class _FilePageState extends State<FilePage> {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                getFileSizeString(widget.size),
+                SharedFuncs.getFileSizeString(widget.size),
                 style: AppTextStyles.labelMedium,
               ),
             ),

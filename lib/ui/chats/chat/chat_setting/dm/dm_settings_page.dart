@@ -5,14 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/auto_delete_settings_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
-import 'package:vocechat_client/ui/chats/chat/chat_setting/settings_action_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
@@ -108,7 +106,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                   BannerTile(
                     title: AppLocalizations.of(context)!.autoDeleteMessage,
                     trailing: Text(
-                        translateAutoDeletionSettingTime(
+                        SharedFuncs.translateAutoDeletionSettingTime(
                             burnAfterReadSecond, context),
                         style: TextStyle(
                             fontWeight: FontWeight.w400,

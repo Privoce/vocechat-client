@@ -19,7 +19,7 @@ import 'package:vocechat_client/api/models/resource/file_prepare_request.dart';
 import 'package:vocechat_client/api/models/resource/file_upload_response.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:path/path.dart' as p;
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -29,6 +29,7 @@ import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 typedef MessageSendFunction = Future<bool> Function(
     String localMid, String msg, SendType type,
@@ -527,7 +528,7 @@ class SendFile implements AbstractSend {
 
     // Compress and save thumb if is image.
     if (isImage) {
-      final chatId = getChatId(gid: gid, uid: uid);
+      final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
       Uint8List thumbBytes =
           await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
 
@@ -544,7 +545,7 @@ class SendFile implements AbstractSend {
       fileBytes = thumbBytes;
       file = thumbFile!;
     } else {
-      final chatId = getChatId(gid: gid, uid: uid);
+      final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
       file = (await FileHandler.singleton
           .saveFile(chatId!, fileBytes, localMid, filename))!;
 

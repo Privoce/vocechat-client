@@ -7,8 +7,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/file_page.dart';
 
 import 'package:path/path.dart' as p;
@@ -117,7 +118,7 @@ class FileBubble extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 4),
-                  Text(getFileSizeString(size),
+                  Text(SharedFuncs.getFileSizeString(size),
                       style: TextStyle(
                           color: Color.fromRGBO(97, 97, 97, 1),
                           fontSize: 12,

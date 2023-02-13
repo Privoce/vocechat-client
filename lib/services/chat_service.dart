@@ -13,8 +13,9 @@ import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -645,7 +646,7 @@ class ChatService {
       for (final localGid in localGids) {
         if (!serverGids.contains(localGid)) {
           await FileHandler.singleton
-              .deleteChatDirectory(getChatId(gid: localGid)!);
+              .deleteChatDirectory(SharedFuncs.getChatId(gid: localGid)!);
           await ChatMsgDao().deleteMsgByGid(localGid);
           await GroupInfoDao().deleteGroupByGid(localGid);
 
@@ -742,7 +743,8 @@ class ChatService {
 
       if (uids.contains(App.app.userDb!.uid)) {
         // Myself quit the channel.
-        await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
+        await FileHandler.singleton
+            .deleteChatDirectory(SharedFuncs.getChatId(gid: gid)!);
         await ChatMsgDao().deleteMsgByGid(gid);
         await GroupInfoDao().removeByGid(gid).then((value) {
           if (value != null) {
