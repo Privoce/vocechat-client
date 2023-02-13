@@ -12,6 +12,7 @@ import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
@@ -510,8 +511,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
       if (userDb != null) {
         if (App.app.authService != null) {
-          if (await App.app.authService!.renewAuthToken() &&
-              Sse.sse.isClosed()) {
+          if (await SharedFuncs.renewAuthToken() && Sse.sse.isClosed()) {
             App.app.chatService.initSse();
           } else {
             Sse.sse.close();

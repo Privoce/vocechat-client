@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 class DioUtil {
   final String baseUrl;
@@ -46,8 +47,7 @@ class DioUtil {
 
         if (e.response != null &&
             (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
-          final isSuccessful =
-              (await App.app.authService?.renewAuthToken()) ?? false;
+          final isSuccessful = (await SharedFuncs.renewAuthToken());
           if (isSuccessful) {
             await _retry(e.response!.requestOptions)
                 .then((res) => handler.resolve(res));

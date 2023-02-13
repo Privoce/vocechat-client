@@ -12,6 +12,7 @@ import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:simple_logger/simple_logger.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 
 import 'UI/chats/chats/chats_main_page.dart';
@@ -88,7 +89,7 @@ class App {
 
     // connect
     if (authService != null) {
-      if (await authService!.renewAuthToken()) {
+      if (await SharedFuncs.renewAuthToken()) {
         chatService.initSse();
       }
     }

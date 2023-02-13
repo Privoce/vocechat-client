@@ -17,6 +17,7 @@ import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
 import 'package:vocechat_client/api/models/token/token_renew_request.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -76,7 +77,7 @@ class AuthService {
         _timer.cancel();
       }
       if (_expiredIn <= threshold && _expiredIn >= threshold - 5) {
-        if (await renewAuthToken()) {
+        if (await SharedFuncs.renewAuthToken()) {
           if (Sse.sse.isClosed()) {
             Sse.sse.connect();
           }
@@ -98,51 +99,6 @@ class AuthService {
     _fcmTimer?.cancel();
   }
 
-  Future<bool> renewAuthToken() async {
-    App.app.statusService.fireTokenLoading(TokenStatus.connecting);
-    try {
-      if (App.app.userDb == null) {
-        App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
-        return false;
-      }
-      final req = TokenRenewRequest(
-          App.app.userDb!.token, App.app.userDb!.refreshToken);
-
-      final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
-      final res = await tokenApi.tokenRenewPost(req);
-
-      if (res.statusCode == 200 && res.data != null) {
-        _resetRetryInterval();
-
-        App.logger.config("Token Refreshed.");
-        final data = res.data!;
-        final token = data.token;
-        final refreshToken = data.refreshToken;
-        final expiredIn = data.expiredIn;
-
-        _setTimer(expiredIn);
-        await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
-
-        return true;
-      } else {
-        if (res.statusCode == 401 || res.statusCode == 403) {
-          App.logger
-              .severe("Renew Token Failed, Status code: ${res.statusCode}");
-          _increaseRetryInterval();
-          App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
-          return false;
-        }
-      }
-      App.logger.severe("Renew Token Failed, Status code: ${res.statusCode}");
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    _increaseRetryInterval();
-    App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
-    return false;
-  }
-
   /// Increase retry interval index by 1,
   /// If index reaches [retryList.length], index won't change, otherwise increase
   /// by 1.
@@ -158,20 +114,6 @@ class AuthService {
   /// Resets retry interval index to 0, which 2 seconds.
   void _resetRetryInterval() {
     retryIndex = 0;
-  }
-
-  Future<void> _renewAuthDataInUserDb(
-      String token, String refreshToken, int expiredIn) async {
-    final status = await StatusMDao.dao.getStatus();
-    if (status == null) {
-      App.logger.severe("Empty UserDbId in Status Db");
-      return;
-    }
-
-    final newUserDbM = await UserDbMDao.dao
-        .updateAuth(status.userDbId, token, refreshToken, expiredIn);
-    App.app.userDb = newUserDbM;
-    App.app.statusService.fireTokenLoading(TokenStatus.successful);
   }
 
   Future<bool> tryReLogin() async {
