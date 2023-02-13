@@ -1,16 +1,12 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/main.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DioUtil {
   final String baseUrl;
 
-  final _dio = Dio();
+  static final _dio = Dio();
 
   DioUtil({required this.baseUrl, bool enableRetry = true}) {
     _init(enableRetry: enableRetry);
@@ -29,9 +25,6 @@ class DioUtil {
   }
 
   void _init({bool enableRetry = true}) {
-    // _dio.httpClientAdapter = Http2Adapter(ConnectionManager());
-    _dio.options.headers = {'referer': App.app.chatServerM.fullUrl};
-
     if (enableRetry) {
       _dio.interceptors.add(RetryInterceptor(
           dio: _dio,
@@ -40,7 +33,6 @@ class DioUtil {
     }
     _dio.options.baseUrl = baseUrl;
     _dio.options.connectTimeout = 5000; //5s
-    // _dio.options.receiveTimeout = 10000;
   }
 
   /// Handle http status 401  (token invalid)
@@ -48,7 +40,7 @@ class DioUtil {
   /// Will request new tokens (both access token and refresh token) using
   /// refresh token.
   void _addInvalidTokenInterceptor() async {
-    _dio.interceptors.add(InterceptorsWrapper(
+    _dio.interceptors.add(QueuedInterceptorsWrapper(
       onError: (e, handler) async {
         App.logger.severe(e);
 

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -95,7 +94,7 @@ class AuthService {
     _timer!.cancel();
   }
 
-  void disableFcmTImer() {
+  void disableFcmTimer() {
     _fcmTimer?.cancel();
   }
 
