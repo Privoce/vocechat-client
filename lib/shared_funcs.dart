@@ -119,17 +119,17 @@ class SharedFuncs {
 
   /// Renew access token and refresh token, and do related data storage.
   static Future<bool> renewAuthToken() async {
-    // App.app.statusService.fireTokenLoading(TokenStatus.connecting);
+    App.app.statusService.fireTokenLoading(TokenStatus.connecting);
     try {
       if (App.app.userDb == null) {
-        // App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
+        App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
         return false;
       }
       final req = TokenRenewRequest(
           App.app.userDb!.token, App.app.userDb!.refreshToken);
 
       final tokenApi = TokenApi();
-      final res = await tokenApi.tokenRenewPost(req);
+      final res = await tokenApi.renewToken(req);
 
       if (res.statusCode == 200 && res.data != null) {
         App.logger.config("Token Refreshed.");
@@ -146,7 +146,7 @@ class SharedFuncs {
           App.logger
               .severe("Renew Token Failed, Status code: ${res.statusCode}");
 
-          // App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+          App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
           return false;
         }
       }
@@ -154,7 +154,7 @@ class SharedFuncs {
     } catch (e) {
       App.logger.severe(e);
     }
-    // App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
+    App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
     return false;
   }
 

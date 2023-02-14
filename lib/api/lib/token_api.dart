@@ -50,13 +50,12 @@ class TokenApi {
     return newRes;
   }
 
-  Future<Response<TokenRenewResponse>> tokenRenewPost(
-      TokenRenewRequest req) async {
+  Future<Response<TokenRenewResponse>> renewToken(TokenRenewRequest req) async {
     final dio = DioUtil(baseUrl: _baseUrl);
-    dio.options.validateStatus = (status) {
-      // return status != null && status < 500;
-      return [200, 401, 404].contains(status);
-    };
+    // dio.options.validateStatus = (status) {
+    //   // return status != null && status < 500;
+    //   return [200, 401, 404].contains(status);
+    // };
     final res = await dio.post("/renew", data: req.toJson());
 
     var newRes = Response<TokenRenewResponse>(

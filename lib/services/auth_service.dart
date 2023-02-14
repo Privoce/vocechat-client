@@ -55,45 +55,45 @@ class AuthService {
   Timer? _fcmTimer;
   int _fcmExpiresIn = 0;
 
-  Timer? _timer;
+  // Timer? _timer;
   static const threshold = 60; // Refresh tokens if remaining time < 60.
 
   int _expiredIn = 0;
 
-  void _setTimer(int expiredIn) {
-    if (_timer != null) {
-      _timer!.cancel();
-    }
-    // Check if token needs refreshing every 10 seconds.
-    const interval = 10;
+  // void _setTimer(int expiredIn) {
+  //   if (_timer != null) {
+  //     _timer!.cancel();
+  //   }
+  //   // Check if token needs refreshing every 10 seconds.
+  //   const interval = 10;
 
-    _expiredIn = expiredIn;
+  //   _expiredIn = expiredIn;
 
-    _timer = Timer.periodic(Duration(seconds: interval), (_timer) async {
-      // App.logger.config("Current token expires in $_expiredIn seconds");
+  //   _timer = Timer.periodic(Duration(seconds: interval), (_timer) async {
+  //     // App.logger.config("Current token expires in $_expiredIn seconds");
 
-      if (_expiredIn < 0) {
-        // token expires.
-        _timer.cancel();
-      }
-      if (_expiredIn <= threshold && _expiredIn >= threshold - 5) {
-        if (await SharedFuncs.renewAuthToken()) {
-          if (Sse.sse.isClosed()) {
-            Sse.sse.connect();
-          }
-        }
-      }
-      _expiredIn -= interval;
-    });
-  }
+  //     if (_expiredIn < 0) {
+  //       // token expires.
+  //       _timer.cancel();
+  //     }
+  //     if (_expiredIn <= threshold && _expiredIn >= threshold - 5) {
+  //       if (await SharedFuncs.renewAuthToken()) {
+  //         if (Sse.sse.isClosed()) {
+  //           Sse.sse.connect();
+  //         }
+  //       }
+  //     }
+  //     _expiredIn -= interval;
+  //   });
+  // }
 
   void dispose() {
-    disableAuthTimer();
+    // disableAuthTimer();
   }
 
-  void disableAuthTimer() {
-    _timer!.cancel();
-  }
+  // void disableAuthTimer() {
+  //   _timer!.cancel();
+  // }
 
   void disableFcmTimer() {
     _fcmTimer?.cancel();
@@ -348,7 +348,7 @@ class AuthService {
       App.app.userDb = newUserDb;
       StatusM statusM = StatusM.item(newUserDb.id);
       await StatusMDao.dao.replace(statusM);
-      _setTimer(expiredIn);
+      // _setTimer(expiredIn);
 
       await initCurrentDb(dbName);
 

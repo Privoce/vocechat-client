@@ -19,9 +19,9 @@ class SavedApi {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     dio.options.headers["content-type"] = "application/json";
 
-    dio.options.validateStatus = (status) {
-      return [200, 429].contains(status);
-    };
+    // dio.options.validateStatus = (status) {
+    //   return [200, 429].contains(status);
+    // };
 
     final res = await dio.post("", data: json.encode({"mid_list": midList}));
 

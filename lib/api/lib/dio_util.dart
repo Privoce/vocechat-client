@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 
 class DioUtil {
@@ -26,6 +27,9 @@ class DioUtil {
   }
 
   void _init({bool enableRetry = true}) {
+    // Clear current options for new requests.
+    _dio.options = BaseOptions();
+
     if (enableRetry) {
       _dio.interceptors.add(RetryInterceptor(
           dio: _dio,
@@ -43,17 +47,10 @@ class DioUtil {
   void _addInvalidTokenInterceptor() async {
     _dio.interceptors.add(QueuedInterceptorsWrapper(
       onError: (e, handler) async {
-        App.logger.severe(e);
-
+        App.logger.warning(e);
         if (e.response != null &&
             (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
-          final isSuccessful = (await SharedFuncs.renewAuthToken());
-          if (isSuccessful) {
-            await _retry(e.response!.requestOptions)
-                .then((res) => handler.resolve(res));
-          } else {
-            handler.resolve(e.response!);
-          }
+          _handle401(e.response!, handler);
         } else {
           handler.resolve(Response(
               requestOptions: e.requestOptions,
@@ -61,6 +58,22 @@ class DioUtil {
         }
       },
     ));
+  }
+
+  void _handle401(
+      Response<dynamic> response, ErrorInterceptorHandler handler) async {
+    final isSuccessful = (await SharedFuncs.renewAuthToken());
+    if (isSuccessful) {
+      await _retry(response.requestOptions, response.requestOptions.baseUrl)
+          .then((res) {
+        // res.requestOptions.headers["x-api-key"] = App.app.userDb!.token;
+        handler.resolve(res);
+      });
+    } else {
+      App.logger.severe("Token refresh failed");
+      App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+      handler.resolve(response);
+    }
   }
 
   /// Handy method to make http POST request, which is a alias of [dio.fetch(RequestOptions)].
@@ -134,13 +147,16 @@ class DioUtil {
     return _dio.options;
   }
 
-  Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
+  Future<Response<dynamic>> _retry(
+      RequestOptions requestOptions, String baseUrl) async {
     final options = Options(
       method: requestOptions.method,
       headers: requestOptions.headers,
     );
+    options.headers?["x-api-key"] = App.app.userDb!.token;
 
     _dio.interceptors.clear();
+    _dio.options.baseUrl = baseUrl;
 
     return _dio.request<dynamic>(requestOptions.path,
         data: requestOptions.data,
