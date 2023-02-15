@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
@@ -9,7 +8,6 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
-import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:vocechat_client/shared_funcs.dart';

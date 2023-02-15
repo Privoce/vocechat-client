@@ -17,7 +17,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
-import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
+import 'package:vocechat_client/services/sse/sse_event_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,14 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
-import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
-import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
@@ -91,21 +86,7 @@ Future<void> main() async {
       .then((value) {
     runApp(VoceChatApp(defaultHome: _defaultHome));
   });
-  // runApp(VoceChatApp(defaultHome: _defaultHome));
 }
-
-/// This function is only for fixing potential difference in maxMid between
-/// old (calculated from chatMsgDao) and the new (saved separately),
-/// to reduce message duplication.
-// Future<void> _updateMaxMid() async {
-//   final oldMaxMid = await ChatMsgDao().getMaxMid();
-//   if (oldMaxMid > -1) {
-//     final userId = await StatusMDao.dao.getStatus();
-//     if (userId != null) {
-//       await UserDbMDao.dao.updateMaxMid(userId.userDbId, oldMaxMid);
-//     }
-//   }
-// }
 
 Future<void> _setUpFirebaseNotification() async {
   await Firebase.initializeApp(
