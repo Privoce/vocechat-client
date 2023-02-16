@@ -32,8 +32,6 @@ class RetryInterceptor extends Interceptor {
         App.logger.warning(
             "[${err.requestOptions.uri}] An error occurred during request, trying a again (remaining tries: ${extra.retries}, error: ${err.error})");
 
-        print("BaseUrl: ${dio.options.baseUrl}");
-
         return handler.resolve(await dio.request(err.requestOptions.path,
             cancelToken: err.requestOptions.cancelToken,
             data: err.requestOptions.data,

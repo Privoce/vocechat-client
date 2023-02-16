@@ -29,6 +29,7 @@ class DioUtil {
   void _init({bool enableRetry = true}) {
     // Clear current options for new requests.
     _dio.options = BaseOptions();
+    _dio.interceptors.clear();
 
     if (enableRetry) {
       _dio.interceptors.add(RetryInterceptor(
@@ -37,7 +38,7 @@ class DioUtil {
               RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
     }
     _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = 5000; //5s
+    // _dio.options.connectTimeout = 5000; //5s
   }
 
   /// Handle http status 401  (token invalid)

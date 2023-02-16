@@ -51,11 +51,13 @@ class TokenApi {
   }
 
   Future<Response<TokenRenewResponse>> renewToken(TokenRenewRequest req) async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: false);
     dio.options.validateStatus = (status) {
       // return status != null && status < 500;
       return [200, 401, 404].contains(status);
     };
+    print(dio.options.baseUrl);
+
     final res = await dio.post("/renew", data: req.toJson());
 
     var newRes = Response<TokenRenewResponse>(

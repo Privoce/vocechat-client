@@ -57,7 +57,7 @@ dependencies:
   firebase_messaging: ^14.2.1
   firebase_core_platform_interface: ^4.5.2
   image_gallery_saver: ^1.7.1
-  connectivity_plus: ^3.0.2
+  connectivity_plus: ^3.0.3
   flutter_svg: ^1.0.3
   flutter_markdown: ^0.6.13+1
   url_launcher: ^6.0.20

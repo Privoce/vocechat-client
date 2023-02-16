@@ -131,6 +131,8 @@ class SharedFuncs {
       final tokenApi = TokenApi();
       final res = await tokenApi.renewToken(req);
 
+      print("############# ${req.toJson()}");
+
       if (res.statusCode == 200 && res.data != null) {
         App.logger.config("Token Refreshed.");
         final data = res.data!;

@@ -492,7 +492,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
       if (userDb != null) {
         if (App.app.authService != null) {
-          if (await SharedFuncs.renewAuthToken() && Sse.sse.isClosed()) {
+          if (await SharedFuncs.renewAuthToken()) {
             App.app.chatService.initSse();
           } else {
             Sse.sse.close();
