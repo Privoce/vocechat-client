@@ -4,8 +4,6 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:vocechat_client/api/lib/dio_retry/options.dart';
-import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/api/models/resource/file_prepare_request.dart';
@@ -17,8 +15,9 @@ import 'package:vocechat_client/api/models/resource/open_graphic_parse_response.
 class ResourceApi {
   late final String _baseUrl;
 
-  ResourceApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/resource";
+  ResourceApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/resource";
   }
 
   Future<Response<Uint8List>> getImage(String imageId) async {

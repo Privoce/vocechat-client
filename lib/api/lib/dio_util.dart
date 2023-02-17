@@ -1,40 +1,44 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/main.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 class DioUtil {
   final String baseUrl;
 
   static final _dio = Dio();
 
-  DioUtil({required this.baseUrl}) {
-    _init();
+  DioUtil({required this.baseUrl, bool enableRetry = true}) {
+    _init(enableRetry: enableRetry);
   }
 
-  DioUtil.token({required this.baseUrl, bool withRetry = true}) {
-    _init(withRetry: withRetry);
+  DioUtil.token(
+      {required this.baseUrl,
+      bool enableRetry = true,
+      bool enableTokenHandler = true}) {
+    _init(enableRetry: enableRetry);
     _dio.options.headers["x-api-key"] = App.app.userDb!.token;
-    _addInvalidTokenInterceptor();
+
+    if (enableTokenHandler) {
+      _addInvalidTokenInterceptor();
+    }
   }
 
-  void _init({bool withRetry = true}) {
-    // _dio.httpClientAdapter = Http2Adapter(ConnectionManager());
-    _dio.options.headers = {'referer': App.app.chatServerM.fullUrl};
+  void _init({bool enableRetry = true}) {
+    // Clear current options for new requests.
+    _dio.options = BaseOptions();
+    _dio.interceptors.clear();
 
-    if (withRetry) {
+    if (enableRetry) {
       _dio.interceptors.add(RetryInterceptor(
           dio: _dio,
           options:
               RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
     }
     _dio.options.baseUrl = baseUrl;
-    _dio.options.connectTimeout = 5000; //5s
-    // _dio.options.receiveTimeout = 10000;
+    // _dio.options.connectTimeout = 5000; //5s
   }
 
   /// Handle http status 401  (token invalid)
@@ -42,37 +46,35 @@ class DioUtil {
   /// Will request new tokens (both access token and refresh token) using
   /// refresh token.
   void _addInvalidTokenInterceptor() async {
-    _dio.interceptors.add(InterceptorsWrapper(
+    _dio.interceptors.add(QueuedInterceptorsWrapper(
       onError: (e, handler) async {
-        if (e.response != null && e.response!.statusCode == 401) {
-          final res = (await App.app.authService?.renewAuthToken()) ?? false;
-          print(res);
-          if (!res) {
-            // alert and jump to login if failed.
-            // if (navigatorKey.currentContext != null) {
-            //   final context = navigatorKey.currentContext!;
-            //   showAppAlert(
-            //       context: context,
-            //       title: "Authentication Error",
-            //       content: "Please login again.",
-            //       primaryAction: AppAlertDialogAction(
-            //           text: "Continue",
-            //           action: () {
-            //             Navigator.of(navigatorKey.currentContext!).pop();
-            //             App.app.authService?.logout();
-            //           }),
-            //       actions: [
-            //         AppAlertDialogAction(
-            //             text: AppLocalizations.of(navigatorKey.currentContext!)!
-            //                 .cancel,
-            //             action: () =>
-            //                 Navigator.of(navigatorKey.currentContext!).pop())
-            //       ]);
-            // }
-          }
+        App.logger.warning(e);
+        if (e.response != null &&
+            (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+          _handle401(e.response!, handler);
+        } else {
+          handler.resolve(Response(
+              requestOptions: e.requestOptions,
+              statusCode: e.response?.statusCode ?? 599));
         }
       },
     ));
+  }
+
+  void _handle401(
+      Response<dynamic> response, ErrorInterceptorHandler handler) async {
+    final isSuccessful = (await SharedFuncs.renewAuthToken());
+    if (isSuccessful) {
+      await _retry(response.requestOptions, response.requestOptions.baseUrl)
+          .then((res) {
+        // res.requestOptions.headers["x-api-key"] = App.app.userDb!.token;
+        handler.resolve(res);
+      });
+    } else {
+      App.logger.severe("Token refresh failed");
+      App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+      handler.resolve(response);
+    }
   }
 
   /// Handy method to make http POST request, which is a alias of [dio.fetch(RequestOptions)].
@@ -142,5 +144,24 @@ class DioUtil {
         onReceiveProgress: onReceiveProgress);
   }
 
-  BaseOptions options = _dio.options;
+  BaseOptions get options {
+    return _dio.options;
+  }
+
+  Future<Response<dynamic>> _retry(
+      RequestOptions requestOptions, String baseUrl) async {
+    final options = Options(
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+    );
+    options.headers?["x-api-key"] = App.app.userDb!.token;
+
+    _dio.interceptors.clear();
+    _dio.options.baseUrl = baseUrl;
+
+    return _dio.request<dynamic>(requestOptions.path,
+        data: requestOptions.data,
+        queryParameters: requestOptions.queryParameters,
+        options: options);
+  }
 }

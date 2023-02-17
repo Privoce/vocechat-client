@@ -2,7 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
 class UserAvatar extends StatefulWidget {
@@ -95,7 +96,7 @@ class _UserAvatarState extends State<UserAvatar> {
               image: DecorationImage(
                   fit: BoxFit.cover, image: MemoryImage(widget.avatarBytes!))));
     } else {
-      final initials = getInitials(widget.name);
+      final initials = SharedFuncs.getInitials(widget.name);
 
       if (initials.length > 3) {
         fontSize = widget.avatarSize / 3.5;

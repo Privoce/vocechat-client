@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/admin_smtp.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
@@ -120,7 +120,7 @@ class _InviteEmailPageState extends State<InviteEmailPage> {
   }
 
   void checkSmtpEnabled() async {
-    final adminSmtpApi = AdminSmtpApi(App.app.chatServerM.fullUrl);
+    final adminSmtpApi = AdminSmtpApi();
     final res = await adminSmtpApi.getSmtpEnableStatus();
 
     if (res.statusCode == 200 && res.data == true) {

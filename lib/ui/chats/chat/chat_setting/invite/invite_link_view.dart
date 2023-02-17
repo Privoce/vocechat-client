@@ -27,7 +27,7 @@ class _InviteLinkViewState extends State<InviteLinkView>
   @override
   void initState() {
     super.initState();
-    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final groupApi = GroupApi();
     _linkFuture = groupApi.createInviteLink(widget.gid);
   }
 

@@ -179,7 +179,7 @@ class _MemberAddPageState extends State<MemberAddPage>
                   final adds = selectNotifier.value.where((element) => !widget
                       .groupInfoMNotifier.value.groupInfo.members!
                       .contains(element));
-                  final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+                  final groupApi = GroupApi();
                   final hasSent = await groupApi.addMembers(
                       widget.groupInfoMNotifier.value.gid, adds.toList());
                   if (hasSent.statusCode == 200) {

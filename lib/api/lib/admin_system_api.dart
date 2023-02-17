@@ -4,12 +4,14 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/admin/system/sys_org_info.dart';
+import 'package:vocechat_client/app.dart';
 
 class AdminSystemApi {
   late final String _baseUrl;
 
-  AdminSystemApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/admin/system";
+  AdminSystemApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/admin/system";
   }
 
   Future<Response<String>> getServerVersion() async {

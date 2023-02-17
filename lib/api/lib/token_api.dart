@@ -11,8 +11,9 @@ import 'package:vocechat_client/app.dart';
 class TokenApi {
   late final String _baseUrl;
 
-  TokenApi(String serverUrl) {
-    _baseUrl = "$serverUrl/api/token";
+  TokenApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/token";
   }
 
   /// Do login.
@@ -49,13 +50,13 @@ class TokenApi {
     return newRes;
   }
 
-  Future<Response<TokenRenewResponse>> tokenRenewPost(
-      TokenRenewRequest req) async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<TokenRenewResponse>> renewToken(TokenRenewRequest req) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: false);
     dio.options.validateStatus = (status) {
       // return status != null && status < 500;
       return [200, 401, 404].contains(status);
     };
+
     final res = await dio.post("/renew", data: req.toJson());
 
     var newRes = Response<TokenRenewResponse>(

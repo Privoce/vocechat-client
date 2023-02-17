@@ -6,10 +6,11 @@ import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
@@ -84,7 +85,7 @@ class PinnedMsgTile extends StatelessWidget {
   }
 
   Widget _buildFileBubble(PinnedMsg msg) {
-    final chatId = getChatId(gid: gid);
+    final chatId = SharedFuncs.getChatId(gid: gid);
     String fileName = msg.properties!["name"] ??
         DateTime.now().millisecondsSinceEpoch.toString();
     final name = msg.properties!["name"] ?? "";
@@ -102,7 +103,7 @@ class PinnedMsgTile extends StatelessWidget {
 
   Widget _buildImageBubble(PinnedMsg msg) {
     try {
-      final chatId = getChatId(gid: gid);
+      final chatId = SharedFuncs.getChatId(gid: gid);
       String imageName = msg.properties!["name"] ??
           DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -145,7 +146,7 @@ class PinnedMsgTile extends StatelessWidget {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getFile(filePath, true, false);
 
       if (res.statusCode == 200 && res.data != null) {
@@ -167,7 +168,7 @@ class PinnedMsgTile extends StatelessWidget {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getFile(filePath, false, false);
 
       if (res.statusCode == 200 && res.data != null) {
@@ -198,7 +199,7 @@ class PinnedMsgTile extends StatelessWidget {
       return file;
     }
 
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     try {
       final res = await resourceApi.getFile(filePath, false, true, onProgress);
       if (res.statusCode == 200 && res.data != null) {

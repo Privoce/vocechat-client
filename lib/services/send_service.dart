@@ -19,7 +19,7 @@ import 'package:vocechat_client/api/models/resource/file_prepare_request.dart';
 import 'package:vocechat_client/api/models/resource/file_upload_response.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:path/path.dart' as p;
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -29,6 +29,7 @@ import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 typedef MessageSendFunction = Future<bool> Function(
     String localMid, String msg, SendType type,
@@ -142,7 +143,7 @@ class SendText implements AbstractSend {
 
   Future<bool> _apiSendGroupText(ChatMsg message, String localMid, int gid,
       String msg, Map<String, dynamic>? properties) async {
-    GroupApi api = GroupApi(App.app.chatServerM.fullUrl);
+    GroupApi api = GroupApi();
     try {
       final res = await api.sendTextMsg(gid, msg, properties);
       if (res.statusCode == 200 && res.data != null) {
@@ -205,7 +206,7 @@ class SendText implements AbstractSend {
   Future<bool> _apiSendUserText(ChatMsg message, String localMid, int uid,
       String msg, Map<String, dynamic>? properties) async {
     // Send to server.
-    UserApi api = UserApi(App.app.chatServerM.fullUrl);
+    UserApi api = UserApi();
     try {
       final res = await api.sendTextMsg(uid, msg, localMid);
       if (res.statusCode == 200 && res.data != null) {
@@ -256,7 +257,7 @@ class SendEdit implements AbstractSend {
     App.app.chatService.fireReaction(ReactionTypes.edit, targetMid, msgM);
 
     // Send to server.
-    MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
+    MessageApi api = MessageApi();
     try {
       final res = await api.edit(targetMid, msg);
       if (res.statusCode == 200 && res.data != null) {
@@ -343,7 +344,7 @@ class SendReply implements AbstractSend {
             }));
 
     // Send to server.
-    MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
+    MessageApi api = MessageApi();
     try {
       final res = await api.reply(targetMid, msg, detail.properties);
       if (res.statusCode == 200 && res.data != null) {
@@ -399,7 +400,7 @@ class SendReply implements AbstractSend {
             }));
 
     // Send to server.
-    MessageApi api = MessageApi(App.app.chatServerM.fullUrl);
+    MessageApi api = MessageApi();
     try {
       final res = await api.reply(targetMid, msg, detail.properties);
       if (res.statusCode == 200 && res.data != null) {
@@ -527,7 +528,7 @@ class SendFile implements AbstractSend {
 
     // Compress and save thumb if is image.
     if (isImage) {
-      final chatId = getChatId(gid: gid, uid: uid);
+      final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
       Uint8List thumbBytes =
           await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
 
@@ -544,7 +545,7 @@ class SendFile implements AbstractSend {
       fileBytes = thumbBytes;
       file = thumbFile!;
     } else {
-      final chatId = getChatId(gid: gid, uid: uid);
+      final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
       file = (await FileHandler.singleton
           .saveFile(chatId!, fileBytes, localMid, filename))!;
 
@@ -573,7 +574,7 @@ class SendFile implements AbstractSend {
     String fileId;
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       fileId = (await resourceApi.prepareFile(prepareReq)).data!;
     } catch (e) {
       App.logger.severe(e);
@@ -602,12 +603,12 @@ class SendFile implements AbstractSend {
       Response<int> res;
 
       if (gid != null && gid != -1) {
-        final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+        final groupApi = GroupApi();
         res = await groupApi.sendFileMsg(gid, localMid, uploadRes.path,
             width: chatMsgM.msgNormal?.properties?["width"],
             height: chatMsgM.msgNormal?.properties?["height"]);
       } else {
-        final userApi = UserApi(App.app.chatServerM.fullUrl);
+        final userApi = UserApi();
         res = await userApi.sendFileMsg(
             chatMsgM.dmUid, chatMsgM.localMid, uploadRes.path,
             width: chatMsgM.msgNormal?.properties?["width"],

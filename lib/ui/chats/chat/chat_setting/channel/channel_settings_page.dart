@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/services/chat_service.dart';
@@ -206,7 +206,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                 },
                 title: AppLocalizations.of(context)!.autoDeleteMessage,
                 trailing: Text(
-                    translateAutoDeletionSettingTime(initExpTime, context),
+                    SharedFuncs.translateAutoDeletionSettingTime(
+                        initExpTime, context),
                     style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 17,
@@ -218,9 +219,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   }
 
   Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {
-    final res = await UserApi(App.app.chatServerM.fullUrl)
-        .postBurnAfterReadingSetting(
-            expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
+    final res = await UserApi().postBurnAfterReadingSetting(
+        expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
     if (res.statusCode == 200) {
       final groupInfoM = await GroupInfoDao().updateProperties(
           widget.groupInfoNotifier.value.gid,
@@ -303,7 +303,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
   Future<bool> _apiChangeChannelVisibility(bool isPublic) async {
     final gid = widget.groupInfoNotifier.value.gid;
-    final api = GroupApi(App.app.chatServerM.fullUrl);
+    final api = GroupApi();
 
     try {
       final res = await api.changeType(gid, isPublic);
@@ -459,10 +459,11 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     isLeaveBusy.value = true;
     int gid = widget.groupInfoNotifier.value.gid;
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.leaveGroup(widget.groupInfoNotifier.value.gid);
       if (res.statusCode == 200) {
-        await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
+        await FileHandler.singleton
+            .deleteChatDirectory(SharedFuncs.getChatId(gid: gid)!);
         await ChatMsgDao().deleteMsgByGid(gid);
 
         isLeaveBusy.value = false;
@@ -480,10 +481,11 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     isDeleteBusy.value = true;
     int gid = widget.groupInfoNotifier.value.gid;
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.delete(widget.groupInfoNotifier.value.gid);
       if (res.statusCode == 200) {
-        await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
+        await FileHandler.singleton
+            .deleteChatDirectory(SharedFuncs.getChatId(gid: gid)!);
         await ChatMsgDao().deleteMsgByGid(gid);
         await GroupInfoDao().deleteGroupByGid(gid);
         isDeleteBusy.value = false;
@@ -505,7 +507,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     };
 
     try {
-      final userApi = UserApi(App.app.chatServerM.fullUrl);
+      final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
         await App.app.chatService.mute(
@@ -523,7 +525,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
       "remove_groups": [widget.groupInfoNotifier.value.gid]
     };
     try {
-      final userApi = UserApi(App.app.chatServerM.fullUrl);
+      final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
         await App.app.chatService
