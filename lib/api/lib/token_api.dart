@@ -56,7 +56,6 @@ class TokenApi {
       // return status != null && status < 500;
       return [200, 401, 404].contains(status);
     };
-    print(dio.options.baseUrl);
 
     final res = await dio.post("/renew", data: req.toJson());
 

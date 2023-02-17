@@ -406,9 +406,9 @@ class _ChatsBarState extends State<ChatsBar> {
   }
 
   Widget _buildStatus() {
-    print("SSE: $_sseStatus");
-    print("TOKEN: $_tokenStatus");
-    print("TASK: $_taskStatus");
+    // print("SSE: $_sseStatus");
+    // print("TOKEN: $_tokenStatus");
+    // print("TASK: $_taskStatus");
     if (_isSuccessful() || _isInitial()) {
       return SizedBox.shrink();
     } else if (_tokenStatus == TokenStatus.unauthorized) {

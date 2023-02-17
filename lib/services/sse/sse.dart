@@ -92,8 +92,6 @@ class Sse {
   Future<bool> _networkIsAvailable() async {
     final connectivityResult = await Connectivity().checkConnectivity();
 
-    print("########## $connectivityResult");
-
     return (connectivityResult == ConnectivityResult.mobile ||
         connectivityResult == ConnectivityResult.wifi);
   }
