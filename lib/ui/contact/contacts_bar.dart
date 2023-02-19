@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/fade_page_route.dart';
+import 'package:vocechat_client/ui/fade_page_route.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/widgets/search/app_search_field.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:vocechat_client/ui/widgets/search/app_search_page.dart';

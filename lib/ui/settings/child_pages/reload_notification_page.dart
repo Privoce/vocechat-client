@@ -77,8 +77,7 @@ class ReloadNotificationPage extends StatelessWidget {
 
     if (deviceToken.isNotEmpty) {
       try {
-        final res = await TokenApi(App.app.chatServerM.fullUrl)
-            .updateFcmDeviceToken(deviceToken);
+        final res = await TokenApi().updateFcmDeviceToken(deviceToken);
 
         if (res.statusCode == 200) {
           if (currentContext.mounted) {

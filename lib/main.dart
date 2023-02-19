@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -9,13 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
-import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/services/sse/sse.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
-import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
@@ -81,32 +77,6 @@ Future<void> main() async {
           App.app.authService = AuthService(chatServerM: App.app.chatServerM);
 
           App.app.chatService = ChatService();
-
-          // Get / update org info.
-          try {
-            final orgInfoRes =
-                await App.app.authService!.adminSystemApi.getOrgInfo();
-            if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
-              final orgInfo = orgInfoRes.data!;
-              App.app.chatServerM.properties = ChatServerProperties(
-                  serverName: orgInfo.name,
-                  description: orgInfo.description ?? "");
-
-              final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
-              final logoRes = await resourceApi.getOrgLogo();
-              if (logoRes.statusCode == 200 && logoRes.data != null) {
-                App.app.chatServerM.logo = logoRes.data!;
-              }
-
-              App.app.chatServerM.updatedAt =
-                  DateTime.now().millisecondsSinceEpoch;
-              await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
-
-              // await _updateMaxMid();
-            }
-          } catch (e) {
-            App.logger.severe(e);
-          }
         }
       }
     }
@@ -116,21 +86,7 @@ Future<void> main() async {
       .then((value) {
     runApp(VoceChatApp(defaultHome: _defaultHome));
   });
-  // runApp(VoceChatApp(defaultHome: _defaultHome));
 }
-
-/// This function is only for fixing potential difference in maxMid between
-/// old (calculated from chatMsgDao) and the new (saved separately),
-/// to reduce message duplication.
-// Future<void> _updateMaxMid() async {
-//   final oldMaxMid = await ChatMsgDao().getMaxMid();
-//   if (oldMaxMid > -1) {
-//     final userId = await StatusMDao.dao.getStatus();
-//     if (userId != null) {
-//       await UserDbMDao.dao.updateMaxMid(userId.userDbId, oldMaxMid);
-//     }
-//   }
-// }
 
 Future<void> _setUpFirebaseNotification() async {
   await Firebase.initializeApp(
@@ -423,7 +379,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   Future<bool> _validateMagicToken(String url, String magicToken) async {
     try {
-      final res = await UserApi(url).checkMagicToken(magicToken);
+      final res = await UserApi(serverUrl: url).checkMagicToken(magicToken);
       return (res.statusCode == 200 && res.data == true);
     } catch (e) {
       App.logger.severe(e);
@@ -536,8 +492,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
       if (userDb != null) {
         if (App.app.authService != null) {
-          if (await App.app.authService!.renewAuthToken() &&
-              Sse.sse.isClosed()) {
+          if (await SharedFuncs.renewAuthToken()) {
             App.app.chatService.initSse();
           } else {
             Sse.sse.close();

@@ -14,8 +14,9 @@ import 'package:vocechat_client/app_consts.dart';
 class UserApi {
   late final String _baseUrl;
 
-  UserApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/user";
+  UserApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/user";
   }
 
   Future<Response> updateUserInfo(
@@ -38,7 +39,7 @@ class UserApi {
       req.addAll({"password": password});
     }
 
-    final dio = DioUtil.token(baseUrl: _baseUrl, withRetry: false);
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
     dio.options.validateStatus = (status) {
       return status! == 200 || status == 409;
     };

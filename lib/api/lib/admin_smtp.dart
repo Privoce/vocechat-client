@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/admin/smtp/smtp.dart';
+import 'package:vocechat_client/app.dart';
 
 class AdminSmtpApi {
   late final String _baseUrl;
 
-  AdminSmtpApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/admin/smtp";
+  AdminSmtpApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/admin/smtp";
   }
 
   Future<Response> postSmtpConfigs(AdminSmtp req) async {

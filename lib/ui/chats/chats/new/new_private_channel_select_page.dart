@@ -141,8 +141,7 @@ class _NewPrivateChannelSelectPageState
           isPublic: false,
           members: members);
 
-      final serverVersionRes =
-          await AdminSystemApi(App.app.chatServerM.fullUrl).getServerVersion();
+      final serverVersionRes = await AdminSystemApi().getServerVersion();
       if (serverVersionRes.statusCode == 200) {
         final serverVersion = serverVersionRes.data!;
 
@@ -160,7 +159,7 @@ class _NewPrivateChannelSelectPageState
   }
 
   Future<int?> createGroupBfe033(GroupCreateRequest req) async {
-    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final groupApi = GroupApi();
     final res = await groupApi.createBfe033(req);
     if (res.statusCode == 200 && res.data != null) {
       return res.data!;
@@ -169,7 +168,7 @@ class _NewPrivateChannelSelectPageState
   }
 
   Future<GroupCreateResponse?> createGroupAft033(GroupCreateRequest req) async {
-    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final groupApi = GroupApi();
     final res = await groupApi.createAft033(req);
     if (res.statusCode == 200 && res.data != null) {
       return res.data!;

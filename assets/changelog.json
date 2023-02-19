@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.69", "build_num": 39},
+    "latest": {"version": "0.2.70", "build_num": 40},
     "logs":  [
+        {"time": 1676622693329, "version": "0.2.70", "build_num": 40, "updates": [
+            "- refactor: connection issues."     
+        ]},
         {"time": 1675495401212, "version": "0.2.69", "build_num": 39, "updates": [
             "- fix: multiple bug fixes and performance improvement.",
             "- add: Push notification re-register page."         

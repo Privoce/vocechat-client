@@ -32,7 +32,7 @@ class SavedItemPage extends StatefulWidget {
 }
 
 class _SavedItemPageState extends State<SavedItemPage> {
-  final SavedApi _savedApi = SavedApi(App.app.chatServerM.fullUrl);
+  final SavedApi _savedApi = SavedApi();
 
   List<SavedM> savedList = [];
   ValueNotifier<bool> isLoading = ValueNotifier(false);

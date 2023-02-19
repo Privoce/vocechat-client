@@ -173,8 +173,8 @@ class InvitationLinkPastePage extends StatelessWidget {
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
       }
-      final apiPath = uri.scheme + "://" + host;
-      final userApi = UserApi(apiPath);
+      final apiPath = "${uri.scheme}://$host";
+      final userApi = UserApi(serverUrl: apiPath);
       final magicToken = uri.queryParameters["magic_token"] as String;
 
       final res = await userApi.checkMagicToken(magicToken);

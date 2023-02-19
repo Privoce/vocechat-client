@@ -128,7 +128,7 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
 
     final req = GroupUpdateRequest(owner: _selectNotifier.value.first);
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.updateGroup(widget.groupInfoM.gid, req);
       if (res.statusCode == 200) {
         // success

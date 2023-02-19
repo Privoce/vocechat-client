@@ -45,11 +45,8 @@ class RetryInterceptor extends Interceptor {
             Response(requestOptions: err.requestOptions, statusCode: 599));
       }
     } else {
-      App.logger.severe(err);
-      return handler.resolve(
-          Response(requestOptions: err.requestOptions, statusCode: 599));
+      App.logger.severe("won't retry; $err");
+      return handler.next(err);
     }
-
-    // return super.onError(err, handler);
   }
 }

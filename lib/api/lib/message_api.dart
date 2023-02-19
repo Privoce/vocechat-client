@@ -1,9 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:dio/dio.dart';
-import 'package:vocechat_client/api/lib/dio_retry/options.dart';
-import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -11,8 +8,9 @@ import 'package:vocechat_client/app_consts.dart';
 class MessageApi {
   late final String _baseUrl;
 
-  MessageApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/message";
+  MessageApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/message";
   }
 
   Future<Response> edit(int mid, String msgStr) async {

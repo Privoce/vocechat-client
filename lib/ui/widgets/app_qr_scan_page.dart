@@ -83,12 +83,12 @@ class AppQrScanPage extends StatelessWidget {
   Future<bool> _validateLink(String link, BuildContext context) async {
     try {
       Uri uri = Uri.parse(link);
-      String host = uri.host + (uri.hasPort ? ":" + uri.port.toString() : "");
+      String host = uri.host + (uri.hasPort ? ":${uri.port}" : "");
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
       }
-      final apiPath = uri.scheme + "://" + host;
-      final userApi = UserApi(apiPath);
+      final apiPath = "${uri.scheme}://$host";
+      final userApi = UserApi(serverUrl: apiPath);
       final magicToken = uri.queryParameters["magic_token"] as String;
 
       final res = await userApi.checkMagicToken(magicToken);

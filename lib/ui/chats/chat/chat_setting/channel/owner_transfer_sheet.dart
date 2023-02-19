@@ -3,15 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/models/group/group_update_request.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -136,7 +133,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
 
     final req = GroupUpdateRequest(owner: _selectNotifier.value.first);
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.updateGroup(widget.groupInfoM.gid, req);
       if (res.statusCode == 200) {
         // success
@@ -150,11 +147,11 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
 
   Future<bool> _leave() async {
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.leaveGroup(widget.groupInfoM.gid);
       if (res.statusCode == 200) {
-        await FileHandler.singleton
-            .deleteChatDirectory(getChatId(gid: widget.groupInfoM.gid)!);
+        await FileHandler.singleton.deleteChatDirectory(
+            SharedFuncs.getChatId(gid: widget.groupInfoM.gid)!);
         return true;
       }
     } catch (e) {

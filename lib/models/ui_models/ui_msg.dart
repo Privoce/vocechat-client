@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 class UiMsg {
   ChatMsgM chatMsgM;
@@ -33,7 +34,7 @@ class UiMsg {
     status.value =
         SendTaskQueue.singleton.isWaitingOrExecuting(chatMsgM.localMid)
             ? MsgSendStatus.sending
-            : getMsgSendStatus(chatMsgM.status);
+            : SharedFuncs.getMsgSendStatus(chatMsgM.status);
 
     // Set auto deletion.
   }

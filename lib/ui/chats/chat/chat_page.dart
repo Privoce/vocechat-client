@@ -11,19 +11,20 @@ import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/message_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
-import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
+import 'package:vocechat_client/services/sse/sse_event_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
 import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -329,8 +330,7 @@ class _ChatPageState extends State<ChatPage>
     );
   }
 
-  Future<void> _onMsg(
-      ChatMsgM chatMsgM, String localMid, dynamic data, bool afterReady,
+  Future<void> _onMsg(ChatMsgM chatMsgM, String localMid, dynamic data,
       {bool frontInsert = true}) async {
     // Check if the message is an auto-deletion one and is out-of-date
     // print(
@@ -582,12 +582,12 @@ class _ChatPageState extends State<ChatPage>
 
     _uiMsgList.sort((a, b) => b.chatMsgM.mid.compareTo(a.chatMsgM.mid));
 
-    if (mounted && afterReady) {
+    if (mounted) {
       setState(() {});
     }
   }
 
-  Future<void> _onReaction(ReactionTypes type, int mid, bool afterReady,
+  Future<void> _onReaction(ReactionTypes type, int mid,
       [ChatMsgM? chatMsgM]) async {
     switch (type) {
       case ReactionTypes.edit:
@@ -630,13 +630,12 @@ class _ChatPageState extends State<ChatPage>
       default:
     }
 
-    if (mounted && afterReady) {
+    if (mounted) {
       setState(() {});
     }
   }
 
-  Future<void> _onUser(
-      UserInfoM m, EventActions action, bool afterReady) async {
+  Future<void> _onUser(UserInfoM m, EventActions action) async {
     if (_userInfoMMap.containsKey(m.uid)) {
       _userInfoMMap[m.uid] = m;
     }
@@ -652,14 +651,13 @@ class _ChatPageState extends State<ChatPage>
     return;
   }
 
-  Future<void> _onGroup(
-      GroupInfoM m, EventActions action, bool afterReady) async {
+  Future<void> _onGroup(GroupInfoM m, EventActions action) async {
     if (widget.groupInfoNotifier?.value.gid == m.gid) {
       switch (action) {
         case EventActions.update:
           widget.groupInfoNotifier!.value = m;
 
-          if (mounted && afterReady) {
+          if (mounted) {
             setState(() {});
           }
 
@@ -732,7 +730,7 @@ class _ChatPageState extends State<ChatPage>
     String content =
         chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
     if (chatMsgM.detailType == MsgContentType.text) {
-      content = await parseMention(content);
+      content = await SharedFuncs.parseMention(content);
     }
 
     if (content.isNotEmpty) Clipboard.setData(ClipboardData(text: content));
@@ -745,7 +743,7 @@ class _ChatPageState extends State<ChatPage>
     final mid = chatMsgM.mid;
 
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       await groupApi.pin(gid, mid, toPin);
     } catch (e) {
       App.logger.severe(e);
@@ -758,7 +756,7 @@ class _ChatPageState extends State<ChatPage>
     List<int> midList = [];
     midList.add(chatMsgM.mid);
     try {
-      final savedApi = SavedApi(App.app.chatServerM.fullUrl);
+      final savedApi = SavedApi();
       await savedApi.createSaved(midList);
       // Navigator.of(context).pop();
     } catch (e) {
@@ -877,7 +875,7 @@ class _ChatPageState extends State<ChatPage>
     }
     try {
       for (var mid in midList) {
-        final savedApi = SavedApi(App.app.chatServerM.fullUrl);
+        final savedApi = SavedApi();
         savedApi.createSaved([mid]);
       }
     } catch (e) {
@@ -923,7 +921,7 @@ class _ChatPageState extends State<ChatPage>
     }
 
     try {
-      final messageApi = MessageApi(App.app.chatServerM.fullUrl);
+      final messageApi = MessageApi();
       await messageApi.react(old.mid, reaction);
     } catch (e) {
       App.logger.severe(e);
@@ -983,7 +981,7 @@ class _ChatPageState extends State<ChatPage>
 
       await FileHandler.singleton.deleteWithChatMsgM(old);
 
-      final messageApi = MessageApi(App.app.chatServerM.fullUrl);
+      final messageApi = MessageApi();
 
       await messageApi.delete(old.mid);
     } catch (e) {
@@ -1249,7 +1247,7 @@ class _ChatPageState extends State<ChatPage>
     Widget icon;
 
     final localMid = uiMsg.chatMsgM.localMid;
-    final msgStatus = getMsgSendStatus(uiMsg.chatMsgM.status);
+    final msgStatus = SharedFuncs.getMsgSendStatus(uiMsg.chatMsgM.status);
 
     // [SendService.isWaitingOrExecuting] is not super accurate:
     // Sometimes the message finishes sending, but the task is still in queue
@@ -1310,10 +1308,11 @@ class _ChatPageState extends State<ChatPage>
                           chatMsgM.msgReply?.content ??
                           "";
 
-                      switch (getSendType(chatMsgM)) {
+                      switch (SharedFuncs.getSendType(chatMsgM)) {
                         case SendType.normal:
                         case SendType.cancel:
-                          _send(content, getSendType(chatMsgM), localMid);
+                          _send(content, SharedFuncs.getSendType(chatMsgM),
+                              localMid);
 
                           break;
                         case SendType.file:
@@ -1436,13 +1435,12 @@ class _ChatPageState extends State<ChatPage>
                 final thumbFile = await FileHandler.singleton.getImageThumb(m);
 
                 if (thumbFile != null) {
-                  await _onMsg(m, m.localMid, thumbFile, false,
-                      frontInsert: false);
+                  await _onMsg(m, m.localMid, thumbFile, frontInsert: false);
                 } else {
-                  await _onMsg(m, m.localMid, null, false, frontInsert: false);
+                  await _onMsg(m, m.localMid, null, frontInsert: false);
                 }
               } else {
-                await _onMsg(m, m.localMid, null, false, frontInsert: false);
+                await _onMsg(m, m.localMid, null, frontInsert: false);
                 break;
               }
               break;
@@ -1451,10 +1449,10 @@ class _ChatPageState extends State<ChatPage>
               final archiveM = await ArchiveDao().getArchive(archiveId);
 
               if (archiveM != null) {
-                await _onMsg(m, m.localMid, archiveM.archive, false,
+                await _onMsg(m, m.localMid, archiveM.archive,
                     frontInsert: false);
               } else {
-                await _onMsg(m, m.localMid, null, false, frontInsert: false);
+                await _onMsg(m, m.localMid, null, frontInsert: false);
                 App.logger.severe("archive missing. Id: $archiveId");
               }
 
@@ -1464,7 +1462,7 @@ class _ChatPageState extends State<ChatPage>
           }
           break;
         case MsgDetailType.reply:
-          await _onMsg(m, m.localMid, null, false, frontInsert: false);
+          await _onMsg(m, m.localMid, null, frontInsert: false);
           break;
         default:
       }
@@ -1507,7 +1505,7 @@ class _ChatPageState extends State<ChatPage>
 
     final minMid = await ChatMsgDao().getMinMidInChannel(gid);
 
-    final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+    final groupApi = GroupApi();
     final res = await groupApi.getHistory(gid, minMid);
 
     if (res.statusCode != 200 || res.data == null) return;
