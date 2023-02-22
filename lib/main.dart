@@ -39,37 +39,34 @@ final navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Disables https self-signed certificates for easier dev. To be solved.
-  // HttpOverrides.global = DevHttpOverrides();
-
   await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);
 
   await initDb();
 
-  Widget _defaultHome = ChatsMainPage();
+  Widget defaultHome = ChatsMainPage();
 
   // Handling login status
   final status = await StatusMDao.dao.getStatus();
   if (status == null) {
-    _defaultHome = ServerPage();
+    defaultHome = ServerPage();
   } else {
     final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
     if (userDb == null) {
-      _defaultHome = ServerPage();
+      defaultHome = ServerPage();
     } else {
       App.app.userDb = userDb;
       await initCurrentDb(App.app.userDb!.dbName);
 
       if (userDb.loggedIn != 1) {
         Sse.sse.close();
-        _defaultHome = ServerPage();
+        defaultHome = ServerPage();
       } else {
         final chatServerM =
             await ChatServerDao.dao.getServerById(userDb.chatServerId);
         if (chatServerM == null) {
-          _defaultHome = ServerPage();
+          defaultHome = ServerPage();
         } else {
           App.app.chatServerM = chatServerM;
 
@@ -84,7 +81,7 @@ Future<void> main() async {
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((value) {
-    runApp(VoceChatApp(defaultHome: _defaultHome));
+    runApp(VoceChatApp(defaultHome: defaultHome));
   });
 }
 
