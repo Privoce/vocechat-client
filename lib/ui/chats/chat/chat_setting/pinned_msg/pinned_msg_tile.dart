@@ -75,7 +75,8 @@ class PinnedMsgTile extends StatelessWidget {
                     getFile: FileHandler.singleton.getArchiveFile);
               } else {
                 return TextBubble(
-                    content: "Unsupported Message Type.", hasMention: false);
+                    content: "Archive message might have been deleted.",
+                    hasMention: false);
               }
             });
 

@@ -1,8 +1,8 @@
 {   
-    "latest": {"version": "0.2.70", "build_num": 40},
+    "latest": {"version": "0.2.71", "build_num": 41},
     "logs":  [
-        {"time": 1676622693329, "version": "0.2.70", "build_num": 40, "updates": [
-            "- refactor: connection issues."     
+        {"time": 1676942578905, "version": "0.2.71", "build_num": 41, "updates": [
+            "- fix: network issue on previous versions."
         ]},
         {"time": 1675495401212, "version": "0.2.69", "build_num": 39, "updates": [
             "- fix: multiple bug fixes and performance improvement.",

@@ -538,10 +538,8 @@ class _ChatsPageState extends State<ChatsPage>
                 chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
             break;
           case MsgContentType.markdown:
-            snippet = "[Markdown]" +
-                (chatMsgM.msgNormal?.content ??
-                    chatMsgM.msgReply?.content ??
-                    "");
+            snippet =
+                "[Markdown]${chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? ""}";
 
             break;
           case MsgContentType.file:
@@ -578,10 +576,8 @@ class _ChatsPageState extends State<ChatsPage>
                 chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
             break;
           case MsgContentType.markdown:
-            snippet = "[Markdown]" +
-                (chatMsgM.msgNormal?.content ??
-                    chatMsgM.msgReply?.content ??
-                    "");
+            snippet =
+                "[Markdown]${chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? ""}";
 
             break;
           default:
