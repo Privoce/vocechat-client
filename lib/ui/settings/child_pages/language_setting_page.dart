@@ -112,8 +112,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
     _isUpdatingLanguage.value = true;
 
     try {
-      await UserApi(App.app.chatServerM.fullUrl)
-          .updateUserInfo(language: locale.toLanguageTag());
+      await UserApi().updateUserInfo(language: locale.toLanguageTag());
 
       await UserInfoDao()
           .updateLanguage(App.app.userDb!.uid, locale.toLanguageTag());

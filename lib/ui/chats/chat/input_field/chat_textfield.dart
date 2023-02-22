@@ -7,9 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/send_service.dart';
@@ -402,7 +403,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
         case typeText:
         case typeMarkdown:
           return FutureBuilder<String>(
-              future: parseMention(
+              future: SharedFuncs.parseMention(
                   json.decode(widget.repliedMsgM!.detail)["content"]),
               builder: (context, snapshot) {
                 return _buildReplyWithLeading(snapshot.data ?? "", null);
@@ -421,7 +422,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
 
         default:
           return FutureBuilder<String>(
-              future: parseMention(
+              future: SharedFuncs.parseMention(
                   json.decode(widget.repliedMsgM!.detail)["content"]),
               builder: (context, snapshot) {
                 return _buildReplyWithLeading(snapshot.data ?? "", null);

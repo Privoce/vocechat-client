@@ -8,7 +8,7 @@ import 'package:vocechat_client/api/models/admin/fcm/fcm.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -153,7 +153,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
     }
 
     try {
-      final adminFirebaseApi = AdminFirebaseApi(App.app.chatServerM.fullUrl);
+      final adminFirebaseApi = AdminFirebaseApi();
       final res = await adminFirebaseApi.postFcmConfigs(req);
       if (res.statusCode == 200) {
         App.logger.info("FCM Config successful.");
@@ -169,7 +169,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
     setState(() {
       _loading = true;
     });
-    final adminFirebaseApi = AdminFirebaseApi(App.app.chatServerM.fullUrl);
+    final adminFirebaseApi = AdminFirebaseApi();
     final res = await adminFirebaseApi.getFcmConfigs();
     if (res.statusCode == 200 && res.data != null) {
       final fcmConfigs = res.data!;

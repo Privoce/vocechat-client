@@ -2,8 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:vocechat_client/api/lib/dio_retry/options.dart';
-import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/api/models/saved/saved_response.dart';
@@ -12,17 +10,18 @@ import 'package:vocechat_client/app.dart';
 class SavedApi {
   late final String _baseUrl;
 
-  SavedApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/favorite";
+  SavedApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/favorite";
   }
 
   Future<Response<SavedResponse>> createSaved(List<int> midList) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     dio.options.headers["content-type"] = "application/json";
 
-    dio.options.validateStatus = (status) {
-      return [200, 429].contains(status);
-    };
+    // dio.options.validateStatus = (status) {
+    //   return [200, 429].contains(status);
+    // };
 
     final res = await dio.post("", data: json.encode({"mid_list": midList}));
 

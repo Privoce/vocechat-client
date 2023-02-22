@@ -1,5 +1,6 @@
 library globals;
 
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 
 // To use globals, import package as follow:
@@ -16,3 +17,5 @@ final ValueNotifier<int> unreadCountSum = ValueNotifier(0);
 /// When switched from true to false, database needs to be refreshed. All
 /// private channels need be deleted due to safety concerns.
 bool enablePublicChannels = true;
+
+EventBus eventBus = EventBus();

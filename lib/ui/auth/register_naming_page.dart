@@ -9,7 +9,7 @@ import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/user/register_request.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/auth_service.dart';
@@ -267,7 +267,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       App.app.statusService = StatusService();
       App.app.authService = AuthService(chatServerM: widget.chatServer);
 
-      UserApi userApi = UserApi(widget.chatServer.fullUrl);
+      UserApi userApi = UserApi(serverUrl: widget.chatServer.fullUrl);
       final res = await userApi.register(widget.req);
       if (res.statusCode == 200 && res.data != null) {
         final registerResponse = res.data!;

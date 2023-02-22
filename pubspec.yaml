@@ -15,6 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+
 version: 0.2.71+41
 
 environment:
@@ -57,7 +58,7 @@ dependencies:
   firebase_messaging: ^14.2.1
   firebase_core_platform_interface: ^4.5.2
   image_gallery_saver: ^1.7.1
-  connectivity_plus: ^3.0.2
+  connectivity_plus: ^3.0.3
   flutter_svg: ^1.0.3
   flutter_markdown: ^0.6.13+1
   url_launcher: ^6.0.20
@@ -84,6 +85,7 @@ dependencies:
   qr_flutter: ^4.0.0
   mobile_scanner: ^2.1.0
   async: ^2.9.0
+  shared_preferences: ^2.0.17
 
   # voce_image_viewer:
   #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/

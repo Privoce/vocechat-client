@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/admin/fcm/fcm.dart';
+import 'package:vocechat_client/app.dart';
 
 class AdminFirebaseApi {
   late final String _baseUrl;
 
-  AdminFirebaseApi(String serverUrl) {
-    _baseUrl = serverUrl + "/api/admin/fcm";
+  AdminFirebaseApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/admin/fcm";
   }
 
   Future<Response> postFcmConfigs(AdminFcm req) async {

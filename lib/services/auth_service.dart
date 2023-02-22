@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -16,17 +15,15 @@ import 'package:vocechat_client/api/lib/token_api.dart';
 import 'package:vocechat_client/api/models/token/credential.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
-import 'package:vocechat_client/api/models/token/token_renew_request.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
-import 'package:vocechat_client/services/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -36,7 +33,7 @@ class AuthService {
 
   factory AuthService({required ChatServerM chatServerM}) {
     _service.chatServerM = chatServerM;
-    _service.adminSystemApi = AdminSystemApi(chatServerM.fullUrl);
+    _service.adminSystemApi = AdminSystemApi(serverUrl: chatServerM.fullUrl);
 
     App.app.chatServerM = chatServerM;
 
@@ -55,93 +52,48 @@ class AuthService {
   Timer? _fcmTimer;
   int _fcmExpiresIn = 0;
 
-  Timer? _timer;
+  // Timer? _timer;
   static const threshold = 60; // Refresh tokens if remaining time < 60.
 
   int _expiredIn = 0;
 
-  void _setTimer(int expiredIn) {
-    if (_timer != null) {
-      _timer!.cancel();
-    }
-    // Check if token needs refreshing every 10 seconds.
-    const interval = 10;
+  // void _setTimer(int expiredIn) {
+  //   if (_timer != null) {
+  //     _timer!.cancel();
+  //   }
+  //   // Check if token needs refreshing every 10 seconds.
+  //   const interval = 10;
 
-    _expiredIn = expiredIn;
+  //   _expiredIn = expiredIn;
 
-    _timer = Timer.periodic(Duration(seconds: interval), (_timer) async {
-      // App.logger.config("Current token expires in $_expiredIn seconds");
+  //   _timer = Timer.periodic(Duration(seconds: interval), (_timer) async {
+  //     // App.logger.config("Current token expires in $_expiredIn seconds");
 
-      if (_expiredIn < 0) {
-        // token expires.
-        _timer.cancel();
-      }
-      if (_expiredIn <= threshold && _expiredIn >= threshold - 5) {
-        if (await renewAuthToken()) {
-          if (Sse.sse.isClosed()) {
-            Sse.sse.connect();
-          }
-        }
-      }
-      _expiredIn -= interval;
-    });
-  }
+  //     if (_expiredIn < 0) {
+  //       // token expires.
+  //       _timer.cancel();
+  //     }
+  //     if (_expiredIn <= threshold && _expiredIn >= threshold - 5) {
+  //       if (await SharedFuncs.renewAuthToken()) {
+  //         if (Sse.sse.isClosed()) {
+  //           Sse.sse.connect();
+  //         }
+  //       }
+  //     }
+  //     _expiredIn -= interval;
+  //   });
+  // }
 
   void dispose() {
-    disableAuthTimer();
+    // disableAuthTimer();
   }
 
-  void disableAuthTimer() {
-    _timer!.cancel();
-  }
+  // void disableAuthTimer() {
+  //   _timer!.cancel();
+  // }
 
-  void disableFcmTImer() {
+  void disableFcmTimer() {
     _fcmTimer?.cancel();
-  }
-
-  Future<bool> renewAuthToken() async {
-    App.app.statusService.fireTokenLoading(TokenStatus.connecting);
-    try {
-      if (App.app.userDb == null) {
-        App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
-        return false;
-      }
-      final req = TokenRenewRequest(
-          App.app.userDb!.token, App.app.userDb!.refreshToken);
-
-      final _tokenApi = TokenApi(chatServerM.fullUrl);
-      final res = await _tokenApi.tokenRenewPost(req);
-
-      if (res.statusCode == 200 && res.data != null) {
-        _resetRetryInterval();
-
-        App.logger.config("Token Refreshed.");
-        final data = res.data!;
-        final token = data.token;
-        final refreshToken = data.refreshToken;
-        final expiredIn = data.expiredIn;
-
-        _setTimer(expiredIn);
-        await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
-
-        return true;
-      } else {
-        if (res.statusCode == 401 || res.statusCode == 403) {
-          App.logger
-              .severe("Renew Token Failed, Status code: ${res.statusCode}");
-          _increaseRetryInterval();
-          App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
-          return false;
-        }
-      }
-      App.logger.severe("Renew Token Failed, Status code: ${res.statusCode}");
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    _increaseRetryInterval();
-    App.app.statusService.fireTokenLoading(TokenStatus.disconnected);
-    return false;
   }
 
   /// Increase retry interval index by 1,
@@ -159,20 +111,6 @@ class AuthService {
   /// Resets retry interval index to 0, which 2 seconds.
   void _resetRetryInterval() {
     retryIndex = 0;
-  }
-
-  Future<void> _renewAuthDataInUserDb(
-      String token, String refreshToken, int expiredIn) async {
-    final status = await StatusMDao.dao.getStatus();
-    if (status == null) {
-      App.logger.severe("Empty UserDbId in Status Db");
-      return;
-    }
-
-    final newUserDbM = await UserDbMDao.dao
-        .updateAuth(status.userDbId, token, refreshToken, expiredIn);
-    App.app.userDb = newUserDbM;
-    App.app.statusService.fireTokenLoading(TokenStatus.successful);
   }
 
   Future<bool> tryReLogin() async {
@@ -264,10 +202,10 @@ class AuthService {
       [bool isReLogin = false]) async {
     String errorContent = "";
     try {
-      final _tokenApi = TokenApi(chatServerM.fullUrl);
+      final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
 
       final req = await _preparePswdLoginRequest(email, pswd);
-      final res = await _tokenApi.tokenLoginPost(req);
+      final res = await tokenApi.tokenLoginPost(req);
 
       if (res.statusCode != 200) {
         switch (res.statusCode) {
@@ -358,9 +296,7 @@ class AuthService {
 
       final avatarBytes = userInfo.avatarUpdatedAt == 0
           ? Uint8List(0)
-          : (await ResourceApi(App.app.chatServerM.fullUrl)
-                      .getUserAvatar(userInfo.uid))
-                  .data ??
+          : (await ResourceApi().getUserAvatar(userInfo.uid)).data ??
               Uint8List(0);
 
       final chatServerId = App.app.chatServerM.id;
@@ -409,7 +345,7 @@ class AuthService {
       App.app.userDb = newUserDb;
       StatusM statusM = StatusM.item(newUserDb.id);
       await StatusMDao.dao.replace(statusM);
-      _setTimer(expiredIn);
+      // _setTimer(expiredIn);
 
       await initCurrentDb(dbName);
 
@@ -467,8 +403,8 @@ class AuthService {
         await closeUserDb();
       }
 
-      final _tokenApi = TokenApi(chatServerM.fullUrl);
-      final res = await _tokenApi.getLogout();
+      final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
+      final res = await tokenApi.getLogout();
 
       if (res.statusCode == 200) {
         return true;

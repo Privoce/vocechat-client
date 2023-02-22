@@ -6,9 +6,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:path/path.dart' as p;
+import 'package:vocechat_client/shared_funcs.dart';
 
 enum FileType { file, image, thumb, videoThumb }
 
@@ -274,7 +275,8 @@ class FileHandler {
       return true;
     }
 
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return false;
@@ -293,7 +295,8 @@ class FileHandler {
   }
 
   Future<bool> deleteThumbWithChatMsgM(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return false;
@@ -305,7 +308,8 @@ class FileHandler {
   }
 
   Future<bool> deleteImageWithChatMsgM(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return false;
@@ -317,7 +321,8 @@ class FileHandler {
   }
 
   Future<bool> deleteFileWithChatMsgM(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return false;
@@ -370,7 +375,8 @@ class FileHandler {
 
   /// Retrieve thumb file from local document storage.
   Future<File?> getLocalImageThumb(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -431,7 +437,8 @@ class FileHandler {
   ///
   /// Original file name can be retrieved from corresponding chat message.
   Future<File?> getImageThumb(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -448,7 +455,7 @@ class FileHandler {
     }
 
     // try server.
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
 
     try {
       final res = await resourceApi.getFile(filePath, true, true);
@@ -463,7 +470,8 @@ class FileHandler {
 
   Future<File?> getServerImageThumb(ChatMsgM chatMsgM,
       {void Function(int progress, int total)? onReceiveProgress}) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -474,7 +482,7 @@ class FileHandler {
     String fileName = chatMsgM.msgNormal?.properties?["name"];
 
     // try server.
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
 
     try {
       final res =
@@ -490,7 +498,8 @@ class FileHandler {
 
   /// Retrieve original image file from local document storage.
   Future<File?> getLocalImageNormal(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -506,7 +515,8 @@ class FileHandler {
   ///
   /// Original file name can be retrieved from corresponding chat message.
   Future<File?> getImageNormal(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -516,7 +526,7 @@ class FileHandler {
     String localMid = chatMsgM.localMid;
     String fileName = chatMsgM.msgNormal?.properties?["name"];
 
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     if (await imageNormalExists(chatId, localMid, fileName)) {
       final file = await readImageNormal(chatId, localMid, fileName);
       return file;
@@ -535,7 +545,8 @@ class FileHandler {
 
   Future<File?> getServerImageNormal(ChatMsgM chatMsgM,
       {void Function(int progress, int total)? onReceiveProgress}) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -546,7 +557,7 @@ class FileHandler {
     String fileName = chatMsgM.msgNormal?.properties?["name"];
 
     // try server.
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     try {
       final res =
           await resourceApi.getFile(filePath, false, true, onReceiveProgress);
@@ -618,7 +629,8 @@ class FileHandler {
 
   /// Retrieve original image file from local document storage.
   Future<File?> getLocalFile(ChatMsgM chatMsgM) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -635,7 +647,8 @@ class FileHandler {
   /// Original file name can be retrieved from corresponding chat message.
   Future<File?> getFile(
       ChatMsgM chatMsgM, Function(int, int) onProgress) async {
-    final chatId = getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
       App.logger.warning("Chat not found, mid: ${chatMsgM.mid}");
       return null;
@@ -650,7 +663,7 @@ class FileHandler {
       return file;
     }
 
-    ResourceApi resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    ResourceApi resourceApi = ResourceApi();
     try {
       final res = await resourceApi.getFile(filePath, false, true, onProgress);
       if (res.statusCode == 200 && res.data != null) {
@@ -683,7 +696,7 @@ class FileHandler {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getArchiveAttachment(
           archiveId, attachmentId, true, onProgress);
       if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
@@ -716,7 +729,7 @@ class FileHandler {
     }
 
     try {
-      final savedItemsApi = SavedApi(App.app.chatServerM.fullUrl);
+      final savedItemsApi = SavedApi();
       final res = await savedItemsApi.getSavedAttachment(
           uid, archiveId, attachmentId, true, onProgress);
       if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {

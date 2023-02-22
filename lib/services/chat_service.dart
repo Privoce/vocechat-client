@@ -13,8 +13,11 @@ import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/services/sse/sse.dart';
+import 'package:vocechat_client/services/sse/sse_queue.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -24,30 +27,30 @@ import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
-import 'package:vocechat_client/services/sse.dart';
-import 'package:vocechat_client/services/sse_event/sse_event_consts.dart';
-import 'package:vocechat_client/services/sse_queue.dart';
+import 'package:vocechat_client/services/sse/sse_event_consts.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
 import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../dao/org_dao/chat_server.dart';
+
 enum EventActions { create, delete, update }
 
 enum ReactionTypes { edit, like, delete }
 
 typedef UsersAware = Future<void> Function(
-    UserInfoM userInfoM, EventActions action, bool ready);
+    UserInfoM userInfoM, EventActions action);
 typedef GroupAware = Future<void> Function(
-    GroupInfoM groupInfoM, EventActions action, bool ready);
+    GroupInfoM groupInfoM, EventActions action);
 typedef MsgAware = Future<void> Function(
-    ChatMsgM chatMsgM, String localMid, dynamic data, bool ready);
-typedef ReactionAware = Future<void>
-    Function(ReactionTypes reaction, int mid, bool ready, [ChatMsgM? content]);
-typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM, bool ready);
-typedef UserStatusAware = Future<void> Function(
-    int uid, bool isOnline, bool ready);
+    ChatMsgM chatMsgM, String localMid, dynamic data);
+typedef ReactionAware = Future<void> Function(ReactionTypes reaction, int mid,
+    [ChatMsgM? content]);
+typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM);
+typedef UserStatusAware = Future<void> Function(int uid, bool isOnline);
+typedef OrgInfoAware = Future<void> Function(ChatServerM chatServerM);
 
 class ChatService {
   ChatService() {
@@ -66,8 +69,6 @@ class ChatService {
     sseQueue.clear();
     readIndexTimer.cancel();
     Sse.sse.close();
-
-    _afterReady = false;
   }
 
   final Set<UsersAware> _userListeners = {};
@@ -77,6 +78,7 @@ class ChatService {
   final Set<VoidCallback> _readyListeners = {};
   final Set<SnippetAware> _snippetListeners = {};
   final Set<UserStatusAware> _userStatusListeners = {};
+  final Set<OrgInfoAware> _orgInfoListeners = {};
 
   late SseQueue sseQueue;
   late TaskQueue taskQueue;
@@ -85,13 +87,7 @@ class ChatService {
   /// Used to avoid duplicated messages.
   final Set<int> midSet = {};
 
-  /// Whether SSE has received 'ready' message.
-  ///
-  /// 'Ready' message means backend has pushed all accumulated messages.
-  bool _afterReady = false;
-
   void initSse() async {
-    _afterReady = false;
     Sse.sse.close();
     App.app.statusService.fireSseLoading(SseStatus.connecting);
 
@@ -160,12 +156,12 @@ class ChatService {
 
       if (readIndexMap.isNotEmpty) {
         App.logger.info(readIndexMap);
-        final userApi = UserApi(App.app.chatServerM.fullUrl);
+        final userApi = UserApi();
         final res = await userApi.updateReadIndex(json.encode(readIndexMap));
-        if (res.statusCode == 200) {
-          readIndexUser.clear();
-          readIndexGroup.clear();
-        }
+        // if (res.statusCode == 200) {
+        readIndexUser.clear();
+        readIndexGroup.clear();
+        // }
       }
     });
   }
@@ -233,13 +229,22 @@ class ChatService {
     _userStatusListeners.remove(statusAware);
   }
 
+  void subscribeOrgInfoStatus(OrgInfoAware orgInfoAware) {
+    unsubscribeOrgInfoStatus(orgInfoAware);
+    _orgInfoListeners.add(orgInfoAware);
+  }
+
+  void unsubscribeOrgInfoStatus(OrgInfoAware orgInfoAware) {
+    _orgInfoListeners.remove(orgInfoAware);
+  }
+
   void fireUser(UserInfoM userInfoM, EventActions action) {
     if (userInfoM.uid == App.app.userDb?.uid) {
       App.app.userDb!.info = userInfoM.info;
     }
     for (UsersAware userAware in _userListeners) {
       try {
-        userAware(userInfoM, action, _afterReady);
+        userAware(userInfoM, action);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -249,7 +254,7 @@ class ChatService {
   void fireChannel(GroupInfoM groupInfoM, EventActions action) {
     for (GroupAware groupAware in _groupListeners) {
       try {
-        groupAware(groupInfoM, action, _afterReady);
+        groupAware(groupInfoM, action);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -259,7 +264,7 @@ class ChatService {
   void fireMsg(ChatMsgM chatMsgM, String localMid, dynamic data) {
     for (MsgAware msgAware in _normalMsgListeners) {
       try {
-        msgAware(chatMsgM, localMid, data, _afterReady);
+        msgAware(chatMsgM, localMid, data);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -269,7 +274,7 @@ class ChatService {
   void fireReaction(ReactionTypes reaction, int mid, [ChatMsgM? chatMsgM]) {
     for (ReactionAware reactionAware in _reactionListeners) {
       try {
-        reactionAware(reaction, mid, _afterReady, chatMsgM);
+        reactionAware(reaction, mid, chatMsgM);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -289,7 +294,7 @@ class ChatService {
   void fireSnippet(ChatMsgM chatMsgM) {
     for (SnippetAware snippetAware in _snippetListeners) {
       try {
-        snippetAware(chatMsgM, _afterReady);
+        snippetAware(chatMsgM);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -299,7 +304,17 @@ class ChatService {
   void fireUserStatus(int uid, bool isOnline) {
     for (UserStatusAware statusAware in _userStatusListeners) {
       try {
-        statusAware(uid, isOnline, _afterReady);
+        statusAware(uid, isOnline);
+      } catch (e) {
+        App.logger.severe(e);
+      }
+    }
+  }
+
+  void fireOrgInfo(ChatServerM chatServerM) {
+    for (OrgInfoAware orgInfoAware in _orgInfoListeners) {
+      try {
+        orgInfoAware(chatServerM);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -597,8 +612,6 @@ class ChatService {
   Future<void> _handleReady() async {
     App.app.statusService.fireSseLoading(SseStatus.successful);
 
-    _afterReady = true;
-
     // find DMs with draft and fire user to chats page.
     final usersWithDraft = await UserInfoDao().getUsersWithDraft();
     if (usersWithDraft == null) {
@@ -633,7 +646,7 @@ class ChatService {
       for (final localGid in localGids) {
         if (!serverGids.contains(localGid)) {
           await FileHandler.singleton
-              .deleteChatDirectory(getChatId(gid: localGid)!);
+              .deleteChatDirectory(SharedFuncs.getChatId(gid: localGid)!);
           await ChatMsgDao().deleteMsgByGid(localGid);
           await GroupInfoDao().deleteGroupByGid(localGid);
 
@@ -689,7 +702,7 @@ class ChatService {
 
   Future<void> getGroupAvatar(int gid) async {
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getGroupAvatar(gid);
       if (res != null &&
           res.statusCode == 200 &&
@@ -730,7 +743,8 @@ class ChatService {
 
       if (uids.contains(App.app.userDb!.uid)) {
         // Myself quit the channel.
-        await FileHandler.singleton.deleteChatDirectory(getChatId(gid: gid)!);
+        await FileHandler.singleton
+            .deleteChatDirectory(SharedFuncs.getChatId(gid: gid)!);
         await ChatMsgDao().deleteMsgByGid(gid);
         await GroupInfoDao().removeByGid(gid).then((value) {
           if (value != null) {
@@ -769,7 +783,7 @@ class ChatService {
             await UserDbMDao.dao.updateUserInfo(userInfo);
 
             if (userInfo.avatarUpdatedAt != 0) {
-              final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+              final resourceApi = ResourceApi();
               final avatarRes = await resourceApi.getUserAvatar(m.uid);
               if (avatarRes.statusCode == 200 && avatarRes.data != null) {
                 App.logger.info("UID ${m.uid} Avatar obtained");
@@ -804,7 +818,7 @@ class ChatService {
 
               if (newInfo.avatarUpdatedAt != 0 &&
                   update.avatarUpdatedAt != null) {
-                final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+                final resourceApi = ResourceApi();
                 final avatarRes = await resourceApi.getUserAvatar(m.uid);
                 if (avatarRes.statusCode == 200 && avatarRes.data != null) {
                   App.logger.info("UID ${m.uid} Avatar obtained.");
@@ -1160,7 +1174,7 @@ class ChatService {
           await UserDbMDao.dao.updateUserInfo(userInfo);
 
           if (userInfo.avatarUpdatedAt != 0) {
-            final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+            final resourceApi = ResourceApi();
             resourceApi.getUserAvatar(m.uid).then((avatarRes) async {
               App.logger.info("UID ${m.uid} Avatar obtained.");
               if (avatarRes.statusCode == 200 && avatarRes.data != null) {
@@ -1474,7 +1488,7 @@ class ChatService {
           element = 'http://' + element;
         }
         // try {
-        final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+        final resourceApi = ResourceApi();
         final res = await resourceApi.getOpenGraphicParse(element);
 
         if (res.statusCode == 200 && res.data != null) {
@@ -1546,7 +1560,7 @@ class ChatService {
     }
 
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       final res = await resourceApi.getArchive(archiveId);
       if (res.statusCode == 200 && res.data != null) {
         final archive = res.data!;
@@ -1568,7 +1582,7 @@ class ChatService {
       List<int> midList, List<int> uidList, List<int> gidList) async {
     String archiveId;
     try {
-      final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+      final resourceApi = ResourceApi();
       archiveId = (await resourceApi.archive(midList)).data!;
     } catch (e) {
       App.logger.severe(e);
@@ -1581,7 +1595,7 @@ class ChatService {
 
       for (final uid in uidList) {
         try {
-          final userApi = UserApi(App.app.chatServerM.fullUrl);
+          final userApi = UserApi();
           await userApi
               .sendArchiveMsg(uid, localMid, archiveId)
               .then((value) {});
@@ -1593,7 +1607,7 @@ class ChatService {
 
       for (final gid in gidList) {
         try {
-          final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+          final groupApi = GroupApi();
           await groupApi
               .sendArchiveMsg(gid, localMid, archiveId)
               .then((value) {});
@@ -1617,7 +1631,7 @@ class ChatService {
 
     for (final uid in uidList) {
       try {
-        final userApi = UserApi(App.app.chatServerM.fullUrl);
+        final userApi = UserApi();
         await userApi.sendArchiveMsg(uid, localMid, archiveId).then((value) {});
       } catch (e) {
         App.logger.severe(e);
@@ -1627,7 +1641,7 @@ class ChatService {
 
     for (final gid in gidList) {
       try {
-        final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+        final groupApi = GroupApi();
         await groupApi
             .sendArchiveMsg(gid, localMid, archiveId)
             .then((value) {});
@@ -1677,7 +1691,7 @@ class ChatService {
   }
 
   Future getOpenGraphicParse(url) async {
-    final resourceApi = ResourceApi(App.app.chatServerM.fullUrl);
+    final resourceApi = ResourceApi();
     return (await resourceApi.getOpenGraphicParse(url)).data;
   }
 }

@@ -2,9 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -96,7 +97,8 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
       footer: AppLocalizations.of(context)!.autoDeleteMessageDes,
       bannerTileList: List.generate(timeList.length, (index) {
         final time = timeList[index];
-        final title = translateAutoDeletionSettingTime(time, context);
+        final title =
+            SharedFuncs.translateAutoDeletionSettingTime(time, context);
 
         return BannerTile(
           title: title,

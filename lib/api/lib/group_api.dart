@@ -13,10 +13,10 @@ import 'package:vocechat_client/app_consts.dart';
 
 class GroupApi {
   late final String _baseUrl;
-  final String serverUrl;
 
-  GroupApi(this.serverUrl) {
-    _baseUrl = serverUrl + "/api/group";
+  GroupApi({String? serverUrl}) {
+    final url = serverUrl ?? App.app.chatServerM.fullUrl;
+    _baseUrl = "$url/api/group";
   }
 
   Future<Response<int>> createBfe033(GroupCreateRequest req) async {

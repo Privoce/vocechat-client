@@ -5,9 +5,10 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -284,7 +285,7 @@ class _SettingPageState extends State<SettingPage> {
             isDangerAction: true,
             text: AppLocalizations.of(context)!.delete,
             action: () async {
-              final api = UserApi(App.app.chatServerM.fullUrl);
+              final api = UserApi();
               final res = await api.delete();
               if (res.statusCode == 200) {
                 App.app.authService!.selfDelete().then((value) async {
@@ -342,8 +343,7 @@ class _SettingPageState extends State<SettingPage> {
     }
   }
 
-  Future<void> _onUser(
-      UserInfoM userInfoM, EventActions action, bool afterReady) async {
+  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
     if (userInfoM.uid == App.app.userDb?.uid) {
       userInfoNotifier.value = userInfoM;
 

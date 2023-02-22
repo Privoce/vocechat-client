@@ -208,7 +208,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
     _linkStatus.value = LinkStatus.loading;
 
     try {
-      final groupApi = GroupApi(App.app.chatServerM.fullUrl);
+      final groupApi = GroupApi();
       final res = await groupApi.getRegMagicLink(expiredIn: expiredIn * 3600);
 
       if (res.statusCode == 200) {

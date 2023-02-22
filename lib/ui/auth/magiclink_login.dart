@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/app_methods.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/banner_button.dart';
@@ -113,7 +113,7 @@ class _MagiclinkLoginState extends State<MagiclinkLogin> {
       isSending = true;
     });
 
-    UserApi userApi = UserApi(widget.chatServer.fullUrl);
+    UserApi userApi = UserApi(serverUrl: widget.chatServer.fullUrl);
 
     String email = emailController.text;
 

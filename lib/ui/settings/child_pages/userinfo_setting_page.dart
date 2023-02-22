@@ -150,7 +150,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
       _uploadNotifier.value = true;
       Uint8List bytes = await image.readAsBytes();
       bytes = await FlutterImageCompress.compressWithList(bytes, quality: 25);
-      final userApi = UserApi(App.app.chatServerM.fullUrl);
+      final userApi = UserApi();
       final res = await userApi.uploadAvatar(bytes);
       if (res.statusCode == 200) {
         App.logger.info("User Avatar changed.");
@@ -187,7 +187,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
   }
 
   Future<void> _updateName(String name, BuildContext context) async {
-    final userApi = UserApi(App.app.chatServerM.fullUrl);
+    final userApi = UserApi();
     final res = await userApi.updateUserInfo(name: name);
 
     if (res.statusCode == 200 && res.data != null) {
