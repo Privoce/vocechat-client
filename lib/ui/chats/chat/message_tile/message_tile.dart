@@ -298,7 +298,7 @@ class _MessageTileState extends State<MessageTile> {
     } catch (e) {
       App.logger.severe(e);
       return TextBubble(
-          content: "Unsupported Message Type",
+          content: "Error loading message.",
           hasMention: false,
           enableCopy: false,
           enableOg: false,
