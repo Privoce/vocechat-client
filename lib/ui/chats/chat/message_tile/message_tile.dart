@@ -298,7 +298,7 @@ class _MessageTileState extends State<MessageTile> {
     } catch (e) {
       App.logger.severe(e);
       return TextBubble(
-          content: "Error loading message.",
+          content: "Error occurred when building this message.",
           hasMention: false,
           enableCopy: false,
           enableOg: false,
@@ -407,8 +407,15 @@ class _MessageTileState extends State<MessageTile> {
               repliedUser: widget.repliedUserInfoM!,
               repliedImageFile: widget.repliedImageFile,
               msgM: widget.chatMsgM);
+        } else {
+          return TextBubble(
+            content: "The replied message has been deleted",
+            maxLines: 16,
+            enableShowMoreBtn: true,
+            hasMention: false,
+          );
         }
-        break;
+
       default:
     }
     return TextBubble(
