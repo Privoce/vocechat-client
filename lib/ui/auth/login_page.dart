@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/env_consts.dart';
@@ -75,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    _getChatServerM();
+    // _getChatServerM();
   }
 
   @override
@@ -116,10 +117,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildServerInfoError() {
-    return Text("can't find server");
-  }
-
   Widget _buildLoginBlock() {
     return ValueListenableBuilder<LoginType>(
         valueListenable: _loginTypeNotifier,
@@ -137,9 +134,17 @@ class _LoginPageState extends State<LoginPage> {
                             password: widget.password,
                             isRelogin: widget.isRelogin);
                       case _ServerInfoFetchingStatus.error:
-                        return Text("Error");
+                        return CupertinoButton.filled(
+                            child: Text(AppLocalizations.of(context)!.retry),
+                            onPressed: () => _getChatServerM());
+
                       default:
-                        return Text("default fetching...");
+                        return PasswordLogin(
+                            chatServer: ChatServerM(),
+                            email: widget.email,
+                            password: widget.password,
+                            isRelogin: widget.isRelogin,
+                            enable: false);
                     }
                   });
             case LoginType.magiclink:
@@ -271,47 +276,81 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildTitle() {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      ValueListenableBuilder<_ServerInfoFetchingStatus>(
-          valueListenable: serverInfoFetchingStatus,
-          builder: (context, status, _) {
-            switch (status) {
-              case _ServerInfoFetchingStatus.error:
-                return SizedBox(height: 30, child: Text("error"));
-              case _ServerInfoFetchingStatus.done:
-                return SizedBox(
-                  height: 30,
-                  child: RichText(
-                      text: TextSpan(
-                    children: [
-                      TextSpan(
-                          text:
-                              "${AppLocalizations.of(context)!.loginPageTitle} ",
+    const double titleHeight = 40;
+    return Builder(builder: (context) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        ValueListenableBuilder<_ServerInfoFetchingStatus>(
+            valueListenable: serverInfoFetchingStatus,
+            builder: (context, status, _) {
+              switch (status) {
+                case _ServerInfoFetchingStatus.error:
+                  return SizedBox(
+                      height: titleHeight,
+                      child: Text(
+                          "${AppLocalizations.of(context)!.loginPageTitle} ",
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.cyan500)),
-                      TextSpan(
-                        text: _chatServerM!.properties.serverName,
-                        style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.blue.shade700),
-                      ),
-                    ],
-                  )),
-                );
+                              color: AppColors.cyan500)));
+                case _ServerInfoFetchingStatus.done:
+                  return SizedBox(
+                    height: titleHeight,
+                    child: RichText(
+                        text: TextSpan(
+                      children: [
+                        TextSpan(
+                            text:
+                                "${AppLocalizations.of(context)!.loginPageTitle} ",
+                            style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.cyan500)),
+                        TextSpan(
+                          text: _chatServerM!.properties.serverName,
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue.shade700),
+                        ),
+                      ],
+                    )),
+                  );
 
-              default:
-                return SizedBox(height: 30, child: Text("fetching"));
-            }
-          }),
-      Text(widget.baseUrl,
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.grey500)),
-    ]);
+                default:
+                  return SizedBox(
+                      height: titleHeight,
+                      child: Row(
+                        children: [
+                          Text(
+                              AppLocalizations.of(context)!.fetchingServerInfo),
+                          SizedBox(width: 8),
+                          CupertinoActivityIndicator()
+                        ],
+                      ));
+              }
+            }),
+        ValueListenableBuilder<_ServerInfoFetchingStatus>(
+            valueListenable: serverInfoFetchingStatus,
+            builder: (context, status, _) {
+              switch (status) {
+                case _ServerInfoFetchingStatus.error:
+                  return Text(
+                      AppLocalizations.of(context)!.fetchingServerInfoError,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey500));
+
+                default:
+                  return Text(widget.baseUrl,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey500));
+              }
+            }),
+      ]);
+    });
   }
 
   Widget _buildLoginTypeSwitch() {
