@@ -63,6 +63,8 @@ class Sse {
           fireSseEvent(event.data);
         }
 
+        _isConnecting = false;
+
         // _cancelConnectingTimer();
         // _startHeartbeatTimer();
       });
@@ -72,6 +74,7 @@ class Sse {
 
         // _cancelConnectingTimer();
         // _startHeartbeatTimer();
+        _isConnecting = false;
       });
 
       eventSource.onError.listen((event) {
@@ -80,7 +83,11 @@ class Sse {
 
         // _cancelConnectingTimer();
         // _cancelHeartbeatTimer();
-        eventSource.close();
+
+        // eventSource.close();
+        close();
+
+        _handleReconnect();
       });
     } catch (e) {
       App.logger.severe(e);
@@ -94,6 +101,12 @@ class Sse {
 
     return (connectivityResult == ConnectivityResult.mobile ||
         connectivityResult == ConnectivityResult.wifi);
+  }
+
+  void _handleReconnect() async {
+    Future.delayed(Duration(seconds: 3)).then((value) {
+      connect();
+    });
   }
 
   void subscribeSseEvent(SseEventAware aware) {
