@@ -41,11 +41,6 @@ final navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await VoceChatApp.initialize(
-  //   url: Constants.supabaseUrl,
-  //   anonKey: Constants.supabaseAnnonKey,
-  // );
-
   await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);

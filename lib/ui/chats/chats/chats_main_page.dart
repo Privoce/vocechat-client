@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -44,7 +45,9 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
           return AbsorbPointer(
             absorbing: disableGesture,
             child: Scaffold(
-              drawer: _buildServerSwitchDrawer(),
+              drawer: EnvConstants.voceBaseUrl.isEmpty
+                  ? _buildServerSwitchDrawer()
+                  : null,
               body: CupertinoTabScaffold(
                   tabBar: CupertinoTabBar(
                       height: 60,
@@ -140,13 +143,13 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
     return ChatsDrawer(
       disableGesture: (isBusy) => disableGesture.value = isBusy,
       afterDrawerPop: () {
-          Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                ChatsMainPage(),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero));
+        Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    ChatsMainPage(),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero));
       },
     );
   }

@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
@@ -15,10 +17,48 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/env_consts.dart';
+import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 
 class SharedFuncs {
+  /// Clear all local data
+  static Future<void> clearLocalData() async {
+    if (navigatorKey.currentState?.context == null) return;
+
+    final context = navigatorKey.currentState!.context;
+
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.clearLocalData,
+        content: AppLocalizations.of(context)!.clearLocalDataContent,
+        primaryAction: AppAlertDialogAction(
+            text: AppLocalizations.of(context)!.ok,
+            isDangerAction: true,
+            action: () async {
+              try {
+                await closeAllDb();
+              } catch (e) {
+                App.logger.severe(e);
+              }
+
+              try {
+                await removeDb();
+              } catch (e) {
+                App.logger.severe(e);
+              }
+
+              exit(0);
+            }),
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.cancel,
+              action: () => Navigator.pop(context, 'Cancel'))
+        ]);
+  }
+
   /// Generate chatId in file path when doing file storage
   static String? getChatId({int? uid, int? gid}) {
     if (uid != null && uid != -1) {
@@ -93,6 +133,17 @@ class SharedFuncs {
       return SendType.edit;
     }
     return SendType.normal;
+  }
+
+  static Future<String> getAppVersion({bool withBuildNum = false}) async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    String version = packageInfo.version;
+    if (withBuildNum) {
+      String buildNumber = packageInfo.buildNumber;
+      return "$version($buildNumber)";
+    } else {
+      return version;
+    }
   }
 
   /// Parse mention info in text and markdowns.

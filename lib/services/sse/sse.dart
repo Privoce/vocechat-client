@@ -48,11 +48,11 @@ class Sse {
     App.logger.info("Connecting SSE: ${await prepareUrl()}");
     App.app.statusService?.fireSseLoading(SseStatus.connecting);
 
-    _startConnectingTimer();
+    // _startConnectingTimer();
 
     final eventSource =
         html.EventSource(Uri.parse(await prepareUrl()).toString());
-    await SharedFuncs.updateServerInfo();
+    SharedFuncs.updateServerInfo();
 
     try {
       eventSource.onMessage.listen((event) {
@@ -63,23 +63,23 @@ class Sse {
           fireSseEvent(event.data);
         }
 
-        _cancelConnectingTimer();
-        _startHeartbeatTimer();
+        // _cancelConnectingTimer();
+        // _startHeartbeatTimer();
       });
 
       eventSource.onOpen.listen((event) {
         App.app.statusService?.fireSseLoading(SseStatus.successful);
 
-        _cancelConnectingTimer();
-        _startHeartbeatTimer();
+        // _cancelConnectingTimer();
+        // _startHeartbeatTimer();
       });
 
       eventSource.onError.listen((event) {
         App.app.statusService?.fireSseLoading(SseStatus.disconnected);
         App.logger.severe(event);
 
-        _cancelConnectingTimer();
-        _cancelHeartbeatTimer();
+        // _cancelConnectingTimer();
+        // _cancelHeartbeatTimer();
         eventSource.close();
       });
     } catch (e) {

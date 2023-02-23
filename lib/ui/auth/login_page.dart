@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/magiclink_login.dart';
 import 'package:vocechat_client/ui/auth/password_login.dart';
@@ -76,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // _getChatServerM();
+    _getChatServerM();
   }
 
   @override
@@ -84,9 +86,12 @@ class _LoginPageState extends State<LoginPage> {
     // _chatServer = ModalRoute.of(context)!.settings.arguments as ChatServerM;
 
     return Scaffold(
-        resizeToAvoidBottomInset: true,
-        backgroundColor: AppColors.edgeColor,
-        body: _buildBody(context));
+      resizeToAvoidBottomInset: true,
+      backgroundColor: AppColors.edgeColor,
+      body: _buildBody(context),
+      bottomNavigationBar:
+          EnvConstants.voceBaseUrl.isEmpty ? null : _buildBottomNavBar(),
+    );
   }
 
   GestureDetector _buildBody(BuildContext context) {
@@ -134,9 +139,17 @@ class _LoginPageState extends State<LoginPage> {
                             password: widget.password,
                             isRelogin: widget.isRelogin);
                       case _ServerInfoFetchingStatus.error:
-                        return CupertinoButton.filled(
-                            child: Text(AppLocalizations.of(context)!.retry),
-                            onPressed: () => _getChatServerM());
+                        return Center(
+                          child: SizedBox(
+                            height: 48,
+                            width: double.maxFinite,
+                            child: CupertinoButton.filled(
+                                padding: EdgeInsets.zero,
+                                child:
+                                    Text(AppLocalizations.of(context)!.retry),
+                                onPressed: () => _getChatServerM()),
+                          ),
+                        );
 
                       default:
                         return PasswordLogin(
@@ -351,6 +364,43 @@ class _LoginPageState extends State<LoginPage> {
             }),
       ]);
     });
+  }
+
+  Widget _buildBottomNavBar() {
+    return SafeArea(
+        child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            VoceButton(
+              normal: Text(AppLocalizations.of(context)!.clearLocalData,
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              action: () async {
+                await SharedFuncs.clearLocalData();
+                return true;
+              },
+            ),
+          ],
+        ),
+        SizedBox(
+          height: 30,
+          child: FutureBuilder<String>(
+              future: SharedFuncs.getAppVersion(),
+              builder: ((context, snapshot) {
+                if (snapshot.hasData) {
+                  return Text(
+                    "${AppLocalizations.of(context)!.version}: ${snapshot.data}",
+                    style: AppTextStyles.labelSmall,
+                  );
+                } else {
+                  return SizedBox.shrink();
+                }
+              })),
+        )
+      ],
+    ));
   }
 
   Widget _buildLoginTypeSwitch() {
