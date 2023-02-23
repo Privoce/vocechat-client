@@ -33,7 +33,7 @@ class SseQueue {
     if (!isProcessing) {
       isProcessing = true;
       if (enableStatusDisplay) {
-        App.app.statusService.fireTaskLoading(LoadingStatus.loading);
+        App.app.statusService?.fireTaskLoading(LoadingStatus.loading);
       }
 
       await Future.doWhile(() async {
@@ -53,7 +53,7 @@ class SseQueue {
       }
 
       if (enableStatusDisplay) {
-        App.app.statusService.fireTaskLoading(LoadingStatus.success);
+        App.app.statusService?.fireTaskLoading(LoadingStatus.success);
       }
     }
   }

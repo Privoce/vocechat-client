@@ -83,9 +83,9 @@ class _ChatsBarState extends State<ChatsBar> {
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
-    App.app.statusService.subscribeSseLoading(_onSse);
-    App.app.statusService.subscribeTokenLoading(_onToken);
-    App.app.statusService.subscribeTaskLoading(_onTask);
+    App.app.statusService?.subscribeSseLoading(_onSse);
+    App.app.statusService?.subscribeTokenLoading(_onToken);
+    App.app.statusService?.subscribeTaskLoading(_onTask);
 
     App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
 
@@ -96,25 +96,25 @@ class _ChatsBarState extends State<ChatsBar> {
 
   @override
   void dispose() {
-    App.app.statusService.unsubscribeSseLoading(_onSse);
-    App.app.statusService.unsubscribeTokenLoading(_onToken);
-    App.app.statusService.unsubscribeTaskLoading(_onTask);
+    App.app.statusService?.unsubscribeSseLoading(_onSse);
+    App.app.statusService?.unsubscribeTokenLoading(_onToken);
+    App.app.statusService?.unsubscribeTaskLoading(_onTask);
     App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
     super.dispose();
   }
 
   void resubscribe() {
-    App.app.statusService.unsubscribeSseLoading(_onSse);
-    App.app.statusService.unsubscribeTokenLoading(_onToken);
-    App.app.statusService.unsubscribeTaskLoading(_onTask);
+    App.app.statusService?.unsubscribeSseLoading(_onSse);
+    App.app.statusService?.unsubscribeTokenLoading(_onToken);
+    App.app.statusService?.unsubscribeTaskLoading(_onTask);
     App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
 
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
-    App.app.statusService.subscribeSseLoading(_onSse);
-    App.app.statusService.subscribeTokenLoading(_onToken);
-    App.app.statusService.subscribeTaskLoading(_onTask);
+    App.app.statusService?.subscribeSseLoading(_onSse);
+    App.app.statusService?.subscribeTokenLoading(_onToken);
+    App.app.statusService?.subscribeTaskLoading(_onTask);
     App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
   }
 
@@ -473,7 +473,7 @@ class _ChatsBarState extends State<ChatsBar> {
 
     final route = PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
-          chatServerM: App.app.chatServerM,
+          baseUrl: App.app.chatServerM.fullUrl,
           email: App.app.userDb!.userInfo.email,
           password: password,
           isRelogin: true),

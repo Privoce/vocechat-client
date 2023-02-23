@@ -236,7 +236,7 @@ class _ServerPageState extends State<ServerPage> {
                         borderRadius: _outerRadius,
                         maxLength: 32,
                         onSubmitted: (_) =>
-                            _onUrlSubmit(_urlController.text + "/api"),
+                            _onUrlSubmit("${_urlController.text}/api"),
                         keyboardType: TextInputType.url,
                         textInputAction: TextInputAction.go,
                         scrollPadding: EdgeInsets.only(bottom: 100),
@@ -421,17 +421,17 @@ class _ServerPageState extends State<ServerPage> {
     final storage = FlutterSecureStorage();
     final password = await storage.read(key: dbName);
 
-    final chatServerM = await ChatServerHelper(context: context)
-        .prepareChatServerM(data.serverUrl);
+    final chatServerM =
+        await ChatServerHelper().prepareChatServerM(data.serverUrl);
 
-    if (chatServerM == null) {
-      _pushPageBusy.value = false;
-      return;
-    }
+    // if (chatServerM == null) {
+    //   _pushPageBusy.value = false;
+    //   return;
+    // }
 
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LoginPage(
-              chatServerM: chatServerM,
+              baseUrl: data.serverUrl,
               email: data.userEmail,
               password: password,
             )));
@@ -532,17 +532,14 @@ class _ServerPageState extends State<ServerPage> {
   /// Server information will be saved into App object.
   /// Only successful server visits will be saved.
   Future<bool> _onUrlSubmit(String url) async {
-    // String url = _urlController.text + "/api";
-
     // Set server in App singleton.
-    final chatServerM =
-        await ChatServerHelper(context: context).prepareChatServerM(url);
-    if (chatServerM == null) return false;
+    // final chatServerM = await ChatServerHelper().prepareChatServerM(url);
+    // if (chatServerM == null) return false;
 
     _urlFocusNode.requestFocus();
 
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => LoginPage(chatServerM: chatServerM)));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => LoginPage(baseUrl: url)));
 
     return true;
   }

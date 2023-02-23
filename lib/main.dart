@@ -9,12 +9,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'firebase_options.dart';
@@ -39,6 +41,11 @@ final navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // await VoceChatApp.initialize(
+  //   url: Constants.supabaseUrl,
+  //   anonKey: Constants.supabaseAnnonKey,
+  // );
+
   await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);
@@ -50,23 +57,23 @@ Future<void> main() async {
   // Handling login status
   final status = await StatusMDao.dao.getStatus();
   if (status == null) {
-    defaultHome = ServerPage();
+    defaultHome = await SharedFuncs.getDefaultHomePage();
   } else {
     final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
     if (userDb == null) {
-      defaultHome = ServerPage();
+      defaultHome = await SharedFuncs.getDefaultHomePage();
     } else {
       App.app.userDb = userDb;
       await initCurrentDb(App.app.userDb!.dbName);
 
       if (userDb.loggedIn != 1) {
         Sse.sse.close();
-        defaultHome = ServerPage();
+        defaultHome = await SharedFuncs.getDefaultHomePage();
       } else {
         final chatServerM =
             await ChatServerDao.dao.getServerById(userDb.chatServerId);
         if (chatServerM == null) {
-          defaultHome = ServerPage();
+          defaultHome = await SharedFuncs.getDefaultHomePage();
         } else {
           App.app.chatServerM = chatServerM;
 
@@ -399,7 +406,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     final context = navigatorKey.currentContext;
     if (context == null) return;
     try {
-      final chatServer = await ChatServerHelper(context: context)
+      final chatServer = await ChatServerHelper()
           .prepareChatServerM(data.serverUrl, showAlert: false);
       if (chatServer == null) return;
 
@@ -446,17 +453,18 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         return;
       }
 
-      App.app.authService!.logout().then((value) {
+      App.app.authService!.logout().then((value) async {
+        final defaultHomePage = await SharedFuncs.getDefaultHomePage();
         if (value) {
           navigatorKey.currentState!.pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => ServerPage(),
+                builder: (context) => defaultHomePage,
               ),
               (route) => false);
         } else {
           navigatorKey.currentState!.pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => ServerPage(),
+                builder: (context) => defaultHomePage,
               ),
               (route) => false);
         }

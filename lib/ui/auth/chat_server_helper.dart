@@ -4,6 +4,7 @@ import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
@@ -11,14 +12,14 @@ import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatServerHelper {
-  BuildContext context;
-
-  ChatServerHelper({required this.context});
+  ChatServerHelper();
 
   /// url is the server domain, for example 'https://dev.voce.chat'.
   /// No http / https required.
   Future<ChatServerM?> prepareChatServerM(String url,
       {bool showAlert = true}) async {
+    final context = navigatorKey.currentContext;
+
     ChatServerM chatServerM = ChatServerM();
     ServerStatusWithChatServerM s;
 
@@ -27,29 +28,29 @@ class ChatServerHelper {
     }
 
     if (!url.startsWith("https://") && !url.startsWith("http://")) {
-      final httpsUrl = "https://" + url;
+      final httpsUrl = "https://$url";
 
       s = await _checkServerAvailability(httpsUrl);
       if (s.status == ServerStatus.uninitialized) {
-        if (showAlert) {
-          await _showServerUninitializedError(s.chatServerM);
+        if (showAlert && context != null) {
+          await _showServerUninitializedError(s.chatServerM, context);
         }
         return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
         // test http
-        final httpUrl = "http://" + url;
+        final httpUrl = "http://$url";
         s = await _checkServerAvailability(httpUrl);
         if (s.status == ServerStatus.uninitialized) {
-          if (showAlert) {
-            await _showServerUninitializedError(s.chatServerM);
+          if (showAlert && context != null) {
+            await _showServerUninitializedError(s.chatServerM, context);
           }
           return null;
         } else if (s.status == ServerStatus.available) {
           chatServerM = s.chatServerM;
         } else if (s.status == ServerStatus.error) {
-          if (showAlert) {
+          if (showAlert && context != null) {
             await _showConnectionError(context);
           }
           return null;
@@ -58,14 +59,14 @@ class ChatServerHelper {
     } else {
       s = await _checkServerAvailability(url);
       if (s.status == ServerStatus.uninitialized) {
-        if (showAlert) {
-          await _showServerUninitializedError(s.chatServerM);
+        if (showAlert && context != null) {
+          await _showServerUninitializedError(s.chatServerM, context);
         }
         return null;
       } else if (s.status == ServerStatus.available) {
         chatServerM = s.chatServerM;
       } else if (s.status == ServerStatus.error) {
-        if (showAlert) {
+        if (showAlert && context != null) {
           await _showConnectionError(context);
         }
         return null;
@@ -101,14 +102,14 @@ class ChatServerHelper {
         chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
         await ChatServerDao.dao.addOrUpdate(chatServerM);
       } else {
-        if (showAlert) {
+        if (showAlert && context != null) {
           await _showConnectionError(context);
         }
         return null;
       }
     } catch (e) {
       App.logger.severe(e);
-      if (showAlert) {
+      if (showAlert && context != null) {
         await _showConnectionError(context);
       }
       return null;
@@ -142,7 +143,8 @@ class ChatServerHelper {
         status: ServerStatus.available, chatServerM: chatServerM);
   }
 
-  Future<void> _showServerUninitializedError(ChatServerM chatServerM) async {
+  Future<void> _showServerUninitializedError(
+      ChatServerM chatServerM, BuildContext context) async {
     return showAppAlert(
         context: context,
         title:

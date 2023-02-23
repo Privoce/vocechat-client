@@ -36,7 +36,7 @@ class Sse {
     if (_isConnecting) return;
 
     if (!(await _networkIsAvailable())) {
-      App.app.statusService.fireSseLoading(SseStatus.disconnected);
+      App.app.statusService?.fireSseLoading(SseStatus.disconnected);
       return;
     }
 
@@ -46,7 +46,7 @@ class Sse {
     _isConnecting = true;
 
     App.logger.info("Connecting SSE: ${await prepareUrl()}");
-    App.app.statusService.fireSseLoading(SseStatus.connecting);
+    App.app.statusService?.fireSseLoading(SseStatus.connecting);
 
     _startConnectingTimer();
 
@@ -56,7 +56,7 @@ class Sse {
 
     try {
       eventSource.onMessage.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.successful);
+        App.app.statusService?.fireSseLoading(SseStatus.successful);
         App.logger.info(event.data);
 
         if (event.data.toString().trim().isNotEmpty) {
@@ -68,14 +68,14 @@ class Sse {
       });
 
       eventSource.onOpen.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.successful);
+        App.app.statusService?.fireSseLoading(SseStatus.successful);
 
         _cancelConnectingTimer();
         _startHeartbeatTimer();
       });
 
       eventSource.onError.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.disconnected);
+        App.app.statusService?.fireSseLoading(SseStatus.disconnected);
         App.logger.severe(event);
 
         _cancelConnectingTimer();
@@ -150,7 +150,7 @@ class Sse {
     eventSource = null;
     _isConnecting = false;
 
-    App.app.statusService.fireSseLoading(SseStatus.disconnected);
+    App.app.statusService?.fireSseLoading(SseStatus.disconnected);
 
     _cancelConnectingTimer();
 
