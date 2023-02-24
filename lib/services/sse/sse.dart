@@ -104,8 +104,15 @@ class Sse {
   }
 
   void _handleReconnect() async {
-    Future.delayed(Duration(seconds: 3)).then((value) {
-      connect();
+    Future.delayed(Duration(seconds: 3)).then((value) async {
+      await SharedFuncs.renewAuthToken().then((value) {
+        if (value) {
+          connect();
+        } else {
+          App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
+          App.app.statusService?.fireSseLoading(SseStatus.disconnected);
+        }
+      });
     });
   }
 
