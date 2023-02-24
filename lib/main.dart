@@ -316,7 +316,57 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     print(message.data);
   }
 
-  Future<InvitationLinkData?> _parseLink(Uri uri) async {
+  void _showInvalidLinkWarning(BuildContext context) {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: (() => Navigator.of(context).pop()))
+        ]);
+  }
+
+  Future<bool> _validateMagicToken(String url, String magicToken) async {
+    try {
+      final res = await UserApi(serverUrl: url).checkMagicToken(magicToken);
+      return (res.statusCode == 200 && res.data == true);
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return false;
+  }
+
+  void _handleIncomingUniLink() async {
+    uriLinkStream.listen((Uri? uri) async {
+      if (uri == null) return;
+      _parseLink(uri);
+    });
+  }
+
+  void _handleInitUniLink() async {
+    final initialUri = await getInitialUri();
+    if (initialUri == null) return;
+    _parseLink(initialUri);
+  }
+
+  void _parseLink(Uri uri) {
+    const String loginRegexStr = r"\/?(?:\w+\/)?login";
+    const String joinRegexStr = r"\/?(?:\w+\/)?join";
+
+    final path = uri.path;
+
+    if (RegExp(loginRegexStr).hasMatch(path)) {
+      _handleLoginLink(uri);
+    } else if (RegExp(joinRegexStr).hasMatch(path)) {
+      _handleJoinLink(uri);
+    }
+  }
+
+  Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
     final param = uri.queryParameters["magic_link"];
     if (param == null || param.isEmpty) return null;
 
@@ -352,54 +402,10 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     return null;
   }
 
-  void _showInvalidLinkWarning(BuildContext context) {
-    showAppAlert(
-        context: context,
-        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
-        content:
-            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
-        actions: [
-          AppAlertDialogAction(
-              text: AppLocalizations.of(context)!.ok,
-              action: (() => Navigator.of(context).pop()))
-        ]);
-  }
-
-  void _handleIncomingUniLink() async {
-    uriLinkStream.listen((Uri? uri) async {
-      if (uri == null) return;
-
-      final linkData = await _parseLink(uri);
-      if (linkData == null) return;
-
-      _handleUniLink(linkData);
-    });
-  }
-
-  Future<bool> _validateMagicToken(String url, String magicToken) async {
-    try {
-      final res = await UserApi(serverUrl: url).checkMagicToken(magicToken);
-      return (res.statusCode == 200 && res.data == true);
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    return false;
-  }
-
-  void _handleInitUniLink() async {
-    final initialUri = await getInitialUri();
-    if (initialUri == null) return;
-
-    final linkData = await _parseLink(initialUri);
-    if (linkData == null) return;
-
-    _handleUniLink(linkData);
-  }
-
-  void _handleUniLink(InvitationLinkData data) async {
+  void _handleJoinLink(Uri uri) async {
+    final data = await _prepareInvitationLinkData(uri);
     final context = navigatorKey.currentContext;
-    if (context == null) return;
+    if (data == null || context == null) return;
     try {
       final chatServer = await ChatServerHelper()
           .prepareChatServerM(data.serverUrl, showAlert: false);
@@ -409,6 +415,42 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         pageBuilder: (context, animation, secondaryAnimation) =>
             PasswordRegisterPage(
                 chatServer: chatServer, magicToken: data.magicToken),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.fastOutSlowIn;
+
+          var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+      );
+
+      Navigator.push(context, route);
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  void _handleLoginLink(Uri uri) async {
+    final serverUrl = uri.queryParameters["s"];
+
+    final context = navigatorKey.currentContext;
+    if (serverUrl == null || serverUrl.isEmpty || context == null) return;
+    try {
+      final chatServer = await ChatServerHelper()
+          .prepareChatServerM(serverUrl, showAlert: false);
+      if (chatServer == null) return;
+
+      final route = PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            // PasswordRegisterPage(
+            //     chatServer: chatServer, magicToken: data.magicToken),
+            LoginPage(baseUrl: serverUrl),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
@@ -512,3 +554,12 @@ class InvitationLinkData {
 
   InvitationLinkData({required this.serverUrl, required this.magicToken});
 }
+
+class UniLinkData {
+  String link;
+  UniLinkType type;
+
+  UniLinkData({required this.link, required this.type});
+}
+
+enum UniLinkType { login, register }
