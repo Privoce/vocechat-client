@@ -354,6 +354,11 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _parseLink(Uri uri) {
+    // Disable url jump for login and join when the serverUrl is set.
+    if (EnvConstants.voceBaseUrl.isNotEmpty) {
+      return;
+    }
+
     const String loginRegexStr = r"\/?(?:\w+\/)?login";
     const String joinRegexStr = r"\/?(?:\w+\/)?join";
 
