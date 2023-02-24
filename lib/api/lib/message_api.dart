@@ -56,7 +56,7 @@ class MessageApi {
   }
 
   Future<Response> delete(int mid) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
     return dio.delete("/$mid",
         options: Options(responseType: ResponseType.bytes));
   }

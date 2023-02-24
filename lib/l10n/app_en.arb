@@ -121,6 +121,7 @@
 
     "message": "Message",
     "messageDetail":"Message Detail",
+    "messageDeletionFailed":"Message deletion failed",
     "members":"Members",
     "minute":"minute",
     "minutes":"minutes",
