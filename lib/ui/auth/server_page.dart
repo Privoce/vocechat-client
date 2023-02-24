@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -116,7 +117,7 @@ class _ServerPageState extends State<ServerPage> {
                   normal: Text(AppLocalizations.of(context)!.clearLocalData,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
                   action: () async {
-                    _onResetDb();
+                    await SharedFuncs.clearLocalData();
                     return true;
                   },
                 ),
@@ -136,7 +137,7 @@ class _ServerPageState extends State<ServerPage> {
             SizedBox(
               height: 30,
               child: FutureBuilder<String>(
-                  future: _getVersion(),
+                  future: SharedFuncs.getAppVersion(),
                   builder: ((context, snapshot) {
                     if (snapshot.hasData) {
                       return Text(
@@ -150,14 +151,6 @@ class _ServerPageState extends State<ServerPage> {
             )
           ],
         )));
-  }
-
-  Future<String> _getVersion() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String version = packageInfo.version;
-    // String buildNumber = packageInfo.buildNumber;
-    // return version + "($buildNumber)";
-    return version;
   }
 
   Widget _buildTopBtn(BuildContext context) {
@@ -236,7 +229,7 @@ class _ServerPageState extends State<ServerPage> {
                         borderRadius: _outerRadius,
                         maxLength: 32,
                         onSubmitted: (_) =>
-                            _onUrlSubmit(_urlController.text + "/api"),
+                            _onUrlSubmit("${_urlController.text}/api"),
                         keyboardType: TextInputType.url,
                         textInputAction: TextInputAction.go,
                         scrollPadding: EdgeInsets.only(bottom: 100),
@@ -421,17 +414,17 @@ class _ServerPageState extends State<ServerPage> {
     final storage = FlutterSecureStorage();
     final password = await storage.read(key: dbName);
 
-    final chatServerM = await ChatServerHelper(context: context)
-        .prepareChatServerM(data.serverUrl);
+    final chatServerM =
+        await ChatServerHelper().prepareChatServerM(data.serverUrl);
 
-    if (chatServerM == null) {
-      _pushPageBusy.value = false;
-      return;
-    }
+    // if (chatServerM == null) {
+    //   _pushPageBusy.value = false;
+    //   return;
+    // }
 
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => LoginPage(
-              chatServerM: chatServerM,
+              baseUrl: data.serverUrl,
               email: data.userEmail,
               password: password,
             )));
@@ -532,17 +525,14 @@ class _ServerPageState extends State<ServerPage> {
   /// Server information will be saved into App object.
   /// Only successful server visits will be saved.
   Future<bool> _onUrlSubmit(String url) async {
-    // String url = _urlController.text + "/api";
-
     // Set server in App singleton.
-    final chatServerM =
-        await ChatServerHelper(context: context).prepareChatServerM(url);
-    if (chatServerM == null) return false;
+    // final chatServerM = await ChatServerHelper().prepareChatServerM(url);
+    // if (chatServerM == null) return false;
 
     _urlFocusNode.requestFocus();
 
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => LoginPage(chatServerM: chatServerM)));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => LoginPage(baseUrl: url)));
 
     return true;
   }
@@ -566,42 +556,6 @@ class _ServerPageState extends State<ServerPage> {
       },
     );
     Navigator.of(context).push(route);
-  }
-
-  void _onResetDb() async {
-    if (navigatorKey.currentState?.context == null) return;
-
-    final context = navigatorKey.currentState!.context;
-
-    showAppAlert(
-        context: context,
-        title: AppLocalizations.of(context)!.clearLocalData,
-        content: AppLocalizations.of(context)!.clearLocalDataContent,
-        primaryAction: AppAlertDialogAction(
-            text: AppLocalizations.of(context)!.ok,
-            isDangerAction: true,
-            action: _onReset),
-        actions: [
-          AppAlertDialogAction(
-              text: AppLocalizations.of(context)!.cancel,
-              action: () => Navigator.pop(context, 'Cancel'))
-        ]);
-  }
-
-  void _onReset() async {
-    try {
-      await closeAllDb();
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    try {
-      await removeDb();
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    exit(0);
   }
 
   // void _onPinHistory(BuildContext context, int index) async {

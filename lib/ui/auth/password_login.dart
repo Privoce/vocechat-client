@@ -20,12 +20,15 @@ class PasswordLogin extends StatefulWidget {
 
   final bool isRelogin;
 
+  final bool enable;
+
   PasswordLogin(
       {Key? key,
       required this.chatServer,
       this.email,
       this.password,
-      this.isRelogin = false})
+      this.isRelogin = false,
+      this.enable = true})
       : super(key: key) {
     // _isRelogin = email != null && email!.trim().isNotEmpty;
   }
@@ -46,6 +49,9 @@ class _PasswordLoginState extends State<PasswordLogin> {
   bool rememberMe = true;
 
   late bool isLoggingIn;
+
+  // final Color _titleColor = Colors.black;
+  final Color _titleColorDisabled = Colors.grey;
 
   @override
   void initState() {
@@ -72,10 +78,11 @@ class _PasswordLoginState extends State<PasswordLogin> {
       SizedBox(height: 4),
       VoceTextField.filled(
         emailController,
-        enabled: !widget.isRelogin,
+        enabled: widget.enable ? !widget.isRelogin : false,
         title: Text(
           AppLocalizations.of(context)!.loginPageEmail,
-          style: TextStyle(fontSize: 16),
+          style: TextStyle(
+              fontSize: 16, color: widget.enable ? null : _titleColorDisabled),
         ),
         keyboardType: TextInputType.emailAddress,
         textInputAction: TextInputAction.next,
@@ -107,9 +114,11 @@ class _PasswordLoginState extends State<PasswordLogin> {
       SizedBox(height: 4),
       VoceTextField.filled(
         pswdController,
+        enabled: widget.enable,
         title: Text(
           AppLocalizations.of(context)!.password,
-          style: TextStyle(fontSize: 16),
+          style: TextStyle(
+              fontSize: 16, color: widget.enable ? null : _titleColorDisabled),
         ),
         obscureText: true,
         enableVisibleObscureText: true,
@@ -131,13 +140,20 @@ class _PasswordLoginState extends State<PasswordLogin> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(AppLocalizations.of(context)!.rememberMe,
-                  style: TextStyle(fontSize: 16)),
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: widget.enable ? null : _titleColorDisabled)),
               Spacer(),
-              CupertinoSwitch(
-                  value: rememberMe,
-                  onChanged: (value) => setState(() {
-                        rememberMe = value;
-                      }))
+              AbsorbPointer(
+                absorbing: !widget.enable,
+                child: CupertinoSwitch(
+                    value: rememberMe,
+                    activeColor: widget.enable ? null : Colors.grey,
+                    trackColor: widget.enable ? null : Colors.grey,
+                    onChanged: (value) => setState(() {
+                          rememberMe = value;
+                        })),
+              )
             ],
           )),
       SizedBox(height: 24),

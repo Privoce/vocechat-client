@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
+import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/extensions.dart';
@@ -83,9 +84,9 @@ class _ChatsBarState extends State<ChatsBar> {
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
-    App.app.statusService.subscribeSseLoading(_onSse);
-    App.app.statusService.subscribeTokenLoading(_onToken);
-    App.app.statusService.subscribeTaskLoading(_onTask);
+    App.app.statusService?.subscribeSseLoading(_onSse);
+    App.app.statusService?.subscribeTokenLoading(_onToken);
+    App.app.statusService?.subscribeTaskLoading(_onTask);
 
     App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
 
@@ -96,25 +97,25 @@ class _ChatsBarState extends State<ChatsBar> {
 
   @override
   void dispose() {
-    App.app.statusService.unsubscribeSseLoading(_onSse);
-    App.app.statusService.unsubscribeTokenLoading(_onToken);
-    App.app.statusService.unsubscribeTaskLoading(_onTask);
+    App.app.statusService?.unsubscribeSseLoading(_onSse);
+    App.app.statusService?.unsubscribeTokenLoading(_onToken);
+    App.app.statusService?.unsubscribeTaskLoading(_onTask);
     App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
     super.dispose();
   }
 
   void resubscribe() {
-    App.app.statusService.unsubscribeSseLoading(_onSse);
-    App.app.statusService.unsubscribeTokenLoading(_onToken);
-    App.app.statusService.unsubscribeTaskLoading(_onTask);
+    App.app.statusService?.unsubscribeSseLoading(_onSse);
+    App.app.statusService?.unsubscribeTokenLoading(_onToken);
+    App.app.statusService?.unsubscribeTaskLoading(_onTask);
     App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
 
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
-    App.app.statusService.subscribeSseLoading(_onSse);
-    App.app.statusService.subscribeTokenLoading(_onToken);
-    App.app.statusService.subscribeTaskLoading(_onTask);
+    App.app.statusService?.subscribeSseLoading(_onSse);
+    App.app.statusService?.subscribeTokenLoading(_onToken);
+    App.app.statusService?.subscribeTaskLoading(_onTask);
     App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
   }
 
@@ -219,7 +220,8 @@ class _ChatsBarState extends State<ChatsBar> {
         padding: const EdgeInsets.only(left: 15),
         child: CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: () => widget.showDrawer(),
+            onPressed:
+                EnvConstants.voceBaseUrl.isEmpty ? widget.showDrawer : null,
             child: _avatar),
       ),
       title: Row(
@@ -473,7 +475,7 @@ class _ChatsBarState extends State<ChatsBar> {
 
     final route = PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => LoginPage(
-          chatServerM: App.app.chatServerM,
+          baseUrl: App.app.chatServerM.fullUrl,
           email: App.app.userDb!.userInfo.email,
           password: password,
           isRelogin: true),

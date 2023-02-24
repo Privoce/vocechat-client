@@ -93,7 +93,7 @@ class AppQrScanPage extends StatelessWidget {
 
       final res = await userApi.checkMagicToken(magicToken);
       if (res.statusCode == 200 && res.data == true) {
-        final chatServerM = await ChatServerHelper(context: context)
+        final chatServerM = await ChatServerHelper()
             .prepareChatServerM(apiPath);
         if (chatServerM != null) {
           // Dismiss loading dialog.

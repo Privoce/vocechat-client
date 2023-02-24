@@ -89,11 +89,11 @@ class ChatService {
 
   void initSse() async {
     Sse.sse.close();
-    App.app.statusService.fireSseLoading(SseStatus.connecting);
+    App.app.statusService?.fireSseLoading(SseStatus.connecting);
 
     if (App.app.userDb == null) {
       App.logger.warning("App.app.userDb null. SSE not subscribed.");
-      App.app.statusService.fireSseLoading(SseStatus.disconnected);
+      App.app.statusService?.fireSseLoading(SseStatus.disconnected);
       return;
     }
 
@@ -330,7 +330,7 @@ class ChatService {
       // Following methods listed in alphabetical order.
       switch (type) {
         case sseKick:
-          App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+          App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
 
           final context = navigatorKey.currentContext;
           if (context != null) {
@@ -350,7 +350,7 @@ class ChatService {
           break;
 
         case sseHeartbeat:
-          App.app.statusService.fireSseLoading(SseStatus.successful);
+          App.app.statusService?.fireSseLoading(SseStatus.successful);
           break;
 
         case sseChat:
@@ -610,7 +610,7 @@ class ChatService {
   }
 
   Future<void> _handleReady() async {
-    App.app.statusService.fireSseLoading(SseStatus.successful);
+    App.app.statusService?.fireSseLoading(SseStatus.successful);
 
     // find DMs with draft and fire user to chats page.
     final usersWithDraft = await UserInfoDao().getUsersWithDraft();

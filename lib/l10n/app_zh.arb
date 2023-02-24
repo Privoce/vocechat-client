@@ -96,6 +96,8 @@
     "edited":"已编辑",
     "email": "邮箱",
 
+    "fetchingServerInfo":"正在获取服务器信息",
+    "fetchingServerInfoError":"服务器信息获取失败，请检查网络状况。",
     "file":"文件",
     "forward":"转发",
     "forwardAsImage":"转发图片",
@@ -152,6 +154,7 @@
     "rememberMe": "记住我",
     "reply": "回复",
     "replyingTo":"回复给",
+    "retry":"重试",
     "resend":"重发",
     "resetFcmToken":"重设通知",
     "resetFcmTokenFooter":"如果登录过程中出现通知错误提示，您可以在这里尝试重新向服务端注册设备信息。此过程需要连接谷歌服务，请确认您的网络状况。",

@@ -397,7 +397,7 @@ class AuthService {
 
       dispose();
       App.app.chatService.dispose();
-      App.app.statusService.dispose();
+      App.app.statusService?.dispose();
 
       if (!isKicked) {
         await closeUserDb();

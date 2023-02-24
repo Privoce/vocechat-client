@@ -1,6 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/magiclink_login.dart';
 import 'package:vocechat_client/ui/auth/password_login.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -12,7 +17,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class LoginPage extends StatefulWidget {
   // static const route = '/auth/login';
 
-  final ChatServerM chatServerM;
+  // final ChatServerM chatServerM;
+  final String baseUrl;
 
   final String? email;
 
@@ -22,11 +28,20 @@ class LoginPage extends StatefulWidget {
 
   final bool isRelogin;
 
+  /// Back button will be hidden if this flag is set.
+  ///
+  /// This should be set when [EnvConstants.voceBaseUrl] is set. This flag is
+  /// originally set false.
+  final bool disableBackButton;
+
   LoginPage(
-      {required this.chatServerM,
+      {
+      // required this.chatServerM,
+      required this.baseUrl,
       this.email,
       this.password,
       this.isRelogin = false,
+      this.disableBackButton = false,
       Key? key})
       : super(key: key) {
     _bgDeco = BoxDecoration(
@@ -55,10 +70,15 @@ class _LoginPageState extends State<LoginPage> {
   // late ChatServerM _chatServer;
   final ValueNotifier<LoginType> _loginTypeNotifier =
       ValueNotifier(LoginType.password);
+  final ValueNotifier<_ServerInfoFetchingStatus> serverInfoFetchingStatus =
+      ValueNotifier(_ServerInfoFetchingStatus.fetching);
+
+  ChatServerM? _chatServerM;
 
   @override
   void initState() {
     super.initState();
+    _getChatServerM();
   }
 
   @override
@@ -68,15 +88,22 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.edgeColor,
-      body: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        child: Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          decoration: widget._bgDeco,
-          child: SafeArea(
-            child: SingleChildScrollView(
-              child: Container(
+      body: _buildBody(context),
+      bottomNavigationBar:
+          EnvConstants.voceBaseUrl.isEmpty ? null : _buildBottomNavBar(),
+    );
+  }
+
+  GestureDetector _buildBody(BuildContext context) {
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        decoration: widget._bgDeco,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Container(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,9 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                       _buildRegister(),
                       // _buildDivider(),
                       // _buildLoginTypeSwitch()
-                    ]),
-              ),
-            ),
+                    ])),
           ),
         ),
       ),
@@ -103,25 +128,52 @@ class _LoginPageState extends State<LoginPage> {
         builder: (context, loginType, _) {
           switch (loginType) {
             case LoginType.password:
-              return PasswordLogin(
-                  chatServer: widget.chatServerM,
-                  email: widget.email,
-                  password: widget.password,
-                  isRelogin: widget.isRelogin);
+              return ValueListenableBuilder<_ServerInfoFetchingStatus>(
+                  valueListenable: serverInfoFetchingStatus,
+                  builder: (context, status, _) {
+                    switch (status) {
+                      case _ServerInfoFetchingStatus.done:
+                        return PasswordLogin(
+                            chatServer: _chatServerM!,
+                            email: widget.email,
+                            password: widget.password,
+                            isRelogin: widget.isRelogin);
+                      case _ServerInfoFetchingStatus.error:
+                        return Center(
+                          child: SizedBox(
+                            height: 48,
+                            width: double.maxFinite,
+                            child: CupertinoButton.filled(
+                                padding: EdgeInsets.zero,
+                                child:
+                                    Text(AppLocalizations.of(context)!.retry),
+                                onPressed: () => _getChatServerM()),
+                          ),
+                        );
+
+                      default:
+                        return PasswordLogin(
+                            chatServer: ChatServerM(),
+                            email: widget.email,
+                            password: widget.password,
+                            isRelogin: widget.isRelogin,
+                            enable: false);
+                    }
+                  });
             case LoginType.magiclink:
-              return MagiclinkLogin(chatServer: widget.chatServerM);
+              return MagiclinkLogin(chatServer: _chatServerM!);
             default:
-              return PasswordLogin(chatServer: widget.chatServerM);
+              return PasswordLogin(chatServer: _chatServerM!);
           }
         });
   }
 
   Widget _buildRegister() {
-    if (widget.chatServerM.properties.config == null) {
+    if (_chatServerM?.properties.config == null) {
       return SizedBox.shrink();
     }
 
-    if (widget.chatServerM.properties.config?.whoCanSignUp != "EveryOne") {
+    if (_chatServerM!.properties.config?.whoCanSignUp != "EveryOne") {
       return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Text(AppLocalizations.of(context)!.loginPageOnlyInvitedDes,
@@ -144,7 +196,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           SizedBox(width: 5),
           GestureDetector(
-            onTap: _onTapSignUp,
+            onTap: () => _onTapSignUp(_chatServerM!),
             child: Text(AppLocalizations.of(context)!.loginPageSignUp,
                 style: TextStyle(
                     fontWeight: FontWeight.w500,
@@ -156,13 +208,13 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _onTapSignUp() {
+  void _onTapSignUp(ChatServerM chatServerM) {
     Navigator.push(
         context,
         MaterialPageRoute(
             fullscreenDialog: true,
             builder: (context) {
-              return PasswordRegisterPage(chatServer: widget.chatServerM);
+              return PasswordRegisterPage(chatServer: chatServerM);
             }));
   }
 
@@ -191,75 +243,164 @@ class _LoginPageState extends State<LoginPage> {
   Widget _buildBackButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
-      child: FittedBox(
-          child: !widget.isRelogin
-              ? VoceButton(
-                  height: 32,
-                  width: 32,
-                  decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(16)),
-                  contentPadding: EdgeInsets.zero,
-                  normal: Center(
-                    child: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  action: () async {
-                    Navigator.pop(context);
-                    return true;
-                  },
-                )
-              : VoceButton(
-                  height: 32,
-                  width: 32,
-                  decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(16)),
-                  contentPadding: EdgeInsets.zero,
-                  normal: Center(
-                    child: const Icon(
-                      Icons.close,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  action: () async {
-                    Navigator.pop(context);
-                    return true;
-                  },
-                )),
+      child: widget.disableBackButton
+          ? SizedBox(height: 32, width: 32)
+          : FittedBox(
+              child: !widget.isRelogin
+                  ? VoceButton(
+                      height: 32,
+                      width: 32,
+                      decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(16)),
+                      contentPadding: EdgeInsets.zero,
+                      normal: Center(
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      action: () async {
+                        Navigator.pop(context);
+                        return true;
+                      },
+                    )
+                  : VoceButton(
+                      height: 32,
+                      width: 32,
+                      decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(16)),
+                      contentPadding: EdgeInsets.zero,
+                      normal: Center(
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      action: () async {
+                        Navigator.pop(context);
+                        return true;
+                      },
+                    )),
     );
   }
 
   Widget _buildTitle() {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      RichText(
-          text: TextSpan(
-        children: [
-          TextSpan(
-              text: AppLocalizations.of(context)!.loginPageTitle + " ",
-              style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cyan500)),
-          TextSpan(
-            text: widget.chatServerM.properties.serverName,
-            style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                color: Colors.blue.shade700),
-          ),
-        ],
-      )),
-      Text(widget.chatServerM.fullUrlWithoutPort,
-          style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.grey500)),
-    ]);
+    const double titleHeight = 40;
+    return Builder(builder: (context) {
+      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        ValueListenableBuilder<_ServerInfoFetchingStatus>(
+            valueListenable: serverInfoFetchingStatus,
+            builder: (context, status, _) {
+              switch (status) {
+                case _ServerInfoFetchingStatus.error:
+                  return SizedBox(
+                      height: titleHeight,
+                      child: Text(
+                          "${AppLocalizations.of(context)!.loginPageTitle} ",
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.cyan500)));
+                case _ServerInfoFetchingStatus.done:
+                  return SizedBox(
+                    height: titleHeight,
+                    child: RichText(
+                        text: TextSpan(
+                      children: [
+                        TextSpan(
+                            text:
+                                "${AppLocalizations.of(context)!.loginPageTitle} ",
+                            style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.cyan500)),
+                        TextSpan(
+                          text: _chatServerM!.properties.serverName,
+                          style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.blue.shade700),
+                        ),
+                      ],
+                    )),
+                  );
+
+                default:
+                  return SizedBox(
+                      height: titleHeight,
+                      child: Row(
+                        children: [
+                          Text(
+                              AppLocalizations.of(context)!.fetchingServerInfo),
+                          SizedBox(width: 8),
+                          CupertinoActivityIndicator()
+                        ],
+                      ));
+              }
+            }),
+        ValueListenableBuilder<_ServerInfoFetchingStatus>(
+            valueListenable: serverInfoFetchingStatus,
+            builder: (context, status, _) {
+              switch (status) {
+                case _ServerInfoFetchingStatus.error:
+                  return Text(
+                      AppLocalizations.of(context)!.fetchingServerInfoError,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey500));
+
+                default:
+                  return Text(widget.baseUrl,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: AppColors.grey500));
+              }
+            }),
+      ]);
+    });
+  }
+
+  Widget _buildBottomNavBar() {
+    return SafeArea(
+        child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            VoceButton(
+              normal: Text(AppLocalizations.of(context)!.clearLocalData,
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              action: () async {
+                await SharedFuncs.clearLocalData();
+                return true;
+              },
+            ),
+          ],
+        ),
+        SizedBox(
+          height: 30,
+          child: FutureBuilder<String>(
+              future: SharedFuncs.getAppVersion(),
+              builder: ((context, snapshot) {
+                if (snapshot.hasData) {
+                  return Text(
+                    "${AppLocalizations.of(context)!.version}: ${snapshot.data}",
+                    style: AppTextStyles.labelSmall,
+                  );
+                } else {
+                  return SizedBox.shrink();
+                }
+              })),
+        )
+      ],
+    ));
   }
 
   Widget _buildLoginTypeSwitch() {
@@ -281,4 +422,21 @@ class _LoginPageState extends State<LoginPage> {
           }
         });
   }
+
+  Future<ChatServerM?> _getChatServerM() async {
+    serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.fetching;
+    final chatServerM =
+        await ChatServerHelper().prepareChatServerM(widget.baseUrl);
+    if (chatServerM != null) {
+      _chatServerM = chatServerM;
+      serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.done;
+
+      return chatServerM;
+    } else {
+      _chatServerM = null;
+      serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.error;
+    }
+  }
 }
+
+enum _ServerInfoFetchingStatus { fetching, done, error }

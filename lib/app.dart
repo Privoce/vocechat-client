@@ -28,7 +28,7 @@ class App {
   // Initialized in service - db.dart
 
   // initialized in login page.
-  late StatusService statusService;
+  StatusService? statusService;
   AuthService? authService;
 
   // initialized after a successful login action.
@@ -76,7 +76,7 @@ class App {
     // Update Services
     authService?.dispose();
     chatService.dispose();
-    statusService.dispose();
+    statusService?.dispose();
 
     userDb = userDbM;
     statusService = StatusService();
@@ -98,9 +98,10 @@ class App {
         (await UserDbMDao.dao.getList())?.where((e) => e.loggedIn == 1) ?? [];
 
     if (loggedInUserDbList.isEmpty) {
+      final defaultHomePage = await SharedFuncs.getDefaultHomePage();
       navigatorKey.currentState?.pushAndRemoveUntil(
           MaterialPageRoute(
-            builder: (context) => ServerPage(),
+            builder: (context) => defaultHomePage,
           ),
           (route) => false);
       return;

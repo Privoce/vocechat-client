@@ -36,7 +36,7 @@ class Sse {
     if (_isConnecting) return;
 
     if (!(await _networkIsAvailable())) {
-      App.app.statusService.fireSseLoading(SseStatus.disconnected);
+      App.app.statusService?.fireSseLoading(SseStatus.disconnected);
       return;
     }
 
@@ -46,41 +46,48 @@ class Sse {
     _isConnecting = true;
 
     App.logger.info("Connecting SSE: ${await prepareUrl()}");
-    App.app.statusService.fireSseLoading(SseStatus.connecting);
+    App.app.statusService?.fireSseLoading(SseStatus.connecting);
 
-    _startConnectingTimer();
+    // _startConnectingTimer();
 
     final eventSource =
         html.EventSource(Uri.parse(await prepareUrl()).toString());
-    await SharedFuncs.updateServerInfo();
+    SharedFuncs.updateServerInfo();
 
     try {
       eventSource.onMessage.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.successful);
+        App.app.statusService?.fireSseLoading(SseStatus.successful);
         App.logger.info(event.data);
 
         if (event.data.toString().trim().isNotEmpty) {
           fireSseEvent(event.data);
         }
 
-        _cancelConnectingTimer();
-        _startHeartbeatTimer();
+        _isConnecting = false;
+
+        // _cancelConnectingTimer();
+        // _startHeartbeatTimer();
       });
 
       eventSource.onOpen.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.successful);
+        App.app.statusService?.fireSseLoading(SseStatus.successful);
 
-        _cancelConnectingTimer();
-        _startHeartbeatTimer();
+        // _cancelConnectingTimer();
+        // _startHeartbeatTimer();
+        _isConnecting = false;
       });
 
       eventSource.onError.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.disconnected);
+        App.app.statusService?.fireSseLoading(SseStatus.disconnected);
         App.logger.severe(event);
 
-        _cancelConnectingTimer();
-        _cancelHeartbeatTimer();
-        eventSource.close();
+        // _cancelConnectingTimer();
+        // _cancelHeartbeatTimer();
+
+        // eventSource.close();
+        close();
+
+        _handleReconnect();
       });
     } catch (e) {
       App.logger.severe(e);
@@ -94,6 +101,19 @@ class Sse {
 
     return (connectivityResult == ConnectivityResult.mobile ||
         connectivityResult == ConnectivityResult.wifi);
+  }
+
+  void _handleReconnect() async {
+    Future.delayed(Duration(seconds: 3)).then((value) async {
+      await SharedFuncs.renewAuthToken().then((value) {
+        if (value) {
+          connect();
+        } else {
+          App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
+          App.app.statusService?.fireSseLoading(SseStatus.disconnected);
+        }
+      });
+    });
   }
 
   void subscribeSseEvent(SseEventAware aware) {
@@ -150,7 +170,7 @@ class Sse {
     eventSource = null;
     _isConnecting = false;
 
-    App.app.statusService.fireSseLoading(SseStatus.disconnected);
+    App.app.statusService?.fireSseLoading(SseStatus.disconnected);
 
     _cancelConnectingTimer();
 
