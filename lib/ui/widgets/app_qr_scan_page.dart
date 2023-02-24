@@ -12,21 +12,38 @@ import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AppQrScanPage extends StatelessWidget {
+  MobileScannerController cameraController = MobileScannerController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
           MobileScanner(
-              allowDuplicates: false,
-              onDetect: (barcode, args) {
-                if (barcode.rawValue == null) {
-                  App.logger.warning('Failed to scan Barcode');
-                } else {
-                  final String code = barcode.rawValue!;
-                  _onQrCodeDetected(code, context);
-                  App.logger.info('Barcode found! $code');
+              controller: cameraController,
+              onDetect: (capture) {
+                print("######## barcodes detected");
+                final barcodes = capture.barcodes;
+
+                if (barcodes.isNotEmpty) {
+                  final barcode = barcodes.first;
+                  if (barcode.rawValue == null) {
+                    App.logger.warning('Failed to scan Barcode');
+                  } else {
+                    final String code = barcode.rawValue!;
+                    _onQrCodeDetected(code, context);
+                    App.logger.info('Barcode found! $code');
+                  }
                 }
+                // for (final barcode in barcodes) {
+                //   if (barcode.rawValue == null) {
+                //     App.logger.warning('Failed to scan Barcode');
+                //   } else {
+                //     final String code = barcode.rawValue!;
+                //     _onQrCodeDetected(code, context);
+                //     App.logger.info('Barcode found! $code');
+                //   }
+                // }
               }),
           SafeArea(
               child: Padding(

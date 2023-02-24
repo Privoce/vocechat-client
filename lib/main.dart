@@ -316,7 +316,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     print(message.data);
   }
 
-  Future<InvitationLinkData?> _parseInvitationLink(Uri uri) async {
+  Future<InvitationLinkData?> _parseLink(Uri uri) async {
     final param = uri.queryParameters["magic_link"];
     if (param == null || param.isEmpty) return null;
 
@@ -369,7 +369,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     uriLinkStream.listen((Uri? uri) async {
       if (uri == null) return;
 
-      final linkData = await _parseInvitationLink(uri);
+      final linkData = await _parseLink(uri);
       if (linkData == null) return;
 
       _handleUniLink(linkData);
@@ -391,7 +391,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     final initialUri = await getInitialUri();
     if (initialUri == null) return;
 
-    final linkData = await _parseInvitationLink(initialUri);
+    final linkData = await _parseLink(initialUri);
     if (linkData == null) return;
 
     _handleUniLink(linkData);
