@@ -169,43 +169,54 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _buildRegister() {
-    if (_chatServerM?.properties.config == null) {
-      return SizedBox.shrink();
-    }
+    return ValueListenableBuilder<_ServerInfoFetchingStatus>(
+        valueListenable: serverInfoFetchingStatus,
+        builder: (context, status, _) {
+          switch (status) {
+            case _ServerInfoFetchingStatus.done:
+              if (_chatServerM?.properties.config == null) {
+                return SizedBox.shrink();
+              }
 
-    if (_chatServerM!.properties.config?.whoCanSignUp != "EveryOne") {
-      return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(AppLocalizations.of(context)!.loginPageOnlyInvitedDes,
-              style: TextStyle(
-                  fontWeight: FontWeight.w400,
-                  fontSize: 14,
-                  color: AppColors.grey500)));
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            AppLocalizations.of(context)!.loginPageNoAccount,
-            style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-                color: AppColors.grey500),
-          ),
-          SizedBox(width: 5),
-          GestureDetector(
-            onTap: () => _onTapSignUp(_chatServerM!),
-            child: Text(AppLocalizations.of(context)!.loginPageSignUp,
-                style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                    color: AppColors.cyan500)),
-          )
-        ],
-      ),
-    );
+              if (_chatServerM!.properties.config?.whoCanSignUp != "EveryOne") {
+                return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                        AppLocalizations.of(context)!.loginPageOnlyInvitedDes,
+                        style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: AppColors.grey500)));
+              }
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.loginPageNoAccount,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
+                          color: AppColors.grey500),
+                    ),
+                    SizedBox(width: 5),
+                    GestureDetector(
+                      onTap: () => _onTapSignUp(_chatServerM!),
+                      child: Text(AppLocalizations.of(context)!.loginPageSignUp,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: AppColors.cyan500)),
+                    )
+                  ],
+                ),
+              );
+
+            default:
+              return SizedBox.shrink();
+          }
+        });
   }
 
   void _onTapSignUp(ChatServerM chatServerM) {

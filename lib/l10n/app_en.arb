@@ -92,6 +92,7 @@
     "edit": "Edit",
     "edited":"edited",
     "email": "Email",
+    "emailConflictError":"Email conflicts with an existing account.",
     
     "fetchingServerInfo":"Fetching Server Info",
     "fetchingServerInfoError":"Failed to obtain server information, please check the network.",
@@ -149,6 +150,10 @@
     "publicChannelToPrivateTitle":"Change to Private Channel",
     "publicChannelToPrivateContent":"This channel will not be visible to new server members. Current members will not be affected.",
 
+    "registrationSuccess":"Registration Success",
+    "registerEmailSentDes":"A registration email has been sent, please check your email inbox.",
+    "registrationFailed": "Registration Failed",
+    "registrationFailedDes": "An error occurred during registration. Please try again later or contact server admins for help.",
     "rememberMe": "Remember me",
     "reply": "Reply",
     "replyingTo":"Replying to",
