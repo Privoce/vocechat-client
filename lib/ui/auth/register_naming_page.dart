@@ -277,10 +277,18 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
             .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
         App.app.chatService.initSse();
         return true;
+      } else {
+        App.logger.severe(res.statusCode);
+        // switch (expression) {
+        //   case value:
+        //     break;
+        //   default:
+        // }
       }
     } catch (e) {
       App.logger.severe(e);
     }
+
     showAppAlert(
         context: context,
         title: AppLocalizations.of(context)!.registerNamingPageSignUpFailed,

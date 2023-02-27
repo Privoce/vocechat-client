@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:universal_html/html.dart';
+import 'package:vocechat_client/api/lib/token_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 typedef SseEventAware = void Function(dynamic);
 
@@ -102,7 +104,7 @@ class Sse {
   }
 
   Future<String> prepareUrl() async {
-    String url = App.app.chatServerM.fullUrl + "/api/user/events?";
+    String url = "${App.app.chatServerM.fullUrl}/api/user/events?";
 
     final afterMid = await UserDbMDao.dao.getMaxMid(App.app.userDb!.id);
     // final afterMid = await ChatMsgDao().getMaxMid();
@@ -121,8 +123,11 @@ class Sse {
   }
 
   void handleError(Event event) async {
-    _reconnectTimer = Timer(Duration(seconds: reconnectSec), () {
-      connect();
+    _reconnectTimer = Timer(Duration(seconds: reconnectSec), () async {
+      if (await SharedFuncs.renewAuthToken()) {
+        connect();
+      }
+
       reconnectSec *= 2;
       if (reconnectSec >= 64) {
         reconnectSec = 64;
@@ -164,4 +169,3 @@ class Sse {
     App.logger.info("SSE Closed.");
   }
 }
-

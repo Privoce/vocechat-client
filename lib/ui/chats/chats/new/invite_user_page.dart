@@ -125,7 +125,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppLocalizations.of(context)!.invitationLink + ":",
+            Text("${AppLocalizations.of(context)!.invitationLink}:",
                 style: AppTextStyles.titleMedium),
             SizedBox(height: 4),
             SelectableText(_invitationLink ?? "", style: AppTextStyles.snippet)

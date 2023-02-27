@@ -169,7 +169,7 @@ class InvitationLinkPastePage extends StatelessWidget {
 
     try {
       Uri uri = Uri.parse(link);
-      String host = uri.host + (uri.hasPort ? ":" + uri.port.toString() : "");
+      String host = uri.host + (uri.hasPort ? ":${uri.port}" : "");
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
       }
