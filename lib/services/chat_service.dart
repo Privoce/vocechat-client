@@ -488,6 +488,8 @@ class ChatService {
   Future<void> handleHistoryChatMsg(Map<String, dynamic> chatJson) async {
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
+    App.logger.info(chatJson);
+
     // Do filtering if SSE pushes duplicated messages.
     // (Due to SSE reconnection error.)
     if (chatMsg.mid < 0) {

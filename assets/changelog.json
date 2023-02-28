@@ -1,6 +1,12 @@
 {   
-    "latest": {"version": "0.2.71", "build_num": 41},
+    "latest": {"version": "0.2.72", "build_num": 42},
     "logs":  [
+        {"time": 1677530780273, "version": "0.2.72", "build_num": 42, "updates": [
+            "- add: customizable url version.",
+            "- add: scan qr code to login.",
+            "- fix: token issues in registration process.",
+            "- fix: message deletion process."
+        ]},
         {"time": 1676942578905, "version": "0.2.71", "build_num": 41, "updates": [
             "- fix: network issue on previous versions."
         ]},
