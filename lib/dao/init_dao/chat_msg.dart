@@ -781,16 +781,17 @@ class ChatMsgDao extends Dao<ChatMsgM> {
 
   Future<int> deleteMsgByMid(ChatMsgM m) async {
     // m is the notification msg, targetMid is the real msg to be deleted.
-    final int? targetMid = m.mid;
+    final int targetMid = m.mid;
 
-    if (targetMid != null) {
-      await db.delete(ChatMsgM.F_tableName,
-          where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
-      App.logger.info("Msg deleted. Mid: $targetMid");
-    } else {
-      App.logger.info("Msg not exist. mid: ${m.mid}");
-    }
-    return targetMid ?? -1;
+    final deleteCount = await db.delete(ChatMsgM.F_tableName,
+        where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
+    App.logger.info("Msg deleted. Mid: $targetMid");
+
+    // if (deleteCount == 0) {
+    //   // the original message could not be found.
+    // }
+
+    return targetMid;
   }
 
   Future<bool> deleteMsgByLocalMid(ChatMsgM m) async {

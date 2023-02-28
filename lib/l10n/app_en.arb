@@ -92,7 +92,10 @@
     "edit": "Edit",
     "edited":"edited",
     "email": "Email",
-
+    "emailConflictError":"Email conflicts with an existing account.",
+    
+    "fetchingServerInfo":"Fetching Server Info",
+    "fetchingServerInfoError":"Failed to obtain server information, please check the network.",
     "file":"File",
     "forward":"Forward",
     "forwardAsImage":"Forward as image",
@@ -119,6 +122,7 @@
 
     "message": "Message",
     "messageDetail":"Message Detail",
+    "messageDeletionFailed":"Message deletion failed",
     "members":"Members",
     "minute":"minute",
     "minutes":"minutes",
@@ -146,9 +150,14 @@
     "publicChannelToPrivateTitle":"Change to Private Channel",
     "publicChannelToPrivateContent":"This channel will not be visible to new server members. Current members will not be affected.",
 
+    "registrationSuccess":"Registration Success",
+    "registerEmailSentDes":"A registration email has been sent, please check your email inbox.",
+    "registrationFailed": "Registration Failed",
+    "registrationFailedDes": "An error occurred during registration. Please try again later or contact server admins for help.",
     "rememberMe": "Remember me",
     "reply": "Reply",
     "replyingTo":"Replying to",
+    "retry":"Retry",
     "resend":"Resend",
     "resetFcmToken":"Reset Push Notification",
     "resetFcmTokenFooter":"You may re-register Firebase device token for Push Notifications, if a push notification error occurred during login process. Please check your network condition, as it needs to connect Google service.",

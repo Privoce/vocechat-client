@@ -61,7 +61,7 @@ class TaskQueue {
       for (final _QueuedFuture item in currentCycle) {
         try {
           if (enableStatusDisplay) {
-            App.app.statusService.fireTaskLoading(LoadingStatus.loading);
+            App.app.statusService?.fireTaskLoading(LoadingStatus.loading);
           }
           await item.execute();
           if (delay != null) await Future.delayed(delay!);
@@ -72,7 +72,7 @@ class TaskQueue {
       isProcessing = false;
 
       if (enableStatusDisplay) {
-        App.app.statusService.fireTaskLoading(LoadingStatus.success);
+        App.app.statusService?.fireTaskLoading(LoadingStatus.success);
       }
 
       if (afterTaskCheck != null) {

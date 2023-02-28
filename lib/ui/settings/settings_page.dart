@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/env_consts.dart';
 
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -11,6 +12,7 @@ import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/settings/child_pages/firebase_settings_page.dart';
@@ -78,10 +80,10 @@ class _SettingPageState extends State<SettingPage> {
                   _buildLanguage(context),
                   _buildPushNotificationToken(context),
                   _buildAbout(),
-                  if (App.app.userDb?.userInfo.isAdmin ?? false)
-                    // _buildConfigs(context),
+                  // if (App.app.userDb?.userInfo.isAdmin ?? false)
+                  // _buildConfigs(context),
 
-                    SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _buildButtons(context)
                 ],
               )),
@@ -179,7 +181,7 @@ class _SettingPageState extends State<SettingPage> {
         onTap: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => SettingsAboutPage())),
         trailing: FutureBuilder<String>(
-            future: _getVersion(),
+            future: SharedFuncs.getAppVersion(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return Text(snapshot.data!,
@@ -193,24 +195,17 @@ class _SettingPageState extends State<SettingPage> {
             }));
   }
 
-  Future<String> _getVersion() async {
-    PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    String version = packageInfo.version;
-    // String buildNumber = packageInfo.buildNumber;
-    // return version + "($buildNumber)";
-    return version;
-  }
-
   Widget _buildButtons(BuildContext context) {
     return Column(
       children: [
         SizedBox(height: 8),
-        AppBannerButton(
-          title: AppLocalizations.of(context)!.switchServer,
-          onTap: () {
-            _onSwitchServerTapped();
-          },
-        ),
+        if (EnvConstants.voceBaseUrl.isEmpty)
+          AppBannerButton(
+            title: AppLocalizations.of(context)!.switchServer,
+            onTap: () {
+              _onSwitchServerTapped();
+            },
+          ),
         SizedBox(height: 8),
         AppBannerButton(
           title: AppLocalizations.of(context)!.logOut,
@@ -220,8 +215,8 @@ class _SettingPageState extends State<SettingPage> {
         ),
         SizedBox(height: 8),
         AppBannerButton(
-            onTap: () {
-              _onResetDbTapped(context);
+            onTap: () async {
+              await SharedFuncs.clearLocalData();
             },
             title: AppLocalizations.of(context)!.clearLocalData),
         SizedBox(height: 8),
@@ -257,22 +252,6 @@ class _SettingPageState extends State<SettingPage> {
           AppAlertDialogAction(
               text: AppLocalizations.of(context)!.cancel,
               action: () => Navigator.pop(context)),
-        ]);
-  }
-
-  void _onResetDbTapped(BuildContext context) async {
-    showAppAlert(
-        context: context,
-        title: AppLocalizations.of(context)!.clearLocalData,
-        content: AppLocalizations.of(context)!.clearLocalDataContent,
-        primaryAction: AppAlertDialogAction(
-            text: AppLocalizations.of(context)!.ok,
-            isDangerAction: true,
-            action: _onReset),
-        actions: [
-          AppAlertDialogAction(
-              text: AppLocalizations.of(context)!.cancel,
-              action: () => Navigator.pop(context))
         ]);
   }
 
@@ -318,22 +297,6 @@ class _SettingPageState extends State<SettingPage> {
                 Navigator.of(context).pop(context);
               })
         ]);
-  }
-
-  void _onReset() async {
-    try {
-      await closeAllDb();
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    try {
-      await removeDb();
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    exit(0);
   }
 
   void getUserInfoM() async {

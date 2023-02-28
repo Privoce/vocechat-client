@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/user/register_request.dart';
+import 'package:vocechat_client/api/models/user/send_reg_magic_token_request.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -287,50 +289,117 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
   }
 
   Future<bool> _onTapSignUpBtn() async {
-    UserApi userApi = UserApi(serverUrl: widget.chatServer.fullUrl);
+    try {
+      await _checkEmail();
+      return true;
+    } catch (e) {
+      App.logger.severe(e);
 
+      return false;
+    }
+  }
+
+  Future<void> _checkEmail() async {
     final email = _emailController.text.trim().toLowerCase();
+    final password = _pswdController.text;
 
     if (!email.isEmail) {
-      return false;
+      _showEmailFormattingErrorSnack();
     }
 
     try {
-      final res = await userApi.checkEmail(email);
-
-      if (res.statusCode == 200 && res.data == true) {
-        final registerReq = RegisterRequest(
-            email: email,
-            password: _pswdController.text,
-            magicToken: widget.magicToken);
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: ((context) => RegisterNamingPage(
-                registerReq, rememberMe, widget.chatServer))));
-
-        return true;
+      final checkEmailRes =
+          await UserApi(serverUrl: widget.chatServer.fullUrl).checkEmail(email);
+      if (checkEmailRes.statusCode == 200 && checkEmailRes.data == true) {
+        if (widget.magicToken != null && widget.magicToken!.isNotEmpty) {
+          await _sendRegMagicLink(widget.magicToken!, email, password);
+        } else {
+          _navigateToNamingPage(email, password, null);
+        }
+      } else if (checkEmailRes.statusCode == 200 &&
+          checkEmailRes.data == false) {
+        _showEmailConflictErrorSnack();
       } else {
-        await showAppAlert(
-            context: context,
-            title: AppLocalizations.of(context)!
-                .passwordRegisterPageEmailAlreadyExists,
-            content: AppLocalizations.of(context)!
-                .passwordRegisterPageEmailAlreadyExistsContent,
-            actions: [
-              AppAlertDialogAction(
-                  text: AppLocalizations.of(context)!.ok,
-                  action: () {
-                    Navigator.pop(context);
-                  })
-            ]);
-        return true;
+        _showNetworkErrorSnack();
       }
     } catch (e) {
       App.logger.severe(e);
+    }
+  }
+
+  /// Call backend server to send a registration magic link to the provided
+  /// email address.
+  Future<void> _sendRegMagicLink(
+      String magicToken, String email, String password) async {
+    final SendRegMagicTokenRequest req = SendRegMagicTokenRequest(
+        magicToken: magicToken, email: email, password: password);
+    final res = await UserApi(serverUrl: widget.chatServer.fullUrl)
+        .sendRegMagicLink(req);
+    if (res.statusCode == 200 && res.data != null) {
+      final resData = res.data;
+      if (resData!.mailIsSent) {
+        _showEmailSentAlert();
+      } else {
+        _navigateToNamingPage(email, password, resData.newMagicToken);
+      }
+    } else {
+      _showRegistrationFailAlert();
+    }
+  }
+
+  void _navigateToNamingPage(
+      String email, String password, String? magicToken) {
+    final registerReq = RegisterRequest(
+        email: email, password: password, magicToken: magicToken);
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: ((context) =>
+            RegisterNamingPage(registerReq, rememberMe, widget.chatServer))));
+  }
+
+  void _showEmailFormattingErrorSnack() {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!
+              .passwordRegisterPageInvalidEmailFormat)));
+    }
+  }
+
+  void _showEmailConflictErrorSnack() {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(AppLocalizations.of(context)!.emailConflictError)));
+    }
+  }
+
+  void _showNetworkErrorSnack() {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
+    }
+  }
+
+  void _showEmailSentAlert() {
+    if (mounted) {
       showAppAlert(
           context: context,
-          title: "Sign Up failed",
-          content:
-              "Something wrong happened during the account sign up process. Please try again or contact us.",
+          title: AppLocalizations.of(context)!.registrationSuccess,
+          content: AppLocalizations.of(context)!.registerEmailSentDes,
+          actions: [
+            AppAlertDialogAction(
+                text: AppLocalizations.of(context)!.ok,
+                action: () {
+                  Navigator.of(context).pop();
+                })
+          ]);
+    }
+  }
+
+  void _showRegistrationFailAlert() {
+    if (mounted) {
+      showAppAlert(
+          context: context,
+          title: AppLocalizations.of(context)!.registrationFailed,
+          content: AppLocalizations.of(context)!.registrationFailedDes,
           actions: [
             AppAlertDialogAction(
                 text: AppLocalizations.of(context)!.ok,
@@ -338,7 +407,6 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                   Navigator.pop(context);
                 })
           ]);
-      return false;
     }
   }
 }

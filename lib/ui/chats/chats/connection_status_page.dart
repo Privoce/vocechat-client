@@ -20,14 +20,14 @@ class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
   void initState() {
     super.initState();
 
-    App.app.statusService.subscribeSseLoading(_onSseStatus);
-    App.app.statusService.subscribeTokenLoading(_onTokenStatus);
+    App.app.statusService?.subscribeSseLoading(_onSseStatus);
+    App.app.statusService?.subscribeTokenLoading(_onTokenStatus);
   }
 
   @override
   void dispose() {
-    App.app.statusService.unsubscribeSseLoading(_onSseStatus);
-    App.app.statusService.unsubscribeTokenLoading(_onTokenStatus);
+    App.app.statusService?.unsubscribeSseLoading(_onSseStatus);
+    App.app.statusService?.unsubscribeTokenLoading(_onTokenStatus);
     super.dispose();
   }
 

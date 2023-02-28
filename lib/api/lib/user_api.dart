@@ -7,6 +7,8 @@ import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/user/register_request.dart';
+import 'package:vocechat_client/api/models/user/send_reg_magic_token_request.dart';
+import 'package:vocechat_client/api/models/user/send_reg_magic_token_response.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -260,7 +262,7 @@ class UserApi {
       return [200, 409, 412].contains(status);
     };
 
-    final res = await dio.post("/register", data: req);
+    final res = await dio.post("/register", data: req.toJson());
 
     var newRes = Response<LoginResponse>(
         headers: res.headers,
@@ -304,5 +306,28 @@ class UserApi {
   Future<Response> delete() async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     return dio.delete("/delete");
+  }
+
+  Future<Response<SendRegMagicTokenResponse>> sendRegMagicLink(
+      SendRegMagicTokenRequest req) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    final res = await dio.post("/send_reg_magic_link", data: req);
+
+    var newRes = Response<SendRegMagicTokenResponse>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final data = SendRegMagicTokenResponse.fromJson(res.data!);
+      newRes.data = data;
+    }
+    return newRes;
   }
 }

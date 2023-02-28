@@ -23,7 +23,7 @@ class SavedBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (archive == null) {
-      return Text("Unsupported Message Type.");
+      return Text("Saved message might have been deleted.");
     }
 
     final users = archive!.users;

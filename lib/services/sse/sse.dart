@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:universal_html/html.dart';
+import 'package:vocechat_client/api/lib/token_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 
@@ -12,75 +15,62 @@ typedef SseEventAware = void Function(dynamic);
 class Sse {
   static final Sse sse = Sse._internal();
 
-  factory Sse() {
-    return sse;
-  }
+  html.EventSource? eventSource;
 
   Sse._internal();
 
-  html.EventSource? eventSource;
-
   final Set<SseEventAware> sseEventListeners = {};
 
-  bool _isConnecting = false;
+  int reconnectSec = 1;
 
-  /// For the situation where the SSE keeps connecting
-  /// but connection is not established.
-  Timer? _connectingTimer;
+  bool isConnecting = false;
 
-  /// Do reconnection when any SSE message has not been received for longer than
-  /// a time period.
-  Timer? _heartbeatTimer;
+  Timer? _reconnectTimer;
+
+  /// shows whether sse has received 'ready' message from server.
+  bool _afterReady = false;
+
+  bool get afterReady => _afterReady;
 
   void connect() async {
-    if (_isConnecting) return;
+    if (isConnecting) return;
 
-    if (!(await _networkIsAvailable())) {
-      App.app.statusService.fireSseLoading(SseStatus.disconnected);
-      return;
-    }
+    isConnecting = true;
 
-    // Order must be maintained as follow: close -> _isConnecting = true
     close();
-
-    _isConnecting = true;
-
     App.logger.info("Connecting SSE: ${await prepareUrl()}");
-    App.app.statusService.fireSseLoading(SseStatus.connecting);
-
-    _startConnectingTimer();
+    App.app.statusService?.fireSseLoading(SseStatus.connecting);
 
     final eventSource =
         html.EventSource(Uri.parse(await prepareUrl()).toString());
-    await SharedFuncs.updateServerInfo();
 
     try {
       eventSource.onMessage.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.successful);
+        App.app.statusService?.fireSseLoading(SseStatus.successful);
         App.logger.info(event.data);
 
         if (event.data.toString().trim().isNotEmpty) {
           fireSseEvent(event.data);
         }
 
-        _cancelConnectingTimer();
-        _startHeartbeatTimer();
+        isConnecting = false;
       });
 
       eventSource.onOpen.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.successful);
+        App.app.statusService?.fireSseLoading(SseStatus.successful);
+        reconnectSec = 1;
+        cancelReconnectionDelay();
 
-        _cancelConnectingTimer();
-        _startHeartbeatTimer();
+        isConnecting = false;
       });
 
       eventSource.onError.listen((event) {
-        App.app.statusService.fireSseLoading(SseStatus.disconnected);
+        App.app.statusService?.fireSseLoading(SseStatus.disconnected);
         App.logger.severe(event);
-
-        _cancelConnectingTimer();
-        _cancelHeartbeatTimer();
         eventSource.close();
+        handleError(event);
+
+        isConnecting = false;
       });
     } catch (e) {
       App.logger.severe(e);
@@ -89,14 +79,8 @@ class Sse {
     this.eventSource = eventSource;
   }
 
-  Future<bool> _networkIsAvailable() async {
-    final connectivityResult = await Connectivity().checkConnectivity();
-
-    return (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi);
-  }
-
   void subscribeSseEvent(SseEventAware aware) {
+    // unsubscribeSseEvent(aware);
     unsubscribeAllSseEvents();
     sseEventListeners.add(aware);
   }
@@ -123,6 +107,7 @@ class Sse {
     String url = "${App.app.chatServerM.fullUrl}/api/user/events?";
 
     final afterMid = await UserDbMDao.dao.getMaxMid(App.app.userDb!.id);
+    // final afterMid = await ChatMsgDao().getMaxMid();
     if (afterMid > -1) {
       url += "after_mid=$afterMid";
     }
@@ -137,6 +122,37 @@ class Sse {
     return url;
   }
 
+  void handleError(Event event) async {
+    _reconnectTimer = Timer(Duration(seconds: reconnectSec), () async {
+      if (await SharedFuncs.renewAuthToken()) {
+        connect();
+      }
+
+      reconnectSec *= 2;
+      if (reconnectSec >= 64) {
+        reconnectSec = 64;
+      }
+    });
+  }
+
+  void cancelReconnectionDelay() {
+    _reconnectTimer?.cancel();
+  }
+
+  // void _setAfterReady() {
+  //   _afterReady = true;
+  // }
+
+  // void _resetAfterReady() {
+  //   _afterReady = false;
+  // }
+
+  // void _monitorReadyEvent(dynamic event) {
+  //   final map = json.decode(event);
+  //   final type = map["type"];
+  //   if (type == sseReady) _setAfterReady();
+  // }
+
   bool isClosed() {
     if (eventSource == null) {
       eventSource = null;
@@ -148,49 +164,8 @@ class Sse {
   void close() {
     eventSource?.close();
     eventSource = null;
-    _isConnecting = false;
-
-    App.app.statusService.fireSseLoading(SseStatus.disconnected);
-
-    _cancelConnectingTimer();
-
+    isConnecting = false;
+    _reconnectTimer?.cancel();
     App.logger.info("SSE Closed.");
-  }
-
-  // Following functions are for the situation where the SSE keeps connecting
-  // but connection is not established.
-
-  /// Starts a timer that counts how long SSE keeps in trying-to-connect status.
-  ///
-  /// [_connectingTimer] will be cancelled when SSE connection establishes, or
-  /// an error occurred, or it keeps trying to connect for more than
-  /// [maxConnectingWaitingSecs].
-  void _startConnectingTimer() {
-    const maxConnectingWaitingSecs = 10;
-    _cancelConnectingTimer();
-
-    _connectingTimer = Timer(Duration(seconds: maxConnectingWaitingSecs), () {
-      close();
-    });
-  }
-
-  void _cancelConnectingTimer() {
-    _connectingTimer?.cancel();
-  }
-
-  /// Starts a timer that reconnect SSE when the app has not received an SSE
-  /// event for more than [maxHeartbeatInterval] seconds.
-  void _startHeartbeatTimer() {
-    const int maxHeartbeatInterval = 15;
-    _cancelHeartbeatTimer();
-
-    _heartbeatTimer =
-        Timer.periodic(Duration(seconds: maxHeartbeatInterval), (timer) {
-      connect();
-    });
-  }
-
-  void _cancelHeartbeatTimer() {
-    _heartbeatTimer?.cancel();
   }
 }

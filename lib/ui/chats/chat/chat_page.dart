@@ -895,7 +895,7 @@ class _ChatPageState extends State<ChatPage>
     }
 
     for (var chatMsgM in selectedMsgMList.value) {
-      await _onDelete(chatMsgM);
+      await _onDeleteNew(chatMsgM);
     }
     if (mounted) {
       setState(() {
@@ -946,6 +946,68 @@ class _ChatPageState extends State<ChatPage>
       });
     }
     return true;
+  }
+
+  Future<bool> _onDeleteNew(ChatMsgM old) async {
+    try {
+      await MessageApi().delete(old.mid).then((response) async {
+        if (response.statusCode == 200) {
+          // successfully deleted
+          FileHandler.singleton.deleteWithChatMsgM(old);
+
+          final index = _uiMsgList.indexWhere(
+              (element) => element.chatMsgM.localMid == old.localMid);
+          ChatMsgDao().deleteMsgByLocalMid(old).then((successful) async {
+            if (successful) {
+              if (mounted) {
+                setState(() {
+                  _uiMsgList.remove(_uiMsgList[index]);
+                });
+              }
+
+              if (old.isGroupMsg) {
+                final curMaxMid = await ChatMsgDao().getChannelMaxMid(old.gid);
+                if (curMaxMid > -1) {
+                  final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+                  if (msg != null) {
+                    App.app.chatService.fireSnippet(msg);
+                  }
+                }
+              } else {
+                final curMaxMid = await ChatMsgDao().getDmMaxMid(old.dmUid);
+                if (curMaxMid > -1) {
+                  final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+                  if (msg != null) {
+                    App.app.chatService.fireSnippet(msg);
+                  }
+                }
+              }
+
+              return true;
+            }
+          });
+        } else {
+          App.logger.severe("Message deletion failed. Message: $old");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content:
+                    Text(AppLocalizations.of(context)!.messageDeletionFailed)));
+          }
+          return false;
+        }
+      });
+    } catch (e) {
+      App.logger.severe("Message deletion failed. Message: $old, Error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:
+                Text(AppLocalizations.of(context)!.messageDeletionFailed)));
+      }
+    }
+
+    return false;
   }
 
   Future<bool> _onDelete(ChatMsgM old) async {
@@ -1182,7 +1244,7 @@ class _ChatPageState extends State<ChatPage>
                                   title: AppLocalizations.of(context)!.delete,
                                   color: Colors.red,
                                   onTap: () {
-                                    _onDelete(uiMsg.chatMsgM);
+                                    _onDeleteNew(uiMsg.chatMsgM);
                                     Navigator.of(context).pop();
                                   }),
                           ],

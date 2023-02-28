@@ -72,7 +72,7 @@ class DioUtil {
       });
     } else {
       App.logger.severe("Token refresh failed");
-      App.app.statusService.fireTokenLoading(TokenStatus.unauthorized);
+      App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
       handler.resolve(response);
     }
   }

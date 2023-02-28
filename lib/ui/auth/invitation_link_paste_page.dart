@@ -169,7 +169,7 @@ class InvitationLinkPastePage extends StatelessWidget {
 
     try {
       Uri uri = Uri.parse(link);
-      String host = uri.host + (uri.hasPort ? ":" + uri.port.toString() : "");
+      String host = uri.host + (uri.hasPort ? ":${uri.port}" : "");
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
       }
@@ -179,8 +179,8 @@ class InvitationLinkPastePage extends StatelessWidget {
 
       final res = await userApi.checkMagicToken(magicToken);
       if (res.statusCode == 200 && res.data == true) {
-        final chatServerM = await ChatServerHelper(context: context)
-            .prepareChatServerM(apiPath);
+        final chatServerM =
+            await ChatServerHelper().prepareChatServerM(apiPath);
         if (chatServerM != null) {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => PasswordRegisterPage(
