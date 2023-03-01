@@ -131,7 +131,7 @@ class SendText implements AbstractSend {
     // Database execution happens first to ensure index and [msgCount] in
     // ChatPage, which is read from database, are correct.
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-    App.app.chatService.taskQueue
+    App.app.chatService.mainTaskQueue
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
               App.app.chatService.fireMsg(msgM, localMid, null);
               App.app.chatService.fireSnippet(msgM);
@@ -151,7 +151,7 @@ class SendText implements AbstractSend {
 
         message.mid = mid;
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        App.app.chatService.taskQueue
+        App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(msgM).then((value) {
                   App.app.chatService.fireMsg(msgM, localMid, null);
                   App.app.chatService.fireSnippet(msgM);
@@ -191,7 +191,7 @@ class SendText implements AbstractSend {
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
 
     // Update local database and UI
-    App.app.chatService.taskQueue
+    App.app.chatService.mainTaskQueue
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
               final msgM =
                   ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
@@ -214,7 +214,7 @@ class SendText implements AbstractSend {
 
         message.mid = mid;
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        App.app.chatService.taskQueue
+        App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(msgM).then((value) {
                   App.app.chatService.fireMsg(msgM, localMid, null);
                   App.app.chatService.fireSnippet(msgM);
@@ -337,7 +337,7 @@ class SendReply implements AbstractSend {
 
     // Update local database and UI
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-    App.app.chatService.taskQueue
+    App.app.chatService.mainTaskQueue
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
               App.app.chatService.fireMsg(msgM, localMid, null);
               App.app.chatService.fireSnippet(msgM);
@@ -352,7 +352,7 @@ class SendReply implements AbstractSend {
 
         message.mid = mid;
         chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        App.app.chatService.taskQueue
+        App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
                   App.app.chatService.fireMsg(chatMsgM, localMid, null);
                   App.app.chatService.fireSnippet(chatMsgM);
@@ -393,7 +393,7 @@ class SendReply implements AbstractSend {
     // Update local database and UI
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
 
-    App.app.chatService.taskQueue
+    App.app.chatService.mainTaskQueue
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
               App.app.chatService.fireMsg(msgM, localMid, null);
               App.app.chatService.fireSnippet(msgM);
@@ -408,7 +408,7 @@ class SendReply implements AbstractSend {
 
         message.mid = mid;
         chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
-        App.app.chatService.taskQueue
+        App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
                   App.app.chatService.fireMsg(chatMsgM, localMid, null);
                   App.app.chatService.fireSnippet(chatMsgM);
@@ -510,7 +510,8 @@ class SendFile implements AbstractSend {
     }
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-    App.app.chatService.taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM));
+    App.app.chatService.mainTaskQueue
+        .add(() => ChatMsgDao().addOrUpdate(chatMsgM));
 
     Uint8List fileBytes = file.readAsBytesSync();
 

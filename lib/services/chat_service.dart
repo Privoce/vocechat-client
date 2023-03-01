@@ -61,11 +61,12 @@ class ChatService {
         afterTaskCheck: () async {
           fireReady();
         });
-    taskQueue = TaskQueue();
+    mainTaskQueue = TaskQueue();
+    subTaskQueue = TaskQueue();
   }
 
   void dispose() {
-    taskQueue.cancel();
+    mainTaskQueue.cancel();
     sseQueue.clear();
     readIndexTimer.cancel();
     Sse.sse.close();
@@ -81,7 +82,8 @@ class ChatService {
   final Set<OrgInfoAware> _orgInfoListeners = {};
 
   late SseQueue sseQueue;
-  late TaskQueue taskQueue;
+  late TaskQueue mainTaskQueue;
+  late TaskQueue subTaskQueue;
   late Timer readIndexTimer;
 
   /// Used to avoid duplicated messages.
@@ -785,23 +787,7 @@ class ChatService {
             await UserDbMDao.dao.updateUserInfo(userInfo);
 
             if (userInfo.avatarUpdatedAt != 0) {
-              final resourceApi = ResourceApi();
-              final avatarRes = await resourceApi.getUserAvatar(m.uid);
-              if (avatarRes.statusCode == 200 && avatarRes.data != null) {
-                App.logger.info("UID ${m.uid} Avatar obtained");
-                m.avatarBytes = avatarRes.data!;
-
-                await UserInfoDao()
-                    .addOrUpdate(m)
-                    .then((value) => fireUser(value, EventActions.update));
-                await UserDbMDao.dao.updateUserInfo(userInfo, avatarRes.data!);
-                if (m.uid == App.app.userDb?.uid) {
-                  App.app.userDb?.avatarBytes = avatarRes.data!;
-                  await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
-                }
-              } else {
-                App.logger.warning("UID ${m.uid} Avatar null");
-              }
+              subTaskQueue.add(() => _getUserAvatar(m));
             }
 
             break;
@@ -820,23 +806,7 @@ class ChatService {
 
               if (newInfo.avatarUpdatedAt != 0 &&
                   update.avatarUpdatedAt != null) {
-                final resourceApi = ResourceApi();
-                final avatarRes = await resourceApi.getUserAvatar(m.uid);
-                if (avatarRes.statusCode == 200 && avatarRes.data != null) {
-                  App.logger.info("UID ${m.uid} Avatar obtained.");
-                  m.avatarBytes = avatarRes.data!;
-
-                  await UserInfoDao()
-                      .addOrUpdate(m)
-                      .then((value) => fireUser(value, EventActions.update));
-                  await UserDbMDao.dao.updateUserInfo(newInfo, avatarRes.data!);
-                  if (m.uid == App.app.userDb?.uid) {
-                    App.app.userDb?.avatarBytes = avatarRes.data!;
-                    await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
-                  }
-                } else {
-                  App.logger.warning("UID ${m.uid} Avatar null");
-                }
+                subTaskQueue.add(() => _getUserAvatar(m));
               }
             }
             break;
@@ -1176,24 +1146,7 @@ class ChatService {
           await UserDbMDao.dao.updateUserInfo(userInfo);
 
           if (userInfo.avatarUpdatedAt != 0) {
-            final resourceApi = ResourceApi();
-            resourceApi.getUserAvatar(m.uid).then((avatarRes) async {
-              App.logger.info("UID ${m.uid} Avatar obtained.");
-              if (avatarRes.statusCode == 200 && avatarRes.data != null) {
-                m.avatarBytes = avatarRes.data!;
-                await UserInfoDao()
-                    .addOrUpdate(m)
-                    .then((value) => fireUser(value, EventActions.update));
-                await UserDbMDao.dao.updateUserInfo(userInfo, avatarRes.data!);
-
-                if (m.uid == App.app.userDb?.uid) {
-                  App.app.userDb?.avatarBytes = avatarRes.data!;
-                  await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
-                }
-              } else {
-                App.logger.warning("UID ${m.uid} Avatar null");
-              }
-            });
+            subTaskQueue.add(() => _getUserAvatar(m));
           }
         }
       }
@@ -1266,7 +1219,7 @@ class ChatService {
               createdAt: chatMsg.createdAt,
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-          taskQueue
+          mainTaskQueue
               .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
                     String s = value.msgNormal?.content ??
                         value.msgReply?.content ??
@@ -1286,11 +1239,12 @@ class ChatService {
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
 
-          taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-                fireSnippet(value);
-                fireMsg(value, localMid, detail.content);
-                midSet.remove(value.mid);
-              }));
+          mainTaskQueue
+              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+                    fireSnippet(value);
+                    fireMsg(value, localMid, detail.content);
+                    midSet.remove(value.mid);
+                  }));
 
           break;
 
@@ -1302,15 +1256,16 @@ class ChatService {
               createdAt: chatMsg.createdAt,
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-          taskQueue.add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-                fireSnippet(chatMsgM);
-                midSet.remove(value.mid);
-              }));
+          mainTaskQueue
+              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
+                    fireSnippet(chatMsgM);
+                    midSet.remove(value.mid);
+                  }));
 
           // thumb will only be downloaded if file is an image.
           try {
             if (chatMsgM.isImageMsg) {
-              taskQueue.add(() =>
+              mainTaskQueue.add(() =>
                   FileHandler.singleton.getImageThumb(chatMsgM).then((thumb) {
                     if (thumb != null) {
                       fireMsg(chatMsgM, chatMsgM.localMid, thumb);
@@ -1336,7 +1291,7 @@ class ChatService {
               detail: detail.toJson());
           chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
 
-          taskQueue
+          mainTaskQueue
               .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
                     fireSnippet(value);
                     midSet.remove(value.mid);
@@ -1465,7 +1420,7 @@ class ChatService {
       chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgSendStatus.success);
-      taskQueue
+      mainTaskQueue
           .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
                 fireSnippet(value);
                 fireMsg(value, localMid, msgReplyJson['content']);
@@ -1695,5 +1650,26 @@ class ChatService {
   Future getOpenGraphicParse(url) async {
     final resourceApi = ResourceApi();
     return (await resourceApi.getOpenGraphicParse(url)).data;
+  }
+
+  Future<void> _getUserAvatar(UserInfoM m) async {
+    final resourceApi = ResourceApi();
+    resourceApi.getUserAvatar(m.uid).then((avatarRes) async {
+      App.logger.info("UID ${m.uid} Avatar obtained.");
+      if (avatarRes.statusCode == 200 && avatarRes.data != null) {
+        m.avatarBytes = avatarRes.data!;
+        await UserInfoDao()
+            .addOrUpdate(m)
+            .then((value) => fireUser(value, EventActions.update));
+        await UserDbMDao.dao.updateUserInfo(m.userInfo, avatarRes.data!);
+
+        if (m.uid == App.app.userDb?.uid) {
+          App.app.userDb?.avatarBytes = avatarRes.data!;
+          await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
+        }
+      } else {
+        App.logger.warning("UID ${m.uid} Avatar null");
+      }
+    });
   }
 }
