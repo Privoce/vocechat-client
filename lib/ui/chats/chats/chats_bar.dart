@@ -136,6 +136,7 @@ class _ChatsBarState extends State<ChatsBar> {
   }
 
   Future<void> _onTask(LoadingStatus status) async {
+    App.logger.info("on Task");
     if (mounted) {
       setState(() {
         _taskStatus = status;

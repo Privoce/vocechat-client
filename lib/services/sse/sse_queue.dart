@@ -32,7 +32,7 @@ class SseQueue {
   Future _process() async {
     if (!isProcessing) {
       isProcessing = true;
-      if (enableStatusDisplay) {
+      if (enableStatusDisplay && queue.isNotEmpty) {
         App.app.statusService?.fireTaskLoading(LoadingStatus.loading);
       }
 
@@ -52,7 +52,7 @@ class SseQueue {
         await afterTaskCheck!();
       }
 
-      if (enableStatusDisplay) {
+      if (enableStatusDisplay && queue.isEmpty) {
         App.app.statusService?.fireTaskLoading(LoadingStatus.success);
       }
     }
