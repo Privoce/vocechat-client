@@ -60,9 +60,9 @@ class TaskQueue {
       nextCycle = [];
       for (final _QueuedFuture item in currentCycle) {
         try {
-          if (enableStatusDisplay) {
-            App.app.statusService?.fireTaskLoading(LoadingStatus.loading);
-          }
+          // if (enableStatusDisplay) {
+          //   App.app.statusService?.fireTaskLoading(LoadingStatus.loading);
+          // }
           await item.execute();
           if (delay != null) await Future.delayed(delay!);
         } catch (e) {
@@ -71,9 +71,9 @@ class TaskQueue {
       }
       isProcessing = false;
 
-      if (enableStatusDisplay) {
-        App.app.statusService?.fireTaskLoading(LoadingStatus.success);
-      }
+      // if (enableStatusDisplay) {
+      //   App.app.statusService?.fireTaskLoading(LoadingStatus.success);
+      // }
 
       if (afterTaskCheck != null) {
         await afterTaskCheck!();
