@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -136,7 +137,6 @@ class _ChatsBarState extends State<ChatsBar> {
   }
 
   Future<void> _onTask(LoadingStatus status) async {
-    App.logger.info("on Task");
     if (mounted) {
       setState(() {
         _taskStatus = status;
