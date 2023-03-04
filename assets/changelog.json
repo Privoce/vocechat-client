@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.72", "build_num": 42},
+    "latest": {"version": "0.2.73", "build_num": 43},
     "logs":  [
+        {"time": 1677861623857, "version": "0.2.73", "build_num": 43, "updates": [
+            "- fix: minor change in status monitoring strategy.",
+            "- fix: license issue in chat message sending."
+        ]},
         {"time": 1677530780273, "version": "0.2.72", "build_num": 42, "updates": [
             "- add: customizable url version.",
             "- add: scan qr code to login.",
