@@ -59,6 +59,15 @@ class UserApi {
     dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode({'cid': cid})));
     dio.options.headers["content-type"] = typeText;
+
+    Map<String, dynamic> refererHeader = {
+      'referer': App.app.chatServerM.fullUrl
+    };
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      refererHeader = {'referer': "https://privoce.voce.chat"};
+    }
+    dio.options.headers.addAll(refererHeader);
+
     final res = await dio.post("/$dmUid/send", data: msg);
 
     var newRes = Response<int>(
