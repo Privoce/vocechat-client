@@ -9,7 +9,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
-import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -354,11 +353,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _parseLink(Uri uri) {
-    // Disable url jump for login and join when the serverUrl is set.
-    if (EnvConstants.voceBaseUrl.isNotEmpty) {
-      return;
-    }
-
     const String loginRegexStr = r"\/?(?:\w+\/)?login";
     const String joinRegexStr = r"\/?(?:\w+\/)?join";
 

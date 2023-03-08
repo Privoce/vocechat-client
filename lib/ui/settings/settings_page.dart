@@ -1,17 +1,11 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/env_consts.dart';
 
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/chat_service.dart';
-import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -199,13 +193,12 @@ class _SettingPageState extends State<SettingPage> {
     return Column(
       children: [
         SizedBox(height: 8),
-        if (EnvConstants.voceBaseUrl.isEmpty)
-          AppBannerButton(
-            title: AppLocalizations.of(context)!.switchServer,
-            onTap: () {
-              _onSwitchServerTapped();
-            },
-          ),
+        AppBannerButton(
+          title: AppLocalizations.of(context)!.switchServer,
+          onTap: () {
+            _onSwitchServerTapped();
+          },
+        ),
         SizedBox(height: 8),
         AppBannerButton(
           title: AppLocalizations.of(context)!.logOut,

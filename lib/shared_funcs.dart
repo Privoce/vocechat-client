@@ -16,7 +16,6 @@ import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_proper
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -71,10 +70,10 @@ class SharedFuncs {
 
   /// Return default home page, in case [EnvConstants.voceBaseUrl] is set.
   static Future<Widget> getDefaultHomePage() async {
-    if (EnvConstants.voceBaseUrl.isNotEmpty) {
-      return LoginPage(
-          baseUrl: EnvConstants.voceBaseUrl, disableBackButton: true);
-    }
+    // if (EnvConstants.voceBaseUrl.isNotEmpty) {
+    //   return LoginPage(
+    //       baseUrl: EnvConstants.voceBaseUrl, disableBackButton: true);
+    // }
     return ServerPage();
   }
 

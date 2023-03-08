@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -45,9 +44,7 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
           return AbsorbPointer(
             absorbing: disableGesture,
             child: Scaffold(
-              drawer: EnvConstants.voceBaseUrl.isEmpty
-                  ? _buildServerSwitchDrawer()
-                  : null,
+              drawer: _buildServerSwitchDrawer(),
               body: CupertinoTabScaffold(
                   tabBar: CupertinoTabBar(
                       height: 60,
