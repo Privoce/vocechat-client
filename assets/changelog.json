@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.73", "build_num": 43},
+    "latest": {"version": "0.2.74", "build_num": 44},
     "logs":  [
+        {"time": 1678243888670, "version": "0.2.74", "build_num": 44, "updates": [
+            "- fix: license issue when sending files in private chats."
+        ]},
         {"time": 1677861623857, "version": "0.2.73", "build_num": 43, "updates": [
             "- fix: minor change in status monitoring strategy.",
             "- fix: license issue in chat message sending."
