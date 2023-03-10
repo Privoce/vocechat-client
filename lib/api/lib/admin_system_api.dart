@@ -105,8 +105,5 @@ class AdminSystemApi {
       newRes.data = res.data;
     }
     return newRes;
-
-    // print(dio.get("/initialized"));
-    // return dio.get("/initialized");
   }
 }

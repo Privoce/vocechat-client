@@ -94,36 +94,37 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             )
           ]),
           SizedBox(height: 8),
-          ValueListenableBuilder<UserInfoM>(
-              valueListenable: widget.userInfoNotifier,
-              builder: (context, userInfoM, _) {
-                // This is not the read burn_after_read, but is auto-deletion.
-                // Name is consistant with server names.
-                final burnAfterReadSecond =
-                    userInfoM.properties.burnAfterReadSecond;
+          if (widget.userInfoNotifier.value.uid != App.app.userDb?.uid)
+            ValueListenableBuilder<UserInfoM>(
+                valueListenable: widget.userInfoNotifier,
+                builder: (context, userInfoM, _) {
+                  // This is not the read burn_after_read, but is auto-deletion.
+                  // Name is consistant with server names.
+                  final burnAfterReadSecond =
+                      userInfoM.properties.burnAfterReadSecond;
 
-                return BannerTileGroup(bannerTileList: [
-                  BannerTile(
-                    title: AppLocalizations.of(context)!.autoDeleteMessage,
-                    trailing: Text(
-                        SharedFuncs.translateAutoDeletionSettingTime(
-                            burnAfterReadSecond, context),
-                        style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 17,
-                            color: AppColors.labelColorLightSec)),
-                    onTap: () async {
-                      Navigator.of(context)
-                          .push(MaterialPageRoute(builder: ((context) {
-                        return AutoDeleteSettingsPage(
-                          initExpTime: burnAfterReadSecond,
-                          onSubmit: _changeBurnAfterReadingSettings,
-                        );
-                      })));
-                    },
-                  )
-                ]);
-              }),
+                  return BannerTileGroup(bannerTileList: [
+                    BannerTile(
+                      title: AppLocalizations.of(context)!.autoDeleteMessage,
+                      trailing: Text(
+                          SharedFuncs.translateAutoDeletionSettingTime(
+                              burnAfterReadSecond, context),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              fontSize: 17,
+                              color: AppColors.labelColorLightSec)),
+                      onTap: () async {
+                        Navigator.of(context)
+                            .push(MaterialPageRoute(builder: ((context) {
+                          return AutoDeleteSettingsPage(
+                            initExpTime: burnAfterReadSecond,
+                            onSubmit: _changeBurnAfterReadingSettings,
+                          );
+                        })));
+                      },
+                    )
+                  ]);
+                }),
         ],
       ),
     );
