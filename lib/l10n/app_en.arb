@@ -97,6 +97,8 @@
     "fetchingServerInfo":"Fetching Server Info",
     "fetchingServerInfoError":"Failed to obtain server information, please check the network.",
     "file":"File",
+    "fileUploadError":"File Upload Error",
+    "fileSizeTooLargeDes":"File size exceeds server limit.",
     "forward":"Forward",
     "forwardAsImage":"Forward as image",
     "forwardAsArchive":"Forward as archive",
