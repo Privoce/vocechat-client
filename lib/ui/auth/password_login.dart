@@ -103,7 +103,8 @@ class _PasswordLoginState extends State<PasswordLogin> {
               builder: (context, showEmailAlert, child) {
                 if (showEmailAlert) {
                   return Text(
-                    "Invalid Email Format",
+                    AppLocalizations.of(context)!
+                        .passwordRegisterPageInvalidEmailFormat,
                     style: TextStyle(fontSize: 12, color: Colors.red),
                   );
                 }
@@ -203,23 +204,6 @@ class _PasswordLoginState extends State<PasswordLogin> {
     }
 
     App.logger.severe("Login Failed");
-
-    // TODO: to be deleted after error is handled.
-    showAppAlert(
-        context: context,
-        title: "Login failed",
-        content:
-            "This is only for testing. If this shows, please tap 'copy' button and contact us.",
-        actions: [
-          AppAlertDialogAction(
-              text: "OK", action: () => Navigator.of(context).pop()),
-          AppAlertDialogAction(
-              text: "Copy",
-              action: () {
-                Clipboard.setData(ClipboardData(text: errorMsg));
-                Navigator.of(context).pop();
-              })
-        ]);
     return false;
   }
 }
