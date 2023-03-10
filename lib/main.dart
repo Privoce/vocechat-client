@@ -26,7 +26,6 @@ import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/chat_service.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';

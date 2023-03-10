@@ -86,6 +86,7 @@ dependencies:
   mobile_scanner: ^3.0.0
   async: ^2.9.0
   shared_preferences: ^2.0.17
+  # yaml: ^3.1.1
 
   # voce_image_viewer:
   #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/

@@ -327,7 +327,7 @@ class UserApi {
 
   Future<Response<SendRegMagicTokenResponse>> sendRegMagicLink(
       SendRegMagicTokenRequest req) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+    final dio = DioUtil(baseUrl: _baseUrl);
     dio.options.headers["content-type"] = "application/json";
 
     final res = await dio.post("/send_reg_magic_link", data: req);

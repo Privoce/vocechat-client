@@ -19,7 +19,6 @@ import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 
 class SharedFuncs {
@@ -178,6 +177,9 @@ class SharedFuncs {
 
     return text;
   }
+
+  /// Read assets/custom_configs.yaml and put it into [App] object.
+  static Future<void> readCustomConfigs() async {}
 
   /// Renew access token and refresh token, and do related data storage.
   static Future<bool> renewAuthToken() async {

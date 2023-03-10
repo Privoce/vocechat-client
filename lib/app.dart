@@ -20,12 +20,6 @@ class App {
 
   static final logger = SimpleLogger();
 
-  // bool initialized;
-
-  // Initilized in UI/Auth/login_page.dart
-
-  // Initialized in service - db.dart
-
   // initialized in login page.
   StatusService? statusService;
   AuthService? authService;
