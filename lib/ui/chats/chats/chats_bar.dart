@@ -4,14 +4,11 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
-import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -221,8 +218,7 @@ class _ChatsBarState extends State<ChatsBar> {
         padding: const EdgeInsets.only(left: 15),
         child: CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed:
-                EnvConstants.voceBaseUrl.isEmpty ? widget.showDrawer : null,
+            onPressed: widget.showDrawer,
             child: _avatar),
       ),
       title: Row(

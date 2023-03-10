@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/env_consts.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -89,8 +88,6 @@ class _LoginPageState extends State<LoginPage> {
       resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.edgeColor,
       body: _buildBody(context),
-      bottomNavigationBar:
-          EnvConstants.voceBaseUrl.isEmpty ? null : _buildBottomNavBar(),
     );
   }
 
