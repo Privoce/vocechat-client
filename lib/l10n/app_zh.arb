@@ -115,7 +115,9 @@
     "imageBeDeletedDes":"图片可能已被删除。",
     "inputInvitationLink":"输入邀请链接",
     "invitationLink": "邀请链接",
+    "invitationLinkError":"邀请链接错误",
     "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",
+    "invitationLinkUrlNotMatch":"本应用程序已有预设的服务地址，故其他服务器的邀请链接将不被接受。",
     "inviteNewUsers": "邀请新用户",
 
     "language": "语言",

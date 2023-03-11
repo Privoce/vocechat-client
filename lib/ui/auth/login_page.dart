@@ -5,6 +5,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/magiclink_login.dart';
 import 'package:vocechat_client/ui/auth/password_login.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -88,6 +89,8 @@ class _LoginPageState extends State<LoginPage> {
       resizeToAvoidBottomInset: true,
       backgroundColor: AppColors.edgeColor,
       body: _buildBody(context),
+      bottomNavigationBar:
+          SharedFuncs.hasPreSetServerUrl() ? _buildBottomNavBar() : null,
     );
   }
 
@@ -390,6 +393,15 @@ class _LoginPageState extends State<LoginPage> {
                 return true;
               },
             ),
+            Text("  |  "),
+            VoceButton(
+              normal: Text(AppLocalizations.of(context)!.inputInvitationLink,
+                  maxLines: 1, overflow: TextOverflow.ellipsis),
+              action: () async {
+                _onPasteInvitationLinkTapped(context);
+                return true;
+              },
+            ),
           ],
         ),
         SizedBox(
@@ -444,6 +456,27 @@ class _LoginPageState extends State<LoginPage> {
       _chatServerM = null;
       serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.error;
     }
+  }
+
+  void _onPasteInvitationLinkTapped(BuildContext context) async {
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          InvitationLinkPastePage(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+    Navigator.of(context).push(route);
   }
 }
 
