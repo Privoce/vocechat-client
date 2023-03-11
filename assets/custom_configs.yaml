@@ -1,4 +1,4 @@
 version: 0.1
 
 configs:
-  server_url: ""
+  server_url: "https://dev.voce.chat"

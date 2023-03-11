@@ -86,7 +86,7 @@ dependencies:
   mobile_scanner: ^3.0.0
   async: ^2.9.0
   shared_preferences: ^2.0.17
-  # yaml: ^3.1.1
+  yaml: ^3.1.1
 
   # voce_image_viewer:
   #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/
@@ -157,6 +157,7 @@ flutter:
   assets:
     - assets/init_db.sql
     - assets/org_db.sql
+    - assets/custom_configs.yaml
 
     # images
     - assets/images/chats.png

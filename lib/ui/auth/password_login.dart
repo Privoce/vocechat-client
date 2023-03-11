@@ -1,9 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/services/auth_service.dart';
@@ -22,16 +19,14 @@ class PasswordLogin extends StatefulWidget {
 
   final bool enable;
 
-  PasswordLogin(
+  const PasswordLogin(
       {Key? key,
       required this.chatServer,
       this.email,
       this.password,
       this.isRelogin = false,
       this.enable = true})
-      : super(key: key) {
-    // _isRelogin = email != null && email!.trim().isNotEmpty;
-  }
+      : super(key: key);
 
   @override
   State<PasswordLogin> createState() => _PasswordLoginState();

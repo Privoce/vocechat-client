@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
@@ -17,9 +18,13 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/models/custom_configs/v0.1/configs_0.1.dart';
+import 'package:vocechat_client/models/custom_configs/v0.1/custom_configs_0.1.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:yaml/yaml.dart';
 
 class SharedFuncs {
   /// Clear all local data
@@ -69,10 +74,11 @@ class SharedFuncs {
 
   /// Return default home page, in case [EnvConstants.voceBaseUrl] is set.
   static Future<Widget> getDefaultHomePage() async {
-    // if (EnvConstants.voceBaseUrl.isNotEmpty) {
-    //   return LoginPage(
-    //       baseUrl: EnvConstants.voceBaseUrl, disableBackButton: true);
-    // }
+    if (hasPreSetServerUrl()) {
+      return LoginPage(
+          baseUrl: App.app.customConfig!.configs.serverUrl,
+          disableBackButton: true);
+    }
     return ServerPage();
   }
 
@@ -144,6 +150,10 @@ class SharedFuncs {
     }
   }
 
+  static bool hasPreSetServerUrl() {
+    return App.app.customConfig?.hasPreSetServerUrl ?? false;
+  }
+
   /// Parse mention info in text and markdowns.
   /// It changes uid to username when mention format occurs.
   static Future<String> parseMention(String snippet) async {
@@ -179,7 +189,23 @@ class SharedFuncs {
   }
 
   /// Read assets/custom_configs.yaml and put it into [App] object.
-  static Future<void> readCustomConfigs() async {}
+  static Future<void> readCustomConfigs() async {
+    final data = await rootBundle.loadString('assets/custom_configs.yaml');
+    final yaml = loadYaml(data);
+
+    try {
+      final version = yaml["version"].toString();
+
+      if (version == "0.1") {
+        final serverUrl = yaml["configs"]["server_url"];
+
+        App.app.customConfig = CustomConfigs0001(
+            version: version, configs: Configs0001(serverUrl: serverUrl));
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
 
   /// Renew access token and refresh token, and do related data storage.
   static Future<bool> renewAuthToken() async {

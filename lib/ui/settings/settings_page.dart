@@ -193,12 +193,13 @@ class _SettingPageState extends State<SettingPage> {
     return Column(
       children: [
         SizedBox(height: 8),
-        AppBannerButton(
-          title: AppLocalizations.of(context)!.switchServer,
-          onTap: () {
-            _onSwitchServerTapped();
-          },
-        ),
+        if (!SharedFuncs.hasPreSetServerUrl())
+          AppBannerButton(
+            title: AppLocalizations.of(context)!.switchServer,
+            onTap: () {
+              _onSwitchServerTapped();
+            },
+          ),
         SizedBox(height: 8),
         AppBannerButton(
           title: AppLocalizations.of(context)!.logOut,
