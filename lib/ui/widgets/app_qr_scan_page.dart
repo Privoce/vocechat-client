@@ -6,6 +6,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
@@ -74,7 +76,7 @@ class AppQrScanPage extends StatelessWidget {
 
   void _onQrCodeDetected(String link, BuildContext context) async {
     showLoaderDialog(context);
-    if (await _validateLink(link, context)) {
+    if (await _validateLink(link)) {
       App.logger.info("success, $link");
     } else {
       // Dismiss loading dialog.
@@ -97,21 +99,34 @@ class AppQrScanPage extends StatelessWidget {
     }
   }
 
-  Future<bool> _validateLink(String link, BuildContext context) async {
+  Future<bool> _validateLink(String link) async {
     try {
+      final context = navigatorKey.currentContext!;
+
       Uri uri = Uri.parse(link);
-      String host = uri.host + (uri.hasPort ? ":${uri.port}" : "");
+
+      String host = uri.host;
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
       }
-      final apiPath = "${uri.scheme}://$host";
+
+      // Check if host is the same when a pre-set server url is available
+      if (SharedFuncs.hasPreSetServerUrl() &&
+          Uri.parse(App.app.customConfig!.configs.serverUrl).host != host) {
+        _showUrlUnmatchAlert();
+
+        return false;
+      }
+
+      final apiPath =
+          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
       final userApi = UserApi(serverUrl: apiPath);
       final magicToken = uri.queryParameters["magic_token"] as String;
 
       final res = await userApi.checkMagicToken(magicToken);
       if (res.statusCode == 200 && res.data == true) {
-        final chatServerM = await ChatServerHelper()
-            .prepareChatServerM(apiPath);
+        final chatServerM =
+            await ChatServerHelper().prepareChatServerM(apiPath);
         if (chatServerM != null) {
           // Dismiss loading dialog.
           Navigator.pop(context);
@@ -155,5 +170,18 @@ class AppQrScanPage extends StatelessWidget {
         return Center(child: alert);
       },
     );
+  }
+
+  void _showUrlUnmatchAlert() {
+    final context = navigatorKey.currentContext!;
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invitationLinkError,
+        content: AppLocalizations.of(context)!.invitationLinkUrlNotMatch,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () => Navigator.of(context).pop())
+        ]);
   }
 }
