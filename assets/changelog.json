@@ -1,6 +1,11 @@
 {   
-    "latest": {"version": "0.2.75", "build_num": 45},
+    "latest": {"version": "0.2.76", "build_num": 46},
     "logs":  [
+        {"time": 1678584354314, "version": "0.2.76", "build_num": 46, "updates": [
+            "- fix: disable auto-delete message for chats with user themselves.",
+            "- fix: some internationalization issues.",
+            "- fix: self-build preparation."
+        ]},
         {"time": 1678429805352, "version": "0.2.75", "build_num": 45, "updates": [
             "- fix: issue when doing registration with an app without login status."
         ]},
