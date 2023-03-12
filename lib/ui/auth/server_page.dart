@@ -227,7 +227,7 @@ class _ServerPageState extends State<ServerPage> {
                         focusNode: _urlFocusNode,
                         height: 40,
                         borderRadius: _outerRadius,
-                        maxLength: 32,
+                        // maxLength: 32,
                         onSubmitted: (_) =>
                             _onUrlSubmit("${_urlController.text}/api"),
                         keyboardType: TextInputType.url,

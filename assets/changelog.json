@@ -1,6 +1,17 @@
 {   
-    "latest": {"version": "0.2.73", "build_num": 43},
+    "latest": {"version": "0.2.76", "build_num": 46},
     "logs":  [
+        {"time": 1678584354314, "version": "0.2.76", "build_num": 46, "updates": [
+            "- fix: disable auto-delete message for chats with user themselves.",
+            "- fix: some internationalization issues.",
+            "- fix: self-build preparation."
+        ]},
+        {"time": 1678429805352, "version": "0.2.75", "build_num": 45, "updates": [
+            "- fix: issue when doing registration with an app without login status."
+        ]},
+        {"time": 1678243888670, "version": "0.2.74", "build_num": 44, "updates": [
+            "- fix: license issue when sending files in private chats."
+        ]},
         {"time": 1677861623857, "version": "0.2.73", "build_num": 43, "updates": [
             "- fix: minor change in status monitoring strategy.",
             "- fix: license issue in chat message sending."

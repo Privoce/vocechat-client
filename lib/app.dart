@@ -5,13 +5,13 @@ import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/models/custom_configs/v0.1/custom_configs_0.1.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/auth/server_page.dart';
 
 import 'UI/chats/chats/chats_main_page.dart';
 
@@ -21,11 +21,7 @@ class App {
 
   static final logger = SimpleLogger();
 
-  // bool initialized;
-
-  // Initilized in UI/Auth/login_page.dart
-
-  // Initialized in service - db.dart
+  CustomConfigs0001? customConfig;
 
   // initialized in login page.
   StatusService? statusService;

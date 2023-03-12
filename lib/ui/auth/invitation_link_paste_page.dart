@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:universal_html/js.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:voce_widgets/voce_widgets.dart';
@@ -154,9 +156,8 @@ class InvitationLinkPastePage extends StatelessWidget {
           keepNormalWhenBusy: false,
           action: () async {
             // return await _onUrlSubmit(_urlController.text + "/api");
-            if (!(await _onLinkSubmitted(context))) {
-              _showInvalidLinkWarning(context);
-            }
+            await _onLinkSubmitted(context);
+
             return true;
           },
         )
@@ -169,11 +170,22 @@ class InvitationLinkPastePage extends StatelessWidget {
 
     try {
       Uri uri = Uri.parse(link);
-      String host = uri.host + (uri.hasPort ? ":${uri.port}" : "");
+
+      String host = uri.host;
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
       }
-      final apiPath = "${uri.scheme}://$host";
+
+      // Check if host is the same when a pre-set server url is available
+      if (SharedFuncs.hasPreSetServerUrl() &&
+          Uri.parse(App.app.customConfig!.configs.serverUrl).host != host) {
+        _showUrlUnmatchAlert();
+        _controller.clear();
+        return false;
+      }
+
+      final apiPath =
+          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
       final userApi = UserApi(serverUrl: apiPath);
       final magicToken = uri.queryParameters["magic_token"] as String;
 
@@ -190,14 +202,29 @@ class InvitationLinkPastePage extends StatelessWidget {
         }
       } else {
         App.logger.warning("Link not valid.");
+        _showInvalidLinkWarning(context);
         return false;
       }
     } catch (e) {
       App.logger.severe(e);
+      _showInvalidLinkWarning(context);
       return false;
     }
 
     return true;
+  }
+
+  void _showUrlUnmatchAlert() {
+    final context = navigatorKey.currentContext!;
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invitationLinkError,
+        content: AppLocalizations.of(context)!.invitationLinkUrlNotMatch,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () => Navigator.of(context).pop())
+        ]);
   }
 
   void _showInvalidLinkWarning(BuildContext context) {

@@ -1,0 +1,8 @@
+# Uncomment and fill [server_url] if you want to set a pre-defined server url.
+# If [server_url] is set, this app can only access to one server. Server switch
+# will not be available. 
+
+version: 0.1
+
+configs:
+  server_url: ""
