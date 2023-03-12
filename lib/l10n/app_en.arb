@@ -97,6 +97,8 @@
     "fetchingServerInfo":"Fetching Server Info",
     "fetchingServerInfoError":"Failed to obtain server information, please check the network.",
     "file":"File",
+    "fileUploadError":"File Upload Error",
+    "fileSizeTooLargeDes":"File size exceeds server limit.",
     "forward":"Forward",
     "forwardAsImage":"Forward as image",
     "forwardAsArchive":"Forward as archive",
@@ -110,7 +112,9 @@
     "imageBeDeletedDes":"Image might have been deleted.",
     "inputInvitationLink":"Input Invitation Link",
     "invitationLink": "Invitation Link",
+    "invitationLinkError":"Invitation Link Error",
     "invitationLinkGenerationError": "An error occurred when generating invitation link.\nPlease check your network condition or contact server owner for help.",
+    "invitationLinkUrlNotMatch":"This app has a default server address. Invitation links from other servers will not be accepted.",
     "inviteNewUsers": "Invite New Users",
     
     "language": "Language",

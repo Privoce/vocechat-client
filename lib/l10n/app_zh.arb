@@ -100,6 +100,8 @@
     "fetchingServerInfo":"正在获取服务器信息",
     "fetchingServerInfoError":"服务器信息获取失败，请检查网络状况。",
     "file":"文件",
+    "fileUploadError":"文件上传错误",
+    "fileSizeTooLargeDes":"文件大小超过服务端设置。",
     "forward":"转发",
     "forwardAsImage":"转发图片",
     "forwardAsArchive":"以归档转发",
@@ -113,7 +115,9 @@
     "imageBeDeletedDes":"图片可能已被删除。",
     "inputInvitationLink":"输入邀请链接",
     "invitationLink": "邀请链接",
+    "invitationLinkError":"邀请链接错误",
     "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",
+    "invitationLinkUrlNotMatch":"本应用程序已有预设的服务地址，故其他服务器的邀请链接将不被接受。",
     "inviteNewUsers": "邀请新用户",
 
     "language": "语言",

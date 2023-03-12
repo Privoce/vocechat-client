@@ -1,9 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DioUtil {
   final String baseUrl;
@@ -52,6 +56,8 @@ class DioUtil {
         if (e.response != null &&
             (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
           _handle401(e.response!, handler);
+        } else if (e.response != null && e.response?.statusCode == 413) {
+          _handle413(e.response!, handler);
         } else {
           handler.resolve(Response(
               requestOptions: e.requestOptions,
@@ -74,6 +80,22 @@ class DioUtil {
       App.logger.severe("Token refresh failed");
       App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
       handler.resolve(response);
+    }
+  }
+
+  void _handle413(
+      Response<dynamic> response, ErrorInterceptorHandler handler) async {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      showAppAlert(
+          context: context,
+          title: AppLocalizations.of(context)!.fileUploadError,
+          content: AppLocalizations.of(context)!.fileSizeTooLargeDes,
+          actions: [
+            AppAlertDialogAction(
+                text: AppLocalizations.of(context)!.ok,
+                action: () => Navigator.of(context).pop())
+          ]);
     }
   }
 

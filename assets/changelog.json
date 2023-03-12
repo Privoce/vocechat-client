@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.74", "build_num": 44},
+    "latest": {"version": "0.2.75", "build_num": 45},
     "logs":  [
+        {"time": 1678429805352, "version": "0.2.75", "build_num": 45, "updates": [
+            "- fix: issue when doing registration with an app without login status."
+        ]},
         {"time": 1678243888670, "version": "0.2.74", "build_num": 44, "updates": [
             "- fix: license issue when sending files in private chats."
         ]},

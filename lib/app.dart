@@ -5,6 +5,7 @@ import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/models/custom_configs/v0.1/custom_configs_0.1.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
@@ -19,6 +20,8 @@ class App {
   static final App app = App._internal();
 
   static final logger = SimpleLogger();
+
+  CustomConfigs0001? customConfig;
 
   // initialized in login page.
   StatusService? statusService;
