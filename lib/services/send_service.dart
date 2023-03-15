@@ -507,14 +507,14 @@ class SendFile implements AbstractSend {
 
     // Put task into sending queue first to avoid empty sending status in
     // chat page
-    ValueNotifier<double> _progress = ValueNotifier(0);
+    ValueNotifier<double> progress0 = ValueNotifier(0);
     final task = SendTask(
         localMid: localMid,
         sendTask: () => _apiSendFile(contentType, filename, message, chatMsgM,
                 fileBytes, localMid, file, uid, gid, (progress) {
-              _progress.value = progress;
+              progress0.value = progress;
             }));
-    task.progress = _progress;
+    task.progress = progress0;
     SendTaskQueue.singleton.addTask(task);
 
     // Compress and save thumb if is image.
@@ -632,27 +632,5 @@ class SendFile implements AbstractSend {
 
     SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
     return true;
-  }
-
-  List<int> _getHeaderBytesFromPath(String path) {
-    List<int> fileBytes = File(path).readAsBytesSync().toList();
-    List<int> header = [];
-
-    for (var element in fileBytes) {
-      if (element == 0) return [];
-      header.add(element);
-    }
-    return header;
-  }
-
-  List<int> _getHeaderBytesFromBytes(Uint8List bytes) {
-    List<int> fileBytes = bytes.toList();
-    List<int> header = [];
-
-    for (var element in fileBytes) {
-      if (element == 0) return [];
-      header.add(element);
-    }
-    return header;
   }
 }
