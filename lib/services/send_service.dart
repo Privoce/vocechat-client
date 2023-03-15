@@ -439,7 +439,6 @@ class SendFile implements AbstractSend {
       int? targetMid,
       Uint8List? blob,
       void Function(double progress)? progress}) async {
-    List<int> headerBytes;
     String contentType;
     String filename;
     File file;
@@ -452,8 +451,7 @@ class SendFile implements AbstractSend {
       await file.writeAsBytes(blob);
       size = file.lengthSync();
     } else {
-      headerBytes = _getHeaderBytesFromPath(path);
-      contentType = lookupMimeType(path, headerBytes: headerBytes) ?? "";
+      contentType = lookupMimeType(path) ?? "";
       filename = p.basename(path);
       file = File(path);
       size = file.lengthSync();
