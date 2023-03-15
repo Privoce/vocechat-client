@@ -443,19 +443,11 @@ class SendFile implements AbstractSend {
     String filename;
     File file;
     int size;
-    if (blob != null && blob.isNotEmpty) {
-      contentType = lookupMimeType("", headerBytes: blob) ?? "image/jpg";
-      filename = "image.jpg";
-      final tempPath = "${(await getTemporaryDirectory()).path}/$filename";
-      file = File(tempPath);
-      await file.writeAsBytes(blob);
-      size = file.lengthSync();
-    } else {
-      contentType = lookupMimeType(path) ?? "";
-      filename = p.basename(path);
-      file = File(path);
-      size = file.lengthSync();
-    }
+
+    contentType = lookupMimeType(path) ?? "";
+    filename = p.basename(path);
+    file = File(path);
+    size = file.lengthSync();
 
     final isImage = contentType.startsWith("image/");
 
@@ -528,12 +520,12 @@ class SendFile implements AbstractSend {
     // Compress and save thumb if is image.
     if (isImage) {
       final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
-      Uint8List thumbBytes =
-          await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
+      // Uint8List thumbBytes =
+      //     await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
 
       // Save both thumb and original image to local document storage.
       final thumbFile = await FileHandler.singleton
-          .saveImageThumb(chatId!, thumbBytes, localMid, filename);
+          .saveImageThumb(chatId!, fileBytes, localMid, filename);
 
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
       App.app.chatService.fireMsg(msgM, localMid, thumbFile);
@@ -541,8 +533,7 @@ class SendFile implements AbstractSend {
 
       await FileHandler.singleton
           .saveImageNormal(chatId, fileBytes, localMid, filename);
-      fileBytes = thumbBytes;
-      file = thumbFile!;
+      // file = thumbFile!;
     } else {
       final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
       file = (await FileHandler.singleton
