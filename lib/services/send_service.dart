@@ -447,7 +447,7 @@ class SendFile implements AbstractSend {
     if (blob != null && blob.isNotEmpty) {
       contentType = lookupMimeType("", headerBytes: blob) ?? "image/jpg";
       filename = "image.jpg";
-      final tempPath = (await getTemporaryDirectory()).path + "/$filename";
+      final tempPath = "${(await getTemporaryDirectory()).path}/$filename";
       file = File(tempPath);
       await file.writeAsBytes(blob);
       size = file.lengthSync();
