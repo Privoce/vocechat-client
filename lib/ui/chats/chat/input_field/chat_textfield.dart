@@ -10,7 +10,6 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/send_service.dart';
@@ -455,10 +454,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
                             children: [
                               TextSpan(
                                   text:
-                                      AppLocalizations.of(context)!.replyingTo +
-                                          " "),
+                                      "${AppLocalizations.of(context)!.replyingTo} "),
                               TextSpan(
-                                text: widget.repliedUser!.userInfo.name + "   ",
+                                text: "${widget.repliedUser!.userInfo.name}   ",
                                 style: TextStyle(
                                     color: AppColors.coolGrey500,
                                     fontWeight: FontWeight.w600,
@@ -535,7 +533,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
       status = await Permission.storage.request();
     }
 
-    if (status != PermissionStatus.granted) {
+    if (status != PermissionStatus.granted && mounted) {
       showAppAlert(
           context: context,
           title: AppLocalizations.of(context)!.chatTextFieldPhotoPermission,
@@ -616,8 +614,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
     if (assetsResult == null) return;
 
     Future.forEach(assetsResult, (AssetEntity element) async {
-      final File? file = await element.file;
+      final File? file = await element.originFile;
       final String? path = file?.path;
+
       widget.onSendFile(path!, SendType.file);
     });
   }

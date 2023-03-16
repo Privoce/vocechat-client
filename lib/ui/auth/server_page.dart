@@ -314,7 +314,7 @@ class _ServerPageState extends State<ServerPage> {
       ),
       keepNormalWhenBusy: false,
       action: () async {
-        return await _onUrlSubmit(_urlController.text + "/api");
+        return await _onUrlSubmit("${_urlController.text}/api");
       },
     );
   }
@@ -381,10 +381,10 @@ class _ServerPageState extends State<ServerPage> {
                               ]),
                           child: CupertinoButton(
                               padding: EdgeInsets.zero,
-                              child: ServerAccountTile(
-                                  accountData: ValueNotifier(accountData)),
                               onPressed: (() =>
-                                  _serverAccountTileOnPressed(accountData))),
+                                  _serverAccountTileOnPressed(accountData)),
+                              child: ServerAccountTile(
+                                  accountData: ValueNotifier(accountData))),
                         );
                       },
                     ))
@@ -414,20 +414,14 @@ class _ServerPageState extends State<ServerPage> {
     final storage = FlutterSecureStorage();
     final password = await storage.read(key: dbName);
 
-    final chatServerM =
-        await ChatServerHelper().prepareChatServerM(data.serverUrl);
-
-    // if (chatServerM == null) {
-    //   _pushPageBusy.value = false;
-    //   return;
-    // }
-
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => LoginPage(
-              baseUrl: data.serverUrl,
-              email: data.userEmail,
-              password: password,
-            )));
+    if (mounted) {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => LoginPage(
+                baseUrl: data.serverUrl,
+                email: data.userEmail,
+                password: password,
+              )));
+    }
 
     _pushPageBusy.value = false;
   }

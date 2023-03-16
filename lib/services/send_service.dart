@@ -439,25 +439,15 @@ class SendFile implements AbstractSend {
       int? targetMid,
       Uint8List? blob,
       void Function(double progress)? progress}) async {
-    List<int> headerBytes;
     String contentType;
     String filename;
     File file;
     int size;
-    if (blob != null && blob.isNotEmpty) {
-      contentType = lookupMimeType("", headerBytes: blob) ?? "image/jpg";
-      filename = "image.jpg";
-      final tempPath = (await getTemporaryDirectory()).path + "/$filename";
-      file = File(tempPath);
-      await file.writeAsBytes(blob);
-      size = file.lengthSync();
-    } else {
-      headerBytes = _getHeaderBytesFromPath(path);
-      contentType = lookupMimeType(path, headerBytes: headerBytes) ?? "";
-      filename = p.basename(path);
-      file = File(path);
-      size = file.lengthSync();
-    }
+
+    contentType = lookupMimeType(path) ?? "";
+    filename = p.basename(path);
+    file = File(path);
+    size = file.lengthSync();
 
     final isImage = contentType.startsWith("image/");
 
@@ -517,25 +507,25 @@ class SendFile implements AbstractSend {
 
     // Put task into sending queue first to avoid empty sending status in
     // chat page
-    ValueNotifier<double> _progress = ValueNotifier(0);
+    ValueNotifier<double> progress0 = ValueNotifier(0);
     final task = SendTask(
         localMid: localMid,
         sendTask: () => _apiSendFile(contentType, filename, message, chatMsgM,
                 fileBytes, localMid, file, uid, gid, (progress) {
-              _progress.value = progress;
+              progress0.value = progress;
             }));
-    task.progress = _progress;
+    task.progress = progress0;
     SendTaskQueue.singleton.addTask(task);
 
     // Compress and save thumb if is image.
     if (isImage) {
       final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
-      Uint8List thumbBytes =
-          await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
+      // Uint8List thumbBytes =
+      //     await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
 
       // Save both thumb and original image to local document storage.
       final thumbFile = await FileHandler.singleton
-          .saveImageThumb(chatId!, thumbBytes, localMid, filename);
+          .saveImageThumb(chatId!, fileBytes, localMid, filename);
 
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
       App.app.chatService.fireMsg(msgM, localMid, thumbFile);
@@ -543,8 +533,7 @@ class SendFile implements AbstractSend {
 
       await FileHandler.singleton
           .saveImageNormal(chatId, fileBytes, localMid, filename);
-      fileBytes = thumbBytes;
-      file = thumbFile!;
+      // file = thumbFile!;
     } else {
       final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
       file = (await FileHandler.singleton
@@ -643,27 +632,5 @@ class SendFile implements AbstractSend {
 
     SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
     return true;
-  }
-
-  List<int> _getHeaderBytesFromPath(String path) {
-    List<int> fileBytes = File(path).readAsBytesSync().toList();
-    List<int> header = [];
-
-    for (var element in fileBytes) {
-      if (element == 0) return [];
-      header.add(element);
-    }
-    return header;
-  }
-
-  List<int> _getHeaderBytesFromBytes(Uint8List bytes) {
-    List<int> fileBytes = bytes.toList();
-    List<int> header = [];
-
-    for (var element in fileBytes) {
-      if (element == 0) return [];
-      header.add(element);
-    }
-    return header;
   }
 }
