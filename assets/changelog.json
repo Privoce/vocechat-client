@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.76", "build_num": 46},
+    "latest": {"version": "0.2.77", "build_num": 47},
     "logs":  [
+        {"time": 1679011447995, "version": "0.2.77", "build_num": 47, "updates": [
+            "- fix: gif image messages do not animate.",
+            "- fix: potential app stall when fetching user avatars."
+        ]},
         {"time": 1678584354314, "version": "0.2.76", "build_num": 46, "updates": [
             "- fix: disable auto-delete message for chats with user themselves.",
             "- fix: some internationalization issues.",
