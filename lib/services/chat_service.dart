@@ -61,7 +61,6 @@ class ChatService {
           fireReady();
         });
     mainTaskQueue = TaskQueue();
-    subTaskQueue = TaskQueue();
   }
 
   void dispose() {
@@ -82,7 +81,6 @@ class ChatService {
 
   late SseQueue sseQueue;
   late TaskQueue mainTaskQueue;
-  late TaskQueue subTaskQueue;
   late Timer readIndexTimer;
 
   /// Used to avoid duplicated messages.
@@ -786,7 +784,7 @@ class ChatService {
             await UserDbMDao.dao.updateUserInfo(userInfo);
 
             if (userInfo.avatarUpdatedAt != 0) {
-              subTaskQueue.add(() => _getUserAvatar(m));
+              mainTaskQueue.add(() => _getUserAvatar(m));
             }
 
             break;
@@ -805,7 +803,7 @@ class ChatService {
 
               if (newInfo.avatarUpdatedAt != 0 &&
                   update.avatarUpdatedAt != null) {
-                subTaskQueue.add(() => _getUserAvatar(m));
+                mainTaskQueue.add(() => _getUserAvatar(m));
               }
             }
             break;
@@ -1145,7 +1143,7 @@ class ChatService {
           await UserDbMDao.dao.updateUserInfo(userInfo);
 
           if (userInfo.avatarUpdatedAt != 0) {
-            subTaskQueue.add(() => _getUserAvatar(m));
+            mainTaskQueue.add(() => _getUserAvatar(m));
           }
         }
       }
