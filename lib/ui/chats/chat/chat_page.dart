@@ -1549,7 +1549,7 @@ class _ChatPageState extends State<ChatPage>
     }
 
     if (page.records.length < _pageMeta.pageSize) {
-      _loadServerHistory();
+      // _loadServerHistory();
     }
 
     if (mounted) {

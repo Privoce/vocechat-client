@@ -1325,71 +1325,74 @@ class ChatService {
         case "edit":
           final edit = detailJson["content"] as String;
 
-          await ChatMsgDao()
-              .editMsgByMid(targetMid, edit, MsgSendStatus.success)
-              .then((newMsgM) {
-            if (newMsgM != null) {
-              fireSnippet(newMsgM);
-              fireReaction(ReactionTypes.edit, targetMid, newMsgM);
-              midSet.remove(newMsgM.mid);
-            }
-          });
+          mainTaskQueue.add(() => ChatMsgDao()
+                  .editMsgByMid(targetMid, edit, MsgSendStatus.success)
+                  .then((newMsgM) {
+                if (newMsgM != null) {
+                  fireSnippet(newMsgM);
+                  fireReaction(ReactionTypes.edit, targetMid, newMsgM);
+                  midSet.remove(newMsgM.mid);
+                }
+              }));
 
           break;
         case "like":
           final reaction = detailJson["action"] as String;
 
-          await ChatMsgDao()
-              .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
-                  DateTime.now().millisecondsSinceEpoch)
-              .then((newMsgM) {
-            if (newMsgM != null) {
-              fireReaction(ReactionTypes.like, targetMid, newMsgM);
-              midSet.remove(newMsgM.mid);
-            }
-          });
+          mainTaskQueue.add(() => ChatMsgDao()
+                  .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
+                      DateTime.now().millisecondsSinceEpoch)
+                  .then((newMsgM) {
+                if (newMsgM != null) {
+                  fireReaction(ReactionTypes.like, targetMid, newMsgM);
+                  midSet.remove(newMsgM.mid);
+                }
+              }));
 
           break;
         case "delete":
           final int? targetMid = chatMsg.detail["mid"];
           if (targetMid == null) return;
 
-          final targetMsgM = await ChatMsgDao().getMsgByMid(targetMid);
-          if (targetMsgM == null) return;
+          mainTaskQueue.add(
+              () => ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
+                    if (mid < 0) {
+                      return;
+                    }
 
-          await ChatMsgDao().deleteMsgByMid(targetMsgM).then((mid) async {
-            if (mid < 0) {
-              return;
-            }
+                    FileHandler.singleton
+                        .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
+                    fireReaction(ReactionTypes.delete, mid);
 
-            FileHandler.singleton.deleteWithChatMsgM(targetMsgM);
-            fireReaction(ReactionTypes.delete, mid);
+                    final targetMsgM =
+                        await ChatMsgDao().getMsgByMid(targetMid);
+                    if (targetMsgM == null) return;
 
-            // delete without remaining hint words in msg list.
-            if (targetMsgM.isGroupMsg) {
-              final curMaxMid =
-                  await ChatMsgDao().getChannelMaxMid(targetMsgM.gid);
-              if (curMaxMid > -1) {
-                final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+                    // delete without remaining hint words in msg list.
+                    if (targetMsgM.isGroupMsg) {
+                      final curMaxMid =
+                          await ChatMsgDao().getChannelMaxMid(targetMsgM.gid);
+                      if (curMaxMid > -1) {
+                        final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
 
-                if (msg != null) {
-                  fireSnippet(msg);
-                  midSet.remove(msg.mid);
-                }
-              }
-            } else {
-              final curMaxMid =
-                  await ChatMsgDao().getDmMaxMid(targetMsgM.dmUid);
-              if (curMaxMid > -1) {
-                final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+                        if (msg != null) {
+                          fireSnippet(msg);
+                          midSet.remove(msg.mid);
+                        }
+                      }
+                    } else {
+                      final curMaxMid =
+                          await ChatMsgDao().getDmMaxMid(targetMsgM.dmUid);
+                      if (curMaxMid > -1) {
+                        final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
 
-                if (msg != null) {
-                  fireSnippet(msg);
-                  midSet.remove(msg.mid);
-                }
-              }
-            }
-          });
+                        if (msg != null) {
+                          fireSnippet(msg);
+                          midSet.remove(msg.mid);
+                        }
+                      }
+                    }
+                  }));
           break;
 
         default:
