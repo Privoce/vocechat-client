@@ -136,6 +136,15 @@ class ChatMsgM with M {
     }
   }
 
+  bool get isGifImageMsg {
+    try {
+      final type = json.decode(detail)["properties"]["content_type"] as String?;
+      return type?.toLowerCase() == 'image/gif';
+    } catch (e) {
+      return false;
+    }
+  }
+
   bool get isVideoMsg {
     try {
       final type = json.decode(detail)["properties"]["content_type"] as String?;
