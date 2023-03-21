@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.77", "build_num": 47},
+    "latest": {"version": "0.2.79", "build_num": 49},
     "logs":  [
+        {"time": 1679269244128, "version": "0.2.79", "build_num": 49, "updates": [
+            "- fix: messages might still appear when they are deleted."
+        ]},
         {"time": 1679011447995, "version": "0.2.77", "build_num": 47, "updates": [
             "- fix: gif image messages do not animate.",
             "- fix: potential app stall when fetching user avatars."
