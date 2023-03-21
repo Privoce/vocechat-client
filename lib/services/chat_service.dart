@@ -1354,45 +1354,10 @@ class ChatService {
           final int? targetMid = chatMsg.detail["mid"];
           if (targetMid == null) return;
 
-          mainTaskQueue.add(
-              () => ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
-                    if (mid < 0) {
-                      return;
-                    }
+          // final targetMsgM = await ChatMsgDao().getMsgByMid(targetMid);
+          // if (targetMsgM == null) return;
 
-                    FileHandler.singleton
-                        .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
-                    fireReaction(ReactionTypes.delete, mid);
-
-                    final targetMsgM =
-                        await ChatMsgDao().getMsgByMid(targetMid);
-                    if (targetMsgM == null) return;
-
-                    // delete without remaining hint words in msg list.
-                    if (targetMsgM.isGroupMsg) {
-                      final curMaxMid =
-                          await ChatMsgDao().getChannelMaxMid(targetMsgM.gid);
-                      if (curMaxMid > -1) {
-                        final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
-
-                        if (msg != null) {
-                          fireSnippet(msg);
-                          midSet.remove(msg.mid);
-                        }
-                      }
-                    } else {
-                      final curMaxMid =
-                          await ChatMsgDao().getDmMaxMid(targetMsgM.dmUid);
-                      if (curMaxMid > -1) {
-                        final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
-
-                        if (msg != null) {
-                          fireSnippet(msg);
-                          midSet.remove(msg.mid);
-                        }
-                      }
-                    }
-                  }));
+          mainTaskQueue.add(() => _deleteMsg(targetMid));
           break;
 
         default:
@@ -1400,6 +1365,44 @@ class ChatService {
     } catch (e) {
       App.logger.severe(e);
     }
+  }
+
+  Future<void> _deleteMsg(int targetMid) async {
+    final targetMsgM = await ChatMsgDao().getMsgByMid(targetMid);
+    if (targetMsgM == null) return;
+
+    await ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
+      if (mid < 0) {
+        return;
+      }
+
+      await FileHandler.singleton
+          .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
+      fireReaction(ReactionTypes.delete, mid);
+
+      // delete without remaining hint words in msg list.
+      if (targetMsgM.isGroupMsg) {
+        final curMaxMid = await ChatMsgDao().getChannelMaxMid(targetMsgM.gid);
+        if (curMaxMid > -1) {
+          final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+          if (msg != null) {
+            fireSnippet(msg);
+            midSet.remove(msg.mid);
+          }
+        }
+      } else {
+        final curMaxMid = await ChatMsgDao().getDmMaxMid(targetMsgM.dmUid);
+        if (curMaxMid > -1) {
+          final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+          if (msg != null) {
+            fireSnippet(msg);
+            midSet.remove(msg.mid);
+          }
+        }
+      }
+    });
   }
 
   Future<void> _handleReply(ChatMsg chatMsg) async {
