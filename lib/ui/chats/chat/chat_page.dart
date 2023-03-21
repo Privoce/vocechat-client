@@ -1494,10 +1494,15 @@ class _ChatPageState extends State<ChatPage>
             case MsgContentType.markdown:
             case MsgContentType.file:
               if (m.isImageMsg) {
-                final thumbFile = await FileHandler.singleton.getImageThumb(m);
+                File? imageFile;
+                if (m.isGifImageMsg) {
+                  imageFile = await FileHandler.singleton.getImageNormal(m);
+                } else {
+                  imageFile = await FileHandler.singleton.getImageThumb(m);
+                }
 
-                if (thumbFile != null) {
-                  await _onMsg(m, m.localMid, thumbFile, frontInsert: false);
+                if (imageFile != null) {
+                  await _onMsg(m, m.localMid, imageFile, frontInsert: false);
                 } else {
                   await _onMsg(m, m.localMid, null, frontInsert: false);
                 }

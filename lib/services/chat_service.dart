@@ -1262,14 +1262,26 @@ class ChatService {
           // thumb will only be downloaded if file is an image.
           try {
             if (chatMsgM.isImageMsg) {
-              mainTaskQueue.add(() =>
-                  FileHandler.singleton.getImageThumb(chatMsgM).then((thumb) {
-                    if (thumb != null) {
-                      fireMsg(chatMsgM, chatMsgM.localMid, thumb);
-                    } else {
-                      fireMsg(chatMsgM, localMid, null);
-                    }
-                  }));
+              if (chatMsgM.isGifImageMsg) {
+                mainTaskQueue.add(() => FileHandler.singleton
+                        .getImageNormal(chatMsgM)
+                        .then((image) {
+                      if (image != null) {
+                        fireMsg(chatMsgM, chatMsgM.localMid, image);
+                      } else {
+                        fireMsg(chatMsgM, localMid, null);
+                      }
+                    }));
+              } else {
+                mainTaskQueue.add(() =>
+                    FileHandler.singleton.getImageThumb(chatMsgM).then((thumb) {
+                      if (thumb != null) {
+                        fireMsg(chatMsgM, chatMsgM.localMid, thumb);
+                      } else {
+                        fireMsg(chatMsgM, localMid, null);
+                      }
+                    }));
+              }
             } else {
               fireMsg(chatMsgM, localMid, null);
             }
