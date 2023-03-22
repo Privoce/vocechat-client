@@ -99,7 +99,7 @@ class GroupApi {
     dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
     dio.options.headers["content-type"] = typeText;
-    dio.options.receiveTimeout = 10000;
+    dio.options.receiveTimeout = Duration(milliseconds: 10000);
 
     final res = await dio.post("/$gid/send", data: msg);
 
