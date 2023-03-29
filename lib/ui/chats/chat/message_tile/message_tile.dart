@@ -22,7 +22,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart'
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum ImageType { thumb, original }
@@ -72,7 +72,7 @@ class MessageTile extends StatefulWidget {
       this.imageType,
       this.archive,
       required this.onSendReaction,
-      this.avatarSize = AvatarSize.s48})
+      this.avatarSize = VoceAvatarSize.s48})
       : super(key: key);
 
   @override
@@ -402,11 +402,14 @@ class _MessageTileState extends State<MessageTile> {
         break;
       case MsgDetailType.reply:
         if (widget.repliedMsgM != null && widget.repliedUserInfoM != null) {
-          return ReplyBubble(
-              repliedMsgM: widget.repliedMsgM!,
-              repliedUser: widget.repliedUserInfoM!,
-              repliedImageFile: widget.repliedImageFile,
-              msgM: widget.chatMsgM);
+          return Container(
+            color: Colors.amber,
+            child: ReplyBubble(
+                repliedMsgM: widget.repliedMsgM!,
+                repliedUser: widget.repliedUserInfoM!,
+                repliedImageFile: widget.repliedImageFile,
+                msgM: widget.chatMsgM),
+          );
         } else {
           return TextBubble(
             content: "The replied message has been deleted",

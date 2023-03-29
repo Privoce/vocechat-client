@@ -5,7 +5,7 @@ import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 
 class ContactTile extends StatefulWidget {
@@ -21,7 +21,7 @@ class ContactTile extends StatefulWidget {
   late final Widget _avatar;
 
   ContactTile(this.userInfoM, this.isSelf,
-      {this.avatarSize = AvatarSize.s36,
+      {this.avatarSize = VoceAvatarSize.s36,
       this.disabled = false,
       this.mark,
       this.onTap,

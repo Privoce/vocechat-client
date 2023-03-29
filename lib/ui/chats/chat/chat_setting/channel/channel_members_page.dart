@@ -8,7 +8,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
 class ChannelMembersPage extends StatelessWidget {
   final GroupInfoM groupInfoM;
@@ -39,7 +39,7 @@ class ChannelMembersPage extends StatelessWidget {
             if (snapshot.hasData) {
               return ContactList(
                   userList: snapshot.data!,
-                  avatarSize: AvatarSize.s36,
+                  avatarSize: VoceAvatarSize.s36,
                   ownerUid: groupInfoM.groupInfo.owner,
                   onTap: (user) {
                     Navigator.of(context)

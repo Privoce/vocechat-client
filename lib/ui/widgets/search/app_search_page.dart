@@ -7,7 +7,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import "package:flutter_gen/gen_l10n/app_localizations.dart";
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/contact/contact_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/search/app_search_field.dart';
 import 'package:vocechat_client/ui/widgets/search/search_result.dart';
 
@@ -68,7 +68,7 @@ class AppSearchPage extends StatelessWidget {
                           userInfoM,
                           App.app.isSelf(userInfoM.uid),
                           enableSubtitleEmail: true,
-                          avatarSize: AvatarSize.s42,
+                          avatarSize: VoceAvatarSize.s42,
                           onTap: () => Navigator.pushNamed(
                               context, ContactDetailPage.route,
                               arguments: userInfoM),

@@ -21,7 +21,7 @@ import 'package:vocechat_client/services/sse/sse_event_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/extensions.dart';
@@ -1120,7 +1120,7 @@ class _ChatPageState extends State<ChatPage>
                 children: [
                   MessageTile(
                     key: Key(uiMsg.chatMsgM.localMid),
-                    avatarSize: AvatarSize.s42,
+                    avatarSize: VoceAvatarSize.s42,
                     isFollowing: false,
                     chatMsgM: uiMsg.chatMsgM,
                     userInfoM: userInfoM,

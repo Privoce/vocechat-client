@@ -6,7 +6,7 @@ import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -64,7 +64,7 @@ class _ServerAccountTileState extends State<ServerAccountTile> {
         backgroundColor: Colors.white,
         radius: 24);
     final userAvatar = UserAvatar(
-        avatarSize: AvatarSize.s36,
+        avatarSize: VoceAvatarSize.s36,
         uid: -1,
         name: username,
         avatarBytes: userAvatarBytes);

@@ -20,7 +20,7 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
@@ -253,7 +253,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         UserAvatar(
-                            avatarSize: AvatarSize.s36,
+                            avatarSize: VoceAvatarSize.s36,
                             uid: data['uid'] ?? -1,
                             name: data['display'] ?? "",
                             avatarBytes: data["photo"]),

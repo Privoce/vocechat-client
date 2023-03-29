@@ -10,7 +10,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -74,7 +74,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     final userInfo = userInfoM.userInfo;
     return AvatarInfoTile(
       avatar: UserAvatar(
-          avatarSize: AvatarSize.s84,
+          avatarSize: VoceAvatarSize.s84,
           uid: userInfoM.uid,
           name: userInfo.name,
           enableOnlineStatus: true,

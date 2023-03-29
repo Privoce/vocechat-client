@@ -7,7 +7,7 @@ import 'package:vocechat_client/helpers/time_helper.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 
 class MsgTileFrame extends StatelessWidget {
@@ -40,7 +40,7 @@ class MsgTileFrame extends StatelessWidget {
       this.contentWidth,
       this.nameSize = 14,
       required this.avatarBytes,
-      this.avatarSize = AvatarSize.s36,
+      this.avatarSize = VoceAvatarSize.s36,
       this.enableOnlineStatus = false,
       this.onlineNotifier,
       this.isFollowing = false,

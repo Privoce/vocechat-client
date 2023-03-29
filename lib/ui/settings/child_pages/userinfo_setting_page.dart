@@ -13,7 +13,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
@@ -90,7 +90,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
           builder: (context, userInfoM, _) {
             return UserAvatar(
                 uid: userInfoM?.uid ?? -1,
-                avatarSize: AvatarSize.s84,
+                avatarSize: VoceAvatarSize.s84,
                 name: userInfoM?.userInfo.name ?? "",
                 avatarBytes: userInfoM?.avatarBytes ?? Uint8List(0));
           }),

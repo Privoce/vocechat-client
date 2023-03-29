@@ -19,7 +19,7 @@ import 'package:vocechat_client/ui/chats/chat/chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 import 'package:vocechat_client/ui/chats/chats/chat_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -176,7 +176,7 @@ class _ChatsPageState extends State<ChatsPage>
               valueListenable: uiChat.avatar,
               builder: (context, avatarBytes, _) {
                 return ChannelAvatar(
-                  avatarSize: AvatarSize.s48,
+                  avatarSize: VoceAvatarSize.s48,
                   avatarBytes: avatarBytes,
                   name: title,
                 );
@@ -206,7 +206,7 @@ class _ChatsPageState extends State<ChatsPage>
               valueListenable: uiChat.avatar,
               builder: (context, avatarBytes, _) {
                 return UserAvatar(
-                  avatarSize: AvatarSize.s48,
+                  avatarSize: VoceAvatarSize.s48,
                   isSelf: App.app.isSelf(uiChat.uid),
                   name: title,
                   uid: uiChat.uid!,

@@ -13,7 +13,7 @@ import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/owner_transfe
 import 'package:vocechat_client/ui/chats/chat/chat_setting/invite/member_add_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/invite/member_remove_page.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -204,7 +204,7 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8),
                                 child: UserAvatar(
-                                  avatarSize: AvatarSize.s36,
+                                  avatarSize: VoceAvatarSize.s36,
                                   uid: user.uid,
                                   name: user.userInfo.name,
                                   avatarBytes: user.avatarBytes,

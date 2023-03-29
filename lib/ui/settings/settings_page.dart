@@ -17,7 +17,7 @@ import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
 import 'package:vocechat_client/ui/settings/child_pages/userinfo_setting_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
@@ -95,7 +95,7 @@ class _SettingPageState extends State<SettingPage> {
             return AvatarInfoTile(
               avatar: UserAvatar(
                   uid: userInfo.uid,
-                  avatarSize: AvatarSize.s84,
+                  avatarSize: VoceAvatarSize.s84,
                   name: userInfo.name,
                   avatarBytes: userInfoM.avatarBytes),
               title: userInfo.name,

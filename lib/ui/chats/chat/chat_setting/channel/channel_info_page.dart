@@ -14,7 +14,7 @@ import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
@@ -97,7 +97,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
           valueListenable: widget.groupInfoNotifier,
           builder: (context, groupInfoM, _) {
             return ChannelAvatar(
-                avatarSize: AvatarSize.s84,
+                avatarSize: VoceAvatarSize.s84,
                 isPublic: _groupInfo.isPublic,
                 avatarBytes: groupInfoM.avatar);
           }),

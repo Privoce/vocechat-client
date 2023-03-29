@@ -8,7 +8,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_settings_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/dm/dm_settings_page.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 
@@ -118,13 +118,13 @@ class _ChatBarState extends State<ChatBar> {
             children: [
               if (widget._isGroup)
                 ChannelAvatar(
-                  avatarSize: AvatarSize.s36,
+                  avatarSize: VoceAvatarSize.s36,
                   avatarBytes: widget.groupInfoNotifier!.value.avatar,
                   name: widget.groupInfoNotifier?.value.groupInfo.name ?? "",
                 )
               else
                 UserAvatar(
-                    avatarSize: AvatarSize.s36,
+                    avatarSize: VoceAvatarSize.s36,
                     uid: widget.userInfoNotifier!.value.uid,
                     name: widget.userInfoNotifier!.value.userInfo.name,
                     avatarBytes: widget.userInfoNotifier!.value.avatarBytes),

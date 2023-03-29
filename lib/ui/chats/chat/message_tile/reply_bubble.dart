@@ -14,16 +14,16 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bu
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:path/path.dart' as path;
 
 class ReplyBubble extends StatelessWidget {
   /// The [ChatMsgM] being replied.
-  final ChatMsgM repliedMsgM;
+  final ChatMsgM? repliedMsgM;
 
   /// The sender [UserInfoM] of the repliedMsgM.
-  final UserInfoM repliedUser;
+  final UserInfoM? repliedUser;
   final File? repliedImageFile;
 
   /// Current [ChatMsgM]
@@ -47,14 +47,18 @@ class ReplyBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget? content;
+    Widget? repliedMessageWidget;
 
-    switch (repliedMsgM.type) {
+    if (repliedMsgM == null || repliedUser == null) {
+      repliedMessageWidget = Text("This message has been deleted.");
+    }
+
+    switch (repliedMsgM?.type) {
       case MsgDetailType.normal:
-        switch (repliedMsgM.detailType) {
+        switch (repliedMsgM?.detailType) {
           case MsgContentType.text:
           case MsgContentType.markdown:
-            final text = json.decode(repliedMsgM.detail)["content"] as String?;
+            final text = json.decode(repliedMsgM!.detail)["content"] as String?;
 
             var children = <InlineSpan>[];
 
@@ -85,15 +89,14 @@ class ReplyBubble extends StatelessWidget {
               },
             );
 
-            content = RichText(
+            repliedMessageWidget = RichText(
                 text: TextSpan(style: _replyStyle, children: children));
 
             break;
           case MsgContentType.file:
-            if (repliedMsgM.isImageMsg) {
-              final tag = uuid();
+            if (repliedMsgM!.isImageMsg) {
               if (repliedImageFile != null) {
-                content = Container(
+                repliedMessageWidget = Container(
                     constraints: BoxConstraints(maxHeight: 30, maxWidth: 50),
                     child: ImageBubble(
                         imageFile: repliedImageFile!,
@@ -103,7 +106,7 @@ class ReplyBubble extends StatelessWidget {
                             SingleImageGetters(
                               getInitImageFile: () async {
                                 final imageFile = await FileHandler.singleton
-                                    .getImageNormal(repliedMsgM);
+                                    .getImageNormal(repliedMsgM!);
                                 if (imageFile != null) {
                                   return SingleImageData(
                                       imageFile: imageFile, isOriginal: true);
@@ -116,7 +119,7 @@ class ReplyBubble extends StatelessWidget {
               break;
             } else {
               final String? filename =
-                  repliedMsgM.msgNormal?.properties?["name"];
+                  repliedMsgM!.msgNormal?.properties?["name"];
               if (filename != null && filename.isNotEmpty) {
                 String basename, extension;
                 try {
@@ -128,7 +131,7 @@ class ReplyBubble extends StatelessWidget {
                   extension = "";
                 }
 
-                content = Row(
+                repliedMessageWidget = Row(
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -146,7 +149,7 @@ class ReplyBubble extends StatelessWidget {
                             color: AppColors.grey600),
                       ),
                     ),
-                    Text("." + extension,
+                    Text(".$extension",
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -159,14 +162,15 @@ class ReplyBubble extends StatelessWidget {
             }
             break;
           case MsgContentType.archive:
-            content = Text("An archive",
+            repliedMessageWidget = Text("An archive",
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     fontWeight: FontWeight.w500, color: AppColors.grey97));
             break;
           default:
-            content = Text(json.decode(repliedMsgM.detail)["content"],
+            repliedMessageWidget = Text(
+                json.decode(repliedMsgM!.detail)["content"],
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -174,7 +178,7 @@ class ReplyBubble extends StatelessWidget {
         }
         break;
       case MsgDetailType.reply:
-        content = Text(json.decode(repliedMsgM.detail)["content"],
+        repliedMessageWidget = Text(json.decode(repliedMsgM!.detail)["content"],
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -188,9 +192,9 @@ class ReplyBubble extends StatelessWidget {
 
     bool hasMention = msgM.hasMention;
 
-    if (content != null) {
-      final name = repliedUser.userInfo.name.isNotEmpty
-          ? repliedUser.userInfo.name
+    if (repliedMessageWidget != null) {
+      final name = repliedUser!.userInfo.name.isNotEmpty
+          ? repliedUser!.userInfo.name
           : "Deleted User";
       replied = SizedBox(
         width: double.infinity,
@@ -200,10 +204,10 @@ class ReplyBubble extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               UserAvatar(
-                  avatarSize: AvatarSize.s24,
-                  uid: repliedUser.uid,
+                  avatarSize: VoceAvatarSize.s24,
+                  uid: repliedUser!.uid,
                   name: name,
-                  avatarBytes: repliedUser.avatarBytes),
+                  avatarBytes: repliedUser!.avatarBytes),
               Text(" $name  ",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -213,7 +217,7 @@ class ReplyBubble extends StatelessWidget {
                       color: AppColors.cyan500)),
             ],
           ),
-          content
+          repliedMessageWidget
         ]),
       );
 

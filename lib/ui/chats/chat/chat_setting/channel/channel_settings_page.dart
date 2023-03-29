@@ -20,7 +20,7 @@ import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/setting_members_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/pinned_msg/pinned_msg_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -99,7 +99,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           final info = groupInfoM.groupInfo;
           return AvatarInfoTile(
             avatar: ChannelAvatar(
-                avatarSize: AvatarSize.s84,
+                avatarSize: VoceAvatarSize.s84,
                 isPublic: groupInfoM.isPublic == 1,
                 avatarBytes: groupInfoM.avatar),
             title: info.name,
