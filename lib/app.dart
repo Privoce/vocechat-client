@@ -38,10 +38,6 @@ class App {
 
   ChatServerM chatServerM = ChatServerM();
 
-  bool isSelf(int? uid) {
-    return uid == userDb?.uid;
-  }
-
   factory App() {
     return app;
   }

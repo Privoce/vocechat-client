@@ -7,6 +7,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_members_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/owner_transfer_page.dart';
@@ -209,7 +210,7 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                                   name: user.userInfo.name,
                                   avatarBytes: user.avatarBytes,
                                   enableOnlineStatus: true,
-                                  isSelf: App.app.isSelf(user.uid),
+                                  isSelf: SharedFuncs.isSelf(user.uid),
                                 ),
                               ),
                             );

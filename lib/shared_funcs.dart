@@ -154,6 +154,10 @@ class SharedFuncs {
     return App.app.customConfig?.hasPreSetServerUrl ?? false;
   }
 
+  static bool isSelf(int? uid) {
+    return uid == App.app.userDb?.uid;
+  }
+
   /// Parse mention info in text and markdowns.
   /// It changes uid to username when mention format occurs.
   static Future<String> parseMention(String snippet) async {

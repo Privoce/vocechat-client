@@ -217,7 +217,7 @@ class _ChatsPageState extends State<ChatsPage>
               builder: (context, avatarBytes, _) {
                 return UserAvatar(
                   avatarSize: VoceAvatarSize.s48,
-                  isSelf: App.app.isSelf(uiChat.uid),
+                  isSelf: SharedFuncs.isSelf(uiChat.uid),
                   name: title,
                   uid: uiChat.uid!,
                   avatarBytes: avatarBytes,

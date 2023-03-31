@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -66,7 +67,7 @@ class AppSearchPage extends StatelessWidget {
                         final userInfoM = users[index];
                         return ContactTile(
                           userInfoM,
-                          App.app.isSelf(userInfoM.uid),
+                          SharedFuncs.isSelf(userInfoM.uid),
                           enableSubtitleEmail: true,
                           avatarSize: VoceAvatarSize.s42,
                           onTap: () => Navigator.pushNamed(

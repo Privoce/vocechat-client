@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
@@ -98,7 +99,7 @@ class MsgTileFrame extends StatelessWidget {
                 ? UserAvatar.deletedUser(avatarSize: avatarSize)
                 : UserAvatar(
                     avatarSize: avatarSize,
-                    isSelf: App.app.isSelf(uid),
+                    isSelf: SharedFuncs.isSelf(uid),
                     name: username,
                     uid: uid ?? -1,
                     avatarBytes: avatarBytes,

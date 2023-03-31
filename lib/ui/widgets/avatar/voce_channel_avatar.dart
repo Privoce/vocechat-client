@@ -3,8 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
-import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 
@@ -21,9 +19,6 @@ class VoceChannelAvatar extends StatelessWidget {
 
   final String? name;
 
-  late final double iconSize;
-  late double fontSize;
-
   /// Builds a ChannelAvatar with GroupInfoM
   ///
   /// Widget will show letter avatar if avatarBytes are not available
@@ -37,7 +32,7 @@ class VoceChannelAvatar extends StatelessWidget {
         avatarBytes = null,
         super(key: key);
 
-  VoceChannelAvatar.bytes(
+  const VoceChannelAvatar.bytes(
       {Key? key,
       required Uint8List this.avatarBytes,
       required this.size,
@@ -47,7 +42,7 @@ class VoceChannelAvatar extends StatelessWidget {
         _isDefaultPublicChannel = null,
         super(key: key);
 
-  VoceChannelAvatar.name(
+  const VoceChannelAvatar.name(
       {Key? key,
       required String this.name,
       required this.size,
@@ -57,7 +52,7 @@ class VoceChannelAvatar extends StatelessWidget {
         avatarBytes = null,
         super(key: key);
 
-  VoceChannelAvatar.defaultPublicChannel(
+  const VoceChannelAvatar.defaultPublicChannel(
       {Key? key, required this.size, this.isCircle = useCircleAvatar})
       : groupInfoM = null,
         name = null,
@@ -65,7 +60,7 @@ class VoceChannelAvatar extends StatelessWidget {
         avatarBytes = null,
         super(key: key);
 
-  VoceChannelAvatar.defaultPrivateChannel(
+  const VoceChannelAvatar.defaultPrivateChannel(
       {Key? key, required this.size, this.isCircle = useCircleAvatar})
       : groupInfoM = null,
         name = null,

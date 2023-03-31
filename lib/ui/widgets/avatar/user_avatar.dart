@@ -52,7 +52,7 @@ class _UserAvatarState extends State<UserAvatar> {
     super.initState();
 
     if (widget.enableOnlineStatus) {
-      onlineStatus.value = App.app.isSelf(widget.uid)
+      onlineStatus.value = SharedFuncs.isSelf(widget.uid)
           ? true
           : App.app.onlineStatusMap[widget.uid] ?? false;
 
@@ -78,7 +78,7 @@ class _UserAvatarState extends State<UserAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    onlineStatus.value = onlineStatus.value = App.app.isSelf(widget.uid)
+    onlineStatus.value = onlineStatus.value = SharedFuncs.isSelf(widget.uid)
         ? true
         : App.app.onlineStatusMap[widget.uid] ?? false;
 
