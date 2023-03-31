@@ -19,8 +19,9 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
+
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 
 class ImageShareSheet extends StatefulWidget {
@@ -76,10 +77,13 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
                 itemBuilder: (context, index) {
                   final chat = recentChats[index];
                   final avatarWidget = chat.isGroup
-                      ? ChannelAvatar(
-                          avatarSize: VoceAvatarSize.s48,
-                          avatarBytes: chat.groupInfoM!.avatar,
-                          name: chat.title)
+                      // ? ChannelAvatar(
+                      //     avatarSize: VoceAvatarSize.s48,
+                      //     avatarBytes: chat.groupInfoM!.avatar,
+                      //     name: chat.title)
+                      ? VoceChannelAvatar.channel(
+                          groupInfoM: chat.groupInfoM!,
+                          size: VoceAvatarSize.s48)
                       : UserAvatar(
                           avatarSize: VoceAvatarSize.s48,
                           name: chat.title,

@@ -9,8 +9,9 @@ import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_settings_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/dm/dm_settings_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
+
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 
 class ChatBar extends StatefulWidget implements PreferredSizeWidget {
   final ValueNotifier<GroupInfoM>? groupInfoNotifier;
@@ -117,11 +118,14 @@ class _ChatBarState extends State<ChatBar> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (widget._isGroup)
-                ChannelAvatar(
-                  avatarSize: VoceAvatarSize.s36,
-                  avatarBytes: widget.groupInfoNotifier!.value.avatar,
-                  name: widget.groupInfoNotifier?.value.groupInfo.name ?? "",
-                )
+                VoceChannelAvatar.channel(
+                    groupInfoM: widget.groupInfoNotifier!.value,
+                    size: VoceAvatarSize.s36)
+              // ChannelAvatar(
+              //   avatarSize: VoceAvatarSize.s36,
+              //   avatarBytes: widget.groupInfoNotifier!.value.avatar,
+              //   name: widget.groupInfoNotifier?.value.groupInfo.name ?? "",
+              // )
               else
                 UserAvatar(
                     avatarSize: VoceAvatarSize.s36,

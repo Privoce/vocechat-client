@@ -21,8 +21,9 @@ import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/setting_membe
 import 'package:vocechat_client/ui/chats/chat/chat_setting/pinned_msg/pinned_msg_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';
@@ -98,10 +99,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
           final info = groupInfoM.groupInfo;
           return AvatarInfoTile(
-            avatar: ChannelAvatar(
-                avatarSize: VoceAvatarSize.s84,
-                isPublic: groupInfoM.isPublic == 1,
-                avatarBytes: groupInfoM.avatar),
+            avatar: VoceChannelAvatar.channel(
+                groupInfoM: groupInfoM, size: VoceAvatarSize.s84),
             title: info.name,
             subtitle: info.description,
             enableEdit: isAdmin || isOwner,

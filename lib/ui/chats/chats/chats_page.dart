@@ -15,14 +15,17 @@ import 'package:vocechat_client/models/ui_models/ui_chat.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 import 'package:vocechat_client/ui/chats/chats/chat_tile.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
+
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 
 class ChatsPage extends StatefulWidget {
   static const route = "/chats/chats";
@@ -175,11 +178,18 @@ class _ChatsPageState extends State<ChatsPage>
           return ValueListenableBuilder<Uint8List>(
               valueListenable: uiChat.avatar,
               builder: (context, avatarBytes, _) {
-                return ChannelAvatar(
-                  avatarSize: VoceAvatarSize.s48,
-                  avatarBytes: avatarBytes,
-                  name: title,
-                );
+                // return ChannelAvatar(
+                //   avatarSize: VoceAvatarSize.s48,
+                //   avatarBytes: avatarBytes,
+                //   name: title,
+                // );
+                if (avatarBytes.isNotEmpty) {
+                  return VoceChannelAvatar.bytes(
+                      avatarBytes: avatarBytes, size: VoceAvatarSize.s48);
+                } else {
+                  return VoceChannelAvatar.name(
+                      name: title, size: VoceAvatarSize.s48);
+                }
               });
         });
 
