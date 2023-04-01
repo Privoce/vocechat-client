@@ -540,9 +540,9 @@ class _ChatsPageState extends State<ChatsPage>
   String _processSnippet(ChatMsgM chatMsgM) {
     String snippet;
 
-    switch (chatMsgM.type) {
+    switch (chatMsgM.detailType) {
       case MsgDetailType.normal:
-        switch (chatMsgM.detailType) {
+        switch (chatMsgM.detailContentType) {
           case MsgContentType.text:
             snippet =
                 chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
@@ -580,7 +580,7 @@ class _ChatsPageState extends State<ChatsPage>
         }
         break;
       case MsgDetailType.reply:
-        switch (chatMsgM.detailType) {
+        switch (chatMsgM.detailContentType) {
           case MsgContentType.text:
             snippet =
                 chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";

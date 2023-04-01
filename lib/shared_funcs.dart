@@ -122,17 +122,17 @@ class SharedFuncs {
   }
 
   static SendType getSendType(ChatMsgM chatMsgM) {
-    if (chatMsgM.type == MsgDetailType.normal &&
-        (chatMsgM.detailType == MsgContentType.text ||
-            chatMsgM.detailType == MsgContentType.markdown) &&
+    if (chatMsgM.detailType == MsgDetailType.normal &&
+        (chatMsgM.detailContentType == MsgContentType.text ||
+            chatMsgM.detailContentType == MsgContentType.markdown) &&
         chatMsgM.edited == 0) {
       return SendType.normal;
-    } else if (chatMsgM.detailType == MsgContentType.file) {
+    } else if (chatMsgM.detailContentType == MsgContentType.file) {
       return SendType.file;
-    } else if (chatMsgM.type == MsgDetailType.reply) {
+    } else if (chatMsgM.detailType == MsgDetailType.reply) {
       return SendType.reply;
-    } else if (chatMsgM.type == MsgDetailType.normal &&
-        chatMsgM.detailType == MsgContentType.text &&
+    } else if (chatMsgM.detailType == MsgDetailType.normal &&
+        chatMsgM.detailContentType == MsgContentType.text &&
         chatMsgM.edited == 1) {
       return SendType.edit;
     }

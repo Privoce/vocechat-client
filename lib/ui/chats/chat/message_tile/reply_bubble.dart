@@ -16,6 +16,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_i
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:path/path.dart' as path;
 
 class ReplyBubble extends StatelessWidget {
@@ -50,153 +51,157 @@ class ReplyBubble extends StatelessWidget {
     Widget? repliedMessageWidget;
 
     if (repliedMsgM == null || repliedUser == null) {
-      repliedMessageWidget = Text("This message has been deleted.");
-    }
+      repliedMessageWidget = Text(
+          AppLocalizations.of(context)!.messageHasBeenDeleted,
+          style: _replyStyle);
+    } else {
+      switch (repliedMsgM?.detailType) {
+        case MsgDetailType.normal:
+          switch (repliedMsgM?.detailContentType) {
+            case MsgContentType.text:
+            case MsgContentType.markdown:
+              final text =
+                  json.decode(repliedMsgM!.detail)["content"] as String?;
 
-    switch (repliedMsgM?.type) {
-      case MsgDetailType.normal:
-        switch (repliedMsgM?.detailType) {
-          case MsgContentType.text:
-          case MsgContentType.markdown:
-            final text = json.decode(repliedMsgM!.detail)["content"] as String?;
+              var children = <InlineSpan>[];
 
-            var children = <InlineSpan>[];
+              text?.splitMapJoin(
+                RegExp(r'\s@[0-9]+\s'),
+                onMatch: (Match match) {
+                  final uidStr = match[0]?.substring(2);
+                  if (uidStr != null && uidStr.isNotEmpty) {
+                    final uid = int.parse(uidStr);
+                    children.add(WidgetSpan(
+                        child: FutureBuilder<UserInfoM?>(
+                      future: UserInfoDao().getUserByUid(uid),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final mentionStr = snapshot.data!.userInfo.name;
+                          return Text(' @$mentionStr ',
+                              style: _replyMentionStyle);
+                        }
+                        return Text(" @$uid ", style: _replyMentionStyle);
+                      },
+                    )));
+                  }
+                  return '';
+                },
+                onNonMatch: (String text) {
+                  children.add(TextSpan(text: text, style: _replyStyle));
+                  return '';
+                },
+              );
 
-            text?.splitMapJoin(
-              RegExp(r'\s@[0-9]+\s'),
-              onMatch: (Match match) {
-                final uidStr = match[0]?.substring(2);
-                if (uidStr != null && uidStr.isNotEmpty) {
-                  final uid = int.parse(uidStr);
-                  children.add(WidgetSpan(
-                      child: FutureBuilder<UserInfoM?>(
-                    future: UserInfoDao().getUserByUid(uid),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        final mentionStr = snapshot.data!.userInfo.name;
-                        return Text(' @$mentionStr ',
-                            style: _replyMentionStyle);
-                      }
-                      return Text(" @$uid ", style: _replyMentionStyle);
-                    },
-                  )));
+              repliedMessageWidget = RichText(
+                  text: TextSpan(style: _replyStyle, children: children));
+
+              break;
+            case MsgContentType.file:
+              if (repliedMsgM!.isImageMsg) {
+                if (repliedImageFile != null) {
+                  repliedMessageWidget = Container(
+                      constraints: BoxConstraints(maxHeight: 30, maxWidth: 50),
+                      child: ImageBubble(
+                          imageFile: repliedImageFile!,
+                          getImageList: () async {
+                            // TODO: add original image getter.
+                            return ImageGalleryData(imageItemList: [
+                              SingleImageGetters(
+                                getInitImageFile: () async {
+                                  final imageFile = await FileHandler.singleton
+                                      .getImageNormal(repliedMsgM!);
+                                  if (imageFile != null) {
+                                    return SingleImageData(
+                                        imageFile: imageFile, isOriginal: true);
+                                  }
+                                },
+                              )
+                            ], initialPage: 0);
+                          }));
                 }
-                return '';
-              },
-              onNonMatch: (String text) {
-                children.add(TextSpan(text: text, style: _replyStyle));
-                return '';
-              },
-            );
+                break;
+              } else {
+                final String? filename =
+                    repliedMsgM!.msgNormal?.properties?["name"];
+                if (filename != null && filename.isNotEmpty) {
+                  String basename, extension;
+                  try {
+                    basename = path.basenameWithoutExtension(filename);
+                    extension = path.extension(filename).substring(1);
+                  } catch (e) {
+                    App.logger.severe(e);
+                    basename = "file";
+                    extension = "";
+                  }
 
-            repliedMessageWidget = RichText(
-                text: TextSpan(style: _replyStyle, children: children));
-
-            break;
-          case MsgContentType.file:
-            if (repliedMsgM!.isImageMsg) {
-              if (repliedImageFile != null) {
-                repliedMessageWidget = Container(
-                    constraints: BoxConstraints(maxHeight: 30, maxWidth: 50),
-                    child: ImageBubble(
-                        imageFile: repliedImageFile!,
-                        getImageList: () async {
-                          // TODO: add original image getter.
-                          return ImageGalleryData(imageItemList: [
-                            SingleImageGetters(
-                              getInitImageFile: () async {
-                                final imageFile = await FileHandler.singleton
-                                    .getImageNormal(repliedMsgM!);
-                                if (imageFile != null) {
-                                  return SingleImageData(
-                                      imageFile: imageFile, isOriginal: true);
-                                }
-                              },
-                            )
-                          ], initialPage: 0);
-                        }));
+                  repliedMessageWidget = Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 3),
+                        child: _buildFileIcon(extension),
+                      ),
+                      Flexible(
+                        child: Text(
+                          basename,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: AppColors.grey600),
+                        ),
+                      ),
+                      Text(".$extension",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: AppColors.grey600))
+                    ],
+                  );
+                }
               }
               break;
-            } else {
-              final String? filename =
-                  repliedMsgM!.msgNormal?.properties?["name"];
-              if (filename != null && filename.isNotEmpty) {
-                String basename, extension;
-                try {
-                  basename = path.basenameWithoutExtension(filename);
-                  extension = path.extension(filename).substring(1);
-                } catch (e) {
-                  App.logger.severe(e);
-                  basename = "file";
-                  extension = "";
-                }
-
-                repliedMessageWidget = Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 3),
-                      child: _buildFileIcon(extension),
-                    ),
-                    Flexible(
-                      child: Text(
-                        basename,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                            color: AppColors.grey600),
-                      ),
-                    ),
-                    Text(".$extension",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                            color: AppColors.grey600))
-                  ],
-                );
-              }
-            }
-            break;
-          case MsgContentType.archive:
-            repliedMessageWidget = Text("An archive",
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontWeight: FontWeight.w500, color: AppColors.grey97));
-            break;
-          default:
-            repliedMessageWidget = Text(
-                json.decode(repliedMsgM!.detail)["content"],
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    fontWeight: FontWeight.w500, color: AppColors.grey97));
-        }
-        break;
-      case MsgDetailType.reply:
-        repliedMessageWidget = Text(json.decode(repliedMsgM!.detail)["content"],
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontWeight: FontWeight.w500, color: AppColors.grey97));
-        break;
-      default:
-        break;
+            case MsgContentType.archive:
+              repliedMessageWidget = Text("An archive",
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500, color: AppColors.grey97));
+              break;
+            default:
+              repliedMessageWidget = Text(
+                  json.decode(repliedMsgM!.detail)["content"],
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w500, color: AppColors.grey97));
+          }
+          break;
+        case MsgDetailType.reply:
+          repliedMessageWidget = Text(
+              json.decode(repliedMsgM!.detail)["content"],
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontWeight: FontWeight.w500, color: AppColors.grey97));
+          break;
+        default:
+          break;
+      }
     }
-
-    Widget replied;
 
     bool hasMention = msgM.hasMention;
 
-    if (repliedMessageWidget != null) {
+    if (repliedMessageWidget != null &&
+        repliedMsgM != null &&
+        repliedMsgM != null) {
       final name = repliedUser!.userInfo.name.isNotEmpty
           ? repliedUser!.userInfo.name
           : "Deleted User";
-      replied = SizedBox(
+      repliedMessageWidget = SizedBox(
         width: double.infinity,
         child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
           Row(
@@ -220,30 +225,25 @@ class ReplyBubble extends StatelessWidget {
           repliedMessageWidget
         ]),
       );
-
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-              decoration: BoxDecoration(
-                  color: AppColors.grey100,
-                  borderRadius: BorderRadius.circular(8)),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: replied),
-          TextBubble(
-              content: msgM.msgReply?.content ?? "Unsupported content.",
-              edited: msgM.edited == 1,
-              hasMention: hasMention,
-              maxLines: 10,
-              enableShowMoreBtn: true)
-        ],
-      );
-    } else {
-      return TextBubble(
-          content: msgM.msgReply?.content ?? "Unsupported content.",
-          edited: msgM.edited == 1,
-          hasMention: hasMention);
     }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+            decoration: BoxDecoration(
+                color: AppColors.grey100,
+                borderRadius: BorderRadius.circular(8)),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: repliedMessageWidget),
+        TextBubble(
+            content: msgM.msgReply?.content ?? "Unsupported content.",
+            edited: msgM.edited == 1,
+            hasMention: hasMention,
+            maxLines: 10,
+            enableShowMoreBtn: true)
+      ],
+    );
   }
 
   Widget _buildFileIcon(String extension) {

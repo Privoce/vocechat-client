@@ -398,7 +398,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
 
   Widget _buildReply(BuildContext context) {
     if (widget.repliedMsgM != null && widget.repliedUser != null) {
-      switch (widget.repliedMsgM!.detailContentType) {
+      switch (widget.repliedMsgM!.detailContentTypeStr) {
         case typeText:
         case typeMarkdown:
           return FutureBuilder<String>(

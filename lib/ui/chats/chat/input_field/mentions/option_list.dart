@@ -36,8 +36,6 @@ class OptionList extends StatelessWidget {
                     onTap(users[index]);
                   },
                   child: Container(
-                    // width: MediaQuery.of(context).size.width,
-                    // color: Colors.amber,
                     padding: EdgeInsets.all(20.0),
                     child: Text(
                       users[index].userInfo.name,
