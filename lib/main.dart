@@ -363,17 +363,19 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       _handleLoginLink(uri);
     } else if (RegExp(joinRegexStr).hasMatch(path)) {
       _handleJoinLink(uri);
+    } else {
+      App.logger.warning("Unrecongizable invitation link");
     }
   }
 
   Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
-    final param = uri.queryParameters["magic_link"];
-    if (param == null || param.isEmpty) return null;
-
     try {
-      final invLinkUri = Uri.parse(param);
+      final magicLinkHost = uri.queryParameters["magic_link"];
+      final magicToken = uri.queryParameters["magic_token"];
 
-      final magicToken = invLinkUri.queryParameters["magic_token"];
+      if (magicLinkHost == null || magicLinkHost.isEmpty) return null;
+      final invLinkUri = Uri.parse(magicLinkHost);
+
       String serverUrl = invLinkUri.scheme +
           '://' +
           invLinkUri.host +
