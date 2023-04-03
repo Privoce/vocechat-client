@@ -18,6 +18,7 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:path/path.dart' as path;
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class ReplyBubble extends StatelessWidget {
   /// The [ChatMsgM] being replied.
@@ -208,11 +209,8 @@ class ReplyBubble extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              UserAvatar(
-                  avatarSize: VoceAvatarSize.s24,
-                  uid: repliedUser!.uid,
-                  name: name,
-                  avatarBytes: repliedUser!.avatarBytes),
+              VoceUserAvatar.user(
+                  userInfoM: repliedUser!, size: VoceAvatarSize.s24),
               Text(" $name  ",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

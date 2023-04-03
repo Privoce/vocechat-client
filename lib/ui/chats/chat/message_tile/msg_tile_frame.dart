@@ -10,6 +10,7 @@ import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class MsgTileFrame extends StatelessWidget {
   final String username;
@@ -96,7 +97,9 @@ class MsgTileFrame extends StatelessWidget {
               }
             },
             child: uid == -1
-                ? UserAvatar.deletedUser(avatarSize: avatarSize)
+                ? VoceUserAvatar.deleted(size: avatarSize)
+
+                // TODO: to be changed after refactoring user avatar storage strategy
                 : UserAvatar(
                     avatarSize: avatarSize,
                     isSelf: SharedFuncs.isSelf(uid),

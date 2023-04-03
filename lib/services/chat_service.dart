@@ -1168,7 +1168,11 @@ class ChatService {
           final uid = stateMap["uid"] as int;
           final isOnline = stateMap["online"] as bool;
 
-          App.app.onlineStatusMap.addAll({uid: isOnline});
+          if (App.app.onlineStatusMap.containsKey(uid)) {
+            App.app.onlineStatusMap[uid]!.value = isOnline;
+          } else {
+            App.app.onlineStatusMap[uid] = ValueNotifier(isOnline);
+          }
 
           fireUserStatus(uid, isOnline);
         }
@@ -1185,7 +1189,11 @@ class ChatService {
       final uid = map["uid"] as int;
       final isOnline = map["online"] as bool;
 
-      App.app.onlineStatusMap.addAll({uid: isOnline});
+      if (App.app.onlineStatusMap.containsKey(uid)) {
+        App.app.onlineStatusMap[uid]!.value = isOnline;
+      } else {
+        App.app.onlineStatusMap[uid] = ValueNotifier(isOnline);
+      }
 
       fireUserStatus(uid, isOnline);
     } catch (e) {

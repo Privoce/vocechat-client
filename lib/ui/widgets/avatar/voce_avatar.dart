@@ -12,6 +12,7 @@ class VoceAvatar extends StatelessWidget {
   final String? name;
   final IconData? icon;
   final double size;
+  final Color? backgroundColor;
 
   // For circle avatar
   final bool isCircle;
@@ -24,7 +25,8 @@ class VoceAvatar extends StatelessWidget {
       {Key? key,
       required Uint8List this.avatarBytes,
       this.size = VoceAvatarSize.s36,
-      this.isCircle = true})
+      this.isCircle = true,
+      this.backgroundColor})
       : name = null,
         icon = null,
         super(key: key);
@@ -33,7 +35,8 @@ class VoceAvatar extends StatelessWidget {
       {Key? key,
       required String this.name,
       this.size = VoceAvatarSize.s36,
-      this.isCircle = true})
+      this.isCircle = true,
+      this.backgroundColor})
       : avatarBytes = null,
         icon = null,
         super(key: key);
@@ -42,7 +45,8 @@ class VoceAvatar extends StatelessWidget {
       {Key? key,
       required IconData this.icon,
       this.size = VoceAvatarSize.s36,
-      this.isCircle = true})
+      this.isCircle = true,
+      this.backgroundColor})
       : avatarBytes = null,
         name = null,
         super(key: key);
@@ -66,7 +70,7 @@ class VoceAvatar extends StatelessWidget {
             height: size,
             width: size,
             child: CircleAvatar(
-                backgroundColor: AppColors.grey200,
+                backgroundColor: backgroundColor ?? AppColors.grey200,
                 child: Center(
                   child: Text(
                     initials,
@@ -82,7 +86,7 @@ class VoceAvatar extends StatelessWidget {
             height: size,
             width: size,
             child: CircleAvatar(
-                backgroundColor: AppColors.grey200,
+                backgroundColor: backgroundColor ?? AppColors.grey200,
                 child: Icon(icon, size: iconSize, color: AppColors.grey500)));
       } else {
         double iconSize = size / 2;
@@ -90,7 +94,7 @@ class VoceAvatar extends StatelessWidget {
             height: size,
             width: size,
             child: CircleAvatar(
-                backgroundColor: AppColors.grey200,
+                backgroundColor: backgroundColor ?? AppColors.grey200,
                 child: Icon(CupertinoIcons.person,
                     size: iconSize, color: AppColors.grey500)));
       }
@@ -114,7 +118,8 @@ class VoceAvatar extends StatelessWidget {
           child: Container(
             height: size,
             width: size,
-            decoration: BoxDecoration(color: AppColors.grey200),
+            decoration:
+                BoxDecoration(color: backgroundColor ?? AppColors.grey200),
             child: Center(
               child: Text(
                 initials,
@@ -134,7 +139,8 @@ class VoceAvatar extends StatelessWidget {
           child: Container(
               width: size,
               height: size,
-              decoration: BoxDecoration(color: AppColors.grey200),
+              decoration:
+                  BoxDecoration(color: backgroundColor ?? AppColors.grey200),
               child: Center(
                   child: Icon(icon, size: iconSize, color: AppColors.grey500))),
         );
@@ -147,7 +153,8 @@ class VoceAvatar extends StatelessWidget {
           child: Container(
               width: size,
               height: size,
-              decoration: BoxDecoration(color: AppColors.grey200),
+              decoration:
+                  BoxDecoration(color: backgroundColor ?? AppColors.grey200),
               child: Center(
                   child: Icon(CupertinoIcons.person,
                       size: iconSize, color: AppColors.grey500))),

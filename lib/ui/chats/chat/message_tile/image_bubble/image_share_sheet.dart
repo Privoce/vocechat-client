@@ -22,6 +22,7 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 
 class ImageShareSheet extends StatefulWidget {
@@ -84,11 +85,13 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
                       ? VoceChannelAvatar.channel(
                           groupInfoM: chat.groupInfoM!,
                           size: VoceAvatarSize.s48)
-                      : UserAvatar(
-                          avatarSize: VoceAvatarSize.s48,
-                          name: chat.title,
-                          avatarBytes: chat.userInfoM!.avatarBytes,
-                          enableOnlineStatus: true);
+                      // : UserAvatar(
+                      //     avatarSize: VoceAvatarSize.s48,
+                      //     name: chat.title,
+                      //     avatarBytes: chat.userInfoM!.avatarBytes,
+                      //     enableOnlineStatus: true);
+                      : VoceUserAvatar.user(
+                          userInfoM: chat.userInfoM!, size: VoceAvatarSize.s48);
                   // return _buildButtonChild(avatarWidget, chat.title);
                   return CupertinoButton(
                     padding: EdgeInsets.zero,

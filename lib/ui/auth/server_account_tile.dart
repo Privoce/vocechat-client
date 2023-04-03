@@ -63,6 +63,9 @@ class _ServerAccountTileState extends State<ServerAccountTile> {
         foregroundImage: MemoryImage(serverAvatarBytes),
         backgroundColor: Colors.white,
         radius: 24);
+
+    // TODO: to be changed after adding raw constructors in VoceUserAvatar
+    // or VoceAvatar
     final userAvatar = UserAvatar(
         avatarSize: VoceAvatarSize.s36,
         uid: -1,

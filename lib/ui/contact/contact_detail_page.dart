@@ -11,6 +11,7 @@ import 'package:vocechat_client/ui/chats/chat/chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -73,12 +74,16 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   Widget _buildUserInfo(UserInfoM userInfoM) {
     final userInfo = userInfoM.userInfo;
     return AvatarInfoTile(
-      avatar: UserAvatar(
-          avatarSize: VoceAvatarSize.s84,
-          uid: userInfoM.uid,
-          name: userInfo.name,
-          enableOnlineStatus: true,
-          avatarBytes: userInfoM.avatarBytes),
+      // avatar: UserAvatar(
+      //     avatarSize: VoceAvatarSize.s84,
+      //     uid: userInfoM.uid,
+      //     name: userInfo.name,
+      //     enableOnlineStatus: true,
+      //     avatarBytes: userInfoM.avatarBytes),
+      avatar: VoceUserAvatar.user(
+          userInfoM: userInfoM,
+          size: VoceAvatarSize.s84,
+          enableOnlineStatus: true),
       title: userInfo.name,
       subtitle: userInfo.email,
     );

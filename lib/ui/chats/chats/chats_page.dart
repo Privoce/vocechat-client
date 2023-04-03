@@ -26,6 +26,7 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class ChatsPage extends StatefulWidget {
   static const route = "/chats/chats";
@@ -215,6 +216,7 @@ class _ChatsPageState extends State<ChatsPage>
           return ValueListenableBuilder<Uint8List>(
               valueListenable: uiChat.avatar,
               builder: (context, avatarBytes, _) {
+                // TODO: to be changed after refactoring uiChat object
                 return UserAvatar(
                   avatarSize: VoceAvatarSize.s48,
                   isSelf: SharedFuncs.isSelf(uiChat.uid),
@@ -223,6 +225,14 @@ class _ChatsPageState extends State<ChatsPage>
                   avatarBytes: avatarBytes,
                   enableOnlineStatus: true,
                 );
+                //   if (avatarBytes.isNotEmpty) {
+                //   return VoceUser.bytes(
+                //       avatarBytes: avatarBytes, size: VoceAvatarSize.s48);
+                // } else {
+                //   return VoceChannelAvatar.name(
+                //       name: title, size: VoceAvatarSize.s48);
+                // }
+                // return VoceUserAvatar.name(name: name, size: size)
               });
         });
 
@@ -693,8 +703,8 @@ class _ChatsPageState extends State<ChatsPage>
         final userInfoM = await UserInfoDao().getUserByUid(dm.dmUid);
         if (userInfoM != null) {
           _userInfoMap.addAll({userInfoM.uid: userInfoM});
-          userInfoM.onlineNotifier.value =
-              App.app.onlineStatusMap[userInfoM.uid] ?? false;
+          userInfoM.onlineNotifier =
+              App.app.onlineStatusMap[userInfoM.uid] ?? ValueNotifier(false);
 
           final latestMsgM =
               await ChatMsgDao().getMsgBylocalMid(dm.lastLocalMid);

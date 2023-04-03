@@ -15,6 +15,7 @@ import 'package:vocechat_client/ui/chats/chat/chat_setting/invite/member_add_pag
 import 'package:vocechat_client/ui/chats/chat/chat_setting/invite/member_remove_page.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -204,14 +205,16 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8),
-                                child: UserAvatar(
-                                  avatarSize: VoceAvatarSize.s36,
-                                  uid: user.uid,
-                                  name: user.userInfo.name,
-                                  avatarBytes: user.avatarBytes,
-                                  enableOnlineStatus: true,
-                                  isSelf: SharedFuncs.isSelf(user.uid),
-                                ),
+                                // child: UserAvatar(
+                                //   avatarSize: VoceAvatarSize.s36,
+                                //   uid: user.uid,
+                                //   name: user.userInfo.name,
+                                //   avatarBytes: user.avatarBytes,
+                                //   enableOnlineStatus: true,
+                                //   isSelf: SharedFuncs.isSelf(user.uid),
+                                // ),
+                                child: VoceUserAvatar.user(
+                                    userInfoM: user, size: VoceAvatarSize.s36),
                               ),
                             );
                           }),

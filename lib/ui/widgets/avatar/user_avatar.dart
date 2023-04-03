@@ -52,11 +52,11 @@ class _UserAvatarState extends State<UserAvatar> {
     super.initState();
 
     if (widget.enableOnlineStatus) {
-      onlineStatus.value = SharedFuncs.isSelf(widget.uid)
-          ? true
-          : App.app.onlineStatusMap[widget.uid] ?? false;
+      // onlineStatus.value = SharedFuncs.isSelf(widget.uid)
+      //     ? true
+      //     : App.app.onlineStatusMap[widget.uid] ?? false;
 
-      App.app.chatService.subscribeUserStatus(_onUserStatus);
+      // App.app.chatService.subscribeUserStatus(_onUserStatus);
     }
   }
 
@@ -78,9 +78,9 @@ class _UserAvatarState extends State<UserAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    onlineStatus.value = onlineStatus.value = SharedFuncs.isSelf(widget.uid)
-        ? true
-        : App.app.onlineStatusMap[widget.uid] ?? false;
+    // onlineStatus.value = onlineStatus.value = SharedFuncs.isSelf(widget.uid)
+    //     ? true
+    //     : App.app.onlineStatusMap[widget.uid] ?? false;
 
     double statusIndicatorSize = widget.avatarSize / 3;
     late double fontSize;
