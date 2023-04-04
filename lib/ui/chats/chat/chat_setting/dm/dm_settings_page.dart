@@ -12,9 +12,10 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/auto_delete_settings_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';
 
@@ -67,11 +68,8 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
         builder: (context, userInfoM, _) {
           final userInfo = userInfoM.userInfo;
           return AvatarInfoTile(
-            avatar: UserAvatar(
-                avatarSize: VoceAvatarSize.s60,
-                name: userInfo.name,
-                uid: userInfoM.uid,
-                avatarBytes: userInfoM.avatarBytes),
+            avatar: VoceUserAvatar.user(
+                userInfoM: userInfoM, size: VoceAvatarSize.s60),
             title: userInfo.name,
             subtitle: userInfo.email,
           );

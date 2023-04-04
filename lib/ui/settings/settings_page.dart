@@ -23,7 +23,6 @@ import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingPage extends StatefulWidget {

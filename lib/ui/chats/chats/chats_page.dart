@@ -23,7 +23,6 @@ import 'package:vocechat_client/ui/chats/chats/chat_tile.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
@@ -216,23 +215,19 @@ class _ChatsPageState extends State<ChatsPage>
           return ValueListenableBuilder<Uint8List>(
               valueListenable: uiChat.avatar,
               builder: (context, avatarBytes, _) {
-                // TODO: to be changed after refactoring uiChat object
-                return UserAvatar(
-                  avatarSize: VoceAvatarSize.s48,
-                  isSelf: SharedFuncs.isSelf(uiChat.uid),
-                  name: title,
-                  uid: uiChat.uid!,
-                  avatarBytes: avatarBytes,
-                  enableOnlineStatus: true,
-                );
-                //   if (avatarBytes.isNotEmpty) {
-                //   return VoceUser.bytes(
-                //       avatarBytes: avatarBytes, size: VoceAvatarSize.s48);
-                // } else {
-                //   return VoceChannelAvatar.name(
-                //       name: title, size: VoceAvatarSize.s48);
-                // }
-                // return VoceUserAvatar.name(name: name, size: size)
+                if (avatarBytes.isNotEmpty) {
+                  return VoceUserAvatar(
+                      avatarBytes: avatarBytes,
+                      size: VoceAvatarSize.s48,
+                      uid: uiChat.uid ?? -1,
+                      enableOnlineStatus: true);
+                } else {
+                  return VoceUserAvatar.name(
+                      name: title,
+                      size: VoceAvatarSize.s48,
+                      uid: uiChat.uid ?? -1,
+                      enableOnlineStatus: true);
+                }
               });
         });
 
@@ -758,4 +753,10 @@ class _ChatsPageState extends State<ChatsPage>
     }
     return count;
   }
+}
+
+/// The data behind a chat tile.
+class VoceChatTileData {
+  // Variables for all instances
+  // final String? avatarPath;
 }

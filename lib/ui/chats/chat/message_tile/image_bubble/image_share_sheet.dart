@@ -20,7 +20,6 @@ import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';

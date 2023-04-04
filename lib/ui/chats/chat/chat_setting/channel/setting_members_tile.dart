@@ -17,7 +17,7 @@ import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingMembersTile extends StatefulWidget {

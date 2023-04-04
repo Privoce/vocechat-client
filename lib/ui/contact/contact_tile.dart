@@ -7,7 +7,7 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class ContactTile extends StatefulWidget {
@@ -42,10 +42,7 @@ class ContactTile extends StatefulWidget {
     //   // onlineNotifier: userInfoM.onlineNotifier
     // );
     _avatar = VoceUserAvatar.user(
-      userInfoM: userInfoM,
-      size: avatarSize,
-      enableOnlineStatus: true
-    );
+        userInfoM: userInfoM, size: avatarSize, enableOnlineStatus: true);
   }
 
   @override

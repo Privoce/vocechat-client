@@ -2,12 +2,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ServerAccountTile extends StatefulWidget {
@@ -64,11 +66,9 @@ class _ServerAccountTileState extends State<ServerAccountTile> {
         backgroundColor: Colors.white,
         radius: 24);
 
-    // TODO: to be changed after adding raw constructors in VoceUserAvatar
-    // or VoceAvatar
-    final userAvatar = UserAvatar(
-        avatarSize: VoceAvatarSize.s36,
-        uid: -1,
+    final userAvatar = VoceAvatar(
+        size: VoceAvatarSize.s36,
+        isCircle: useCircleAvatar,
         name: username,
         avatarBytes: userAvatarBytes);
 

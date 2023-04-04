@@ -7,6 +7,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 
@@ -15,6 +16,7 @@ class VoceUserAvatar extends StatelessWidget {
   final double size;
   final bool isCircle;
   final bool enableOnlineStatus;
+  final Color? backgroundColor;
 
   final UserInfoM? userInfoM;
 
@@ -22,45 +24,69 @@ class VoceUserAvatar extends StatelessWidget {
 
   final String? name;
 
-  final int? _uid;
+  final int? uid;
 
   final bool _deleted;
 
-  // VoceUserAvatar.bytes(
-  //     {required this.avatarBytes,
-  //     required this.size,
-  //     this.isCircle = useCircleAvatar,
-  //     this.enableOnlineStatus = true}):userInfoM = null,
-  //     _uid
-  //     ;
+  final void Function(int uid)? onTap;
+
+  const VoceUserAvatar(
+      {Key? key,
+      required this.size,
+      this.enableOnlineStatus = true,
+      this.isCircle = useCircleAvatar,
+      this.userInfoM,
+      this.avatarBytes,
+      this.name,
+      required this.uid,
+      this.backgroundColor = Colors.blue,
+      this.onTap})
+      : _deleted = (uid != null && uid > 0) ? false : true,
+        super(key: key);
 
   VoceUserAvatar.user(
-      {required UserInfoM this.userInfoM,
+      {Key? key,
+      required UserInfoM this.userInfoM,
       required this.size,
       this.isCircle = useCircleAvatar,
-      this.enableOnlineStatus = true})
+      this.enableOnlineStatus = true,
+      this.backgroundColor = Colors.blue,
+      this.onTap})
       : avatarBytes = userInfoM.avatarBytes,
         name = userInfoM.userInfo.name,
-        _uid = userInfoM.uid,
-        _deleted = false;
+        uid = userInfoM.uid,
+        _deleted = false,
+        super(key: key);
 
-  VoceUserAvatar.name(
-      {required String this.name,
+  const VoceUserAvatar.name(
+      {Key? key,
+      required String this.name,
       required this.size,
-      this.isCircle = useCircleAvatar})
+      this.isCircle = useCircleAvatar,
+      this.uid,
+      this.backgroundColor = Colors.blue,
+      bool? enableOnlineStatus,
+      this.onTap})
       : userInfoM = null,
         avatarBytes = null,
-        _uid = null,
-        enableOnlineStatus = false,
-        _deleted = false;
+        enableOnlineStatus =
+            enableOnlineStatus ?? false || (uid != null && uid > 0),
+        _deleted = false,
+        super(key: key);
 
-  VoceUserAvatar.deleted({required this.size, this.isCircle = useCircleAvatar})
-      : userInfoM = null,
+  const VoceUserAvatar.deleted({
+    Key? key,
+    required this.size,
+    this.isCircle = useCircleAvatar,
+    this.backgroundColor = Colors.red,
+  })  : userInfoM = null,
         avatarBytes = null,
         name = null,
-        _uid = null,
+        uid = null,
         enableOnlineStatus = false,
-        _deleted = true;
+        _deleted = true,
+        onTap = null,
+        super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -69,25 +95,36 @@ class VoceUserAvatar extends StatelessWidget {
           icon: CupertinoIcons.person,
           size: size,
           isCircle: isCircle,
-          backgroundColor: Colors.red);
+          backgroundColor: backgroundColor);
     } else {
       Widget rawAvatar;
       if (userInfoM != null && userInfoM!.avatarBytes.isNotEmpty) {
         rawAvatar = VoceAvatar.bytes(
             avatarBytes: avatarBytes!, size: size, isCircle: isCircle);
+      } else if (avatarBytes != null && avatarBytes!.isNotEmpty) {
+        rawAvatar = VoceAvatar.bytes(
+            avatarBytes: avatarBytes!, size: size, isCircle: isCircle);
       } else if (name != null && name!.isNotEmpty) {
-        rawAvatar =
-            VoceAvatar.name(name: name!, size: size, isCircle: isCircle);
+        rawAvatar = VoceAvatar.name(
+            name: name!,
+            size: size,
+            isCircle: isCircle,
+            fontColor: AppColors.grey200,
+            backgroundColor: backgroundColor);
       } else {
         rawAvatar = VoceAvatar.icon(
-            icon: AppIcons.contact, size: size, isCircle: isCircle);
+            icon: AppIcons.contact,
+            size: size,
+            isCircle: isCircle,
+            fontColor: AppColors.grey200,
+            backgroundColor: backgroundColor);
       }
 
       // Add online status
-      if (enableOnlineStatus &&
-          _uid != null &&
-          App.app.onlineStatusMap.containsKey(_uid)) {
-        final onlineStatus = App.app.onlineStatusMap[_uid]!;
+      if (enableOnlineStatus && uid != null) {
+        final onlineStatus = SharedFuncs.isSelf(uid)
+            ? ValueNotifier(true)
+            : App.app.onlineStatusMap[uid]!;
         final statusIndicatorSize = size / 3;
 
         rawAvatar = Stack(
@@ -105,7 +142,7 @@ class VoceUserAvatar extends StatelessWidget {
                   valueListenable: onlineStatus,
                   builder: (context, isOnline, child) {
                     Color color;
-                    if (isOnline || SharedFuncs.isSelf(_uid)) {
+                    if (isOnline || SharedFuncs.isSelf(uid)) {
                       color = Color.fromRGBO(34, 197, 94, 1);
                     } else {
                       color = Color.fromRGBO(161, 161, 170, 1);
@@ -118,6 +155,13 @@ class VoceUserAvatar extends StatelessWidget {
             ),
           ],
         );
+      }
+
+      if (onTap != null && uid != null) {
+        rawAvatar = CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => onTap!(uid!),
+            child: rawAvatar);
       }
 
       return rawAvatar;

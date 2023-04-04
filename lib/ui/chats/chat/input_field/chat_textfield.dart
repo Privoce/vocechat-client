@@ -20,8 +20,9 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
@@ -253,13 +254,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        // TODO: to be changed
-                        UserAvatar(
-                            avatarSize: VoceAvatarSize.s36,
-                            uid: data['uid'] ?? -1,
+                        VoceAvatar(
+                            size: VoceAvatarSize.s36,
+                            isCircle: useCircleAvatar,
                             name: data['display'] ?? "",
-                            avatarBytes: data["photo"]),
-
+                            avatarBytes: data["photo"],
+                            backgroundColor: Colors.blue,
+                            fontColor: AppColors.grey200),
                         SizedBox(width: 16),
                         Flexible(
                           child: Text(data['display'],

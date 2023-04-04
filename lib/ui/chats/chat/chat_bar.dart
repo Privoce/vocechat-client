@@ -10,7 +10,6 @@ import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_setti
 import 'package:vocechat_client/ui/chats/chat/chat_setting/dm/dm_settings_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 

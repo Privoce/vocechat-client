@@ -13,6 +13,7 @@ class VoceAvatar extends StatelessWidget {
   final IconData? icon;
   final double size;
   final Color? backgroundColor;
+  final Color? fontColor;
 
   // For circle avatar
   final bool isCircle;
@@ -21,14 +22,26 @@ class VoceAvatar extends StatelessWidget {
   // BorderRadius? borderRadius;
   final double _radiusFactor = 0.1;
 
-  VoceAvatar.bytes(
+  const VoceAvatar(
+      {Key? key,
+      required this.size,
+      required this.isCircle,
+      this.avatarBytes,
+      this.name,
+      this.icon,
+      this.backgroundColor,
+      this.fontColor})
+      : super(key: key);
+
+  const VoceAvatar.bytes(
       {Key? key,
       required Uint8List this.avatarBytes,
       this.size = VoceAvatarSize.s36,
-      this.isCircle = true,
-      this.backgroundColor})
+      this.isCircle = true})
       : name = null,
         icon = null,
+        fontColor = null,
+        backgroundColor = null,
         super(key: key);
 
   const VoceAvatar.name(
@@ -36,7 +49,8 @@ class VoceAvatar extends StatelessWidget {
       required String this.name,
       this.size = VoceAvatarSize.s36,
       this.isCircle = true,
-      this.backgroundColor})
+      this.backgroundColor,
+      this.fontColor})
       : avatarBytes = null,
         icon = null,
         super(key: key);
@@ -46,7 +60,8 @@ class VoceAvatar extends StatelessWidget {
       required IconData this.icon,
       this.size = VoceAvatarSize.s36,
       this.isCircle = true,
-      this.backgroundColor})
+      this.backgroundColor,
+      this.fontColor})
       : avatarBytes = null,
         name = null,
         super(key: key);
@@ -76,8 +91,9 @@ class VoceAvatar extends StatelessWidget {
                     initials,
                     textAlign: TextAlign.center,
                     maxLines: 1,
-                    style:
-                        TextStyle(color: AppColors.grey600, fontSize: fontSize),
+                    style: TextStyle(
+                        color: fontColor ?? AppColors.grey600,
+                        fontSize: fontSize),
                   ),
                 )));
       } else if (icon != null) {
@@ -125,7 +141,8 @@ class VoceAvatar extends StatelessWidget {
                 initials,
                 textAlign: TextAlign.center,
                 maxLines: 1,
-                style: TextStyle(color: AppColors.grey600, fontSize: fontSize),
+                style: TextStyle(
+                    color: fontColor ?? AppColors.grey600, fontSize: fontSize),
               ),
             ),
           ),

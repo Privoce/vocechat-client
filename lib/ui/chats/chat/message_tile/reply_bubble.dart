@@ -15,7 +15,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_ga
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:path/path.dart' as path;
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
