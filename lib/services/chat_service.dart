@@ -695,6 +695,7 @@ class ChatService {
     // Server has a new one but no local avatar data.
     final c = (curr != 0 && (currBytes == null || currBytes.isEmpty));
 
+    // Debug print only.
     // print(
     //     "prev: $prev \t curr: $curr \t currBytes: ${currBytes == null || currBytes.isEmpty} \t a: $a \t b: $b \t c: $c");
 
