@@ -124,7 +124,7 @@ class VoceUserAvatar extends StatelessWidget {
       if (enableOnlineStatus && uid != null) {
         final onlineStatus = SharedFuncs.isSelf(uid)
             ? ValueNotifier(true)
-            : App.app.onlineStatusMap[uid]!;
+            : App.app.onlineStatusMap[uid] ?? ValueNotifier(false);
         final statusIndicatorSize = size / 3;
 
         rawAvatar = Stack(

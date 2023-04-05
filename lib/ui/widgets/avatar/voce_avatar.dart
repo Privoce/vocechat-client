@@ -74,7 +74,7 @@ class VoceAvatar extends StatelessWidget {
             height: size,
             width: size,
             decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
+                shape: BoxShape.circle,
                 image: DecorationImage(
                     fit: BoxFit.cover, image: MemoryImage(avatarBytes!))));
       } else if (name != null && name!.isNotEmpty) {

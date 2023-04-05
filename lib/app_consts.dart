@@ -107,4 +107,4 @@ const List<String> codeExts = [
   "json"
 ];
 
-const useCircleAvatar = false;
+const useCircleAvatar = true;
