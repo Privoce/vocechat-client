@@ -450,6 +450,7 @@ class SendFile implements AbstractSend {
     size = file.lengthSync();
 
     final isImage = contentType.startsWith("image/");
+    final isGif = contentType == ("image/gif");
 
     Map<String, dynamic> properties = {
       "cid": localMid,
@@ -520,12 +521,19 @@ class SendFile implements AbstractSend {
     // Compress and save thumb if is image.
     if (isImage) {
       final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
-      // Uint8List thumbBytes =
-      //     await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
+      Uint8List thumbBytes;
+      if (isGif) {
+        thumbBytes = fileBytes;
+      } else {
+        thumbBytes =
+            await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
+        fileBytes = await FlutterImageCompress.compressWithList(fileBytes,
+            quality: 100);
+      }
 
       // Save both thumb and original image to local document storage.
       final thumbFile = await FileHandler.singleton
-          .saveImageThumb(chatId!, fileBytes, localMid, filename);
+          .saveImageThumb(chatId!, thumbBytes, localMid, filename);
 
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
       App.app.chatService.fireMsg(msgM, localMid, thumbFile);
@@ -533,7 +541,6 @@ class SendFile implements AbstractSend {
 
       await FileHandler.singleton
           .saveImageNormal(chatId, fileBytes, localMid, filename);
-      // file = thumbFile!;
     } else {
       final chatId = SharedFuncs.getChatId(gid: gid, uid: uid);
       file = (await FileHandler.singleton
