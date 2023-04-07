@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
@@ -8,6 +9,7 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
 class VoceAvatar extends StatelessWidget {
   // General variables
+  final File? file;
   final Uint8List? avatarBytes;
   final String? name;
   final IconData? icon;
@@ -26,6 +28,7 @@ class VoceAvatar extends StatelessWidget {
       {Key? key,
       required this.size,
       required this.isCircle,
+      this.file,
       this.avatarBytes,
       this.name,
       this.icon,
@@ -33,12 +36,25 @@ class VoceAvatar extends StatelessWidget {
       this.fontColor})
       : super(key: key);
 
+  const VoceAvatar.file(
+      {Key? key,
+      required File this.file,
+      this.size = VoceAvatarSize.s36,
+      this.isCircle = true})
+      : avatarBytes = null,
+        name = null,
+        icon = null,
+        fontColor = null,
+        backgroundColor = null,
+        super(key: key);
+
   const VoceAvatar.bytes(
       {Key? key,
       required Uint8List this.avatarBytes,
       this.size = VoceAvatarSize.s36,
       this.isCircle = true})
-      : name = null,
+      : file = null,
+        name = null,
         icon = null,
         fontColor = null,
         backgroundColor = null,
@@ -51,7 +67,8 @@ class VoceAvatar extends StatelessWidget {
       this.isCircle = true,
       this.backgroundColor,
       this.fontColor})
-      : avatarBytes = null,
+      : file = null,
+        avatarBytes = null,
         icon = null,
         super(key: key);
 
@@ -62,14 +79,34 @@ class VoceAvatar extends StatelessWidget {
       this.isCircle = true,
       this.backgroundColor,
       this.fontColor})
-      : avatarBytes = null,
+      : file = null,
+        avatarBytes = null,
         name = null,
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if (isCircle) {
-      if (avatarBytes != null && avatarBytes!.isNotEmpty) {
+      if (file != null) {
+        return SizedBox(
+          height: size,
+          width: size,
+          child: ClipOval(
+              child: Image.file(file!,
+                  fit: BoxFit.cover, width: size, height: size, frameBuilder:
+                      (context, child, frame, wasSynchronouslyLoaded) {
+            if (wasSynchronouslyLoaded) {
+              return child;
+            } else {
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 100),
+                child:
+                    frame != null ? child : const CupertinoActivityIndicator(),
+              );
+            }
+          })),
+        );
+      } else if (avatarBytes != null && avatarBytes!.isNotEmpty) {
         return Container(
             height: size,
             width: size,
@@ -115,14 +152,45 @@ class VoceAvatar extends StatelessWidget {
                     size: iconSize, color: AppColors.grey500)));
       }
     } else {
-      if (avatarBytes != null && avatarBytes!.isNotEmpty) {
+      if (file != null) {
+        return SizedBox(
+          height: size,
+          width: size,
+          child: ClipOval(
+              child: Image.file(file!,
+                  fit: BoxFit.cover, width: size, height: size, frameBuilder:
+                      (context, child, frame, wasSynchronouslyLoaded) {
+            if (wasSynchronouslyLoaded) {
+              return child;
+            } else {
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 100),
+                child:
+                    frame != null ? child : const CupertinoActivityIndicator(),
+              );
+            }
+          })),
+        );
+      } else if (avatarBytes != null && avatarBytes!.isNotEmpty) {
         final borderRadius = BorderRadius.circular(size * _radiusFactor);
         return ClipRRect(
           borderRadius: borderRadius,
           child: SizedBox(
               height: size,
               width: size,
-              child: Image.memory(avatarBytes!, fit: BoxFit.cover)),
+              child: Image.memory(avatarBytes!, fit: BoxFit.cover, frameBuilder:
+                  (context, child, frame, wasSynchronouslyLoaded) {
+                if (wasSynchronouslyLoaded) {
+                  return child;
+                } else {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 100),
+                    child: frame != null
+                        ? child
+                        : const CupertinoActivityIndicator(),
+                  );
+                }
+              })),
         );
       } else if (name != null && name!.isNotEmpty) {
         final initials = SharedFuncs.getInitials(name!);

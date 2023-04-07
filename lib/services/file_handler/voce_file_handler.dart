@@ -26,10 +26,15 @@ class VoceFileHander {
     return null;
   }
 
+  /// Read file from local storage.
+  ///
+  /// Return null if file does not exist.
   Future<File?> read(String fileName) async {
     final path = await filePath(fileName);
     try {
-      return File(path);
+      if (await exists(fileName)) {
+        return File(path);
+      }
     } catch (e) {
       App.logger.severe(e);
     }

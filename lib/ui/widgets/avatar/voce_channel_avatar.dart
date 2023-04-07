@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/services/file_handler/channel_avatar_handler.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 
@@ -70,10 +72,23 @@ class VoceChannelAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if (groupInfoM != null && groupInfoM!.avatar.isNotEmpty) {
-    //   return VoceAvatar.bytes(
-    //       avatarBytes: groupInfoM!.avatar, size: size, isCircle: isCircle);
-    // } else
+    if (groupInfoM != null && groupInfoM!.groupInfo.avatarUpdatedAt != 0) {
+      return FutureBuilder<File?>(
+          future: ChannelAvatarHander().readOrFetch(groupInfoM!.gid),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return VoceAvatar.file(
+                  file: snapshot.data!, size: size, isCircle: isCircle);
+            } else {
+              return _buildNonFileAvatar();
+            }
+          });
+    } else {
+      return _buildNonFileAvatar();
+    }
+  }
+
+  Widget _buildNonFileAvatar() {
     if (avatarBytes != null && avatarBytes!.isNotEmpty) {
       return VoceAvatar.bytes(
           avatarBytes: avatarBytes!, size: size, isCircle: isCircle);

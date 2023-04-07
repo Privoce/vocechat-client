@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/app.dart';
@@ -10,7 +11,7 @@ import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/init_dao/properties_models/group_properties.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
-class GroupInfoM with M {
+class GroupInfoM extends Equatable with M {
   int gid = -1;
   String lastLocalMid = "";
   String info = "";
@@ -114,6 +115,10 @@ class GroupInfoM with M {
 
   static MMeta meta = MMeta.fromType(GroupInfoM, GroupInfoM.fromMap)
     ..tableName = F_tableName;
+
+  @override
+  List<Object?> get props =>
+      [gid, lastLocalMid, info, _properties, isPublic, isActive, createdAt];
 }
 
 class GroupInfoDao extends Dao<GroupInfoM> {

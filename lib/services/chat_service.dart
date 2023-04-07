@@ -13,6 +13,7 @@ import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/services/file_handler/channel_avatar_handler.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -664,22 +665,36 @@ class ChatService {
 
         GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
 
-        final oldAvatarUpdatedAt =
-            (await GroupInfoDao().getGroupByGid(groupInfoM.gid))
-                ?.groupInfo
-                .avatarUpdatedAt;
+        final oldGroupInfoM =
+            await GroupInfoDao().getGroupByGid(groupInfoM.gid);
 
-        await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-          fireChannel(groupInfoM, EventActions.create);
-          // if (shouldGetAvatar(oldAvatarUpdatedAt, groupInfo.avatarUpdatedAt,
-          //     groupInfoM.avatar)) {
-          //   await getGroupAvatar(groupInfo.gid);
-          // }
-        });
+        if (oldGroupInfoM != groupInfoM) {
+          await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
+            fireChannel(groupInfoM, EventActions.create);
+            if (await shouldGetChannelAvatar(oldGroupInfoM, groupInfoM)) {
+              await getGroupAvatar(groupInfoM.gid);
+            }
+          });
+        }
       }
     } catch (e) {
       App.logger.severe(e);
     }
+  }
+
+  Future<bool> shouldGetChannelAvatar(GroupInfoM? prev, GroupInfoM curr) async {
+    // No local groupInfoM, or has local groupInfoM but no local data,
+    // and server has a new avatar.
+    final a = ((prev == null ||
+            !(await ChannelAvatarHander()
+                .exists(ChannelAvatarHander.generateFileName(curr.gid)))) &&
+        curr.groupInfo.avatarUpdatedAt != 0);
+
+    // Has local groupInfoM, but server has a newer avatar.
+    final b = (prev != null &&
+        curr.groupInfo.avatarUpdatedAt > prev.groupInfo.avatarUpdatedAt);
+
+    return a || b;
   }
 
   /// Check if needs to fetch channel avatar from server.
@@ -710,9 +725,8 @@ class ChatService {
           res.statusCode == 200 &&
           res.data != null &&
           res.data!.isNotEmpty) {
-        // await GroupInfoDao()
-        //     .updateAvatar(gid, res.data!)
-        //     .then((value) => fireChannel(value!, EventActions.update));
+        await ChannelAvatarHander()
+            .save(ChannelAvatarHander.generateFileName(gid), res.data!);
       }
     } catch (e) {
       App.logger.warning(e);
