@@ -70,10 +70,11 @@ class VoceChannelAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (groupInfoM != null && groupInfoM!.avatar.isNotEmpty) {
-      return VoceAvatar.bytes(
-          avatarBytes: groupInfoM!.avatar, size: size, isCircle: isCircle);
-    } else if (avatarBytes != null && avatarBytes!.isNotEmpty) {
+    // if (groupInfoM != null && groupInfoM!.avatar.isNotEmpty) {
+    //   return VoceAvatar.bytes(
+    //       avatarBytes: groupInfoM!.avatar, size: size, isCircle: isCircle);
+    // } else
+    if (avatarBytes != null && avatarBytes!.isNotEmpty) {
       return VoceAvatar.bytes(
           avatarBytes: avatarBytes!, size: size, isCircle: isCircle);
     } else if (name != null && name!.isNotEmpty) {

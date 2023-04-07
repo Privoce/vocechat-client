@@ -97,7 +97,7 @@ class _ChatsPageState extends State<ChatsPage>
         showDrawer: () => Scaffold.of(context).openDrawer(),
         onCreateChannel: (groupInfoM) {
           final uiChat = UiChat(
-              avatar: groupInfoM.avatar,
+              // avatar: groupInfoM.avatar,
               title: groupInfoM.groupInfo.name,
               gid: groupInfoM.gid,
               isPrivateChannel: groupInfoM.isPublic != 1,
@@ -368,7 +368,7 @@ class _ChatsPageState extends State<ChatsPage>
           final index = getUiChatIndex(gid: groupInfoM.gid);
 
           if (index > -1) {
-            _uiChats[index].avatar.value = groupInfoM.avatar;
+            // _uiChats[index].avatar.value = groupInfoM.avatar;
             _uiChats[index].title.value = groupInfoM.groupInfo.name;
             _uiChats[index].isMuted.value = groupInfoM.properties.enableMute;
             _uiChats[index].draft.value = groupInfoM.properties.draft;
@@ -376,7 +376,7 @@ class _ChatsPageState extends State<ChatsPage>
                 !groupInfoM.groupInfo.isPublic;
           } else {
             final uiChat = UiChat(
-                avatar: groupInfoM.avatar,
+                // avatar: groupInfoM.avatar,
                 title: groupInfoM.groupInfo.name,
                 gid: groupInfoM.gid,
                 isPrivateChannel: groupInfoM.isPublic != 1,
@@ -662,7 +662,7 @@ class _ChatsPageState extends State<ChatsPage>
           }
 
           final uiChat = UiChat(
-            avatar: groupInfoM.avatar,
+            // avatar: groupInfoM.avatar,
             title: groupInfoM.groupInfo.name,
             snippet: s,
             unreadMentionCount: unreadMentionCount,
@@ -676,7 +676,7 @@ class _ChatsPageState extends State<ChatsPage>
           addOrReplaceChannel(uiChat);
         } else {
           final uiChat = UiChat(
-              avatar: groupInfoM.avatar,
+              // avatar: groupInfoM.avatar,
               title: groupInfoM.groupInfo.name,
               gid: groupInfoM.gid,
               updatedAt: groupInfoM.createdAt,

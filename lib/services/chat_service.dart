@@ -565,10 +565,10 @@ class ChatService {
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
         fireChannel(value, EventActions.create);
-        if (shouldGetChannelAvatar(
-            oldAvatarUpdatedAt, groupInfo.avatarUpdatedAt, groupInfoM.avatar)) {
-          await getGroupAvatar(groupInfo.gid);
-        }
+        // if (shouldGetAvatar(
+        //     oldAvatarUpdatedAt, groupInfo.avatarUpdatedAt, groupInfoM.avatar)) {
+        //   await getGroupAvatar(groupInfo.gid);
+        // }
       });
     } catch (e) {
       App.logger.severe(e);
@@ -671,10 +671,10 @@ class ChatService {
 
         await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
           fireChannel(groupInfoM, EventActions.create);
-          if (shouldGetChannelAvatar(oldAvatarUpdatedAt,
-              groupInfo.avatarUpdatedAt, groupInfoM.avatar)) {
-            await getGroupAvatar(groupInfo.gid);
-          }
+          // if (shouldGetAvatar(oldAvatarUpdatedAt, groupInfo.avatarUpdatedAt,
+          //     groupInfoM.avatar)) {
+          //   await getGroupAvatar(groupInfo.gid);
+          // }
         });
       }
     } catch (e) {
@@ -683,7 +683,7 @@ class ChatService {
   }
 
   /// Check if needs to fetch channel avatar from server.
-  bool shouldGetChannelAvatar(int? prev, int curr, Uint8List? currBytes) {
+  bool shouldGetAvatar(int? prev, int curr, Uint8List? currBytes) {
     // ints are [avatarUpdatedAt]
 
     // No local avatar but server has a new one.
@@ -710,9 +710,9 @@ class ChatService {
           res.statusCode == 200 &&
           res.data != null &&
           res.data!.isNotEmpty) {
-        await GroupInfoDao()
-            .updateAvatar(gid, res.data!)
-            .then((value) => fireChannel(value!, EventActions.update));
+        // await GroupInfoDao()
+        //     .updateAvatar(gid, res.data!)
+        //     .then((value) => fireChannel(value!, EventActions.update));
       }
     } catch (e) {
       App.logger.warning(e);
@@ -777,16 +777,24 @@ class ChatService {
         switch (action) {
           case "create":
             UserInfo userInfo = UserInfo.fromJson(logMap);
-            UserInfoM m = UserInfoM.fromUserInfo(userInfo, Uint8List(0), "");
+            UserInfoM userInfoM =
+                UserInfoM.fromUserInfo(userInfo, Uint8List(0), "");
 
-            await UserInfoDao()
-                .addOrUpdate(m)
-                .then((value) => fireUser(value, EventActions.create));
+            final oldAvatarUpdatedAt =
+                (await UserInfoDao().getUserByUid(userInfoM.uid))
+                    ?.userInfo
+                    .avatarUpdatedAt;
+
+            await UserInfoDao().addOrUpdate(userInfoM).then((value) {
+              fireUser(value, EventActions.create);
+
+              if (shouldGetAvatar(oldAvatarUpdatedAt, userInfo.avatarUpdatedAt,
+                  userInfoM.avatarBytes)) {
+                mainTaskQueue.add(() => _getUserAvatar(userInfoM));
+              }
+            });
+
             await UserDbMDao.dao.updateUserInfo(userInfo);
-
-            if (userInfo.avatarUpdatedAt != 0) {
-              mainTaskQueue.add(() => _getUserAvatar(m));
-            }
 
             break;
           case "update":

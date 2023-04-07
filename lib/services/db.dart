@@ -71,6 +71,13 @@ Future<void> initDb({String? dbFileName}) async {
                 App.logger.warning(e);
               }
             }
+            if (oldVersion < newVersion && oldVersion < 4) {
+              try {
+                db.execute("ALTER TABLE group_info REMOVE COLUMN avatar");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
           },
         ),
       );

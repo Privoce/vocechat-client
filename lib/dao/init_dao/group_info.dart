@@ -14,7 +14,7 @@ class GroupInfoM with M {
   int gid = -1;
   String lastLocalMid = "";
   String info = "";
-  Uint8List avatar = Uint8List(0);
+  // Uint8List avatar = Uint8List(0);
   String _properties = "";
   int isPublic = 1;
   int isActive = 1;
@@ -34,20 +34,22 @@ class GroupInfoM with M {
     }
   }
 
-  GroupInfoM.item(this.gid, this.lastLocalMid, this.info, this.avatar,
-      this._properties, this.isPublic, this.isActive, this.updatedAt);
+  GroupInfoM.item(this.gid, this.lastLocalMid, this.info, this._properties,
+      this.isPublic, this.isActive, this.updatedAt);
 
-  GroupInfoM.fromGroupInfo(GroupInfo groupInfo, bool isActive,
-      {Uint8List? avatar}) {
+  GroupInfoM.fromGroupInfo(
+    GroupInfo groupInfo,
+    bool isActive,
+  ) {
     gid = groupInfo.gid;
     info = jsonEncode(groupInfo.toJson());
     isPublic = groupInfo.isPublic ? 1 : 0;
     this.isActive = isActive ? 1 : 0;
     // updatedAt = DateTime.now().millisecondsSinceEpoch;
 
-    if (avatar != null) {
-      this.avatar = avatar;
-    }
+    // if (avatar != null) {
+    //   this.avatar = avatar;
+    // }
   }
 
   static GroupInfoM fromMap(Map<String, dynamic> map) {
@@ -64,9 +66,9 @@ class GroupInfoM with M {
     if (map.containsKey(F_info)) {
       m.info = map[F_info];
     }
-    if (map.containsKey(F_avatar)) {
-      m.avatar = map[F_avatar];
-    }
+    // if (map.containsKey(F_avatar)) {
+    //   m.avatar = map[F_avatar];
+    // }
     if (map.containsKey(F_properties)) {
       m._properties = map[F_properties];
     }
@@ -90,7 +92,7 @@ class GroupInfoM with M {
   static const F_gid = 'gid';
   static const F_lastLocalMid = 'last_local_mid';
   static const F_info = 'info';
-  static const F_avatar = 'avatar';
+  // static const F_avatar = 'avatar';
   static const F_properties = 'properties';
   static const F_isPublic = 'is_public';
   static const F_isActive = 'is_active';
@@ -102,7 +104,7 @@ class GroupInfoM with M {
         GroupInfoM.F_gid: gid,
         GroupInfoM.F_lastLocalMid: lastLocalMid,
         GroupInfoM.F_info: info,
-        GroupInfoM.F_avatar: avatar,
+        // GroupInfoM.F_avatar: avatar,
         GroupInfoM.F_properties: _properties,
         GroupInfoM.F_isPublic: isPublic,
         GroupInfoM.F_isActive: isActive,
@@ -126,7 +128,7 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       if (old != null) {
         m.id = old.id;
         m.createdAt = old.createdAt;
-        m.avatar = old.avatar;
+        // m.avatar = old.avatar;
         m._properties = jsonEncode(old.properties);
         await super.update(m);
       } else {
@@ -200,15 +202,15 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     return old;
   }
 
-  Future<GroupInfoM?> updateAvatar(int gid, Uint8List avatarBytes) async {
-    GroupInfoM? old =
-        await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
-    if (old != null) {
-      old.avatar = avatarBytes;
-      await super.update(old);
-    }
-    return old;
-  }
+  // Future<GroupInfoM?> updateAvatar(int gid, Uint8List avatarBytes) async {
+  //   GroupInfoM? old =
+  //       await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
+  //   if (old != null) {
+  //     old.avatar = avatarBytes;
+  //     await super.update(old);
+  //   }
+  //   return old;
+  // }
 
   Future<GroupInfoM?> updateGroup(int gid,
       {String? description,
