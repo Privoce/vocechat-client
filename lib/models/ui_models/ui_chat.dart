@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
 class UiChat {
   // snippet, unreadCount, updatedAt,
@@ -8,10 +10,13 @@ class UiChat {
   // Rebuild UI when changing avatar.
   ValueNotifier<Uint8List> avatar = ValueNotifier(Uint8List(0));
 
-  int? gid;
-  int? uid;
+  final UserInfoM? userInfoM;
+  final GroupInfoM? groupInfoM;
 
   ValueNotifier<String> title = ValueNotifier("");
+
+  // ValueNotifier<UserInfoM>? userInfoM = ValueNotifier(_value);
+
   ValueNotifier<String> snippet = ValueNotifier("");
   ValueNotifier<int> unreadCount = ValueNotifier(0);
   ValueNotifier<bool> isMuted = ValueNotifier(false);
@@ -40,8 +45,8 @@ class UiChat {
   UiChat(
       {Uint8List? avatar,
       String title = "Deleted User",
-      this.gid,
-      this.uid,
+      this.groupInfoM,
+      this.userInfoM,
       bool isMuted = false,
       String snippet = "",
       int unreadCount = 0,
@@ -52,9 +57,10 @@ class UiChat {
       this.enableHide = false,
       this.onlineNotifier}) {
     // Between Channel id (group id, or gid) and uid, only one exists.
-    assert((gid == null && uid != null) || (gid != null && uid == null));
+    assert((groupInfoM == null && userInfoM != null) ||
+        (groupInfoM != null && userInfoM == null));
 
-    isChannel = (gid != null && uid == null);
+    isChannel = (groupInfoM != null && userInfoM == null);
 
     this.avatar.value = avatar ?? Uint8List(0);
     this.title.value = title;

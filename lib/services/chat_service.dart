@@ -528,25 +528,24 @@ class ChatService {
     assert(map["type"] == sseGroupChanged);
 
     try {
-      await GroupInfoDao()
-          .updateGroup(map["gid"],
-              description: map["description"],
-              name: map["name"],
-              owner: map["owner"],
-              avatarUpdatedAt: map["avatar_updated_at"],
-              isPublic: map["is_public"])
-          .then((value) async {
-        if (value == null) return;
-        fireChannel(value, EventActions.update);
+      final gid = map["gid"] as int;
 
-        if (map["avatar_updated_at"] != null && map["avatar_updated_at"] != 0) {
-          final avatarUpdatedAt = map["avatar_updated_at"] as int;
-          final gid = map["gid"]!;
-          if (value.groupInfo.avatarUpdatedAt != avatarUpdatedAt) {
-            await getGroupAvatar(gid);
+      final oldGroupInfoM = await GroupInfoDao().getGroupByGid(gid);
+      if (oldGroupInfoM != null) {
+        final newGroupInfoM = await GroupInfoDao().updateGroup(map["gid"],
+            description: map["description"],
+            name: map["name"],
+            owner: map["owner"],
+            avatarUpdatedAt: map["avatar_updated_at"],
+            isPublic: map["is_public"]);
+
+        if (oldGroupInfoM != newGroupInfoM && newGroupInfoM != null) {
+          fireChannel(newGroupInfoM, EventActions.update);
+          if (await shouldGetChannelAvatar(oldGroupInfoM, newGroupInfoM)) {
+            await getGroupAvatar(newGroupInfoM);
           }
         }
-      });
+      }
     } catch (e) {
       App.logger.severe(e);
     }

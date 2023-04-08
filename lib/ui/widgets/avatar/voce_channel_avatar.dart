@@ -2,13 +2,15 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/services/file_handler/channel_avatar_handler.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 
-class VoceChannelAvatar extends StatelessWidget {
+class VoceChannelAvatar extends StatefulWidget {
   // General variables for all constructors
   final double size;
   final bool isCircle;
@@ -71,14 +73,35 @@ class VoceChannelAvatar extends StatelessWidget {
         super(key: key);
 
   @override
+  State<VoceChannelAvatar> createState() => _VoceChannelAvatarState();
+}
+
+class _VoceChannelAvatarState extends State<VoceChannelAvatar> {
+  @override
+  void initState() {
+    super.initState();
+    App.app.chatService.subscribeGroups(_onChannelChanged);
+  }
+
+  @override
+  void dispose() {
+    App.app.chatService.unsubscribeGroups(_onChannelChanged);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (groupInfoM != null && groupInfoM!.groupInfo.avatarUpdatedAt != 0) {
+    if (widget.groupInfoM != null &&
+        widget.groupInfoM!.groupInfo.avatarUpdatedAt != 0) {
       return FutureBuilder<File?>(
-          future: ChannelAvatarHander().readOrFetch(groupInfoM!.gid),
+          future: ChannelAvatarHander().readOrFetch(widget.groupInfoM!.gid),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return VoceAvatar.file(
-                  file: snapshot.data!, size: size, isCircle: isCircle);
+                  key: ValueKey("${snapshot.data!.lastModifiedSync()}"),
+                  file: snapshot.data!,
+                  size: widget.size,
+                  isCircle: widget.isCircle);
             } else {
               return _buildNonFileAvatar();
             }
@@ -89,17 +112,29 @@ class VoceChannelAvatar extends StatelessWidget {
   }
 
   Widget _buildNonFileAvatar() {
-    if (avatarBytes != null && avatarBytes!.isNotEmpty) {
+    if (widget.avatarBytes != null && widget.avatarBytes!.isNotEmpty) {
       return VoceAvatar.bytes(
-          avatarBytes: avatarBytes!, size: size, isCircle: isCircle);
-    } else if (name != null && name!.isNotEmpty) {
-      return VoceAvatar.name(name: name!, size: size, isCircle: isCircle);
-    } else if (_isDefaultPublicChannel ?? false) {
+          avatarBytes: widget.avatarBytes!,
+          size: widget.size,
+          isCircle: widget.isCircle);
+    } else if (widget.name != null && widget.name!.isNotEmpty) {
+      return VoceAvatar.name(
+          name: widget.name!, size: widget.size, isCircle: widget.isCircle);
+    } else if (widget._isDefaultPublicChannel ?? false) {
       return VoceAvatar.icon(
-          icon: AppIcons.channel, size: size, isCircle: isCircle);
+          icon: AppIcons.channel, size: widget.size, isCircle: widget.isCircle);
     } else {
       return VoceAvatar.icon(
-          icon: AppIcons.private_channel, size: size, isCircle: isCircle);
+          icon: AppIcons.private_channel,
+          size: widget.size,
+          isCircle: widget.isCircle);
+    }
+  }
+
+  Future<void> _onChannelChanged(
+      GroupInfoM groupInfoM, EventActions action) async {
+    if (groupInfoM.gid == widget.groupInfoM?.gid) {
+      setState(() {});
     }
   }
 }

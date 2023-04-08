@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
+// import 'package:vocechat_client/dao/init_dao/group_info.dart';
+// import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
-class VoceChatsTileData extends ValueNotifier {
-  VoceChatsTileData(value) : super(value);
-}
+// class VoceChatsTileData extends ChangeNotifier {
+//   final UserInfoM? userInfoM;
+//   final GroupInfoM? groupInfoM;
+// }

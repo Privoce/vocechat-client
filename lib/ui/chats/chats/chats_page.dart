@@ -99,7 +99,7 @@ class _ChatsPageState extends State<ChatsPage>
           final uiChat = UiChat(
               // avatar: groupInfoM.avatar,
               title: groupInfoM.groupInfo.name,
-              gid: groupInfoM.gid,
+              groupInfoM: groupInfoM,
               isPrivateChannel: groupInfoM.isPublic != 1,
               isMuted: groupInfoM.properties.enableMute,
               updatedAt: groupInfoM.updatedAt);
@@ -117,12 +117,11 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   int getUiChatIndex({int? gid, int? uid}) {
-    (_uiChats.map((e) => e.gid));
     int index = -1;
     if (gid != null) {
-      index = _uiChats.indexWhere((element) => element.gid == gid);
+      index = _uiChats.indexWhere((element) => element.groupInfoM?.gid == gid);
     } else if (uid != null) {
-      index = _uiChats.indexWhere((element) => element.uid == uid);
+      index = _uiChats.indexWhere((element) => element.userInfoM?.uid == uid);
     }
 
     return index;
@@ -130,9 +129,10 @@ class _ChatsPageState extends State<ChatsPage>
 
   /// Should use inside setState method to get UI updated.
   void addOrReplaceChannel(UiChat uiChat, [int insertAt = 0]) {
-    assert(uiChat.gid != null);
+    assert(uiChat.groupInfoM != null);
 
-    int idx = _uiChats.indexWhere((element) => element.gid == uiChat.gid);
+    int idx = _uiChats.indexWhere(
+        (element) => element.groupInfoM?.gid == uiChat.groupInfoM?.gid);
     if (idx > -1) {
       _uiChats.removeAt(idx);
     }
@@ -141,9 +141,10 @@ class _ChatsPageState extends State<ChatsPage>
 
   /// Should use inside setState method to get UI updated.
   void addOrReplaceDm(UiChat uiChat, [int insertAt = 0]) {
-    assert(uiChat.uid != null);
+    assert(uiChat.userInfoM != null);
 
-    int idx = _uiChats.indexWhere((element) => element.uid == uiChat.uid);
+    int idx = _uiChats.indexWhere(
+        (element) => element.userInfoM?.uid == uiChat.userInfoM?.uid);
     if (idx > -1) {
       _uiChats.removeAt(idx);
     }
@@ -170,31 +171,13 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   Widget _buildChannelTile(UiChat uiChat) {
-    assert(uiChat.gid != null);
+    assert(uiChat.groupInfoM != null);
 
-    final avatar = ValueListenableBuilder<String>(
-        valueListenable: uiChat.title,
-        builder: (context, title, _) {
-          return ValueListenableBuilder<Uint8List>(
-              valueListenable: uiChat.avatar,
-              builder: (context, avatarBytes, _) {
-                // return ChannelAvatar(
-                //   avatarSize: VoceAvatarSize.s48,
-                //   avatarBytes: avatarBytes,
-                //   name: title,
-                // );
-                if (avatarBytes.isNotEmpty) {
-                  return VoceChannelAvatar.bytes(
-                      avatarBytes: avatarBytes, size: VoceAvatarSize.s48);
-                } else {
-                  return VoceChannelAvatar.name(
-                      name: title, size: VoceAvatarSize.s48);
-                }
-              });
-        });
+    final avatar = VoceChannelAvatar.channel(
+        groupInfoM: uiChat.groupInfoM!, size: VoceAvatarSize.s48);
 
     return ChatTile(
-        onTap: () => _onTapChannel(uiChat.gid!),
+        onTap: () => _onTapChannel(uiChat.groupInfoM!.gid),
         name: uiChat.title,
         snippet: uiChat.snippet,
         updatedAt: uiChat.updatedAt,
@@ -207,29 +190,12 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   Widget _buildDmTile(UiChat uiChat) {
-    assert(uiChat.uid != null && uiChat.onlineNotifier != null);
+    assert(uiChat.userInfoM != null && uiChat.onlineNotifier != null);
 
-    Widget avatar = ValueListenableBuilder<String>(
-        valueListenable: uiChat.title,
-        builder: (context, title, _) {
-          return ValueListenableBuilder<Uint8List>(
-              valueListenable: uiChat.avatar,
-              builder: (context, avatarBytes, _) {
-                if (avatarBytes.isNotEmpty) {
-                  return VoceUserAvatar(
-                      avatarBytes: avatarBytes,
-                      size: VoceAvatarSize.s48,
-                      uid: uiChat.uid ?? -1,
-                      enableOnlineStatus: true);
-                } else {
-                  return VoceUserAvatar.name(
-                      name: title,
-                      size: VoceAvatarSize.s48,
-                      uid: uiChat.uid ?? -1,
-                      enableOnlineStatus: true);
-                }
-              });
-        });
+    Widget avatar = VoceUserAvatar.user(
+        userInfoM: uiChat.userInfoM!,
+        size: VoceAvatarSize.s48,
+        enableOnlineStatus: true);
 
     return Slidable(
       endActionPane:
@@ -237,7 +203,7 @@ class _ChatsPageState extends State<ChatsPage>
         SlidableAction(
           flex: 1,
           onPressed: (context) {
-            _onDeleteDm(uiChat.uid!);
+            _onDeleteDm(uiChat.userInfoM!.uid);
           },
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
@@ -245,7 +211,7 @@ class _ChatsPageState extends State<ChatsPage>
         ),
       ]),
       child: ChatTile(
-          onTap: () => _onTapDm(uiChat.uid!),
+          onTap: () => _onTapDm(uiChat.userInfoM!.uid),
           name: uiChat.title,
           snippet: uiChat.snippet,
           draft: uiChat.draft,
@@ -378,7 +344,7 @@ class _ChatsPageState extends State<ChatsPage>
             final uiChat = UiChat(
                 // avatar: groupInfoM.avatar,
                 title: groupInfoM.groupInfo.name,
-                gid: groupInfoM.gid,
+                groupInfoM: groupInfoM,
                 isPrivateChannel: groupInfoM.isPublic != 1,
                 isMuted: groupInfoM.properties.enableMute,
                 updatedAt: groupInfoM.updatedAt);
@@ -421,7 +387,7 @@ class _ChatsPageState extends State<ChatsPage>
           final uiChat = UiChat(
               // avatar: userInfoM.avatarBytes,
               title: userInfoM.userInfo.name,
-              uid: userInfoM.uid,
+              userInfoM: userInfoM,
               isMuted: userInfoM.properties.enableMute,
               onlineNotifier: ValueNotifier(false),
               snippet: snippet,
@@ -519,7 +485,7 @@ class _ChatsPageState extends State<ChatsPage>
             // });
           } else {
             final uiChat = UiChat(
-                uid: uid,
+                userInfoM: userInfoM,
                 // avatar: userInfoM.avatarBytes,
                 title: userInfoM.userInfo.name,
                 snippet: snippet,
@@ -667,7 +633,7 @@ class _ChatsPageState extends State<ChatsPage>
             snippet: s,
             unreadMentionCount: unreadMentionCount,
             draft: draft,
-            gid: groupInfoM.gid,
+            groupInfoM: groupInfoM,
             updatedAt: latestMsgM.createdAt,
             isPrivateChannel: groupInfoM.isPublic != 1,
             unreadCount: unreadCount,
@@ -678,7 +644,7 @@ class _ChatsPageState extends State<ChatsPage>
           final uiChat = UiChat(
               // avatar: groupInfoM.avatar,
               title: groupInfoM.groupInfo.name,
-              gid: groupInfoM.gid,
+              groupInfoM: groupInfoM,
               updatedAt: groupInfoM.createdAt,
               isPrivateChannel: groupInfoM.isPublic != 1);
 
@@ -713,7 +679,7 @@ class _ChatsPageState extends State<ChatsPage>
             final uiChat = UiChat(
                 // avatar: userInfoM.avatarBytes,
                 title: userInfoM.userInfo.name,
-                uid: userInfoM.uid,
+                userInfoM: userInfoM,
                 snippet: s,
                 draft: draft,
                 unreadCount: unreadCount,
@@ -725,7 +691,7 @@ class _ChatsPageState extends State<ChatsPage>
             final uiChat = UiChat(
                 // avatar: userInfoM.avatarBytes,
                 title: userInfoM.userInfo.name,
-                uid: userInfoM.uid,
+                userInfoM: userInfoM,
                 onlineNotifier: ValueNotifier(false));
 
             addOrReplaceDm(uiChat);
