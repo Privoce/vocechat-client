@@ -7,9 +7,10 @@ import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ServerInfoSettingsPage extends StatefulWidget {
@@ -80,12 +81,14 @@ class _ServerInfoSettingsPageState extends State<ServerInfoSettingsPage> {
           child: ListView(
         children: [
           AvatarInfoTile(
-            avatar: UserAvatar(
-              uid: -1,
-              avatarSize: AvatarSize.s84,
-              name: chatServerM.properties.serverName,
-              avatarBytes: chatServerM.logo,
-            ),
+            // avatar: UserAvatar(
+            //   uid: -1,
+            //   avatarSize: VoceAvatarSize.s84,
+            //   name: chatServerM.properties.serverName,
+            //   avatarBytes: chatServerM.logo,
+            // ),
+            avatar: VoceAvatar.bytes(
+                avatarBytes: chatServerM.logo, size: VoceAvatarSize.s84),
             titleWidget: Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: _isAdmin

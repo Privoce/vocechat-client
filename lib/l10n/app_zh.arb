@@ -130,6 +130,7 @@
     "message": "发消息",
     "messageDetail":"消息全文",
     "messageDeletionFailed":"消息删除失败。",
+    "messageHasBeenDeleted":"此消息已被删除。",
     "members":"成员",
     "minute":"分钟",
     "minutes":"分钟",

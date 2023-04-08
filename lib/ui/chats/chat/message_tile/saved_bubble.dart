@@ -8,7 +8,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/saved_content_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
 class SavedBubble extends StatelessWidget {
   final Archive? archive;
@@ -61,7 +61,7 @@ class SavedBubble extends StatelessWidget {
                         nameColor: AppColors.grey600,
                         avatarBytes:
                             avatarFile?.readAsBytesSync() ?? Uint8List(0),
-                        avatarSize: AvatarSize.s36,
+                        avatarSize: VoceAvatarSize.s36,
                         timeStamp: msg.createdAt,
                         enableAvatarMention: false,
                         enableOnlineStatus: false,
@@ -78,7 +78,7 @@ class SavedBubble extends StatelessWidget {
                 username: users[msg.fromUser].name,
                 nameColor: AppColors.grey600,
                 avatarBytes: Uint8List(0),
-                avatarSize: AvatarSize.s36,
+                avatarSize: VoceAvatarSize.s36,
                 timeStamp: msg.createdAt,
                 enableAvatarMention: false,
                 enableOnlineStatus: false,

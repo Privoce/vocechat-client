@@ -1,20 +1,25 @@
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class MsgTileFrame extends StatelessWidget {
   final String username;
   late final Color nameColor;
 
   final double? contentWidth;
+
+  // final UserInfoM? userInfoM;
 
   /// Font size of name.
   final double nameSize;
@@ -40,7 +45,7 @@ class MsgTileFrame extends StatelessWidget {
       this.contentWidth,
       this.nameSize = 14,
       required this.avatarBytes,
-      this.avatarSize = AvatarSize.s36,
+      this.avatarSize = VoceAvatarSize.s36,
       this.enableOnlineStatus = false,
       this.onlineNotifier,
       this.isFollowing = false,
@@ -79,32 +84,31 @@ class MsgTileFrame extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           GestureDetector(
-            onTap: () {
-              if (enableUserDetailPush) {
-                _showUserDetail(context, uid);
-              }
-            },
-            onLongPress: () {
-              if (enableAvatarMention && uid != -1) {
-                mentionsKey?.currentState?.controller?.text += ' @$username ';
-                mentionsKey?.currentState?.controller?.selection =
-                    TextSelection.fromPosition(TextPosition(
-                        offset: mentionsKey
-                                ?.currentState?.controller?.text.length ??
-                            0));
-              }
-            },
-            child: uid == -1
-                ? UserAvatar.deletedUser(avatarSize: avatarSize)
-                : UserAvatar(
-                    avatarSize: avatarSize,
-                    isSelf: App.app.isSelf(uid),
-                    name: username,
-                    uid: uid ?? -1,
-                    avatarBytes: avatarBytes,
-                    enableOnlineStatus: enableOnlineStatus,
-                  ),
-          ),
+              onTap: () {
+                if (enableUserDetailPush) {
+                  _showUserDetail(context, uid);
+                }
+              },
+              onLongPress: () {
+                if (enableAvatarMention && uid != -1) {
+                  mentionsKey?.currentState?.controller?.text += ' @$username ';
+                  mentionsKey?.currentState?.controller?.selection =
+                      TextSelection.fromPosition(TextPosition(
+                          offset: mentionsKey
+                                  ?.currentState?.controller?.text.length ??
+                              0));
+                }
+              },
+              child: uid == -1
+                  ? VoceUserAvatar.deleted(size: avatarSize)
+                  : VoceUserAvatar(
+                      avatarBytes: avatarBytes,
+                      name: username,
+                      uid: uid ?? -1,
+                      size: avatarSize,
+                      enableOnlineStatus: enableOnlineStatus)
+              // : VoceAvatar
+              ),
           SizedBox(width: 8),
           SizedBox(
             width: contentWidth,

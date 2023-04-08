@@ -14,9 +14,10 @@ import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 
 class ChannelInfoPage extends StatefulWidget {
@@ -96,10 +97,12 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
       avatar: ValueListenableBuilder<GroupInfoM>(
           valueListenable: widget.groupInfoNotifier,
           builder: (context, groupInfoM, _) {
-            return ChannelAvatar(
-                avatarSize: AvatarSize.s84,
-                isPublic: _groupInfo.isPublic,
-                avatarBytes: groupInfoM.avatar);
+            // return ChannelAvatar(
+            //     avatarSize: VoceAvatarSize.s84,
+            //     isPublic: _groupInfo.isPublic,
+            //     avatarBytes: groupInfoM.avatar);
+            return VoceChannelAvatar.channel(
+                groupInfoM: groupInfoM, size: VoceAvatarSize.s84);
           }),
       title: _groupInfo.name,
       subtitleWidget: ValueListenableBuilder<bool>(

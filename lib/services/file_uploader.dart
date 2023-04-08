@@ -19,8 +19,10 @@ class FileUploader {
     _dio = Dio();
     _dio.interceptors.add(RetryInterceptor(
         dio: _dio, options: RetryOptions(retryInterval: Duration(seconds: 2))));
-    _dio.options.baseUrl = App.app.chatServerM.fullUrl + "/api/resource";
-    _dio.options.connectTimeout = Duration(milliseconds: 5000); //5s
+
+    _dio.options.baseUrl = "${App.app.chatServerM.fullUrl}/api/resource";
+    _dio.options.connectTimeout = 5000; //5s
+
     // _dio.options.receiveTimeout = 10000;
     _dio.options.headers["accept"] = "application/json";
     _dio.options.headers["content-type"] = "multipart/form-data";

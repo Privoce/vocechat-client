@@ -16,7 +16,7 @@ enum FileType { file, image, thumb, videoThumb }
 class FileHandler {
   /// This singleton class handles file saving to and retrieving from local data
   /// storage.
-  FileHandler();
+  FileHandler(String path);
 
   FileHandler._singleton();
   static final FileHandler singleton = FileHandler._singleton();
@@ -40,6 +40,22 @@ class FileHandler {
       String chatId, String localMid, String fileName) async {
     final extension = p.extension(fileName);
     return "${await _localPath}/file/${App.app.userDb!.dbName}/$chatId/image_normal/$localMid$extension";
+  }
+
+  Future<String> _userAvatarPath(int uid) async {
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/user_avatar/$uid.jpg";
+  }
+
+  Future<String> _channelAvatarPath(int gid) async {
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/channel_avatar/$gid.jpg";
+  }
+
+  Future<String> _userChatBgPath(int uid) async {
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/user_background/$uid.jpg";
+  }
+
+  Future<String> _channelChatBgPath(int gid) async {
+    return "${await _localPath}/file/${App.app.userDb!.dbName}/channel_background/$gid.jpg";
   }
 
   Future<String> videoThumbPath(
@@ -76,6 +92,22 @@ class FileHandler {
     return File(await _imageNormalPath(chatId, localMid, fileName)).exists();
   }
 
+  Future<bool> userAvatarExists(int uid) async {
+    return File(await _userAvatarPath(uid)).exists();
+  }
+
+  Future<bool> channelAvatarExists(int gid) async {
+    return File(await _channelAvatarPath(gid)).exists();
+  }
+
+  Future<bool> userBgExists(int uid, String fileName) async {
+    return File(await _userChatBgPath(uid)).exists();
+  }
+
+  Future<bool> channelBgExists(int gid, String fileName) async {
+    return File(await _channelChatBgPath(gid)).exists();
+  }
+
   // Future<bool> videoThumbExists(
   //     String chatId, String localMid, String fileName) async {
   //   return File(await videoThumbPath(chatId, localMid, fileName)).exists();
@@ -106,6 +138,58 @@ class FileHandler {
   Future<File?> saveImageNormal(
       String chatId, Uint8List bytes, String localMid, String fileName) async {
     return _save(chatId, bytes, localMid, fileName, FileType.image);
+  }
+
+  Future<File?> saveUserAvatar(int uid, Uint8List bytes) async {
+    final path = await _userAvatarPath(uid);
+
+    try {
+      return await File(path)
+          .create(recursive: true)
+          .then((file) => file.writeAsBytes(bytes));
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
+  }
+
+  Future<File?> saveChannelAvatar(int gid, Uint8List bytes) async {
+    final path = await _channelAvatarPath(gid);
+
+    try {
+      return await File(path)
+          .create(recursive: true)
+          .then((file) => file.writeAsBytes(bytes));
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
+  }
+
+  Future<File?> saveUserBg(int uid, Uint8List bytes) async {
+    final path = await _userChatBgPath(uid);
+
+    try {
+      return await File(path)
+          .create(recursive: true)
+          .then((file) => file.writeAsBytes(bytes));
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
+  }
+
+  Future<File?> saveChannelBg(int gid, Uint8List bytes) async {
+    final path = await _channelChatBgPath(gid);
+
+    try {
+      return await File(path)
+          .create(recursive: true)
+          .then((file) => file.writeAsBytes(bytes));
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return null;
   }
 
   Future<File?> saveFile(

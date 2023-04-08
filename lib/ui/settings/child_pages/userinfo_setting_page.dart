@@ -13,9 +13,10 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 
 class UserInfoSettingPage extends StatefulWidget {
@@ -88,11 +89,17 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
       avatar: ValueListenableBuilder<UserInfoM?>(
           valueListenable: widget.userInfoNotifier,
           builder: (context, userInfoM, _) {
-            return UserAvatar(
-                uid: userInfoM?.uid ?? -1,
-                avatarSize: AvatarSize.s84,
-                name: userInfoM?.userInfo.name ?? "",
-                avatarBytes: userInfoM?.avatarBytes ?? Uint8List(0));
+            // return UserAvatar(
+            //     uid: userInfoM?.uid ?? -1,
+            //     avatarSize: VoceAvatarSize.s84,
+            //     name: userInfoM?.userInfo.name ?? "",
+            //     avatarBytes: userInfoM?.avatarBytes ?? Uint8List(0));
+            if (userInfoM == null) {
+              return VoceUserAvatar.deleted(size: VoceAvatarSize.s84);
+            } else {
+              return VoceUserAvatar.user(
+                  userInfoM: userInfoM, size: VoceAvatarSize.s84);
+            }
           }),
       title: _userInfo?.name ?? "",
       subtitleWidget: Padding(

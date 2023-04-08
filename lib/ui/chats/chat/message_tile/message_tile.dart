@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
@@ -22,7 +23,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart'
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum ImageType { thumb, original }
@@ -72,7 +73,7 @@ class MessageTile extends StatefulWidget {
       this.imageType,
       this.archive,
       required this.onSendReaction,
-      this.avatarSize = AvatarSize.s48})
+      this.avatarSize = VoceAvatarSize.s48})
       : super(key: key);
 
   @override
@@ -248,7 +249,8 @@ class _MessageTileState extends State<MessageTile> {
                 MsgTileFrame(
                   username: widget.userInfoM.userInfo.name,
                   uid: widget.userInfoM.uid,
-                  avatarBytes: widget.userInfoM.avatarBytes,
+                  // avatarBytes: widget.userInfoM.avatarBytes,
+                  avatarBytes: Uint8List(0),
                   avatarSize: widget.avatarSize,
                   enableOnlineStatus: false,
                   enableAvatarMention: widget.enableAvatarMention,
@@ -278,32 +280,32 @@ class _MessageTileState extends State<MessageTile> {
   }
 
   Widget _buildContents(double contentWidth, BuildContext context) {
-    try {
-      return Column(
-        children: [
+    // try {
+    return Column(
+      children: [
+        Container(
+            constraints: BoxConstraints(minHeight: 20),
+            width: contentWidth,
+            child: _buildContentBubble(context)),
+        if (widget.chatMsgM.reactions.isNotEmpty)
           Container(
-              constraints: BoxConstraints(minHeight: 20),
-              width: contentWidth,
-              child: _buildContentBubble(context)),
-          if (widget.chatMsgM.reactions.isNotEmpty)
-            Container(
-              constraints: BoxConstraints(minHeight: 20),
-              width: contentWidth,
-              child: _buildReactions(context),
-            ),
-          if (_autoDeletionCountDown.value > 0)
-            _buildAutoDeletionCountDown(context, contentWidth)
-        ],
-      );
-    } catch (e) {
-      App.logger.severe(e);
-      return TextBubble(
-          content: "Error occurred when building this message.",
-          hasMention: false,
-          enableCopy: false,
-          enableOg: false,
-          enableShowMoreBtn: false);
-    }
+            constraints: BoxConstraints(minHeight: 20),
+            width: contentWidth,
+            child: _buildReactions(context),
+          ),
+        if (_autoDeletionCountDown.value > 0)
+          _buildAutoDeletionCountDown(context, contentWidth)
+      ],
+    );
+    // } catch (e) {
+    //   App.logger.severe(e);
+    //   return TextBubble(
+    //       content: "Error occurred when building this message.",
+    //       hasMention: false,
+    //       enableCopy: false,
+    //       enableOg: false,
+    //       enableShowMoreBtn: false);
+    // }
   }
 
   Widget _buildSelect(BuildContext context, double size) {
@@ -327,14 +329,14 @@ class _MessageTileState extends State<MessageTile> {
   }
 
   Widget _buildContentBubble(BuildContext context) {
-    switch (widget.chatMsgM.type) {
+    switch (widget.chatMsgM.detailType) {
       case MsgDetailType.normal:
-        switch (widget.chatMsgM.detailType) {
+        switch (widget.chatMsgM.detailContentType) {
           case MsgContentType.text:
             final m = widget.chatMsgM;
             String? content = "";
             bool hasMention = widget.chatMsgM.hasMention;
-            switch (m.type) {
+            switch (m.detailType) {
               case MsgDetailType.normal:
                 content = m.msgNormal?.content;
                 break;
@@ -364,16 +366,7 @@ class _MessageTileState extends State<MessageTile> {
                   imageFile: widget.image,
                   getImageList: () => _getImageList(widget.chatMsgM,
                       uid: widget.chatMsgM.dmUid, gid: widget.chatMsgM.gid));
-            }
-            // else if (widget.chatMsgM.isVideoMsg) {
-            //   return VideoBubble(
-            //     chatMsgM: widget.chatMsgM,
-            //     getVideoFile: (_) async {
-            //       return null;
-            //     },
-            //   );
-            // }
-            else {
+            } else {
               final msgNormal = widget.chatMsgM.msgNormal!;
               final name = msgNormal.properties?["name"] ?? "";
               final size = msgNormal.properties?["size"] ?? 0;
@@ -401,20 +394,23 @@ class _MessageTileState extends State<MessageTile> {
         }
         break;
       case MsgDetailType.reply:
-        if (widget.repliedMsgM != null && widget.repliedUserInfoM != null) {
-          return ReplyBubble(
-              repliedMsgM: widget.repliedMsgM!,
-              repliedUser: widget.repliedUserInfoM!,
+        // if (widget.repliedMsgM != null && widget.repliedUserInfoM != null) {
+        return Container(
+          // color: Colors.amber,
+          child: ReplyBubble(
+              repliedMsgM: widget.repliedMsgM,
+              repliedUser: widget.repliedUserInfoM,
               repliedImageFile: widget.repliedImageFile,
-              msgM: widget.chatMsgM);
-        } else {
-          return TextBubble(
-            content: "The replied message has been deleted",
-            maxLines: 16,
-            enableShowMoreBtn: true,
-            hasMention: false,
-          );
-        }
+              msgM: widget.chatMsgM),
+        );
+      // } else {
+      //   return TextBubble(
+      //     content: "The replied message has been deleted",
+      //     maxLines: 16,
+      //     enableShowMoreBtn: true,
+      //     hasMention: false,
+      //   );
+      // }
 
       default:
     }
@@ -559,9 +555,9 @@ class _MessageTileState extends State<MessageTile> {
     } else if (duration.inDays > 0) {
       final remains = duration - Duration(days: duration.inDays);
       if (remains.inHours > 12) {
-        return "2" + AppLocalizations.of(context)!.days;
+        return "2${AppLocalizations.of(context)!.days}";
       } else {
-        return "1" + AppLocalizations.of(context)!.day;
+        return "1${AppLocalizations.of(context)!.day}";
       }
     }
 
@@ -578,9 +574,9 @@ class _MessageTileState extends State<MessageTile> {
     } else if (duration.inHours > 0) {
       final remains = duration - Duration(hours: duration.inHours);
       if (remains.inMinutes > 30) {
-        return "2" + AppLocalizations.of(context)!.hours;
+        return "2${AppLocalizations.of(context)!.hours}";
       } else {
-        return "1" + AppLocalizations.of(context)!.hour;
+        return "1${AppLocalizations.of(context)!.hour}";
       }
     }
 
@@ -595,7 +591,7 @@ class _MessageTileState extends State<MessageTile> {
             AppLocalizations.of(context)!.minutes;
       }
     } else if (duration.inMinutes > 0) {
-      return "1" + AppLocalizations.of(context)!.minute;
+      return "1${AppLocalizations.of(context)!.minute}";
     }
 
     // Last minute

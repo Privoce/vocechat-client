@@ -7,15 +7,17 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_members_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/owner_transfer_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/invite/member_add_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/invite/member_remove_page.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingMembersTile extends StatefulWidget {
@@ -203,14 +205,16 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8),
-                                child: UserAvatar(
-                                  avatarSize: AvatarSize.s36,
-                                  uid: user.uid,
-                                  name: user.userInfo.name,
-                                  avatarBytes: user.avatarBytes,
-                                  enableOnlineStatus: true,
-                                  isSelf: App.app.isSelf(user.uid),
-                                ),
+                                // child: UserAvatar(
+                                //   avatarSize: VoceAvatarSize.s36,
+                                //   uid: user.uid,
+                                //   name: user.userInfo.name,
+                                //   avatarBytes: user.avatarBytes,
+                                //   enableOnlineStatus: true,
+                                //   isSelf: SharedFuncs.isSelf(user.uid),
+                                // ),
+                                child: VoceUserAvatar.user(
+                                    userInfoM: user, size: VoceAvatarSize.s36),
                               ),
                             );
                           }),
