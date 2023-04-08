@@ -32,7 +32,7 @@ class RetryOptions {
   static FutureOr<bool> defaultRetryEvaluator(
       DioError error, ErrorInterceptorHandler handler) {
     return error.type != DioErrorType.cancel &&
-        error.type != DioErrorType.badResponse;
+        error.type != DioErrorType.response;
   }
 
   factory RetryOptions.fromExtra(RequestOptions request, RetryOptions options) {

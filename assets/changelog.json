@@ -1,6 +1,11 @@
 {   
-    "latest": {"version": "0.2.79", "build_num": 49},
+    "latest": {"version": "0.2.80", "build_num": 50},
     "logs":  [
+        {"time": 1680948278556, "version": "0.2.80", "build_num": 50, "updates": [
+            "- refactor: avatar data storage and fetching strategy.",
+            "- fix: HEIF image sending issue.",
+            "- fix: magic link parameter parsing issue."
+        ]},
         {"time": 1679269244128, "version": "0.2.79", "build_num": 49, "updates": [
             "- fix: messages might still appear when they are deleted."
         ]},
