@@ -88,9 +88,6 @@ class VoceAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isCircle) {
       if (file != null) {
-        print(file!.lastModifiedSync());
-        print(file!.lengthSync());
-        print(key);
         return SizedBox(
           height: size,
           width: size,

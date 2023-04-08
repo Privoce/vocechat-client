@@ -566,7 +566,7 @@ class ChatService {
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
         fireChannel(value, EventActions.create);
         if (await shouldGetChannelAvatar(oldGroupInfoM, groupInfoM)) {
-          await getGroupAvatar(groupInfo.gid);
+          await getGroupAvatar(groupInfoM);
         }
       });
     } catch (e) {
@@ -670,7 +670,7 @@ class ChatService {
           await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
             fireChannel(groupInfoM, EventActions.create);
             if (await shouldGetChannelAvatar(oldGroupInfoM, groupInfoM)) {
-              await getGroupAvatar(groupInfoM.gid);
+              await getGroupAvatar(groupInfoM);
             }
           });
         }
@@ -1670,7 +1670,9 @@ class ChatService {
     return (await resourceApi.getOpenGraphicParse(url)).data;
   }
 
-  Future<void> getGroupAvatar(int gid) async {
+  Future<void> getGroupAvatar(GroupInfoM groupInfoM) async {
+    final gid = groupInfoM.gid;
+
     final resourceApi = ResourceApi();
     await resourceApi.getGroupAvatar(gid).then((res) async {
       App.logger.info("GID $gid Avatar obtained.");
@@ -1679,7 +1681,20 @@ class ChatService {
           res.data != null &&
           res.data!.isNotEmpty) {
         await ChannelAvatarHander()
-            .save(ChannelAvatarHander.generateFileName(gid), res.data!);
+            .save(ChannelAvatarHander.generateFileName(gid), res.data!)
+            .then((newAvatarFile) async {
+          // Remove possible old avatar in cache.
+          if (newAvatarFile != null) {
+            final file = File(newAvatarFile.path);
+            final imageProvider = FileImage(file);
+            final key = await imageProvider.obtainKey(ImageConfiguration());
+
+            // Evict the image from the cache
+            PaintingBinding.instance.imageCache.evict(key);
+
+            fireChannel(groupInfoM, EventActions.update);
+          }
+        });
       }
     }).catchError((e) {
       App.logger.severe(e);
