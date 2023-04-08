@@ -88,12 +88,18 @@ class VoceAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isCircle) {
       if (file != null) {
+        print(file!.lastModifiedSync());
+        print(file!.lengthSync());
+        print(key);
         return SizedBox(
           height: size,
           width: size,
           child: ClipOval(
               child: Image.file(file!,
-                  fit: BoxFit.cover, width: size, height: size, frameBuilder:
+                  key: key,
+                  fit: BoxFit.cover,
+                  width: size,
+                  height: size, frameBuilder:
                       (context, child, frame, wasSynchronouslyLoaded) {
             if (wasSynchronouslyLoaded) {
               return child;

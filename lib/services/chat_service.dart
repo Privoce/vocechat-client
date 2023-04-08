@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -776,7 +777,7 @@ class ChatService {
               await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
                 fireUser(value, EventActions.create);
                 if (await shouldGetUserAvatar(oldUserInfoM, userInfoM)) {
-                  await getUserAvatar(userInfoM.uid);
+                  await getUserAvatar(userInfoM);
                 }
               });
             }
@@ -799,7 +800,7 @@ class ChatService {
                     .then((value) async {
                   fireUser(value, EventActions.update);
                   if (await shouldGetUserAvatar(old, newUserInfoM)) {
-                    await getUserAvatar(newUserInfoM.uid);
+                    await getUserAvatar(newUserInfoM);
                   }
                 });
               }
@@ -1135,7 +1136,7 @@ class ChatService {
             await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
               fireUser(value, EventActions.create);
               if (await shouldGetUserAvatar(oldUserInfoM, userInfoM)) {
-                await getUserAvatar(userInfoM.uid);
+                await getUserAvatar(userInfoM);
               }
             });
           }
@@ -1685,13 +1686,27 @@ class ChatService {
     });
   }
 
-  Future<void> getUserAvatar(int uid) async {
+  Future<void> getUserAvatar(UserInfoM userInfoM) async {
+    final uid = userInfoM.uid;
     final resourceApi = ResourceApi();
     await resourceApi.getUserAvatar(uid).then((res) async {
       App.logger.info("UID $uid Avatar obtained.");
       if (res.statusCode == 200 && res.data != null) {
         await UserAvatarHander()
-            .save(UserAvatarHander.generateFileName(uid), res.data!);
+            .save(UserAvatarHander.generateFileName(uid), res.data!)
+            .then((newAvatarFile) async {
+          // Remove possible old avatar in cache.
+          if (newAvatarFile != null) {
+            final file = File(newAvatarFile.path);
+            final imageProvider = FileImage(file);
+            final key = await imageProvider.obtainKey(ImageConfiguration());
+
+            // Evict the image from the cache
+            PaintingBinding.instance.imageCache.evict(key);
+
+            fireUser(userInfoM, EventActions.update);
+          }
+        });
       }
     }).catchError((e) {
       App.logger.severe(e);

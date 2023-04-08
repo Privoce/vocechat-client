@@ -37,8 +37,9 @@ class UserAvatarHander extends VoceFileHander {
         final resourceApi = ResourceApi();
         final res = await resourceApi.getUserAvatar(uid);
         if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
-          return UserAvatarHander()
+          final file = await UserAvatarHander()
               .save(UserAvatarHander.generateFileName(uid), res.data!);
+          return file;
         }
       } catch (e) {
         App.logger.warning(e);
