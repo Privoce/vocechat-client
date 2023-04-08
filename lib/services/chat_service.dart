@@ -560,17 +560,13 @@ class ChatService {
       final groupInfo = GroupInfo.fromJson(groupMap);
       GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
 
-      final oldAvatarUpdatedAt =
-          (await GroupInfoDao().getGroupByGid(groupInfoM.gid))
-              ?.groupInfo
-              .avatarUpdatedAt;
+      final oldGroupInfoM = await GroupInfoDao().getGroupByGid(groupInfoM.gid);
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
         fireChannel(value, EventActions.create);
-        // if (shouldGetAvatar(
-        //     oldAvatarUpdatedAt, groupInfo.avatarUpdatedAt, groupInfoM.avatar)) {
-        //   await getGroupAvatar(groupInfo.gid);
-        // }
+        if (await shouldGetChannelAvatar(oldGroupInfoM, groupInfoM)) {
+          await getGroupAvatar(groupInfo.gid);
+        }
       });
     } catch (e) {
       App.logger.severe(e);

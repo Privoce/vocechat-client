@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
 
 class UserAvatarHander extends VoceFileHander {
