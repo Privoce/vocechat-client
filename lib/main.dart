@@ -47,7 +47,7 @@ Future<void> main() async {
 
   Widget defaultHome = ChatsMainPage();
 
-  await SharedFuncs.readCustomConfigs();
+  // await SharedFuncs.readCustomConfigs();
 
   // Handling login status
   final status = await StatusMDao.dao.getStatus();
