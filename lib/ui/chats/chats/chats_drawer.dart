@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -237,7 +238,8 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
 
       accountList.add(ValueNotifier<ServerAccountData>(ServerAccountData(
           serverAvatarBytes: chatServer.logo,
-          userAvatarBytes: userDb.avatarBytes,
+          // userAvatarBytes: userDb.avatarBytes,
+          userAvatarBytes: Uint8List(0),
           serverName: chatServer.properties.serverName,
           serverUrl: chatServer.fullUrl,
           username: userDb.userInfo.name,

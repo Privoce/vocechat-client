@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -446,7 +447,9 @@ class _ServerPageState extends State<ServerPage> {
 
       serverAccountList.add(ServerAccountData(
           serverAvatarBytes: chatServer.logo,
-          userAvatarBytes: userDb.avatarBytes,
+          // userAvatarBytes: userDb.avatarBytes,
+          // TODO: to be changed
+          userAvatarBytes: Uint8List(0),
           serverName: chatServer.properties.serverName,
           serverUrl: chatServer.fullUrl,
           username: userDb.userInfo.name,

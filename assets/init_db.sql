@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS user_info (
   uid INTEGER NOT NULL,
   info TEXT NOT NULL, -- raw json from server.
   properties TEXT NOT NULL,
-  avatar BLOB NOT NULL, 
+  -- avatar BLOB NOT NULL, 
   created_at INTEGER NOT NULL);
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_uid ON user_info(uid);

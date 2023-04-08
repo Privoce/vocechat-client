@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
@@ -248,7 +249,8 @@ class _MessageTileState extends State<MessageTile> {
                 MsgTileFrame(
                   username: widget.userInfoM.userInfo.name,
                   uid: widget.userInfoM.uid,
-                  avatarBytes: widget.userInfoM.avatarBytes,
+                  // avatarBytes: widget.userInfoM.avatarBytes,
+                  avatarBytes: Uint8List(0),
                   avatarSize: widget.avatarSize,
                   enableOnlineStatus: false,
                   enableAvatarMention: widget.enableAvatarMention,

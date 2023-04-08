@@ -419,7 +419,7 @@ class _ChatsPageState extends State<ChatsPage>
               latestMsgM != null ? _processSnippet(latestMsgM) : "";
 
           final uiChat = UiChat(
-              avatar: userInfoM.avatarBytes,
+              // avatar: userInfoM.avatarBytes,
               title: userInfoM.userInfo.name,
               uid: userInfoM.uid,
               isMuted: userInfoM.properties.enableMute,
@@ -433,7 +433,7 @@ class _ChatsPageState extends State<ChatsPage>
           break;
         case EventActions.update:
           if (index > -1) {
-            _uiChats[index].avatar.value = userInfoM.avatarBytes;
+            // _uiChats[index].avatar.value = userInfoM.avatarBytes;
             _uiChats[index].title.value = userInfoM.userInfo.name;
             _uiChats[index].isMuted.value = userInfoM.properties.enableMute;
             _uiChats[index].draft.value = userInfoM.properties.draft;
@@ -520,7 +520,7 @@ class _ChatsPageState extends State<ChatsPage>
           } else {
             final uiChat = UiChat(
                 uid: uid,
-                avatar: userInfoM.avatarBytes,
+                // avatar: userInfoM.avatarBytes,
                 title: userInfoM.userInfo.name,
                 snippet: snippet,
                 updatedAt: chatMsgM.createdAt,
@@ -711,7 +711,7 @@ class _ChatsPageState extends State<ChatsPage>
             String s = _processSnippet(latestMsgM);
 
             final uiChat = UiChat(
-                avatar: userInfoM.avatarBytes,
+                // avatar: userInfoM.avatarBytes,
                 title: userInfoM.userInfo.name,
                 uid: userInfoM.uid,
                 snippet: s,
@@ -723,7 +723,7 @@ class _ChatsPageState extends State<ChatsPage>
             addOrReplaceDm(uiChat);
           } else {
             final uiChat = UiChat(
-                avatar: userInfoM.avatarBytes,
+                // avatar: userInfoM.avatarBytes,
                 title: userInfoM.userInfo.name,
                 uid: userInfoM.uid,
                 onlineNotifier: ValueNotifier(false));

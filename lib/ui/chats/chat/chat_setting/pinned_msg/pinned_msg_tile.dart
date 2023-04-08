@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,9 @@ class PinnedMsgTile extends StatelessWidget {
       padding: EdgeInsets.all(8),
       child: MsgTileFrame(
           username: userInfoM.userInfo.name,
-          avatarBytes: userInfoM.avatarBytes,
+          // avatarBytes: userInfoM.avatarBytes,
+          // TODO: to be changed
+          avatarBytes: Uint8List(0),
           timeStamp: msg.createdAt,
           enableAvatarMention: false,
           enableOnlineStatus: false,

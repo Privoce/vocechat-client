@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
@@ -7,6 +8,7 @@ import 'package:mime/mime.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -53,7 +55,7 @@ class VoceUserAvatar extends StatelessWidget {
       this.enableOnlineStatus = true,
       this.backgroundColor = Colors.blue,
       this.onTap})
-      : avatarBytes = userInfoM.avatarBytes,
+      : avatarBytes = null,
         name = userInfoM.userInfo.name,
         uid = userInfoM.uid,
         _deleted = false,
@@ -99,26 +101,19 @@ class VoceUserAvatar extends StatelessWidget {
           backgroundColor: backgroundColor);
     } else {
       Widget rawAvatar;
-      if (userInfoM != null && userInfoM!.avatarBytes.isNotEmpty) {
-        rawAvatar = VoceAvatar.bytes(
-            avatarBytes: avatarBytes!, size: size, isCircle: isCircle);
-      } else if (avatarBytes != null && avatarBytes!.isNotEmpty) {
-        rawAvatar = VoceAvatar.bytes(
-            avatarBytes: avatarBytes!, size: size, isCircle: isCircle);
-      } else if (name != null && name!.isNotEmpty) {
-        rawAvatar = VoceAvatar.name(
-            name: name!,
-            size: size,
-            isCircle: isCircle,
-            fontColor: AppColors.grey200,
-            backgroundColor: backgroundColor);
+      if (userInfoM != null && userInfoM!.userInfo.avatarUpdatedAt != 0) {
+        rawAvatar = FutureBuilder<File?>(
+            future: UserAvatarHander().readOrFetch(userInfoM!.uid),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return VoceAvatar.file(
+                    file: snapshot.data!, size: size, isCircle: isCircle);
+              } else {
+                return _buildNonFileAvatar();
+              }
+            });
       } else {
-        rawAvatar = VoceAvatar.icon(
-            icon: AppIcons.contact,
-            size: size,
-            isCircle: isCircle,
-            fontColor: AppColors.grey200,
-            backgroundColor: backgroundColor);
+        rawAvatar = _buildNonFileAvatar();
       }
 
       // Add online status
@@ -166,6 +161,27 @@ class VoceUserAvatar extends StatelessWidget {
       }
 
       return rawAvatar;
+    }
+  }
+
+  Widget _buildNonFileAvatar() {
+    if (avatarBytes != null && avatarBytes!.isNotEmpty) {
+      return VoceAvatar.bytes(
+          avatarBytes: avatarBytes!, size: size, isCircle: isCircle);
+    } else if (name != null && name!.isNotEmpty) {
+      return VoceAvatar.name(
+          name: name!,
+          size: size,
+          isCircle: isCircle,
+          fontColor: AppColors.grey200,
+          backgroundColor: backgroundColor);
+    } else {
+      return VoceAvatar.icon(
+          icon: AppIcons.contact,
+          size: size,
+          isCircle: isCircle,
+          fontColor: AppColors.grey200,
+          backgroundColor: backgroundColor);
     }
   }
 }

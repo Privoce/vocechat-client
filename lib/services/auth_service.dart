@@ -319,7 +319,7 @@ class AuthService {
             expiredIn,
             1,
             -1,
-            avatarBytes,
+            // avatarBytes,
             "",
             0);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);
@@ -336,7 +336,7 @@ class AuthService {
             expiredIn,
             1,
             old.usersVersion,
-            avatarBytes,
+            // avatarBytes,
             "",
             old.maxMid);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);

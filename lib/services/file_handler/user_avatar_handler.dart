@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:path_provider/path_provider.dart';
+import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
 
@@ -15,5 +18,30 @@ class UserAvatarHander extends VoceFileHander {
       App.logger.severe(e);
       return "";
     }
+  }
+
+  static String generateFileName(int uid) {
+    return "$uid.png";
+  }
+
+  /// Read file from local storage, if not exist, fetch from server.
+  Future<File?> readOrFetch(int uid) async {
+    final fileName = generateFileName(uid);
+    final file = await read(fileName);
+    if (file != null) {
+      return file;
+    } else {
+      try {
+        final resourceApi = ResourceApi();
+        final res = await resourceApi.getUserAvatar(uid);
+        if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
+          return UserAvatarHander()
+              .save(UserAvatarHander.generateFileName(uid), res.data!);
+        }
+      } catch (e) {
+        App.logger.warning(e);
+      }
+    }
+    return null;
   }
 }

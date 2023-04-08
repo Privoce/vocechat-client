@@ -29,7 +29,7 @@ Future<void> initDb({String? dbFileName}) async {
       orgDb = await databaseFactory.openDatabase(
         path,
         options: OpenDatabaseOptions(
-          version: 3,
+          version: 4,
           onCreate: (db, version) async {
             // Check if db table has been created.
             int? count = firstIntValue(await db.query('sqlite_master',
@@ -71,6 +71,14 @@ Future<void> initDb({String? dbFileName}) async {
                 App.logger.warning(e);
               }
             }
+
+            if (oldVersion < newVersion && oldVersion < 4) {
+              try {
+                db.execute("ALTER TABLE user_db DROP COLUMN avatar_bytes");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
           },
         ),
       );
@@ -93,7 +101,7 @@ Future<void> initCurrentDb(String dbName) async {
         .create(recursive: true); // App will terminate if create fails.
     db = await databaseFactory.openDatabase(path,
         options: OpenDatabaseOptions(
-          version: 2,
+          version: 3,
           onCreate: (db, version) async {
             // Multiple sql strings are not supported in Android, thus change to single
             // sql string and execute one after another.
@@ -119,6 +127,14 @@ Future<void> initCurrentDb(String dbName) async {
             if (oldVersion < newVersion && oldVersion < 2) {
               try {
                 db.execute("ALTER TABLE group_info DROP COLUMN avatar");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+
+            if (oldVersion < newVersion && oldVersion < 3) {
+              try {
+                db.execute("ALTER TABLE user_info DROP COLUMN avatar");
               } catch (e) {
                 App.logger.warning(e);
               }

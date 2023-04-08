@@ -500,7 +500,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
     for (final userInfoM in userInfoList) {
       Map<String, dynamic> userInfoMap = {};
       userInfoMap.addAll({"uid": userInfoM.uid});
-      userInfoMap.addAll({"photo": userInfoM.avatarBytes});
+      // userInfoMap.addAll({"photo": userInfoM.avatarBytes});
       userInfoMap.addAll({"display": userInfoM.userInfo.name});
       userInfoMap.addAll({"is_admin": userInfoM.userInfo.isAdmin});
       userInfoMap.addAll(

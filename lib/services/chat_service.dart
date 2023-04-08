@@ -14,6 +14,7 @@ import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/services/file_handler/channel_avatar_handler.dart';
+import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -697,40 +698,19 @@ class ChatService {
     return a || b;
   }
 
-  /// Check if needs to fetch channel avatar from server.
-  bool shouldGetAvatar(int? prev, int curr, Uint8List? currBytes) {
-    // ints are [avatarUpdatedAt]
+  Future<bool> shouldGetUserAvatar(UserInfoM? prev, UserInfoM curr) async {
+    // No local UserInfoM, or has local UserInfoM but no local data,
+    // and server has a new avatar.
+    final a = ((prev == null ||
+            !(await ChannelAvatarHander()
+                .exists(ChannelAvatarHander.generateFileName(curr.uid)))) &&
+        curr.userInfo.avatarUpdatedAt != 0);
 
-    // No local avatar but server has a new one.
-    final a = ((prev == null || prev == 0) && curr != 0);
+    // Has local UserInfoM, but server has a newer avatar.
+    final b = (prev != null &&
+        curr.userInfo.avatarUpdatedAt > prev.userInfo.avatarUpdatedAt);
 
-    // Has local avatar but server has a new one.
-    final b = (prev != null && prev != curr);
-
-    // Server has a new one but no local avatar data.
-    final c = (curr != 0 && (currBytes == null || currBytes.isEmpty));
-
-    // Debug print only.
-    // print(
-    //     "prev: $prev \t curr: $curr \t currBytes: ${currBytes == null || currBytes.isEmpty} \t a: $a \t b: $b \t c: $c");
-
-    return a || b || c;
-  }
-
-  Future<void> getGroupAvatar(int gid) async {
-    try {
-      final resourceApi = ResourceApi();
-      final res = await resourceApi.getGroupAvatar(gid);
-      if (res != null &&
-          res.statusCode == 200 &&
-          res.data != null &&
-          res.data!.isNotEmpty) {
-        await ChannelAvatarHander()
-            .save(ChannelAvatarHander.generateFileName(gid), res.data!);
-      }
-    } catch (e) {
-      App.logger.warning(e);
-    }
+    return a || b;
   }
 
   Future<void> _handleUserJoinedGroup(Map<String, dynamic> map) async {
@@ -783,56 +763,55 @@ class ChatService {
     assert(usersLog.containsKey("type") && usersLog["type"] == sseUsersLog);
 
     // try {
-    final List<dynamic> logMaps = usersLog["logs"];
-    if (logMaps.isNotEmpty) {
-      for (var logMap in logMaps) {
-        String action = logMap["action"];
+    final List<dynamic> usersMap = usersLog["logs"];
+    if (usersMap.isNotEmpty) {
+      for (var userMap in usersMap) {
+        String action = userMap["action"];
 
         switch (action) {
           case "create":
-            UserInfo userInfo = UserInfo.fromJson(logMap);
-            UserInfoM userInfoM =
-                UserInfoM.fromUserInfo(userInfo, Uint8List(0), "");
+            UserInfo userInfo = UserInfo.fromJson(userMap);
+            UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
 
-            final oldAvatarUpdatedAt =
-                (await UserInfoDao().getUserByUid(userInfoM.uid))
-                    ?.userInfo
-                    .avatarUpdatedAt;
+            final oldUserInfoM =
+                await UserInfoDao().getUserByUid(userInfoM.uid);
 
-            await UserInfoDao().addOrUpdate(userInfoM).then((value) {
-              fireUser(value, EventActions.create);
-
-              if (shouldGetAvatar(oldAvatarUpdatedAt, userInfo.avatarUpdatedAt,
-                  userInfoM.avatarBytes)) {
-                mainTaskQueue.add(() => _getUserAvatar(userInfoM));
-              }
-            });
+            if (oldUserInfoM != userInfoM) {
+              await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
+                fireUser(value, EventActions.create);
+                if (await shouldGetUserAvatar(oldUserInfoM, userInfoM)) {
+                  await getUserAvatar(userInfoM.uid);
+                }
+              });
+            }
 
             await UserDbMDao.dao.updateUserInfo(userInfo);
 
             break;
           case "update":
-            UserInfoUpdate update = UserInfoUpdate.fromJson(logMap);
+            UserInfoUpdate update = UserInfoUpdate.fromJson(userMap);
             final old = await UserInfoDao().getUserByUid(update.uid);
             if (old != null) {
               final oldInfo = UserInfo.fromJson(json.decode(old.info));
               final newInfo = UserInfo.getUpdated(oldInfo, update);
-              final m = UserInfoM.fromUserInfo(newInfo, Uint8List(0), "");
+              final newUserInfoM =
+                  UserInfoM.fromUserInfo(newInfo, old.propertiesStr);
 
-              await UserInfoDao()
-                  .addOrUpdate(m)
-                  .then((value) => fireUser(value, EventActions.update));
-              await UserDbMDao.dao.updateUserInfo(newInfo);
-
-              if (newInfo.avatarUpdatedAt != 0 &&
-                  update.avatarUpdatedAt != null) {
-                mainTaskQueue.add(() => _getUserAvatar(m));
+              if (old != newUserInfoM) {
+                await UserInfoDao()
+                    .addOrUpdate(newUserInfoM)
+                    .then((value) async {
+                  fireUser(value, EventActions.update);
+                  if (await shouldGetUserAvatar(old, newUserInfoM)) {
+                    await getUserAvatar(newUserInfoM.uid);
+                  }
+                });
               }
             }
             break;
           case "delete":
-            UserInfo userInfo = UserInfo.fromJson(logMap);
-            UserInfoM m = UserInfoM.fromUserInfo(userInfo, Uint8List(0), "");
+            UserInfo userInfo = UserInfo.fromJson(userMap);
+            UserInfoM m = UserInfoM.fromUserInfo(userInfo, "");
 
             await UserInfoDao()
                 .removeByUid(m.uid)
@@ -840,18 +819,12 @@ class ChatService {
 
             if (m.uid == App.app.userDb?.uid) {
               await App.app.authService?.selfDelete();
-
-              // Sorry, your account has been deleted.
-              // delete
-              // App.app.authService?.logout();
-              // navigatorKey.currentState!
-              //     .pushNamedAndRemoveUntil(ServerPage.route, (route) => false);
             }
 
             break;
           default:
         }
-        int version = logMap["log_id"];
+        int version = userMap["log_id"];
 
         await UserDbMDao.dao.updateUsersVersion(App.app.userDb!.id, version);
       }
@@ -1158,15 +1131,17 @@ class ChatService {
       if (userMaps.isNotEmpty) {
         for (var userMap in userMaps) {
           UserInfo userInfo = UserInfo.fromJson(userMap);
-          UserInfoM m = UserInfoM.fromUserInfo(userInfo, Uint8List(0), "");
+          UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
 
-          await UserInfoDao()
-              .addOrUpdate(m)
-              .then((value) => fireUser(value, EventActions.create));
-          await UserDbMDao.dao.updateUserInfo(userInfo);
+          final oldUserInfoM = await UserInfoDao().getUserByUid(userInfoM.uid);
 
-          if (userInfo.avatarUpdatedAt != 0) {
-            mainTaskQueue.add(() => _getUserAvatar(m));
+          if (oldUserInfoM != userInfoM) {
+            await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
+              fireUser(value, EventActions.create);
+              if (await shouldGetUserAvatar(oldUserInfoM, userInfoM)) {
+                await getUserAvatar(userInfoM.uid);
+              }
+            });
           }
         }
       }
@@ -1698,24 +1673,32 @@ class ChatService {
     return (await resourceApi.getOpenGraphicParse(url)).data;
   }
 
-  Future<void> _getUserAvatar(UserInfoM m) async {
+  Future<void> getGroupAvatar(int gid) async {
     final resourceApi = ResourceApi();
-    resourceApi.getUserAvatar(m.uid).then((avatarRes) async {
-      App.logger.info("UID ${m.uid} Avatar obtained.");
-      if (avatarRes.statusCode == 200 && avatarRes.data != null) {
-        m.avatarBytes = avatarRes.data!;
-        await UserInfoDao()
-            .addOrUpdate(m)
-            .then((value) => fireUser(value, EventActions.update));
-        await UserDbMDao.dao.updateUserInfo(m.userInfo, avatarRes.data!);
-
-        if (m.uid == App.app.userDb?.uid) {
-          App.app.userDb?.avatarBytes = avatarRes.data!;
-          await UserDbMDao.dao.addOrUpdate(App.app.userDb!);
-        }
-      } else {
-        App.logger.warning("UID ${m.uid} Avatar null");
+    await resourceApi.getGroupAvatar(gid).then((res) async {
+      App.logger.info("GID $gid Avatar obtained.");
+      if (res != null &&
+          res.statusCode == 200 &&
+          res.data != null &&
+          res.data!.isNotEmpty) {
+        await ChannelAvatarHander()
+            .save(ChannelAvatarHander.generateFileName(gid), res.data!);
       }
+    }).catchError((e) {
+      App.logger.severe(e);
+    });
+  }
+
+  Future<void> getUserAvatar(int uid) async {
+    final resourceApi = ResourceApi();
+    await resourceApi.getUserAvatar(uid).then((res) async {
+      App.logger.info("UID $uid Avatar obtained.");
+      if (res.statusCode == 200 && res.data != null) {
+        await UserAvatarHander()
+            .save(UserAvatarHander.generateFileName(uid), res.data!);
+      }
+    }).catchError((e) {
+      App.logger.severe(e);
     });
   }
 }
