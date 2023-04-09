@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/app.dart';
@@ -25,7 +27,7 @@ class MsgTileFrame extends StatelessWidget {
   /// Font size of name.
   final double nameSize;
 
-  final Uint8List avatarBytes;
+  final File? avatarFile;
   final double avatarSize;
 
   final bool enableOnlineStatus;
@@ -45,7 +47,7 @@ class MsgTileFrame extends StatelessWidget {
       Color? nameColor,
       this.contentWidth,
       this.nameSize = 14,
-      required this.avatarBytes,
+      required this.avatarFile,
       this.avatarSize = VoceAvatarSize.s36,
       this.enableOnlineStatus = false,
       this.onlineNotifier,
@@ -100,9 +102,7 @@ class MsgTileFrame extends StatelessWidget {
                               0));
                 }
               },
-              child: _buildAvatar()
-              // : VoceAvatar
-              ),
+              child: _buildAvatar(displayedName)),
           SizedBox(width: 8),
           SizedBox(
             width: contentWidth,
@@ -160,27 +160,26 @@ class MsgTileFrame extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
-    if (avatarBytes.isNotEmpty) {
-      return VoceAvatar.bytes(avatarBytes: avatarBytes, size: avatarSize);
+  Widget _buildAvatar(String displayedName) {
+    if (avatarFile != null) {
+      return VoceUserAvatar.file(
+          file: avatarFile!,
+          size: avatarSize,
+          uid: uid ?? -1,
+          name: displayedName,
+          enableOnlineStatus: false);
+    } else if (displayedName.isNotEmpty) {
+      return VoceUserAvatar.name(
+          name: displayedName, size: avatarSize, enableOnlineStatus: false);
     } else if (uid == null || uid == -1) {
       return VoceUserAvatar.deleted(size: avatarSize);
-    }
-    // TODO: change message data structure later
-    else {
-      return FutureBuilder(
-        future: UserInfoDao().getUserByUid(uid!),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            return VoceUserAvatar.user(
-                userInfoM: snapshot.data as UserInfoM,
-                size: avatarSize,
-                enableOnlineStatus: enableOnlineStatus);
-          } else {
-            return VoceUserAvatar.deleted(size: avatarSize);
-          }
-        },
-      );
+    } else {
+      return VoceUserAvatar.file(
+          file: avatarFile!,
+          size: avatarSize,
+          uid: uid ?? -1,
+          name: displayedName,
+          enableOnlineStatus: false);
     }
   }
 

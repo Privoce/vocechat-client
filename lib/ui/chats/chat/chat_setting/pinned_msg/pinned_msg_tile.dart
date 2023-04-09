@@ -41,7 +41,7 @@ class PinnedMsgTile extends StatelessWidget {
           uid: userInfoM.userInfo.uid,
           // avatarBytes: userInfoM.avatarBytes,
           // TODO: to be changed
-          avatarBytes: Uint8List(0),
+          avatarFile: null,
           timeStamp: msg.createdAt,
           enableAvatarMention: false,
           enableOnlineStatus: false,

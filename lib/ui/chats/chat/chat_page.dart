@@ -11,6 +11,7 @@ import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/message_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -98,6 +99,8 @@ class _ChatPageState extends State<ChatPage>
   late int _initReadIndex;
 
   final Map<int, UserInfoM> _userInfoMMap = {};
+  final Map<int, File> _avatarMap = {};
+
   final List<UiMsg> _uiMsgList = [];
   final Set<String> _localMidSet = {};
 
@@ -408,6 +411,14 @@ class _ChatPageState extends State<ChatPage>
       final userInfoM = await UserInfoDao().getUserByUid(chatMsgM.fromUid);
       if (userInfoM != null) {
         _userInfoMMap.addAll({chatMsgM.fromUid: userInfoM});
+      }
+    }
+
+    if (!_avatarMap.containsKey(chatMsgM.fromUid)) {
+      final avatar = await UserAvatarHander()
+          .read(UserAvatarHander.generateFileName(chatMsgM.fromUid));
+      if (avatar != null) {
+        _avatarMap.addAll({chatMsgM.fromUid: avatar});
       }
     }
 
@@ -1111,6 +1122,8 @@ class _ChatPageState extends State<ChatPage>
                     0
                 : 0;
 
+            // print(_avatarMap[uiMsg.chatMsgM.fromUid]);
+
             Widget msgTile = Container(
               margin: EdgeInsets.symmetric(vertical: 4),
               color: _getMsgTileBgColor(
@@ -1121,6 +1134,7 @@ class _ChatPageState extends State<ChatPage>
                   MessageTile(
                     key: Key(uiMsg.chatMsgM.localMid),
                     avatarSize: VoceAvatarSize.s42,
+                    avatarFile: _avatarMap[uiMsg.chatMsgM.fromUid],
                     isFollowing: false,
                     chatMsgM: uiMsg.chatMsgM,
                     userInfoM: userInfoM,

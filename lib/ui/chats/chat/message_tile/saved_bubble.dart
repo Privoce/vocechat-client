@@ -59,8 +59,7 @@ class SavedBubble extends StatelessWidget {
                     child: MsgTileFrame(
                         username: users[msg.fromUser].name,
                         nameColor: AppColors.grey600,
-                        avatarBytes:
-                            avatarFile?.readAsBytesSync() ?? Uint8List(0),
+                        avatarFile: avatarFile,
                         avatarSize: VoceAvatarSize.s36,
                         timeStamp: msg.createdAt,
                         enableAvatarMention: false,
@@ -77,7 +76,7 @@ class SavedBubble extends StatelessWidget {
             return MsgTileFrame(
                 username: users[msg.fromUser].name,
                 nameColor: AppColors.grey600,
-                avatarBytes: Uint8List(0),
+                avatarFile: null,
                 avatarSize: VoceAvatarSize.s36,
                 timeStamp: msg.createdAt,
                 enableAvatarMention: false,

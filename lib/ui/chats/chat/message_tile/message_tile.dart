@@ -32,6 +32,7 @@ class MessageTile extends StatefulWidget {
   final bool isFollowing;
   final ChatMsgM chatMsgM;
   final UserInfoM userInfoM;
+  final File? avatarFile;
   final ChatMsgM? repliedMsgM;
   final UserInfoM? repliedUserInfoM;
   final File? repliedImageFile;
@@ -59,6 +60,7 @@ class MessageTile extends StatefulWidget {
       required this.isFollowing,
       required this.chatMsgM,
       required this.userInfoM,
+      required this.avatarFile,
       required this.isSelecting,
       required this.selectNotifier,
       required this.onChanged,
@@ -249,8 +251,7 @@ class _MessageTileState extends State<MessageTile> {
                 MsgTileFrame(
                   username: widget.userInfoM.userInfo.name,
                   uid: widget.userInfoM.uid,
-                  // avatarBytes: widget.userInfoM.avatarBytes,
-                  avatarBytes: Uint8List(0),
+                  avatarFile: widget.avatarFile,
                   avatarSize: widget.avatarSize,
                   enableOnlineStatus: false,
                   enableAvatarMention: widget.enableAvatarMention,

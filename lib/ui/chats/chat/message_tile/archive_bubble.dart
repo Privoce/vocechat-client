@@ -107,10 +107,11 @@ class ArchiveBubble extends StatelessWidget {
 
                         future: getFile(archiveId, avatarId, msg.fileName),
                         builder: (context, snapshot) {
-                          Uint8List avatarBytes = Uint8List(0);
+                          File? file;
                           Widget child = CupertinoActivityIndicator();
                           if (snapshot.hasData) {
-                            avatarBytes = snapshot.data!.readAsBytesSync();
+                            file = snapshot.data;
+
                             child = ArchiveContentBubble(
                               archiveId: archiveId,
                               archiveMsg: msg,
@@ -123,7 +124,7 @@ class ArchiveBubble extends StatelessWidget {
                             child: MsgTileFrame(
                                 username: users[msg.fromUser].name,
                                 nameColor: AppColors.grey600,
-                                avatarBytes: avatarBytes,
+                                avatarFile: file,
                                 avatarSize: VoceAvatarSize.s24,
                                 timeStamp: msg.createdAt,
                                 enableAvatarMention: false,
@@ -142,7 +143,7 @@ class ArchiveBubble extends StatelessWidget {
                     return MsgTileFrame(
                         username: users[msg.fromUser].name,
                         nameColor: AppColors.grey600,
-                        avatarBytes: Uint8List(0),
+                        avatarFile: null,
                         avatarSize: VoceAvatarSize.s24,
                         timeStamp: msg.createdAt,
                         enableAvatarMention: false,

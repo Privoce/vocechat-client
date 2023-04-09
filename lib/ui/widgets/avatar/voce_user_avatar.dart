@@ -24,6 +24,8 @@ class VoceUserAvatar extends StatefulWidget {
 
   final UserInfoM? userInfoM;
 
+  final File? file;
+
   final Uint8List? avatarBytes;
 
   final String? name;
@@ -39,6 +41,7 @@ class VoceUserAvatar extends StatefulWidget {
       required this.size,
       this.enableOnlineStatus = true,
       this.isCircle = useCircleAvatar,
+      this.file,
       this.userInfoM,
       this.avatarBytes,
       this.name,
@@ -46,6 +49,21 @@ class VoceUserAvatar extends StatefulWidget {
       this.backgroundColor = Colors.blue,
       this.onTap})
       : _deleted = (uid != null && uid > 0) ? false : true,
+        super(key: key);
+
+  VoceUserAvatar.file(
+      {Key? key,
+      required String this.name,
+      required int this.uid,
+      required File this.file,
+      required this.size,
+      this.isCircle = useCircleAvatar,
+      this.enableOnlineStatus = true,
+      this.backgroundColor = Colors.blue,
+      this.onTap})
+      : avatarBytes = null,
+        userInfoM = null,
+        _deleted = false,
         super(key: key);
 
   VoceUserAvatar.user(
@@ -60,6 +78,7 @@ class VoceUserAvatar extends StatefulWidget {
         name = userInfoM.userInfo.name,
         uid = userInfoM.uid,
         _deleted = false,
+        file = null,
         super(key: key);
 
   const VoceUserAvatar.name(
@@ -76,6 +95,7 @@ class VoceUserAvatar extends StatefulWidget {
         enableOnlineStatus =
             enableOnlineStatus ?? false || (uid != null && uid > 0),
         _deleted = false,
+        file = null,
         super(key: key);
 
   const VoceUserAvatar.deleted({
@@ -90,6 +110,7 @@ class VoceUserAvatar extends StatefulWidget {
         enableOnlineStatus = false,
         _deleted = true,
         onTap = null,
+        file = null,
         super(key: key);
 
   @override
@@ -119,7 +140,10 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
           backgroundColor: widget.backgroundColor);
     } else {
       Widget rawAvatar;
-      if (widget.userInfoM != null &&
+      if (widget.file != null) {
+        rawAvatar = VoceAvatar.file(
+            file: widget.file!, size: widget.size, isCircle: widget.isCircle);
+      } else if (widget.userInfoM != null &&
           widget.userInfoM!.userInfo.avatarUpdatedAt != 0) {
         rawAvatar = FutureBuilder<File?>(
             future: UserAvatarHander().readOrFetch(widget.userInfoM!.uid),
