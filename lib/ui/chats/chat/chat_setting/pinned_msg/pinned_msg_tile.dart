@@ -38,6 +38,7 @@ class PinnedMsgTile extends StatelessWidget {
       padding: EdgeInsets.all(8),
       child: MsgTileFrame(
           username: userInfoM.userInfo.name,
+          uid: userInfoM.userInfo.uid,
           // avatarBytes: userInfoM.avatarBytes,
           // TODO: to be changed
           avatarBytes: Uint8List(0),

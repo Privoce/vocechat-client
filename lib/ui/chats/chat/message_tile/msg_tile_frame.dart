@@ -9,6 +9,7 @@ import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
@@ -99,14 +100,7 @@ class MsgTileFrame extends StatelessWidget {
                               0));
                 }
               },
-              child: uid == -1
-                  ? VoceUserAvatar.deleted(size: avatarSize)
-                  : VoceUserAvatar(
-                      avatarBytes: avatarBytes,
-                      name: username,
-                      uid: uid ?? -1,
-                      size: avatarSize,
-                      enableOnlineStatus: enableOnlineStatus)
+              child: _buildAvatar()
               // : VoceAvatar
               ),
           SizedBox(width: 8),
@@ -128,6 +122,13 @@ class MsgTileFrame extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             alignment: Alignment.centerLeft,
                             minSize: 12,
+                            onPressed: enableUserDetailPush
+                                ? () {
+                                    if (enableUserDetailPush) {
+                                      _showUserDetail(context, uid);
+                                    }
+                                  }
+                                : null,
                             child: Text(displayedName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -136,13 +137,6 @@ class MsgTileFrame extends StatelessWidget {
                                     fontSize: nameSize,
                                     color: nameColor,
                                     fontWeight: FontWeight.w500)),
-                            onPressed: enableUserDetailPush
-                                ? () {
-                                    if (enableUserDetailPush) {
-                                      _showUserDetail(context, uid);
-                                    }
-                                  }
-                                : null,
                           ),
                         ),
                         SizedBox(width: 8),
@@ -156,32 +150,6 @@ class MsgTileFrame extends StatelessWidget {
                         )
                       ],
                     ),
-                    // child: RichText(
-                    //     maxLines: 1,
-                    //     overflow: TextOverflow.ellipsis,
-                    //     text: TextSpan(children: [
-                    //       TextSpan(
-                    //           text: "ssdgasdgasgdisplayedName" + "  ",
-                    //           recognizer: TapGestureRecognizer()
-                    //             ..onTap = () {
-                    //               if (enableUserDetailPush) {
-                    //                 _showUserDetail(context, uid);
-                    //               }
-                    //             },
-                    //           style: TextStyle(
-                    //               fontSize: nameSize,
-                    //               color: nameColor,
-                    //               fontWeight: FontWeight.w500)),
-                    //       TextSpan(
-                    //         text:
-                    //             DateTime.fromMillisecondsSinceEpoch(timeStamp!)
-                    //                 .toChatTime24StrEn(),
-                    //         style: TextStyle(
-                    //             fontSize: 12,
-                    //             fontWeight: FontWeight.w500,
-                    //             color: AppColors.navLink),
-                    //       )
-                    //     ])),
                   ),
                 if (child != null) child!,
               ],
@@ -190,6 +158,30 @@ class MsgTileFrame extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildAvatar() {
+    if (avatarBytes.isNotEmpty) {
+      return VoceAvatar.bytes(avatarBytes: avatarBytes, size: avatarSize);
+    } else if (uid == null || uid == -1) {
+      return VoceUserAvatar.deleted(size: avatarSize);
+    }
+    // TODO: change message data structure later
+    else {
+      return FutureBuilder(
+        future: UserInfoDao().getUserByUid(uid!),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return VoceUserAvatar.user(
+                userInfoM: snapshot.data as UserInfoM,
+                size: avatarSize,
+                enableOnlineStatus: enableOnlineStatus);
+          } else {
+            return VoceUserAvatar.deleted(size: avatarSize);
+          }
+        },
+      );
+    }
   }
 
   void _showUserDetail(BuildContext context, int? uid) async {
