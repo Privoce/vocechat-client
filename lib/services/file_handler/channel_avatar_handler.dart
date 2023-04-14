@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
 
 class ChannelAvatarHander extends VoceFileHander {
@@ -16,14 +17,18 @@ class ChannelAvatarHander extends VoceFileHander {
 
   /// Should insert a png file.
   @override
-  Future<String> filePath(String fileName) async {
+  Future<String> filePath(String fileName,
+      {String? chatId, String? dbName}) async {
     final directory = await getApplicationDocumentsDirectory();
+    final databaseName = dbName ?? App.app.userDb?.dbName;
     try {
-      return "${directory.path}/file/${App.app.userDb!.dbName}/$_pathStr/$fileName";
+      if (databaseName != null && databaseName.isNotEmpty) {
+        return "${directory.path}/file/${App.app.userDb!.dbName}/$_pathStr/$fileName";
+      }
     } catch (e) {
       App.logger.severe(e);
-      return "${directory.path}/file";
     }
+    return "";
   }
 
   static String generateFileName(int gid) {
@@ -31,9 +36,9 @@ class ChannelAvatarHander extends VoceFileHander {
   }
 
   /// Read file from local storage, if not exist, fetch from server.
-  Future<File?> readOrFetch(int gid) async {
+  Future<File?> readOrFetch(int gid, {String? dbName}) async {
     final fileName = generateFileName(gid);
-    final file = await read(fileName);
+    final file = await read(fileName, dbName: dbName);
     if (file != null) {
       return file;
     } else {
@@ -44,8 +49,9 @@ class ChannelAvatarHander extends VoceFileHander {
             res.statusCode == 200 &&
             res.data != null &&
             res.data!.isNotEmpty) {
-          return ChannelAvatarHander()
-              .save(ChannelAvatarHander.generateFileName(gid), res.data!);
+          return save(
+           generateFileName(gid), res.data!,
+              dbName: dbName);
         }
       } catch (e) {
         App.logger.warning(e);

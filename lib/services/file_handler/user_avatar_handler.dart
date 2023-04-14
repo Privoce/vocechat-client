@@ -12,14 +12,18 @@ class UserAvatarHander extends VoceFileHander {
   UserAvatarHander() : super();
 
   @override
-  Future<String> filePath(String fileName) async {
+  Future<String> filePath(String fileName,
+      {String? chatId, String? dbName}) async {
     final directory = await getApplicationDocumentsDirectory();
+    final databaseName = dbName ?? App.app.userDb?.dbName;
     try {
-      return "${directory.path}/file/${App.app.userDb!.dbName}/$_pathStr/$fileName";
+      if (databaseName != null && databaseName.isNotEmpty) {
+        return "${directory.path}/file/${App.app.userDb!.dbName}/$_pathStr/$fileName";
+      }
     } catch (e) {
       App.logger.severe(e);
-      return "";
     }
+    return "";
   }
 
   static String generateFileName(int uid) {
@@ -27,9 +31,9 @@ class UserAvatarHander extends VoceFileHander {
   }
 
   /// Read file from local storage, if not exist, fetch from server.
-  Future<File?> readOrFetch(int uid) async {
+  Future<File?> readOrFetch(int uid, {String? dbName}) async {
     final fileName = generateFileName(uid);
-    final file = await read(fileName);
+    final file = await read(fileName, dbName: dbName);
     if (file != null) {
       return file;
     } else {
@@ -37,8 +41,8 @@ class UserAvatarHander extends VoceFileHander {
         final resourceApi = ResourceApi();
         final res = await resourceApi.getUserAvatar(uid);
         if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
-          final file = await UserAvatarHander()
-              .save(UserAvatarHander.generateFileName(uid), res.data!);
+          final file =
+              await save(generateFileName(uid), res.data!, dbName: dbName);
           return file;
         }
       } catch (e) {

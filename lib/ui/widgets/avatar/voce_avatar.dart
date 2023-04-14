@@ -156,23 +156,26 @@ class VoceAvatar extends StatelessWidget {
       }
     } else {
       if (file != null) {
+        final borderRadius = BorderRadius.circular(size * _radiusFactor);
         return SizedBox(
           height: size,
           width: size,
-          child: ClipOval(
+          child: ClipRRect(
+              borderRadius: borderRadius,
               child: Image.file(file!,
                   fit: BoxFit.cover, width: size, height: size, frameBuilder:
                       (context, child, frame, wasSynchronouslyLoaded) {
-            if (wasSynchronouslyLoaded) {
-              return child;
-            } else {
-              return AnimatedSwitcher(
-                duration: const Duration(milliseconds: 100),
-                child:
-                    frame != null ? child : const CupertinoActivityIndicator(),
-              );
-            }
-          })),
+                if (wasSynchronouslyLoaded) {
+                  return child;
+                } else {
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 100),
+                    child: frame != null
+                        ? child
+                        : const CupertinoActivityIndicator(),
+                  );
+                }
+              })),
         );
       } else if (avatarBytes != null && avatarBytes!.isNotEmpty) {
         final borderRadius = BorderRadius.circular(size * _radiusFactor);

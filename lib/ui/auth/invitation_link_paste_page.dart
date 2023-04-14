@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -112,7 +114,7 @@ class InvitationLinkPastePage extends StatelessWidget {
                     icon: Icon(Icons.qr_code_scanner_rounded,
                         color: Colors.blue, size: 30),
                     onPressed: () {
-                      final route = PageRouteBuilder(
+                      final route = PageRouteBuilder<String>(
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             AppQrScanPage(),
                         transitionsBuilder:
@@ -130,7 +132,9 @@ class InvitationLinkPastePage extends StatelessWidget {
                           );
                         },
                       );
-                      Navigator.push(context, route);
+                      Navigator.push<String>(context, route).then((codeStr) {
+                        _onLinkSubmitted(codeStr ?? "", context);
+                      });
                     })
               ],
             ),
@@ -156,7 +160,7 @@ class InvitationLinkPastePage extends StatelessWidget {
           keepNormalWhenBusy: false,
           action: () async {
             // return await _onUrlSubmit(_urlController.text + "/api");
-            await _onLinkSubmitted(context);
+            await _onLinkSubmitted(_controller.text.trim(), context);
 
             return true;
           },
@@ -165,9 +169,7 @@ class InvitationLinkPastePage extends StatelessWidget {
     );
   }
 
-  Future<bool> _onLinkSubmitted(BuildContext context) async {
-    final link = _controller.text.trim();
-
+  Future<bool> _onLinkSubmitted(String link, BuildContext context) async {
     try {
       Uri uri = Uri.parse(link);
 
@@ -187,7 +189,21 @@ class InvitationLinkPastePage extends StatelessWidget {
       final apiPath =
           "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
       final userApi = UserApi(serverUrl: apiPath);
-      final magicToken = uri.queryParameters["magic_token"] as String;
+
+      String? magicToken = uri.queryParameters["magic_token"];
+      if (magicToken == null || magicToken.isEmpty) {
+        final fragment = uri.fragment;
+
+        if (fragment.isNotEmpty) {
+          magicToken = Uri.parse(fragment).queryParameters["magic_token"];
+        }
+      }
+
+      if (magicToken == null || magicToken.isEmpty) {
+        App.logger.warning("Link not valid.");
+        _showInvalidLinkWarning(context);
+        return false;
+      }
 
       final res = await userApi.checkMagicToken(magicToken);
       if (res.statusCode == 200 && res.data == true) {
