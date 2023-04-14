@@ -962,7 +962,9 @@ class _ChatPageState extends State<ChatPage>
   Future<bool> _onDeleteNew(ChatMsgM old) async {
     try {
       await MessageApi().delete(old.mid).then((response) async {
-        if (response.statusCode == 200) {
+        if (response.statusCode == 200 ||
+            (old.status == MsgSendStatus.fail.name &&
+                response.statusCode == 404)) {
           // successfully deleted
           FileHandler.singleton.deleteWithChatMsgM(old);
 
