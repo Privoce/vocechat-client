@@ -7,7 +7,8 @@ class ChannelBgHander extends VoceFileHander {
   ChannelBgHander() : super();
 
   @override
-  Future<String> filePath(String fileName) async {
+  Future<String> filePath(String fileName,
+      {String? chatId, String? dbName}) async {
     final directory = await getApplicationDocumentsDirectory();
     try {
       return "${directory.path}/file/${App.app.userDb!.dbName}/$_pathStr/$String fileName";

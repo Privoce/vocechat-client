@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/extensions.dart';
@@ -441,15 +442,17 @@ class _ServerPageState extends State<ServerPage> {
 
       final chatServer = await ChatServerDao.dao.getServerById(serverId);
 
+      final avatarBytes = await (await UserAvatarHander()
+              .readOrFetch(userDb.uid, dbName: userDb.dbName))
+          ?.readAsBytes();
+
       if (chatServer == null) {
         continue;
       }
 
       serverAccountList.add(ServerAccountData(
           serverAvatarBytes: chatServer.logo,
-          // userAvatarBytes: userDb.avatarBytes,
-          // TODO: to be changed
-          userAvatarBytes: Uint8List(0),
+          userAvatarBytes: avatarBytes ?? Uint8List(0),
           serverName: chatServer.properties.serverName,
           serverUrl: chatServer.fullUrl,
           username: userDb.userInfo.name,
