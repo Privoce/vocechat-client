@@ -370,17 +370,17 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
     try {
-      final magicLinkHost = uri.queryParameters["magic_link"];
-      final magicToken = uri.queryParameters["magic_token"];
+      final magicLink = uri.queryParameters["magic_link"];
+      if (magicLink == null || magicLink.isEmpty) return null;
 
-      if (magicLinkHost == null || magicLinkHost.isEmpty) return null;
-      final invLinkUri = Uri.parse(magicLinkHost);
+      final magicLinkUri = Uri.parse(magicLink);
+      final magicToken = magicLinkUri.queryParameters["magic_token"];
 
-      String serverUrl = invLinkUri.scheme +
-          '://' +
-          invLinkUri.host +
-          ":" +
-          invLinkUri.port.toString();
+      if (magicToken?.isEmpty ?? true) return null;
+      final invLinkUri = Uri.parse(magicLink);
+
+      String serverUrl =
+          "${invLinkUri.scheme}://${invLinkUri.host}:${invLinkUri.port.toString()}";
 
       if (serverUrl == "https://privoce.voce.chat" ||
           serverUrl == "https://privoce.voce.chat:443") {
@@ -404,10 +404,18 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     return null;
   }
 
+  /// Handles the join link
+  ///
+  /// Be noted: join link is not a magic link, but the magic link is included in
+  /// the join link as a query parameter.
   void _handleJoinLink(Uri uri) async {
     final data = await _prepareInvitationLinkData(uri);
     final context = navigatorKey.currentContext;
-    if (data == null || context == null) return;
+    if (data == null || context == null) {
+      _showInvalidLinkWarning(context!);
+      return;
+    }
+
     try {
       final chatServer = await ChatServerHelper()
           .prepareChatServerM(data.serverUrl, showAlert: false);
