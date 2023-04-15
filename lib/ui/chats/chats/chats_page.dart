@@ -55,7 +55,7 @@ class _ChatsPageState extends State<ChatsPage>
     super.initState();
     prepareChats();
     getMemberCount();
-    globals.unreadCountSum.value = calUnreadCountSum();
+    calUnreadCountSum();
     App.app.chatService.subscribeGroups(_onChannel);
     App.app.chatService.subscribeSnippet(_onSnippet);
     App.app.chatService.subscribeUsers(_onUser);
@@ -67,7 +67,7 @@ class _ChatsPageState extends State<ChatsPage>
       prepareChats();
       getMemberCount();
 
-      globals.unreadCountSum.value = calUnreadCountSum();
+      calUnreadCountSum();
       App.app.chatService.subscribeGroups(_onChannel);
       App.app.chatService.subscribeSnippet(_onSnippet);
       App.app.chatService.subscribeUsers(_onUser);
@@ -270,7 +270,7 @@ class _ChatsPageState extends State<ChatsPage>
         _uiChats[index].unreadCount.value = unreadCount;
         _uiChats[index].unreadMentionCount.value = unreadMentionCount;
 
-        globals.unreadCountSum.value = calUnreadCountSum();
+        calUnreadCountSum();
       }
 
       final draft = mentionsKey.currentState?.controller?.text;
@@ -309,7 +309,7 @@ class _ChatsPageState extends State<ChatsPage>
         final unreadCount = await ChatMsgDao().getDmUnreadCount(dmUid);
 
         _uiChats[index].unreadCount.value = unreadCount;
-        globals.unreadCountSum.value = calUnreadCountSum();
+        calUnreadCountSum();
       }
 
       final draft = mentionsKey.currentState?.controller?.text;
@@ -328,26 +328,32 @@ class _ChatsPageState extends State<ChatsPage>
 
   Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
     taskQueue.add(() async {
+      final unreadCount =
+          await ChatMsgDao().getGroupUnreadCount(groupInfoM.gid);
+      final unreadMentionCount =
+          await ChatMsgDao().getGroupUnreadMentionCount(groupInfoM.gid);
       switch (action) {
         case EventActions.create:
         case EventActions.update:
           final index = getUiChatIndex(gid: groupInfoM.gid);
 
           if (index > -1) {
-            // _uiChats[index].avatar.value = groupInfoM.avatar;
             _uiChats[index].title.value = groupInfoM.groupInfo.name;
             _uiChats[index].isMuted.value = groupInfoM.properties.enableMute;
             _uiChats[index].draft.value = groupInfoM.properties.draft;
             _uiChats[index].isPrivateChannel.value =
                 !groupInfoM.groupInfo.isPublic;
+            _uiChats[index].unreadCount.value = unreadCount;
+            _uiChats[index].unreadMentionCount.value = unreadMentionCount;
           } else {
             final uiChat = UiChat(
-                // avatar: groupInfoM.avatar,
                 title: groupInfoM.groupInfo.name,
                 groupInfoM: groupInfoM,
                 isPrivateChannel: groupInfoM.isPublic != 1,
                 isMuted: groupInfoM.properties.enableMute,
-                updatedAt: groupInfoM.updatedAt);
+                updatedAt: groupInfoM.updatedAt,
+                unreadCount: unreadCount,
+                unreadMentionCount: unreadMentionCount);
 
             addOrReplaceChannel(uiChat);
           }
@@ -362,6 +368,7 @@ class _ChatsPageState extends State<ChatsPage>
         default:
       }
     });
+    calUnreadCountSum();
   }
 
   /// Only response to update and delete. User initiazed in [onSnippet].
@@ -370,6 +377,8 @@ class _ChatsPageState extends State<ChatsPage>
       _userInfoMap.addAll({userInfoM.uid: userInfoM});
 
       final index = getUiChatIndex(uid: userInfoM.uid);
+
+      final unreadCount = await ChatMsgDao().getDmUnreadCount(userInfoM.uid);
 
       switch (action) {
         case EventActions.create:
@@ -385,13 +394,13 @@ class _ChatsPageState extends State<ChatsPage>
               latestMsgM != null ? _processSnippet(latestMsgM) : "";
 
           final uiChat = UiChat(
-              // avatar: userInfoM.avatarBytes,
               title: userInfoM.userInfo.name,
               userInfoM: userInfoM,
               isMuted: userInfoM.properties.enableMute,
               onlineNotifier: ValueNotifier(false),
               snippet: snippet,
               updatedAt: updatedAt,
+              unreadCount: unreadCount,
               draft: userInfoM.properties.draft);
 
           addOrReplaceDm(uiChat);
@@ -399,10 +408,10 @@ class _ChatsPageState extends State<ChatsPage>
           break;
         case EventActions.update:
           if (index > -1) {
-            // _uiChats[index].avatar.value = userInfoM.avatarBytes;
             _uiChats[index].title.value = userInfoM.userInfo.name;
             _uiChats[index].isMuted.value = userInfoM.properties.enableMute;
             _uiChats[index].draft.value = userInfoM.properties.draft;
+            _uiChats[index].unreadCount.value = unreadCount;
           }
 
           break;
@@ -416,6 +425,7 @@ class _ChatsPageState extends State<ChatsPage>
       }
 
       getMemberCount();
+      calUnreadCountSum();
     });
   }
 
@@ -500,7 +510,7 @@ class _ChatsPageState extends State<ChatsPage>
               chatMsgM.dmUid, chatMsgM.localMid, chatMsgM.createdAt));
         }
       }
-      globals.unreadCountSum.value = calUnreadCountSum();
+      calUnreadCountSum();
 
       if (mounted) {
         setState(() {});
@@ -535,6 +545,7 @@ class _ChatsPageState extends State<ChatsPage>
           case MsgContentType.archive:
             snippet = "[${AppLocalizations.of(context)!.archive}]";
             break;
+
           default:
             snippet =
                 chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
@@ -652,7 +663,7 @@ class _ChatsPageState extends State<ChatsPage>
         }
       }
 
-      globals.unreadCountSum.value = calUnreadCountSum();
+      calUnreadCountSum();
     }
   }
 
@@ -701,7 +712,7 @@ class _ChatsPageState extends State<ChatsPage>
         }
       }
 
-      globals.unreadCountSum.value = calUnreadCountSum();
+      calUnreadCountSum();
     }
   }
 
@@ -712,12 +723,12 @@ class _ChatsPageState extends State<ChatsPage>
     }
   }
 
-  int calUnreadCountSum() {
+  void calUnreadCountSum() {
     int count = 0;
     for (var element in _uiChats) {
       count += element.unreadCount.value;
     }
-    return count;
+    count;
   }
 }
 
