@@ -43,7 +43,7 @@ class UserDbM with M {
 
   int usersVersion = -1;
 
-  Uint8List avatarBytes = Uint8List(0);
+  // Uint8List avatarBytes = Uint8List(0);
 
   String _properties = "";
 
@@ -75,7 +75,7 @@ class UserDbM with M {
       this.expiredIn,
       this.loggedIn,
       this.usersVersion,
-      this.avatarBytes,
+      // this.avatarBytes,
       this._properties,
       this.maxMid);
 
@@ -117,9 +117,9 @@ class UserDbM with M {
     if (map.containsKey(F_usersVersion)) {
       m.usersVersion = map[F_usersVersion];
     }
-    if (map.containsKey(F_avatarBytes)) {
-      m.avatarBytes = map[F_avatarBytes];
-    }
+    // if (map.containsKey(F_avatarBytes)) {
+    //   m.avatarBytes = map[F_avatarBytes];
+    // }
     if (map.containsKey(F_properties)) {
       m._properties = map[F_properties];
     }
@@ -141,7 +141,7 @@ class UserDbM with M {
   static const F_expiredIn = "expired_in";
   static const F_loggedIn = "logged_in";
   static const F_usersVersion = "users_version";
-  static const F_avatarBytes = "avatar_bytes";
+  // static const F_avatarBytes = "avatar_bytes";
   static const F_properties = "properties";
   static const F_maxMid = "max_mid";
 
@@ -158,7 +158,7 @@ class UserDbM with M {
         UserDbM.F_expiredIn: expiredIn,
         UserDbM.F_loggedIn: loggedIn,
         UserDbM.F_usersVersion: usersVersion,
-        UserDbM.F_avatarBytes: avatarBytes,
+        // UserDbM.F_avatarBytes: avatarBytes,
         UserDbM.F_properties: _properties,
         UserDbM.F_maxMid: maxMid
       };
@@ -195,8 +195,9 @@ class UserDbMDao extends OrgDao<UserDbM> {
   }
 
   /// Use both chat_server_id and uid to define a user.
-  Future<UserDbM?> updateUserInfo(UserInfo userInfo,
-      [Uint8List? avatarBytes]) async {
+  Future<UserDbM?> updateUserInfo(
+    UserInfo userInfo,
+  ) async {
     if (userInfo.uid != App.app.userDb?.uid) {
       return null;
     }
@@ -207,9 +208,9 @@ class UserDbMDao extends OrgDao<UserDbM> {
         whereArgs: [chatServerId, uid]);
     if (old != null) {
       old.info = jsonEncode(userInfo.toJson());
-      if (avatarBytes != null) {
-        old.avatarBytes = avatarBytes;
-      }
+      // if (avatarBytes != null) {
+      //   old.avatarBytes = avatarBytes;
+      // }
       old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
     }

@@ -14,7 +14,12 @@ import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AppQrScanPage extends StatelessWidget {
-  MobileScannerController cameraController = MobileScannerController();
+  MobileScannerController cameraController =
+      MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates);
+
+  // final void Function(String link) onLinkDetected;
+
+  AppQrScanPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +29,6 @@ class AppQrScanPage extends StatelessWidget {
           MobileScanner(
               controller: cameraController,
               onDetect: (capture) {
-                print("######## barcodes detected");
                 final barcodes = capture.barcodes;
 
                 if (barcodes.isNotEmpty) {
@@ -34,18 +38,10 @@ class AppQrScanPage extends StatelessWidget {
                   } else {
                     final String code = barcode.rawValue!;
                     _onQrCodeDetected(code, context);
+                    // cameraController.stop();
                     App.logger.info('Barcode found! $code');
                   }
                 }
-                // for (final barcode in barcodes) {
-                //   if (barcode.rawValue == null) {
-                //     App.logger.warning('Failed to scan Barcode');
-                //   } else {
-                //     final String code = barcode.rawValue!;
-                //     _onQrCodeDetected(code, context);
-                //     App.logger.info('Barcode found! $code');
-                //   }
-                // }
               }),
           SafeArea(
               child: Padding(
@@ -75,80 +71,10 @@ class AppQrScanPage extends StatelessWidget {
   }
 
   void _onQrCodeDetected(String link, BuildContext context) async {
-    showLoaderDialog(context);
-    if (await _validateLink(link)) {
-      App.logger.info("success, $link");
-    } else {
-      // Dismiss loading dialog.
-      Navigator.pop(context);
-
-      await showAppAlert(
-          context: context,
-          title:
-              AppLocalizations.of(context)!.appQrCodeScanPageInvalidCodeTitle,
-          content:
-              AppLocalizations.of(context)!.appQrCodeScanPageInvalidCodeContent,
-          actions: [
-            AppAlertDialogAction(
-                text: AppLocalizations.of(context)!.ok,
-                action: () => Navigator.of(context).pop())
-          ]);
-
-      // Pop scan page.
-      Navigator.pop(context);
-    }
-  }
-
-  Future<bool> _validateLink(String link) async {
-    try {
-      final context = navigatorKey.currentContext!;
-
-      Uri uri = Uri.parse(link);
-
-      String host = uri.host;
-      if (host == "privoce.voce.chat") {
-        host = "dev.voce.chat";
-      }
-
-      // Check if host is the same when a pre-set server url is available
-      if (SharedFuncs.hasPreSetServerUrl() &&
-          Uri.parse(App.app.customConfig!.configs.serverUrl).host != host) {
-        _showUrlUnmatchAlert();
-
-        return false;
-      }
-
-      final apiPath =
-          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
-      final userApi = UserApi(serverUrl: apiPath);
-      final magicToken = uri.queryParameters["magic_token"] as String;
-
-      final res = await userApi.checkMagicToken(magicToken);
-      if (res.statusCode == 200 && res.data == true) {
-        final chatServerM =
-            await ChatServerHelper().prepareChatServerM(apiPath);
-        if (chatServerM != null) {
-          // Dismiss loading dialog.
-          Navigator.pop(context);
-
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => PasswordRegisterPage(
-                    chatServer: chatServerM,
-                    magicToken: magicToken,
-                  )));
-        }
-      } else {
-        App.logger.warning("Link not valid.");
-
-        return false;
-      }
-    } catch (e) {
-      App.logger.severe(e);
-
-      return false;
-    }
-
-    return true;
+    // showLoaderDialog(context);
+    // onLinkDetected(link);
+    // Dismiss loading dialog.
+    Navigator.pop(context, link);
   }
 
   void showLoaderDialog(BuildContext context) {

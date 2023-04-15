@@ -1,8 +1,10 @@
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
@@ -231,13 +233,17 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
 
       final chatServer = await ChatServerDao.dao.getServerById(serverId);
 
+      final userAvatarBytes =
+          await (await UserAvatarHander().readOrFetch(userDb.uid))
+              ?.readAsBytes();
+
       if (chatServer == null || userDb.loggedIn == 0) {
         continue;
       }
 
       accountList.add(ValueNotifier<ServerAccountData>(ServerAccountData(
           serverAvatarBytes: chatServer.logo,
-          userAvatarBytes: userDb.avatarBytes,
+          userAvatarBytes: userAvatarBytes ?? Uint8List(0),
           serverName: chatServer.properties.serverName,
           serverUrl: chatServer.fullUrl,
           username: userDb.userInfo.name,

@@ -183,8 +183,15 @@ class _NewPrivateChannelSelectPageState
     } else {
       GroupInfo groupInfo = GroupInfo(gid, App.app.userDb!.uid, req.name,
           req.description, req.members, false, 0, []);
-      GroupInfoM groupInfoM = GroupInfoM.item(gid, "", jsonEncode(groupInfo),
-          Uint8List(0), "", 0, 1, DateTime.now().millisecondsSinceEpoch);
+      GroupInfoM groupInfoM = GroupInfoM.item(
+          gid,
+          "",
+          jsonEncode(groupInfo),
+          // Uint8List(0),
+          "",
+          0,
+          1,
+          DateTime.now().millisecondsSinceEpoch);
 
       try {
         await GroupInfoDao()
@@ -214,7 +221,7 @@ class _NewPrivateChannelSelectPageState
           groupCreateResponse.gid,
           "",
           jsonEncode(groupInfo),
-          Uint8List(0),
+          // Uint8List(0),
           "",
           0,
           1,

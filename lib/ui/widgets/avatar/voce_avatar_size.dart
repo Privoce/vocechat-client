@@ -1,4 +1,4 @@
-class AvatarSize {
+class VoceAvatarSize {
   static const double s84 = 84;
   static const double s72 = 72;
   static const double s60 = 60;

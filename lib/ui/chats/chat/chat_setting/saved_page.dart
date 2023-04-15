@@ -184,25 +184,6 @@ class _SavedItemPageState extends State<SavedItemPage> {
       int uid, String archiveId, int attachmentId, bool download) async {
     return FileHandler.singleton
         .getSavedItemsFile(uid, archiveId, attachmentId);
-    // final savedM = await SavedFileDao.dao.getSavedFile(filePath, attachmentId);
-    // if (savedM != null && savedM.file.isNotEmpty) {
-    //   return savedM.file;
-    // }
-
-    // final res = await _savedApi.getSavedAttachment(
-    //     uid, filePath, attachmentId, download);
-    // if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
-    //   final savedFileM =
-    //       SavedFileM.item(filePath, attachmentId, res.data!, createdAt);
-
-    //   try {
-    //     final savedFile = await SavedFileDao.dao.addOrUpdate(savedFileM);
-    //     return savedFile.file;
-    //   } catch (e) {
-    //     App.logger.severe(e);
-    //   }
-    // }
-    // return null;
   }
 
   /// Only fetch locally saved messages.

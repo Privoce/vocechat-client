@@ -122,17 +122,17 @@ class SharedFuncs {
   }
 
   static SendType getSendType(ChatMsgM chatMsgM) {
-    if (chatMsgM.type == MsgDetailType.normal &&
-        (chatMsgM.detailType == MsgContentType.text ||
-            chatMsgM.detailType == MsgContentType.markdown) &&
+    if (chatMsgM.detailType == MsgDetailType.normal &&
+        (chatMsgM.detailContentType == MsgContentType.text ||
+            chatMsgM.detailContentType == MsgContentType.markdown) &&
         chatMsgM.edited == 0) {
       return SendType.normal;
-    } else if (chatMsgM.detailType == MsgContentType.file) {
+    } else if (chatMsgM.detailContentType == MsgContentType.file) {
       return SendType.file;
-    } else if (chatMsgM.type == MsgDetailType.reply) {
+    } else if (chatMsgM.detailType == MsgDetailType.reply) {
       return SendType.reply;
-    } else if (chatMsgM.type == MsgDetailType.normal &&
-        chatMsgM.detailType == MsgContentType.text &&
+    } else if (chatMsgM.detailType == MsgDetailType.normal &&
+        chatMsgM.detailContentType == MsgContentType.text &&
         chatMsgM.edited == 1) {
       return SendType.edit;
     }
@@ -152,6 +152,10 @@ class SharedFuncs {
 
   static bool hasPreSetServerUrl() {
     return App.app.customConfig?.hasPreSetServerUrl ?? false;
+  }
+
+  static bool isSelf(int? uid) {
+    return uid == App.app.userDb?.uid;
   }
 
   /// Parse mention info in text and markdowns.
@@ -189,23 +193,23 @@ class SharedFuncs {
   }
 
   /// Read assets/custom_configs.yaml and put it into [App] object.
-  static Future<void> readCustomConfigs() async {
-    final data = await rootBundle.loadString('assets/custom_configs.yaml');
-    final yaml = loadYaml(data);
+  // static Future<void> readCustomConfigs() async {
+  //   final data = await rootBundle.loadString('assets/custom_configs.yaml');
+  //   final yaml = loadYaml(data);
 
-    try {
-      final version = yaml["version"].toString();
+  //   try {
+  //     final version = yaml["version"].toString();
 
-      if (version == "0.1") {
-        final serverUrl = yaml["configs"]["server_url"];
+  //     if (version == "0.1") {
+  //       final serverUrl = yaml["configs"]["server_url"];
 
-        App.app.customConfig = CustomConfigs0001(
-            version: version, configs: Configs0001(serverUrl: serverUrl));
-      }
-    } catch (e) {
-      App.logger.severe(e);
-    }
-  }
+  //       App.app.customConfig = CustomConfigs0001(
+  //           version: version, configs: Configs0001(serverUrl: serverUrl));
+  //     }
+  //   } catch (e) {
+  //     App.logger.severe(e);
+  //   }
+  // }
 
   /// Renew access token and refresh token, and do related data storage.
   static Future<bool> renewAuthToken() async {

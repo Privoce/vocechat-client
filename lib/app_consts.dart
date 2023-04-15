@@ -106,3 +106,5 @@ const List<String> codeExts = [
   "vb",
   "json"
 ];
+
+const useCircleAvatar = true;

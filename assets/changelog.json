@@ -1,6 +1,16 @@
 {   
-    "latest": {"version": "0.2.79", "build_num": 49},
+    "latest": {"version": "0.2.81", "build_num": 51},
     "logs":  [
+        {"time": 1681457945437, "version": "0.2.81", "build_num": 51, "updates": [
+            "- add: user avatar display in server history and account switch.",
+            "- fix: invitation link and QR code issue.",
+            "- fix: unsent messages deletion issue."
+        ]},
+        {"time": 1680948278556, "version": "0.2.80", "build_num": 50, "updates": [
+            "- refactor: avatar data storage and fetching strategy.",
+            "- fix: HEIF image sending issue.",
+            "- fix: magic link parameter parsing issue."
+        ]},
         {"time": 1679269244128, "version": "0.2.79", "build_num": 49, "updates": [
             "- fix: messages might still appear when they are deleted."
         ]},

@@ -18,9 +18,10 @@ import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
-import 'package:vocechat_client/ui/widgets/avatar/user_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+
+import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 
 class ImageShareSheet extends StatefulWidget {
@@ -76,15 +77,20 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
                 itemBuilder: (context, index) {
                   final chat = recentChats[index];
                   final avatarWidget = chat.isGroup
-                      ? ChannelAvatar(
-                          avatarSize: AvatarSize.s48,
-                          avatarBytes: chat.groupInfoM!.avatar,
-                          name: chat.title)
-                      : UserAvatar(
-                          avatarSize: AvatarSize.s48,
-                          name: chat.title,
-                          avatarBytes: chat.userInfoM!.avatarBytes,
-                          enableOnlineStatus: true);
+                      // ? ChannelAvatar(
+                      //     avatarSize: VoceAvatarSize.s48,
+                      //     avatarBytes: chat.groupInfoM!.avatar,
+                      //     name: chat.title)
+                      ? VoceChannelAvatar.channel(
+                          groupInfoM: chat.groupInfoM!,
+                          size: VoceAvatarSize.s48)
+                      // : UserAvatar(
+                      //     avatarSize: VoceAvatarSize.s48,
+                      //     name: chat.title,
+                      //     avatarBytes: chat.userInfoM!.avatarBytes,
+                      //     enableOnlineStatus: true);
+                      : VoceUserAvatar.user(
+                          userInfoM: chat.userInfoM!, size: VoceAvatarSize.s48);
                   // return _buildButtonChild(avatarWidget, chat.title);
                   return CupertinoButton(
                     padding: EdgeInsets.zero,
@@ -271,7 +277,7 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
     try {
       final title = AppLocalizations.of(context)!.forwardAsImage +
           ((targetName != null && targetName.isNotEmpty)
-              ? " " + AppLocalizations.of(context)!.to + " " + targetName
+              ? " ${AppLocalizations.of(context)!.to} $targetName"
               : "");
 
       await showAppAlert(
@@ -351,19 +357,9 @@ class RecentChatData {
   final GroupInfoM? groupInfoM;
   final int updatedAt;
 
-  late final String title;
-  late final bool isGroup;
+  bool get isGroup => userInfoM == null && groupInfoM != null;
+  String get title =>
+      isGroup ? groupInfoM!.groupInfo.name : userInfoM!.userInfo.name;
 
-  RecentChatData({this.userInfoM, this.groupInfoM, required this.updatedAt}) {
-    String _title = "";
-    if (userInfoM != null) {
-      _title = userInfoM!.userInfo.name;
-      isGroup = false;
-    } else if (groupInfoM != null) {
-      _title = groupInfoM!.groupInfo.name;
-      isGroup = true;
-    }
-
-    title = _title;
-  }
+  RecentChatData({this.userInfoM, this.groupInfoM, required this.updatedAt});
 }

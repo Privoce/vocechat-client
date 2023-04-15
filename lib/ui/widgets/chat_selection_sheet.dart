@@ -403,8 +403,9 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
           final uiForward = UiForward(
               title: userInfoM.userInfo.name,
               uid: userInfoM.uid,
-              avatar:
-                  userInfoM.avatarBytes.isEmpty ? null : userInfoM.avatarBytes,
+              // TODO: to be changed
+              // avatar:
+              //     userInfoM.avatarBytes.isEmpty ? null : userInfoM.avatarBytes,
               time: each.updatedAt);
           recents.add(uiForward);
         } catch (e) {
@@ -441,7 +442,9 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
           final uiForward = UiForward(
               title: each.userInfo.name,
               uid: each.uid,
-              avatar: each.avatarBytes.isEmpty ? null : each.avatarBytes,
+
+              // TODO: to be changed
+              // avatar: each.avatarBytes.isEmpty ? null : each.avatarBytes,
               time: 0);
           recents.add(uiForward);
         } catch (e) {

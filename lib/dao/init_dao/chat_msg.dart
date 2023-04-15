@@ -74,11 +74,11 @@ class ChatMsgM with M {
   }
 
   /// normal, reaction and reply.
-  String get typeStr {
+  String get detailTypeStr {
     return json.decode(detail)["type"] ?? "";
   }
 
-  MsgDetailType? get type {
+  MsgDetailType? get detailType {
     switch (json.decode(detail)["type"]) {
       case "normal":
         return MsgDetailType.normal;
@@ -93,17 +93,17 @@ class ChatMsgM with M {
 
   /// text/plain, text/markdown, vocechat/file, vocechat/archive
   /// in msgNormal.detail
-  String get detailContentType {
+  String get detailContentTypeStr {
     return json.decode(detail)["content_type"] ?? "";
   }
 
   /// MIME
   /// in msgNormal.detail.properties
-  String get fileContentType {
+  String get fileContentTypeStr {
     return json.decode(detail)["properties"]["content_type"] ?? "";
   }
 
-  MsgContentType? get detailType {
+  MsgContentType? get detailContentType {
     switch (json.decode(detail)["content_type"]) {
       case typeText:
         return MsgContentType.text;
@@ -131,6 +131,15 @@ class ChatMsgM with M {
     try {
       final type = json.decode(detail)["properties"]["content_type"] as String?;
       return type?.split("/").first.toLowerCase() == 'image';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  bool get isGifImageMsg {
+    try {
+      final type = json.decode(detail)["properties"]["content_type"] as String?;
+      return type?.toLowerCase() == 'image/gif';
     } catch (e) {
       return false;
     }

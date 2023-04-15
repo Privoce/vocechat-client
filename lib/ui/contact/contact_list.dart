@@ -7,7 +7,7 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/chat_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/contact/contact_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
 class ContactList extends StatefulWidget {
   static const route = "/contacts";
@@ -25,7 +25,7 @@ class ContactList extends StatefulWidget {
   const ContactList(
       {required this.userList,
       required this.onTap,
-      this.avatarSize = AvatarSize.s36,
+      this.avatarSize = VoceAvatarSize.s36,
       this.enableSelect = false,
       this.selectNotifier,
       this.preSelectUidList,

@@ -11,6 +11,7 @@ import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/message_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -21,7 +22,7 @@ import 'package:vocechat_client/services/sse/sse_event_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/extensions.dart';
@@ -98,6 +99,8 @@ class _ChatPageState extends State<ChatPage>
   late int _initReadIndex;
 
   final Map<int, UserInfoM> _userInfoMMap = {};
+  final Map<int, File> _avatarMap = {};
+
   final List<UiMsg> _uiMsgList = [];
   final Set<String> _localMidSet = {};
 
@@ -411,9 +414,17 @@ class _ChatPageState extends State<ChatPage>
       }
     }
 
-    switch (chatMsgM.type) {
+    if (!_avatarMap.containsKey(chatMsgM.fromUid)) {
+      final avatar = await UserAvatarHander()
+          .read(UserAvatarHander.generateFileName(chatMsgM.fromUid));
+      if (avatar != null) {
+        _avatarMap.addAll({chatMsgM.fromUid: avatar});
+      }
+    }
+
+    switch (chatMsgM.detailType) {
       case MsgDetailType.normal:
-        switch (chatMsgM.detailType) {
+        switch (chatMsgM.detailContentType) {
           case MsgContentType.text:
           case MsgContentType.markdown:
             if (!_localMidSet.contains(localMid)) {
@@ -432,7 +443,7 @@ class _ChatPageState extends State<ChatPage>
             }
             break;
           case MsgContentType.file:
-            final fileType = chatMsgM.fileContentType;
+            final fileType = chatMsgM.fileContentTypeStr;
 
             if (fileType.isEmpty) {
               App.logger.warning(chatMsgM.values);
@@ -507,7 +518,7 @@ class _ChatPageState extends State<ChatPage>
                   await UserInfoDao().getUserByUid(targetUid) ??
                       UserInfoM.deleted();
 
-              switch (repliedMsg.detailContentType) {
+              switch (repliedMsg.detailContentTypeStr) {
                 case typeFile:
                   if (repliedMsg.isImageMsg) {
                     final thumbFile = await FileHandler.singleton
@@ -698,7 +709,7 @@ class _ChatPageState extends State<ChatPage>
 
   void _onTapEdit(ChatMsgM chatMsgM) {
     Navigator.of(context).pop();
-    if (chatMsgM.detailContentType == typeFile) {
+    if (chatMsgM.detailContentTypeStr == typeFile) {
       return;
     }
 
@@ -724,12 +735,12 @@ class _ChatPageState extends State<ChatPage>
   ///
   /// Only executes for text and markdown messages.
   void _onTapCopy(ChatMsgM chatMsgM) async {
-    assert(chatMsgM.detailType == MsgContentType.text ||
-        chatMsgM.detailType == MsgContentType.markdown);
+    assert(chatMsgM.detailContentType == MsgContentType.text ||
+        chatMsgM.detailContentType == MsgContentType.markdown);
 
     String content =
         chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
-    if (chatMsgM.detailType == MsgContentType.text) {
+    if (chatMsgM.detailContentType == MsgContentType.text) {
       content = await SharedFuncs.parseMention(content);
     }
 
@@ -751,7 +762,7 @@ class _ChatPageState extends State<ChatPage>
   }
 
   void _onTapSave(ChatMsgM chatMsgM) async {
-    assert(chatMsgM.detailType != MsgContentType.archive);
+    assert(chatMsgM.detailContentType != MsgContentType.archive);
 
     List<int> midList = [];
     midList.add(chatMsgM.mid);
@@ -769,7 +780,7 @@ class _ChatPageState extends State<ChatPage>
   void _onTapTileForward(ChatMsgM chatMsgM) async {
     Navigator.of(context).pop();
 
-    if (chatMsgM.detailType == MsgContentType.archive) {
+    if (chatMsgM.detailContentType == MsgContentType.archive) {
       String? archiveId = chatMsgM.msgNormal?.content;
 
       if (archiveId == null) return;
@@ -816,7 +827,7 @@ class _ChatPageState extends State<ChatPage>
 
     selectedMsgCantMultipleArchive.value = selectedMsgMList.value.any(
       (element) {
-        return element.detailType == MsgContentType.archive ||
+        return element.detailContentType == MsgContentType.archive ||
             element.status != MsgSendStatus.success.name;
       },
     );
@@ -951,7 +962,8 @@ class _ChatPageState extends State<ChatPage>
   Future<bool> _onDeleteNew(ChatMsgM old) async {
     try {
       await MessageApi().delete(old.mid).then((response) async {
-        if (response.statusCode == 200) {
+        if (response.statusCode == 200 ||
+            (old.status == MsgSendStatus.fail.name)) {
           // successfully deleted
           FileHandler.singleton.deleteWithChatMsgM(old);
 
@@ -1111,6 +1123,8 @@ class _ChatPageState extends State<ChatPage>
                     0
                 : 0;
 
+            // print(_avatarMap[uiMsg.chatMsgM.fromUid]);
+
             Widget msgTile = Container(
               margin: EdgeInsets.symmetric(vertical: 4),
               color: _getMsgTileBgColor(
@@ -1120,7 +1134,8 @@ class _ChatPageState extends State<ChatPage>
                 children: [
                   MessageTile(
                     key: Key(uiMsg.chatMsgM.localMid),
-                    avatarSize: AvatarSize.s42,
+                    avatarSize: VoceAvatarSize.s42,
+                    avatarFile: _avatarMap[uiMsg.chatMsgM.fromUid],
                     isFollowing: false,
                     chatMsgM: uiMsg.chatMsgM,
                     userInfoM: userInfoM,
@@ -1149,7 +1164,8 @@ class _ChatPageState extends State<ChatPage>
                       selectedMsgCantMultipleArchive.value =
                           selectedMsgMList.value.any(
                         (element) {
-                          return element.detailType == MsgContentType.archive ||
+                          return element.detailContentType ==
+                                  MsgContentType.archive ||
                               element.status != MsgSendStatus.success.name;
                         },
                       );
@@ -1189,7 +1205,7 @@ class _ChatPageState extends State<ChatPage>
                                     _onTapReply(uiMsg.chatMsgM, uiMsg.file);
                                   }),
                             if (isSelf &&
-                                uiMsg.chatMsgM.detailContentType ==
+                                uiMsg.chatMsgM.detailContentTypeStr ==
                                     'text/plain' &&
                                 uiMsg.chatMsgM.status ==
                                     MsgSendStatus.success.name)
@@ -1199,9 +1215,9 @@ class _ChatPageState extends State<ChatPage>
                                   onTap: () {
                                     _onTapEdit(uiMsg.chatMsgM);
                                   }),
-                            if (uiMsg.chatMsgM.detailType ==
+                            if (uiMsg.chatMsgM.detailContentType ==
                                     MsgContentType.text ||
-                                uiMsg.chatMsgM.detailType ==
+                                uiMsg.chatMsgM.detailContentType ==
                                     MsgContentType.markdown)
                               MsgActionTile(
                                   icon: Icons.copy,
@@ -1214,7 +1230,7 @@ class _ChatPageState extends State<ChatPage>
                                 uiMsg.chatMsgM.status ==
                                     MsgSendStatus.success.name)
                               _buildPinAction(uiMsg.chatMsgM),
-                            if (uiMsg.chatMsgM.detailType !=
+                            if (uiMsg.chatMsgM.detailContentType !=
                                     MsgContentType.archive &&
                                 uiMsg.chatMsgM.status ==
                                     MsgSendStatus.success.name)
@@ -1326,7 +1342,7 @@ class _ChatPageState extends State<ChatPage>
           : msgStatus;
     }
 
-    if (uiMsg.chatMsgM.detailContentType == typeFile) {
+    if (uiMsg.chatMsgM.detailContentTypeStr == typeFile) {
       if (status == MsgSendStatus.sending) {
         final task = SendTaskQueue.singleton.getTask(uiMsg.chatMsgM.localMid);
         if (task != null && task.progress != null) {
@@ -1487,17 +1503,22 @@ class _ChatPageState extends State<ChatPage>
     }
 
     for (ChatMsgM m in page.records.reversed) {
-      switch (m.type) {
+      switch (m.detailType) {
         case MsgDetailType.normal:
-          switch (m.detailType) {
+          switch (m.detailContentType) {
             case MsgContentType.text:
             case MsgContentType.markdown:
             case MsgContentType.file:
               if (m.isImageMsg) {
-                final thumbFile = await FileHandler.singleton.getImageThumb(m);
+                File? imageFile;
+                if (m.isGifImageMsg) {
+                  imageFile = await FileHandler.singleton.getImageNormal(m);
+                } else {
+                  imageFile = await FileHandler.singleton.getImageThumb(m);
+                }
 
-                if (thumbFile != null) {
-                  await _onMsg(m, m.localMid, thumbFile, frontInsert: false);
+                if (imageFile != null) {
+                  await _onMsg(m, m.localMid, imageFile, frontInsert: false);
                 } else {
                   await _onMsg(m, m.localMid, null, frontInsert: false);
                 }

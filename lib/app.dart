@@ -34,13 +34,9 @@ class App {
   UserDbM? userDb;
 
   // will be updated in ChatService. No need to handle manually.
-  Map<int, bool> onlineStatusMap = {};
+  Map<int, ValueNotifier<bool>> onlineStatusMap = {};
 
   ChatServerM chatServerM = ChatServerM();
-
-  bool isSelf(int? uid) {
-    return uid == userDb?.uid;
-  }
 
   factory App() {
     return app;

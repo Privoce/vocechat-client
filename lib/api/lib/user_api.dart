@@ -211,6 +211,8 @@ class UserApi {
     dio.interceptors.add(RetryInterceptor(
         dio: dio, options: RetryOptions(retryInterval: Duration(seconds: 2))));
     dio.options.baseUrl = _baseUrl;
+    // dio.options.connectTimeout = Duration(milliseconds: 5000); //5s
+    // dio.options.receiveTimeout = Duration(milliseconds: 10000);
     dio.options.connectTimeout = 5000; //5s
     dio.options.receiveTimeout = 10000;
     dio.options.headers["X-API-Key"] = App.app.userDb!.token;

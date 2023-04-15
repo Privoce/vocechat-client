@@ -47,7 +47,7 @@ Future<void> main() async {
 
   Widget defaultHome = ChatsMainPage();
 
-  await SharedFuncs.readCustomConfigs();
+  // await SharedFuncs.readCustomConfigs();
 
   // Handling login status
   final status = await StatusMDao.dao.getStatus();
@@ -363,22 +363,24 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       _handleLoginLink(uri);
     } else if (RegExp(joinRegexStr).hasMatch(path)) {
       _handleJoinLink(uri);
+    } else {
+      App.logger.warning("Unrecongizable invitation link");
     }
   }
 
   Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
-    final param = uri.queryParameters["magic_link"];
-    if (param == null || param.isEmpty) return null;
-
     try {
-      final invLinkUri = Uri.parse(param);
+      final magicLink = uri.queryParameters["magic_link"];
+      if (magicLink == null || magicLink.isEmpty) return null;
 
-      final magicToken = invLinkUri.queryParameters["magic_token"];
-      String serverUrl = invLinkUri.scheme +
-          '://' +
-          invLinkUri.host +
-          ":" +
-          invLinkUri.port.toString();
+      final magicLinkUri = Uri.parse(magicLink);
+      final magicToken = magicLinkUri.queryParameters["magic_token"];
+
+      if (magicToken?.isEmpty ?? true) return null;
+      final invLinkUri = Uri.parse(magicLink);
+
+      String serverUrl =
+          "${invLinkUri.scheme}://${invLinkUri.host}:${invLinkUri.port.toString()}";
 
       if (serverUrl == "https://privoce.voce.chat" ||
           serverUrl == "https://privoce.voce.chat:443") {
@@ -402,10 +404,18 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     return null;
   }
 
+  /// Handles the join link
+  ///
+  /// Be noted: join link is not a magic link, but the magic link is included in
+  /// the join link as a query parameter.
   void _handleJoinLink(Uri uri) async {
     final data = await _prepareInvitationLinkData(uri);
     final context = navigatorKey.currentContext;
-    if (data == null || context == null) return;
+    if (data == null || context == null) {
+      _showInvalidLinkWarning(context!);
+      return;
+    }
+
     try {
       final chatServer = await ChatServerHelper()
           .prepareChatServerM(data.serverUrl, showAlert: false);

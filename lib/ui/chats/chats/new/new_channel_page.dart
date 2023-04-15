@@ -16,9 +16,10 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_private_channel_select_page.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/channel_avatar.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NewChannelPage extends StatefulWidget {
@@ -117,11 +118,15 @@ class _NewChannelPageState extends State<NewChannelPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 36),
       child: Center(
-        child: ChannelAvatar(
-            isPublic: !isPrivate,
-            avatarSize: AvatarSize.s60,
-            avatarBytes: Uint8List(0)),
-      ),
+          // child: ChannelAvatar(
+          //     isPublic: !isPrivate,
+          //     avatarSize: VoceAvatarSize.s60,
+          //     avatarBytes: Uint8List(0)),
+          child: isPrivate
+              ? VoceChannelAvatar.defaultPrivateChannel(
+                  size: VoceAvatarSize.s60)
+              : VoceChannelAvatar.defaultPublicChannel(
+                  size: VoceAvatarSize.s60)),
     );
   }
 
@@ -251,8 +256,15 @@ class _NewChannelPageState extends State<NewChannelPage> {
     } else {
       GroupInfo groupInfo = GroupInfo(gid, App.app.userDb!.uid, req.name,
           req.description, req.members, true, 0, []);
-      GroupInfoM groupInfoM = GroupInfoM.item(gid, "", jsonEncode(groupInfo),
-          Uint8List(0), "", 0, 1, DateTime.now().millisecondsSinceEpoch);
+      GroupInfoM groupInfoM = GroupInfoM.item(
+          gid,
+          "",
+          jsonEncode(groupInfo),
+          // Uint8List(0),
+          "",
+          0,
+          1,
+          DateTime.now().millisecondsSinceEpoch);
 
       try {
         await GroupInfoDao()
@@ -282,7 +294,7 @@ class _NewChannelPageState extends State<NewChannelPage> {
           groupCreateResponse.gid,
           "",
           jsonEncode(groupInfo),
-          Uint8List(0),
+          // Uint8List(0),
           "",
           0,
           1,

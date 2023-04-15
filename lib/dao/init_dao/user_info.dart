@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:azlistview/azlistview.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
@@ -14,31 +15,31 @@ import 'package:vocechat_client/dao/init_dao/properties_models/user_properties.d
 import 'package:sqflite/utils/utils.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 
-class UserInfoM extends ISuspensionBean with M {
+class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   int uid = -1;
   String info = "";
   String _properties = "";
-  Uint8List avatarBytes = Uint8List(0);
+  // Uint8List avatarBytes = Uint8List(0);
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     //data['uid'] = this.uid;
     data['info'] = info;
     //data['avatarBytes'] = this.avatarBytes;
-    data['photo'] = avatarBytes;
+    // data['photo'] = avatarBytes;
     return data;
   }
 
   String get initial {
-    String _initial;
+    String initial;
 
-    _initial = PinyinHelper.getFirstWordPinyin(userInfo.name)
+    initial = PinyinHelper.getFirstWordPinyin(userInfo.name)
         .substring(0, 1)
         .toUpperCase();
 
-    if (!RegExp("[A-Z]").hasMatch(_initial)) {
-      _initial = "#";
+    if (!RegExp("[A-Z]").hasMatch(initial)) {
+      initial = "#";
     }
-    return _initial;
+    return initial;
   }
 
   ValueNotifier<bool> onlineNotifier = ValueNotifier(false);
@@ -55,16 +56,17 @@ class UserInfoM extends ISuspensionBean with M {
     }
   }
 
+  String get propertiesStr => _properties;
+
   UserInfoUpdate get userInfoUpdate {
     return UserInfoUpdate.fromJson(jsonDecode(info));
   }
 
   UserInfoM();
 
-  UserInfoM.item(this.uid, this.info, this._properties, this.avatarBytes);
+  UserInfoM.item(this.uid, this.info, this._properties);
 
-  UserInfoM.fromUserInfo(
-      UserInfo userInfo, this.avatarBytes, this._properties) {
+  UserInfoM.fromUserInfo(UserInfo userInfo, this._properties) {
     uid = userInfo.uid;
     info = jsonEncode(userInfo.toJson());
   }
@@ -87,9 +89,9 @@ class UserInfoM extends ISuspensionBean with M {
     if (map.containsKey(F_properties)) {
       m._properties = map[F_properties];
     }
-    if (map.containsKey(F_avatar)) {
-      m.avatarBytes = map[F_avatar];
-    }
+    // if (map.containsKey(F_avatar)) {
+    //   m.avatarBytes = map[F_avatar];
+    // }
     if (map.containsKey(F_createdAt)) {
       m.createdAt = map[F_createdAt];
     }
@@ -101,7 +103,7 @@ class UserInfoM extends ISuspensionBean with M {
   static const F_uid = 'uid';
   static const F_info = 'info';
   static const F_properties = 'properties';
-  static const F_avatar = 'avatar';
+  // static const F_avatar = 'avatar';
   static const F_createdAt = 'created_at';
 
   @override
@@ -109,7 +111,7 @@ class UserInfoM extends ISuspensionBean with M {
         UserInfoM.F_uid: uid,
         UserInfoM.F_info: info,
         UserInfoM.F_properties: _properties,
-        UserInfoM.F_avatar: avatarBytes,
+        // UserInfoM.F_avatar: avatarBytes,
         UserInfoM.F_createdAt: createdAt,
       };
 
@@ -118,6 +120,9 @@ class UserInfoM extends ISuspensionBean with M {
 
   @override
   String getSuspensionTag() => initial;
+
+  @override
+  List<Object?> get props => [uid, info, _properties, createdAt];
 }
 
 class UserInfoDao extends Dao<UserInfoM> {
@@ -131,9 +136,9 @@ class UserInfoDao extends Dao<UserInfoM> {
     if (old != null) {
       m.id = old.id;
       m.createdAt = old.createdAt;
-      if (m.avatarBytes.isEmpty) {
-        m.avatarBytes = old.avatarBytes;
-      }
+      // if (m.avatarBytes.isEmpty) {
+      //   m.avatarBytes = old.avatarBytes;
+      // }
       // m.avatar = old.avatar;
       await super.update(m);
 

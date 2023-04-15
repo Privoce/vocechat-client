@@ -11,7 +11,7 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/archive_content_bubbl
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:vocechat_client/ui/widgets/avatar/avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ArchiveBubble extends StatelessWidget {
@@ -107,10 +107,11 @@ class ArchiveBubble extends StatelessWidget {
 
                         future: getFile(archiveId, avatarId, msg.fileName),
                         builder: (context, snapshot) {
-                          Uint8List avatarBytes = Uint8List(0);
+                          File? file;
                           Widget child = CupertinoActivityIndicator();
                           if (snapshot.hasData) {
-                            avatarBytes = snapshot.data!.readAsBytesSync();
+                            file = snapshot.data;
+
                             child = ArchiveContentBubble(
                               archiveId: archiveId,
                               archiveMsg: msg,
@@ -123,8 +124,8 @@ class ArchiveBubble extends StatelessWidget {
                             child: MsgTileFrame(
                                 username: users[msg.fromUser].name,
                                 nameColor: AppColors.grey600,
-                                avatarBytes: avatarBytes,
-                                avatarSize: AvatarSize.s24,
+                                avatarFile: file,
+                                avatarSize: VoceAvatarSize.s24,
                                 timeStamp: msg.createdAt,
                                 enableAvatarMention: false,
                                 enableOnlineStatus: false,
@@ -142,8 +143,8 @@ class ArchiveBubble extends StatelessWidget {
                     return MsgTileFrame(
                         username: users[msg.fromUser].name,
                         nameColor: AppColors.grey600,
-                        avatarBytes: Uint8List(0),
-                        avatarSize: AvatarSize.s24,
+                        avatarFile: null,
+                        avatarSize: VoceAvatarSize.s24,
                         timeStamp: msg.createdAt,
                         enableAvatarMention: false,
                         enableOnlineStatus: false,

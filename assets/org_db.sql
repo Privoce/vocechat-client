@@ -29,7 +29,7 @@ create table if not exists user_db (
     expired_in integer not null,
     logged_in integer not null,
     users_version integer not null,
-    avatar_bytes BLOB not null,
+    -- avatar_bytes BLOB not null,
     properties text not null,
     max_mid integer not null
 );
