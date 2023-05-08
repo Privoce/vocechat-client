@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -129,7 +130,6 @@ class AuthService {
     return login(userdb.userInfo.email!, pswd, true, true);
   }
 
-  /*
   Future<String> getFirebaseDeviceToken() async {
     const int waitingSecs = 3;
 
@@ -164,26 +164,24 @@ class AuthService {
     return deviceToken;
   }
 
-  */
-
   Future<TokenLoginRequest> _preparePswdLoginRequest(
       String email, String pswd) async {
-    // final deviceToken = await getFirebaseDeviceToken();
-    // final currentContext = navigatorKey.currentContext!;
+    final deviceToken = await getFirebaseDeviceToken();
+    final currentContext = navigatorKey.currentContext!;
 
-    // if (deviceToken.isEmpty && currentContext.mounted) {
-    //   await showAppAlert(
-    //       context: currentContext,
-    //       title: AppLocalizations.of(navigatorKey.currentContext!)!
-    //           .noFCMTokenLoginTitle,
-    //       content: AppLocalizations.of(navigatorKey.currentContext!)!
-    //           .noFCMTokenLoginDes,
-    //       actions: [
-    //         AppAlertDialogAction(
-    //             text: AppLocalizations.of(currentContext)!.ok,
-    //             action: (() => Navigator.of(currentContext).pop()))
-    //       ]);
-    // }
+    if (deviceToken.isEmpty && currentContext.mounted) {
+      await showAppAlert(
+          context: currentContext,
+          title: AppLocalizations.of(navigatorKey.currentContext!)!
+              .noFCMTokenLoginTitle,
+          content: AppLocalizations.of(navigatorKey.currentContext!)!
+              .noFCMTokenLoginDes,
+          actions: [
+            AppAlertDialogAction(
+                text: AppLocalizations.of(currentContext)!.ok,
+                action: (() => Navigator.of(currentContext).pop()))
+          ]);
+    }
 
     String device;
 
@@ -197,9 +195,9 @@ class AuthService {
 
     final credential = Credential(email, pswd, "password");
 
-    // final req = TokenLoginRequest(
-    //     device: device, credential: credential, deviceToken: deviceToken);
-    final req = TokenLoginRequest(device: device, credential: credential);
+    final req = TokenLoginRequest(
+        device: device, credential: credential, deviceToken: deviceToken);
+    // final req = TokenLoginRequest(device: device, credential: credential);
     return req;
   }
 

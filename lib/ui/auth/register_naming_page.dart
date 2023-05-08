@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:async/async.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -235,22 +236,22 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
     widget.req.name = username;
 
     try {
-      // String deviceToken = await _getFirebaseDeviceToken();
+      String deviceToken = await _getFirebaseDeviceToken();
       String device;
 
-      // if (deviceToken.isEmpty) {
-      //   await showAppAlert(
-      //       context: context,
-      //       title: AppLocalizations.of(navigatorKey.currentContext!)!
-      //           .noFCMTokenLoginTitle,
-      //       content: AppLocalizations.of(navigatorKey.currentContext!)!
-      //           .noFCMTokenLoginDes,
-      //       actions: [
-      //         AppAlertDialogAction(
-      //             text: AppLocalizations.of(context)!.ok,
-      //             action: (() => Navigator.of(context).pop()))
-      //       ]);
-      // }
+      if (deviceToken.isEmpty) {
+        await showAppAlert(
+            context: context,
+            title: AppLocalizations.of(navigatorKey.currentContext!)!
+                .noFCMTokenLoginTitle,
+            content: AppLocalizations.of(navigatorKey.currentContext!)!
+                .noFCMTokenLoginDes,
+            actions: [
+              AppAlertDialogAction(
+                  text: AppLocalizations.of(context)!.ok,
+                  action: (() => Navigator.of(context).pop()))
+            ]);
+      }
 
       if (Platform.isIOS) {
         device = "iOS";
@@ -261,7 +262,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
       }
 
       widget.req.device = device;
-      // widget.req.deviceToken = deviceToken;
+      widget.req.deviceToken = deviceToken;
 
       App.app.statusService = StatusService();
       App.app.authService = AuthService(chatServerM: widget.chatServer);
@@ -304,7 +305,6 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
     return false;
   }
 
-  /*
   Future<String> _getFirebaseDeviceToken() async {
     const int waitingSecs = 3;
 
@@ -338,5 +338,4 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
     }
     return deviceToken;
   }
-  */
 }

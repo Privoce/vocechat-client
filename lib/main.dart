@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -10,6 +12,7 @@ import 'package:flutter_portal/flutter_portal.dart';
 import 'package:intl/intl.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/firebase_options.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -39,7 +42,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await _setUpFirebaseNotification();
+  await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);
 
@@ -87,7 +90,6 @@ Future<void> main() async {
   });
 }
 
-/*
 Future<void> _setUpFirebaseNotification() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -116,8 +118,6 @@ Future<void> _setUpFirebaseNotification() async {
     }
   }
 }
-
-*/
 
 // ignore: must_be_immutable
 class VoceChatApp extends StatefulWidget {
@@ -158,8 +158,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     _handleIncomingUniLink();
     _handleInitUniLink();
 
-    // _handleInitialNotification();
-    // _setupForegroundNotification();
+    _handleInitialNotification();
+    _setupForegroundNotification();
   }
 
   @override
@@ -263,7 +263,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     );
   }
 
-/*
   Future<void> _handleInitialNotification() async {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
@@ -296,8 +295,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     });
   }
 
-  */
-
   Future<void> _initLocale() async {
     final systemLocale = Intl.getCurrentLocale();
     if (App.app.userDb != null) {
@@ -321,12 +318,9 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     }
   }
 
-/*
   void _handleMessage(RemoteMessage message) async {
     print(message.data);
   }
-
-  */
 
   void _showInvalidLinkWarning(BuildContext context) {
     showAppAlert(

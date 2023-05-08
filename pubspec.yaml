@@ -55,7 +55,7 @@ dependencies:
   package_info_plus: ^3.0.2
   lpinyin: ^2.0.3
   firebase_core: ^2.4.1
-  firebase_messaging: ^14.2.1
+  firebase_messaging: ^14.5.0
   firebase_core_platform_interface: ^4.5.2
   image_gallery_saver: ^1.7.1
   connectivity_plus: ^3.0.3
