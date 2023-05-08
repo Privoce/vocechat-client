@@ -98,7 +98,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
 
         return BannerTile(
           title: lang.language,
-          keepArrow: false,
+          keepTrailingArrow: false,
           trailing: selected
               ? Icon(AppIcons.select, color: Colors.blue)
               : SizedBox.shrink(),
@@ -120,7 +120,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
       App.logger.severe(e);
     }
 
-    VoceChatApp.of(context)?.setLocale(locale);
+    VoceChatApp.of(context)?.setUILocale(locale);
     _isUpdatingLanguage.value = false;
   }
 }

@@ -7,7 +7,7 @@ import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/custom_configs/v0.1/custom_configs_0.1.dart';
 import 'package:vocechat_client/services/auth_service.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:simple_logger/simple_logger.dart';
@@ -28,7 +28,7 @@ class App {
   AuthService? authService;
 
   // initialized after a successful login action.
-  late ChatService chatService;
+  late VoceChatService chatService;
 
   // initialized in login page
   UserDbM? userDb;
@@ -73,7 +73,7 @@ class App {
     userDb = userDbM;
     statusService = StatusService();
     authService = AuthService(chatServerM: chatServerM);
-    chatService = ChatService();
+    chatService = VoceChatService();
 
     eventBus.fire(UserChangeEvent(userDbM));
 

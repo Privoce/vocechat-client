@@ -1,5 +1,13 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:universal_html/js.dart';
+import 'package:vocechat_client/api/lib/dio_util.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/contact/contacts_add_page.dart';
 import 'package:vocechat_client/ui/fade_page_route.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -11,7 +19,7 @@ class ContactsBar extends StatelessWidget implements PreferredSizeWidget {
   const ContactsBar({Key? key}) : super(key: key);
 
   @override
-  Size get preferredSize => Size(double.maxFinite, 84.0);
+  Size get preferredSize => const Size(double.maxFinite, 84.0);
 
   @override
   Widget build(BuildContext context) {
@@ -25,17 +33,47 @@ class ContactsBar extends StatelessWidget implements PreferredSizeWidget {
         overflow: TextOverflow.ellipsis,
       ),
       centerTitle: true,
+      actions: [_buildAddContactsBtn(context)],
       bottom: SearchFieldButton(
         hintText: AppLocalizations.of(context)!.contactsPageSearchHint,
         onTap: () {
           Navigator.of(context).push(FadePageRoute(
-              duration: Duration(milliseconds: 100),
-              reverseDuration: Duration(milliseconds: 100),
+              duration: const Duration(milliseconds: 100),
+              reverseDuration: const Duration(milliseconds: 100),
               child: AppSearchPage(
                 hintText: AppLocalizations.of(context)!.contactsPageSearchHint,
               )));
         },
       ),
     );
+  }
+
+  Widget _buildAddContactsBtn(BuildContext context) {
+    return CupertinoButton(
+        padding: const EdgeInsets.only(right: 8),
+        child: Icon(AppIcons.add, color: AppColors.grey97),
+        onPressed: () => _pushAddContactsPage(context));
+  }
+
+  void _pushAddContactsPage(BuildContext context) async {
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ContactsAddPage(),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+
+    Navigator.of(context).push(route);
   }
 }

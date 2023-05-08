@@ -1,14 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/pulse_widgets/pulse_settings_page.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_drawer.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contacts_page.dart';
-import 'package:vocechat_client/ui/settings/settings_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/settings/settings_page.dart';
 
 class ChatsMainPage extends StatefulWidget {
   static const route = '/chats';
@@ -25,9 +26,10 @@ class ChatsMainPage extends StatefulWidget {
 
 class _ChatsMainPageState extends State<ChatsMainPage> {
   final List<Widget> _pageOptions = <Widget>[
-    ChatsPage(),
-    ContactsPage(),
-    SettingPage(),
+    const ChatsPage(),
+    const ContactsPage(),
+    // const PulseSettingsPage(),
+    const SettingPage()
   ];
 
   ValueNotifier<bool> disableGesture = ValueNotifier(false);

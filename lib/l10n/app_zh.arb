@@ -47,7 +47,6 @@
 
     "titleContacts": "联系人",
 
-    "contactDetailPageMessage" : "发送消息",
     "contactDetailPageRemove" : "从服务器移除用户",
 
     "chatTextFieldHint": "发消息",
@@ -60,14 +59,23 @@
     "settingsPageConfig": "配置",
     "settingsPageConfigFirebase": "Firebase",
     "settingsPageConfigFooter": "请使用网页端来设置 SMTP、登录方式及第三方App接入。",
-    "settingsPageAbout": "关于",
     
     "settingsPageClearData": "清空本地数据",
-
+    
+    "addContact":"添加联系人",
+    "addContacts":"添加联系人",
     "archive":"归档",
+    "archiveBubbleAnd":"还有",
+    "archiveBubbleMore":"条...",
+    "audioMessage":"语音消息",
     "autoDeleteMessage":"自动删除消息",
     "autoDeleteMessageTitle":"在一段时间后自动删除本会话中由我发出的消息",
     "autoDeleteMessageDes":"消息将在客户端和服务端彻底删除。",
+    "avatar":"头像",
+
+    "birthday":"生日",  
+    "block":"屏蔽",
+    "blockWarning":"用户将从联系人列表中被移除，且双方不能聊天。所有消息和数据都将保留。",
 
     "call" : "语音通话",
     "cancel": "取消",
@@ -97,6 +105,7 @@
     "email": "邮箱",
     "emailConflictError":"电子邮件地址和现有账户冲突。",
 
+    "female":"女",
     "fetchingServerInfo":"正在获取服务器信息",
     "fetchingServerInfoError":"服务器信息获取失败，请检查网络状况。",
     "file":"文件",
@@ -108,9 +117,14 @@
     "forwarded":"被转发",
     "forwardTo":"转发到",
 
+    "gender":"性别",
+    "goToSettings":"前往设置",
+
+    "holdAndSpeak":"按住说话",
     "hour":"小时",
     "hours":"小时",
     
+    "idNumber":"ID号",
     "image":"图片",
     "imageBeDeletedDes":"图片可能已被删除。",
     "inputInvitationLink":"输入邀请链接",
@@ -127,11 +141,14 @@
     "logoutWarning":"您确认要登出",
     "logoutWarningWithQM":"您确认要登出吗？",
 
+    "male":"男",
     "message": "发消息",
     "messageDetail":"消息全文",
     "messageDeletionFailed":"消息删除失败。",
     "messageHasBeenDeleted":"此消息已被删除。",
     "members":"成员",
+    "microphonePermissionRequired":"需要麦克风权限",
+    "microphonePermissionRequiredDes":"需要麦克风权限以发送语音消息。请前往设置中授权。",
     "minute":"分钟",
     "minutes":"分钟",
     "mute" : "静音",
@@ -142,11 +159,13 @@
     "newPrivateChannel":"新私有频道",
     "newPublicChannel":"新公有频道",
     "next": "下一步",
+    "nickname":"昵称",  
     "noContent":"没有内容",
     "open":"打开",
     "openWithOtherApps":"用其他 App 打开",
     "off":"关闭",
     "ok": "好",
+    "other":"其他",
 
     "paste": "粘贴",
     "password": "密码",
@@ -158,12 +177,19 @@
     "publicChannelToPrivateTitle":"转为私有频道",
     "publicChannelToPrivateContent":"此频道将不再对新加入此服务器的用户可见。当前的频道成员不会收到影响。",
 
+    "qrCode":"二维码",
+
     "registrationSuccess":"注册成功",
     "registerEmailSentDes":"一封注册邮件已经发送，请检查您的收件箱。",
     "registrationFailed": "注册失败",
     "registrationFailedDes": "注册过程中发生错误。请稍后再试或联系服务器管理员寻求协助。",
+    "releaseToCancel":"松开取消",
+    "releaseToSend":"松开发送",
+    "removeContact":"移除联系人",
+    "removeContactWarning":"联系人将从列表中被移除，但您仍然可以聊天。所有消息和数据都将保留。",
     "rememberMe": "记住我",
     "reply": "回复",
+    "repliedMessageDeleted":"被回复的消息已被删除。",
     "replyingTo":"回复给",
     "retry":"重试",
     "resend":"重发",
@@ -173,11 +199,13 @@
     "save": "保存",
     "savedItems": "保存的消息",
     "scanQrCodeToRegister": "扫描二维码来注册",
+    "searching":"搜索中",
     "second":"秒",
     "seconds":"秒",
     "select":"选择",
     "setNewAvatar": "设置新头像",
     "send": "发送",
+    "sendMessage":"发送消息",
     "share":"分享",
     "shareInvitationLink":"分享邀请链接",
     "shareQrCode": "分享二维码",
@@ -191,12 +219,19 @@
     "today":"今天",
     "transferOwnership":"转让所有权",
 
+    "unblock":"解除屏蔽",
     "unmute": "取消静音",
     "unpin":"取消钉选",
     "unsupportedMessageType":"不支持的消息类型",
     "uploadError": "上传错误",
     "uploadErrorContent": "头像图片大小超过限制。",
+    "userBlocked":"该用户已被您屏蔽。",
+    "userEmail":"用户邮箱",
+    "userId":"用户ID",
+    "userNotContact":"该用户不在您的联系人列表中。",
+    "userSearchNoResult":"用户不存在，或者不允许被搜索。",
     "version": "版本",
+    "viewChatHistory":"查看历史消息",
     "video" : "视频通话",
     "voice" : "语音通话",
     "week":"周",
@@ -322,5 +357,10 @@
     "noFCMTokenLoginTitle":"推送通知",
     "noFCMTokenLoginDes":"登录流程将继续，但推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。",
     "noFCMTokenReloadTitle":"推送通知",
-    "noFCMTokenReloadDes":"注册通知信息时出错，推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。"
+    "noFCMTokenReloadDes":"注册通知信息时出错，推送服务将会不可用。您可检查网络环境（即需要能访问谷歌服务）。",
+
+    "settingsPageMyInfo":"我的信息",
+    "settingsPageAccountSettings": "账号设置",
+    "settingsPageAbout": "关于我们",
+    "settingsPageLogout": "退出登录"
 }

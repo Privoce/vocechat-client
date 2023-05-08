@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/services/db.dart';
 
 class VoceFileHander {
   VoceFileHander();
@@ -48,13 +47,13 @@ class VoceFileHander {
   }
 
   Future<bool> delete(String fileName, {String? chatId, String? dbName}) async {
-    final path = await filePath(fileName, chatId: chatId, dbName: dbName);
     try {
       final file = await read(fileName, chatId: chatId, dbName: dbName);
       if (file != null) {
         await file.delete();
+        App.logger.info("File has been deleted. path: ${file.path}");
       }
-      App.logger.info("File has been deleted. path: $path");
+
       return true;
     } catch (e) {
       App.logger.severe(e);

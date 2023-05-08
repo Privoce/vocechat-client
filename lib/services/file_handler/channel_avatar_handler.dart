@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
+import 'package:path/path.dart';
 
 class ChannelAvatarHander extends VoceFileHander {
   static const String _pathStr = "channel_avatar";
@@ -31,32 +32,36 @@ class ChannelAvatarHander extends VoceFileHander {
     return "";
   }
 
-  static String generateFileName(int gid) {
-    return "$gid.png";
+  static String generateFileName(GroupInfoM groupInfoM) {
+    final avatarUpdatedAt = groupInfoM.groupInfo.avatarUpdatedAt;
+    return "${groupInfoM.gid}_$avatarUpdatedAt.png";
   }
 
   /// Read file from local storage, if not exist, fetch from server.
-  Future<File?> readOrFetch(int gid, {String? dbName}) async {
-    final fileName = generateFileName(gid);
+  Future<File?> readOrFetch(GroupInfoM groupInfoM, {String? dbName}) async {
+    final fileName = generateFileName(groupInfoM);
     final file = await read(fileName, dbName: dbName);
     if (file != null) {
-      return file;
-    } else {
-      try {
-        final resourceApi = ResourceApi();
-        final res = await resourceApi.getGroupAvatar(gid);
-        if (res != null &&
-            res.statusCode == 200 &&
-            res.data != null &&
-            res.data!.isNotEmpty) {
-          return save(
-           generateFileName(gid), res.data!,
-              dbName: dbName);
-        }
-      } catch (e) {
-        App.logger.warning(e);
+      final avatarFileUpdatedAt =
+          int.parse(basenameWithoutExtension(file.path).split("_").last);
+      if (avatarFileUpdatedAt == groupInfoM.groupInfo.avatarUpdatedAt) {
+        return file;
       }
     }
+
+    try {
+      final resourceApi = ResourceApi();
+      final res = await resourceApi.getGroupAvatar(groupInfoM.gid);
+      if (res != null &&
+          res.statusCode == 200 &&
+          res.data != null &&
+          res.data!.isNotEmpty) {
+        return save(generateFileName(groupInfoM), res.data!, dbName: dbName);
+      }
+    } catch (e) {
+      App.logger.warning(e);
+    }
+
     return null;
   }
 }

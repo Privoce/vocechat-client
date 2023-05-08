@@ -73,7 +73,6 @@ class DioUtil {
     if (isSuccessful) {
       await _retry(response.requestOptions, response.requestOptions.baseUrl)
           .then((res) {
-        // res.requestOptions.headers["x-api-key"] = App.app.userDb!.token;
         handler.resolve(res);
       });
     } else {

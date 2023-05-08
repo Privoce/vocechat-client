@@ -58,7 +58,7 @@ class SendTaskQueue {
       return _sendTaskQueue
           .firstWhere((element) => element.localMid == localMid);
     } catch (e) {
-      // App.logger.warning(e);
+      App.logger.warning(e);
       return null;
     }
   }

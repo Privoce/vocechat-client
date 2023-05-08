@@ -123,7 +123,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
     }
 
     return GroupInfoDao().getUserListByGid(widget.groupInfoM.gid,
-        groupInfoM.isPublic == 1, groupInfoM.groupInfo.members ?? []);
+        groupInfoM.isPublic, groupInfoM.groupInfo.members ?? []);
   }
 
   Future<bool> _transferOwner() async {

@@ -92,9 +92,10 @@ class GroupApi {
   }
 
   Future<Response<int>> sendTextMsg(
-      int gid, String msg, Map<String, dynamic>? properties,
-      {ProgressCallback? onSendProgress,
-      ProgressCallback? onReceiveProgress}) async {
+    int gid,
+    String msg,
+    Map<String, dynamic>? properties,
+  ) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
@@ -182,6 +183,39 @@ class GroupApi {
     dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
     dio.options.headers["content-type"] = typeFile;
+
+    final data = {'path': path};
+
+    final res = await dio.post("/$gid/send", data: json.encode(data));
+
+    var newRes = Response<int>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final data = res.data! as int;
+      newRes.data = data;
+    }
+    return newRes;
+  }
+
+  Future<Response<int>> sendAudioMsg(
+    int gid,
+    String cid,
+    String path,
+  ) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    Map<String, dynamic> properties = {'cid': cid};
+
+    dio.options.headers["x-properties"] =
+        base64.encode(utf8.encode(json.encode(properties)));
+    dio.options.headers["content-type"] = typeAudio;
 
     final data = {'path': path};
 

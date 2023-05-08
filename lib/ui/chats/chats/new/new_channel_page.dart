@@ -165,7 +165,7 @@ class _NewChannelPageState extends State<NewChannelPage> {
         BannerTile(
           onTap: () {},
           title: AppLocalizations.of(context)!.newChannelPagePrivateChannel,
-          keepArrow: false,
+          keepTrailingArrow: false,
           trailing: CupertinoSwitch(
               value: isPrivate,
               onChanged: (value) {

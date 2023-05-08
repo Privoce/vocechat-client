@@ -19,7 +19,7 @@ class ArchiveBubble extends StatelessWidget {
   final String archiveId;
   final bool isSelecting;
   final Future<File?> Function(String, int, String) getFile;
-  final int? lengthLimit;
+  final int lengthLimit;
   final bool isFullPage;
 
   ArchiveBubble(
@@ -27,7 +27,7 @@ class ArchiveBubble extends StatelessWidget {
       required this.archiveId,
       this.isSelecting = false,
       required this.getFile,
-      this.lengthLimit,
+      this.lengthLimit = 3,
       this.isFullPage = false});
 
   @override
@@ -40,15 +40,13 @@ class ArchiveBubble extends StatelessWidget {
     final users = archive!.users;
     final msgs = archive!.messages;
 
-    final listLength =
-        lengthLimit == null ? msgs.length : min(lengthLimit! + 1, msgs.length);
+    final listLength = min(lengthLimit + 1, msgs.length);
 
-    // 16 + 48 + 8 + 8 + 24 + 8 + 8 + 16 + 50
     double contentWidth;
     if (!isFullPage) {
-      contentWidth = MediaQuery.of(context).size.width - 186;
+      contentWidth = MediaQuery.of(context).size.width - 188;
     } else {
-      contentWidth = MediaQuery.of(context).size.width - 80;
+      contentWidth = MediaQuery.of(context).size.width - 82;
     }
 
     if (isSelecting) contentWidth -= 30;
@@ -89,7 +87,7 @@ class ArchiveBubble extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          "and ${msgs.length - lengthLimit!} more...",
+                          "and ${msgs.length - lengthLimit} more...",
                           style: TextStyle(fontSize: 14),
                           textAlign: TextAlign.right,
                         ),
@@ -125,7 +123,7 @@ class ArchiveBubble extends StatelessWidget {
                                 username: users[msg.fromUser].name,
                                 nameColor: AppColors.grey600,
                                 avatarFile: file,
-                                avatarSize: VoceAvatarSize.s24,
+                                avatarSize: VoceAvatarSize.s18,
                                 timeStamp: msg.createdAt,
                                 enableAvatarMention: false,
                                 enableOnlineStatus: false,
@@ -144,7 +142,7 @@ class ArchiveBubble extends StatelessWidget {
                         username: users[msg.fromUser].name,
                         nameColor: AppColors.grey600,
                         avatarFile: null,
-                        avatarSize: VoceAvatarSize.s24,
+                        avatarSize: VoceAvatarSize.s18,
                         timeStamp: msg.createdAt,
                         enableAvatarMention: false,
                         enableOnlineStatus: false,

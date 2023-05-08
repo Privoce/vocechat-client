@@ -79,7 +79,8 @@ abstract class Dao<T extends M> {
     beforeAdd(m);
     Map<String, Object> values = {M.ID: m.id, ...m.values};
 
-    await db.insert(meta.tableName, values);
+    await db.insert(meta.tableName, values,
+        conflictAlgorithm: ConflictAlgorithm.replace);
     return m;
   }
 
@@ -114,7 +115,9 @@ abstract class Dao<T extends M> {
   Future<int> update(T m) async {
     MMeta meta = mMetas[T]!;
     int count = await db.update(meta.tableName, m.values,
-        where: '${M.ID} = ?', whereArgs: [m.id]);
+        where: '${M.ID} = ?',
+        whereArgs: [m.id],
+        conflictAlgorithm: ConflictAlgorithm.replace);
     return count;
   }
 
@@ -246,7 +249,8 @@ abstract class Dao<T extends M> {
       int batchCount = 0;
       for (T m in ms) {
         beforeAdd(m);
-        batch.insert(meta.tableName, {M.ID: m.id, ...m.values});
+        batch.insert(meta.tableName, {M.ID: m.id, ...m.values},
+            conflictAlgorithm: ConflictAlgorithm.replace);
         batchCount++;
         if (batchCount >= maxBatch) {
           await batch.commit();
@@ -303,7 +307,7 @@ abstract class Dao<T extends M> {
     }
   }
 
-  //ms中的数据，已经与数据库中的合并，这里只是作batch操作
+  /// Update multiple entries in one batch.
   Future<bool> batchUpdate(Iterable<T> ms, {int maxBatch = 200}) async {
     MMeta meta = mMetas[T]!;
     Batch batch = db.batch();

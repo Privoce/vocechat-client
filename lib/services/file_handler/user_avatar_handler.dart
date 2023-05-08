@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
-import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:path/path.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
@@ -26,29 +26,36 @@ class UserAvatarHander extends VoceFileHander {
     return "";
   }
 
-  static String generateFileName(int uid) {
-    return "$uid.png";
+  static String generateFileName(UserInfoM userInfoM) {
+    final avatarUpdatedAt = userInfoM.userInfo.avatarUpdatedAt;
+    return "${userInfoM.uid}_$avatarUpdatedAt.png";
   }
 
   /// Read file from local storage, if not exist, fetch from server.
-  Future<File?> readOrFetch(int uid, {String? dbName}) async {
-    final fileName = generateFileName(uid);
+  Future<File?> readOrFetch(UserInfoM userInfoM, {String? dbName}) async {
+    final fileName = generateFileName(userInfoM);
     final file = await read(fileName, dbName: dbName);
+
     if (file != null) {
-      return file;
-    } else {
-      try {
-        final resourceApi = ResourceApi();
-        final res = await resourceApi.getUserAvatar(uid);
-        if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
-          final file =
-              await save(generateFileName(uid), res.data!, dbName: dbName);
-          return file;
-        }
-      } catch (e) {
-        App.logger.warning(e);
+      final avatarFileUpdatedAt =
+          int.parse(basenameWithoutExtension(file.path).split("_").last);
+      if (avatarFileUpdatedAt == userInfoM.userInfo.avatarUpdatedAt) {
+        return file;
       }
     }
+
+    try {
+      final resourceApi = ResourceApi();
+      final res = await resourceApi.getUserAvatar(userInfoM.uid);
+      if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
+        final file =
+            await save(generateFileName(userInfoM), res.data!, dbName: dbName);
+        return file;
+      }
+    } catch (e) {
+      App.logger.warning(e);
+    }
+
     return null;
   }
 }

@@ -13,6 +13,7 @@ GroupProperties _$GroupPropertiesFromJson(Map<String, dynamic> json) =>
       json['mute_expires_at'] as int?,
       json['read_index'] as int,
       json['draft'] as String,
+      json['pinned_at'] as int?,
     );
 
 Map<String, dynamic> _$GroupPropertiesToJson(GroupProperties instance) =>
@@ -22,4 +23,5 @@ Map<String, dynamic> _$GroupPropertiesToJson(GroupProperties instance) =>
       'mute_expires_at': instance.muteExpiresAt,
       'read_index': instance.readIndex,
       'draft': instance.draft,
+      'pinned_at': instance.pinnedAt,
     };

@@ -8,6 +8,7 @@ import 'package:vocechat_client/api/models/msg/msg_archive/archive_msg.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_archive_bubble.dart';
 
 class ArchivePage extends StatelessWidget {
   final Archive? archive;
@@ -39,11 +40,8 @@ class ArchivePage extends StatelessWidget {
           child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ArchiveBubble(
-              archive: archive,
-              archiveId: filePath,
-              getFile: getFile,
-              isFullPage: true),
+          child: VoceArchiveBubble.data(
+              archive: archive, archiveId: filePath, isFullPage: true),
         ),
       )),
     );

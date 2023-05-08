@@ -12,6 +12,7 @@ import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MsgActionsSheet extends StatelessWidget {
+  // final Widget msgTile;
   final void Function(String reaction) onReaction;
   final List<MsgActionTile> actions;
   final Set<ReactionInfo> reactions;
@@ -25,7 +26,9 @@ class MsgActionsSheet extends StatelessWidget {
   final double _emojiSize = 24;
 
   MsgActionsSheet(
-      {required this.onReaction,
+      {
+      // required this.msgTile,
+      required this.onReaction,
       required this.actions,
       required this.reactions,
       required this.chatMsgM}) {
@@ -40,7 +43,7 @@ class MsgActionsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(8), topRight: Radius.circular(8))),
@@ -48,11 +51,13 @@ class MsgActionsSheet extends StatelessWidget {
         child: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
+            // msgTile,
             _buildTopBar(),
             // _buildTextCopyBubble(),
-            if (chatMsgM.status == MsgSendStatus.success.name)
+            if (chatMsgM.statusStr == MsgSendStatus.success.name)
               _buildReactions(context),
-            if (chatMsgM.status == MsgSendStatus.success.name) Divider(),
+            if (chatMsgM.statusStr == MsgSendStatus.success.name)
+              const Divider(),
             _buildActions()
           ],
         ),
@@ -75,7 +80,7 @@ class MsgActionsSheet extends StatelessWidget {
 
   Widget _buildReactions(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Center(
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -107,7 +112,7 @@ class MsgActionsSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(10)),
         child: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              // Navigator.pop(context);
               onReaction(emoji);
             },
             icon: SvgPicture.asset(
@@ -120,6 +125,6 @@ class MsgActionsSheet extends StatelessWidget {
   }
 
   Widget _buildActions() {
-    return Column(children: actions);
+    return SingleChildScrollView(child: Column(children: actions));
   }
 }

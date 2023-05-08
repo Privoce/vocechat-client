@@ -63,7 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '526613312184',
     projectId: 'vocechatdev',
     storageBucket: 'vocechatdev.appspot.com',
-    iosClientId: '526613312184-311lgn5nsdu2t3enh68j2nuv19b7mm1a.apps.googleusercontent.com',
+    iosClientId:
+        '526613312184-311lgn5nsdu2t3enh68j2nuv19b7mm1a.apps.googleusercontent.com',
     iosBundleId: 'com.privoce.vocechatclient',
   );
 }

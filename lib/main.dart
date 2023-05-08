@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:intl/intl.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
@@ -18,14 +19,13 @@ import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
-import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/services/auth_service.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
@@ -39,7 +39,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await _setUpFirebaseNotification();
+  // await _setUpFirebaseNotification();
 
   App.logger.setLevel(Level.CONFIG, includeCallerInfo: true);
 
@@ -75,7 +75,7 @@ Future<void> main() async {
           App.app.statusService = StatusService();
           App.app.authService = AuthService(chatServerM: App.app.chatServerM);
 
-          App.app.chatService = ChatService();
+          App.app.chatService = VoceChatService();
         }
       }
     }
@@ -87,6 +87,7 @@ Future<void> main() async {
   });
 }
 
+/*
 Future<void> _setUpFirebaseNotification() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -115,6 +116,8 @@ Future<void> _setUpFirebaseNotification() async {
     }
   }
 }
+
+*/
 
 // ignore: must_be_immutable
 class VoceChatApp extends StatefulWidget {
@@ -155,8 +158,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     _handleIncomingUniLink();
     _handleInitUniLink();
 
-    _handleInitialNotification();
-    _setupForegroundNotification();
+    // _handleInitialNotification();
+    // _setupForegroundNotification();
   }
 
   @override
@@ -200,7 +203,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     }
   }
 
-  void setLocale(Locale locale) {
+  void setUILocale(Locale locale) {
     setState(() {
       _locale = locale;
     });
@@ -222,7 +225,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           ChatsPage.route: (context) => ChatsPage(),
           // Contacts
           ContactsPage.route: (context) => ContactsPage(),
-          ContactDetailPage.route: (context) => ContactDetailPage(),
+          // ContactDetailPage.route: (context) => ContactDetailPage(),
           // Settings
           SettingPage.route: (context) => SettingPage(),
         },
@@ -260,6 +263,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     );
   }
 
+/*
   Future<void> _handleInitialNotification() async {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
@@ -292,29 +296,37 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     });
   }
 
+  */
+
   Future<void> _initLocale() async {
-    final userDbM = await UserDbMDao.dao.getUserDbById(App.app.userDb!.id);
-    final userLanguageTag = userDbM?.userInfo.language;
+    final systemLocale = Intl.getCurrentLocale();
+    if (App.app.userDb != null) {
+      final userDbM = await UserDbMDao.dao.getUserDbById(App.app.userDb!.id);
+      final userLanguageTag = userDbM?.userInfo.language;
 
-    if (userLanguageTag != null && userLanguageTag.isNotEmpty) {
-      final split = userLanguageTag.split("-");
-      String languageTag = "", scriptTag = "", regionTag = "";
-      try {
-        languageTag = split[0];
-        scriptTag = split[1];
-        regionTag = split[2];
-      } catch (e) {
-        App.logger.warning(e);
+      if (userLanguageTag != null && userLanguageTag.isNotEmpty) {
+        final split = userLanguageTag.split("-");
+        String languageTag = "", scriptTag = "", regionTag = "";
+        try {
+          languageTag = split[0];
+          scriptTag = split[1];
+          regionTag = split[2];
+        } catch (e) {
+          App.logger.warning(e);
+        }
+        final locale = Locale(languageTag, regionTag);
+
+        setUILocale(locale);
       }
-      final locale = Locale(languageTag, regionTag);
-
-      setLocale(locale);
     }
   }
 
+/*
   void _handleMessage(RemoteMessage message) async {
     print(message.data);
   }
+
+  */
 
   void _showInvalidLinkWarning(BuildContext context) {
     showAppAlert(
@@ -370,17 +382,17 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
     try {
-      final magicLink = uri.queryParameters["magic_link"];
-      if (magicLink == null || magicLink.isEmpty) return null;
+      final magicLinkHost = uri.queryParameters["magic_link"];
+      final magicToken = uri.queryParameters["magic_token"];
 
-      final magicLinkUri = Uri.parse(magicLink);
-      final magicToken = magicLinkUri.queryParameters["magic_token"];
+      if (magicLinkHost == null || magicLinkHost.isEmpty) return null;
+      final invLinkUri = Uri.parse(magicLinkHost);
 
-      if (magicToken?.isEmpty ?? true) return null;
-      final invLinkUri = Uri.parse(magicLink);
-
-      String serverUrl =
-          "${invLinkUri.scheme}://${invLinkUri.host}:${invLinkUri.port.toString()}";
+      String serverUrl = invLinkUri.scheme +
+          '://' +
+          invLinkUri.host +
+          ":" +
+          invLinkUri.port.toString();
 
       if (serverUrl == "https://privoce.voce.chat" ||
           serverUrl == "https://privoce.voce.chat:443") {
@@ -404,18 +416,10 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     return null;
   }
 
-  /// Handles the join link
-  ///
-  /// Be noted: join link is not a magic link, but the magic link is included in
-  /// the join link as a query parameter.
   void _handleJoinLink(Uri uri) async {
     final data = await _prepareInvitationLinkData(uri);
     final context = navigatorKey.currentContext;
-    if (data == null || context == null) {
-      _showInvalidLinkWarning(context!);
-      return;
-    }
-
+    if (data == null || context == null) return;
     try {
       final chatServer = await ChatServerHelper()
           .prepareChatServerM(data.serverUrl, showAlert: false);

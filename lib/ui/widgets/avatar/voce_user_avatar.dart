@@ -8,7 +8,7 @@ import 'package:mime/mime.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -16,7 +16,7 @@ import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 
 class VoceUserAvatar extends StatefulWidget {
-  // General variables shared by all factories
+  // General variables shared by all constructors
   final double size;
   final bool isCircle;
   final bool enableOnlineStatus;
@@ -51,7 +51,7 @@ class VoceUserAvatar extends StatefulWidget {
       : _deleted = (uid != null && uid > 0) ? false : true,
         super(key: key);
 
-  VoceUserAvatar.file(
+  const VoceUserAvatar.file(
       {Key? key,
       required String this.name,
       required int this.uid,
@@ -118,10 +118,14 @@ class VoceUserAvatar extends StatefulWidget {
 }
 
 class _VoceUserAvatarState extends State<VoceUserAvatar> {
+  File? imageFile;
+
   @override
   void initState() {
     super.initState();
     App.app.chatService.subscribeUsers(_onUserChanged);
+
+    _getImageFile();
   }
 
   @override
@@ -134,6 +138,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Widget build(BuildContext context) {
     if (widget._deleted) {
       return VoceAvatar.icon(
+          key: UniqueKey(),
           icon: CupertinoIcons.person,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -142,22 +147,18 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
       Widget rawAvatar;
       if (widget.file != null) {
         rawAvatar = VoceAvatar.file(
-            file: widget.file!, size: widget.size, isCircle: widget.isCircle);
+            key: UniqueKey(),
+            file: widget.file!,
+            size: widget.size,
+            isCircle: widget.isCircle);
       } else if (widget.userInfoM != null &&
-          widget.userInfoM!.userInfo.avatarUpdatedAt != 0) {
-        rawAvatar = FutureBuilder<File?>(
-            future: UserAvatarHander().readOrFetch(widget.userInfoM!.uid),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return VoceAvatar.file(
-                    key: ValueKey("${snapshot.data!.lastModifiedSync()}"),
-                    file: snapshot.data!,
-                    size: widget.size,
-                    isCircle: widget.isCircle);
-              } else {
-                return _buildNonFileAvatar();
-              }
-            });
+          widget.userInfoM!.userInfo.avatarUpdatedAt != 0 &&
+          imageFile != null) {
+        rawAvatar = VoceAvatar.file(
+            key: UniqueKey(),
+            file: imageFile!,
+            size: widget.size,
+            isCircle: widget.isCircle);
       } else {
         rawAvatar = _buildNonFileAvatar();
       }
@@ -213,11 +214,13 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Widget _buildNonFileAvatar() {
     if (widget.avatarBytes != null && widget.avatarBytes!.isNotEmpty) {
       return VoceAvatar.bytes(
+          key: UniqueKey(),
           avatarBytes: widget.avatarBytes!,
           size: widget.size,
           isCircle: widget.isCircle);
     } else if (widget.name != null && widget.name!.isNotEmpty) {
       return VoceAvatar.name(
+          key: UniqueKey(),
           name: widget.name!,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -225,6 +228,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
           backgroundColor: widget.backgroundColor);
     } else {
       return VoceAvatar.icon(
+          key: UniqueKey(),
           icon: AppIcons.contact,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -233,9 +237,22 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
     }
   }
 
+  Future<void> _getImageFile() async {
+    if (widget.userInfoM != null &&
+        widget.userInfoM!.userInfo.avatarUpdatedAt != 0) {
+      imageFile = await UserAvatarHander().readOrFetch(widget.userInfoM!);
+
+      if (imageFile != null && (await imageFile!.exists()) && mounted) {
+        setState(() {});
+      }
+    }
+  }
+
   Future<void> _onUserChanged(UserInfoM userInfoM, EventActions action) async {
-    if (userInfoM.uid == widget.userInfoM?.uid) {
-      setState(() {});
+    if (userInfoM.uid == widget.userInfoM?.uid &&
+        userInfoM.userInfo.avatarUpdatedAt !=
+            widget.userInfoM?.userInfo.avatarUpdatedAt) {
+      _getImageFile();
     }
   }
 }

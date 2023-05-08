@@ -482,7 +482,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.81;
+				MARKETING_VERSION = 0.2.82;
 				PRODUCT_BUNDLE_IDENTIFIER = com.privoce.vocechatclient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -619,7 +619,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.81;
+				MARKETING_VERSION = 0.2.82;
 				PRODUCT_BUNDLE_IDENTIFIER = com.privoce.vocechatclient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -650,7 +650,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.81;
+				MARKETING_VERSION = 0.2.82;
 				PRODUCT_BUNDLE_IDENTIFIER = com.privoce.vocechatclient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

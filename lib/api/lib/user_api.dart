@@ -9,9 +9,13 @@ import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/user/register_request.dart';
 import 'package:vocechat_client/api/models/user/send_reg_magic_token_request.dart';
 import 'package:vocechat_client/api/models/user/send_reg_magic_token_response.dart';
+import 'package:vocechat_client/api/models/user/user_contact.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/ui/contact/contacts_add_segmented_control.dart';
+
+enum UpdateContactAction { add, block, remove, unblock }
 
 class UserApi {
   late final String _baseUrl;
@@ -54,7 +58,7 @@ class UserApi {
     return await dio.get("");
   }
 
-  Future<Response<int>> sendTextMsg(int dmUid, String msg, String cid) async {
+  Future<Response<int>> sendTextMsg(int uid, String content, String cid) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode({'cid': cid})));
@@ -68,7 +72,7 @@ class UserApi {
     }
     dio.options.headers.addAll(refererHeader);
 
-    final res = await dio.post("/$dmUid/send", data: msg);
+    final res = await dio.post("/$uid/send", data: content);
 
     var newRes = Response<int>(
         headers: res.headers,
@@ -178,6 +182,47 @@ class UserApi {
     return newRes;
   }
 
+  Future<Response<int>> sendAudioMsg(
+    int dmUid,
+    String cid,
+    String path,
+  ) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    Map<String, dynamic> properties = {'cid': cid};
+
+    dio.options.headers["x-properties"] =
+        base64.encode(utf8.encode(json.encode(properties)));
+    dio.options.headers["content-type"] = typeAudio;
+
+    Map<String, dynamic> refererHeader = {
+      'referer': App.app.chatServerM.fullUrl
+    };
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      refererHeader = {'referer': "https://privoce.voce.chat"};
+    }
+    dio.options.headers.addAll(refererHeader);
+
+    final data = {'path': path};
+
+    final res = await dio.post("/$dmUid/send", data: json.encode(data));
+
+    var newRes = Response<int>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final data = res.data! as int;
+      newRes.data = data;
+    }
+    return newRes;
+  }
+
   Future<Response<UserInfo>> getUserByUid(int uid) async {
     final dio = DioUtil(baseUrl: _baseUrl);
 
@@ -207,15 +252,7 @@ class UserApi {
   }
 
   Future<Response> uploadAvatar(Uint8List avatarBytes) async {
-    final dio = Dio();
-    dio.interceptors.add(RetryInterceptor(
-        dio: dio, options: RetryOptions(retryInterval: Duration(seconds: 2))));
-    dio.options.baseUrl = _baseUrl;
-    // dio.options.connectTimeout = Duration(milliseconds: 5000); //5s
-    // dio.options.receiveTimeout = Duration(milliseconds: 10000);
-    dio.options.connectTimeout = 5000; //5s
-    dio.options.receiveTimeout = 10000;
-    dio.options.headers["X-API-Key"] = App.app.userDb!.token;
+    final dio = DioUtil.token(baseUrl: _baseUrl);
     dio.options.headers["content-type"] = "image/png";
     dio.options.validateStatus = (status) {
       return [200, 413].contains(status);
@@ -348,5 +385,97 @@ class UserApi {
       newRes.data = data;
     }
     return newRes;
+  }
+
+  Future<Response<List<UserContact>>> getUserContacts() async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    final res = await dio.get("/contacts");
+
+    var newRes = Response<List<UserContact>>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final List<UserContact> list = [];
+
+      for (var item in res.data!) {
+        final data = UserContact.fromJson(item);
+        list.add(data);
+      }
+      newRes.data = list;
+    }
+    return newRes;
+  }
+
+  Future<Response> updateContactRequest(
+      int targetUid, UpdateContactAction action) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    return dio.post("/update_contact_status",
+        data: json.encode({"target_uid": targetUid, "action": action.name}));
+  }
+
+  Future<Response<UserInfo?>> search(
+      ContactSearchType type, String keyword) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
+    dio.options.headers["content-type"] = "application/json";
+
+    final res = await dio
+        .post("/search", data: {"search_type": type.name, "keyword": keyword});
+
+    var newRes = Response<UserInfo?>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final userInfo = UserInfo.fromJson(res.data);
+      newRes.data = userInfo;
+    }
+    return newRes;
+  }
+
+  Future<Response> pinChat({int? uid, int? gid}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    Map reqMap = {};
+    if (uid != null) {
+      reqMap = {"uid": uid};
+    } else if (gid != null) {
+      reqMap = {"gid": gid};
+    }
+
+    reqMap = {"target": reqMap};
+
+    return dio.post("/pin_chat", data: json.encode(reqMap));
+  }
+
+  Future<Response> unpinChat({int? uid, int? gid}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    Map reqMap = {};
+    if (uid != null) {
+      reqMap = {"uid": uid};
+    } else if (gid != null) {
+      reqMap = {"gid": gid};
+    }
+
+    reqMap = {"target": reqMap};
+
+    return dio.post("/unpin_chat", data: json.encode(reqMap));
   }
 }

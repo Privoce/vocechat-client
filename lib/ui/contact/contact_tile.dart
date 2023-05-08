@@ -91,7 +91,8 @@ class _ContactTileState extends State<ContactTile> {
           ],
         ),
         subtitle: widget.enableSubtitleEmail
-            ? (widget.userInfoM.userInfo.email?.isNotEmpty ?? false)
+            ? (widget.userInfoM.userInfo.email != null &&
+                    widget.userInfoM.userInfo.email!.isNotEmpty)
                 ? Text(
                     widget.userInfoM.userInfo.email!,
                     style: AppTextStyles.labelMedium,

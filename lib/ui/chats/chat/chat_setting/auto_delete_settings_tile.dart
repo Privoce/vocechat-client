@@ -102,7 +102,7 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
 
         return BannerTile(
           title: title,
-          keepArrow: false,
+          keepTrailingArrow: false,
           trailing: time == _selectedTime
               ? Icon(AppIcons.select, color: Colors.blue)
               : SizedBox.shrink(),

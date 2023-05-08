@@ -10,10 +10,22 @@ class UserInfoUpdate {
   final int? gender;
   final String? language;
   final bool? isAdmin;
+  final bool? isBot;
+  final int? birthday;
   final int? avatarUpdatedAt;
+  final String? createdBy;
 
-  UserInfoUpdate(this.uid, this.email, this.name, this.gender, this.language,
-      this.isAdmin, this.avatarUpdatedAt);
+  UserInfoUpdate(
+      {required this.uid,
+      this.email,
+      this.name,
+      this.gender,
+      this.language,
+      this.isAdmin,
+      this.isBot,
+      this.birthday,
+      this.avatarUpdatedAt,
+      this.createdBy});
 
   factory UserInfoUpdate.fromJson(Map<String, dynamic> json) =>
       _$UserInfoUpdateFromJson(json);

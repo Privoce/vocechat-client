@@ -25,7 +25,7 @@ import 'package:path/path.dart' as p;
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
@@ -45,8 +45,8 @@ class SendService {
       {int? gid, int? uid, int? targetMid, Uint8List? blob}) async {
     switch (type) {
       case SendType.normal:
-        SendText().sendMessage(localMid, msg, type,
-            gid: gid, uid: uid, targetMid: targetMid);
+        // SendText().sendMessage(localMid, msg, type,
+        //     gid: gid, uid: uid, targetMid: targetMid);
         break;
       case SendType.edit:
         SendEdit().sendMessage(localMid, msg, type,
@@ -60,9 +60,13 @@ class SendService {
         SendFile().sendMessage(localMid, msg, type,
             gid: gid, uid: uid, targetMid: targetMid, blob: blob);
         break;
+      case SendType.audio:
+        SendAudio().sendMessage(localMid, msg, type,
+            gid: gid, uid: uid, targetMid: targetMid, blob: blob);
+        break;
       default:
-        SendText().sendMessage(localMid, msg, type,
-            gid: gid, uid: uid, targetMid: targetMid);
+      // SendText().sendMessage(localMid, msg, type,
+      //     gid: gid, uid: uid, targetMid: targetMid);
     }
   }
 }
@@ -133,8 +137,7 @@ class SendText implements AbstractSend {
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
     App.app.chatService.mainTaskQueue
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-              App.app.chatService.fireMsg(msgM, localMid, null);
-              App.app.chatService.fireSnippet(msgM);
+              App.app.chatService.fireMsg(msgM, true);
             }));
 
     // Send to server.
@@ -153,22 +156,19 @@ class SendText implements AbstractSend {
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
         App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(msgM).then((value) {
-                  App.app.chatService.fireMsg(msgM, localMid, null);
-                  App.app.chatService.fireSnippet(msgM);
+                  App.app.chatService.fireMsg(msgM, true);
                 }));
 
         return true;
       } else {
         App.logger.severe(res.statusCode);
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-        App.app.chatService.fireMsg(msgM, localMid, null);
-        App.app.chatService.fireSnippet(msgM);
+        App.app.chatService.fireMsg(msgM, true);
       }
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-      App.app.chatService.fireMsg(msgM, localMid, null);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
     }
     return false;
   }
@@ -195,8 +195,7 @@ class SendText implements AbstractSend {
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
               final msgM =
                   ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-              App.app.chatService.fireMsg(msgM, localMid, null);
-              App.app.chatService.fireSnippet(msgM);
+              App.app.chatService.fireMsg(msgM, true);
             }));
 
     // Send to server.
@@ -216,22 +215,19 @@ class SendText implements AbstractSend {
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
         App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(msgM).then((value) {
-                  App.app.chatService.fireMsg(msgM, localMid, null);
-                  App.app.chatService.fireSnippet(msgM);
+                  App.app.chatService.fireMsg(msgM, true);
                 }));
 
         return true;
       } else {
         App.logger.severe(res.statusCode);
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-        App.app.chatService.fireMsg(msgM, localMid, null);
-        App.app.chatService.fireSnippet(msgM);
+        App.app.chatService.fireMsg(msgM, true);
       }
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-      App.app.chatService.fireMsg(msgM, localMid, null);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
     }
     return false;
   }
@@ -252,9 +248,8 @@ class SendEdit implements AbstractSend {
         await ChatMsgDao().editMsgByMid(targetMid!, msg, MsgSendStatus.fail);
     if (msgM == null) return false;
 
-    msgM.status = MsgSendStatus.sending.name;
-    App.app.chatService.fireMsg(msgM, localMid, null);
-    App.app.chatService.fireReaction(ReactionTypes.edit, targetMid, msgM);
+    msgM.statusStr = MsgSendStatus.sending.name;
+    App.app.chatService.fireMsg(msgM, true);
 
     // Send to server.
     MessageApi api = MessageApi();
@@ -265,25 +260,21 @@ class SendEdit implements AbstractSend {
             .editMsgByMid(targetMid, msg, MsgSendStatus.success)
             .then((value) {
           if (value != null) {
-            App.app.chatService.fireMsg(value, localMid, null);
-            App.app.chatService
-                .fireReaction(ReactionTypes.edit, targetMid, value);
+            App.app.chatService.fireMsg(value, true);
           }
         });
 
         return true;
       } else {
         App.logger.severe(res.statusCode);
-        msgM.status = MsgSendStatus.fail.name;
-        App.app.chatService.fireMsg(msgM, localMid, null);
-        App.app.chatService.fireReaction(ReactionTypes.edit, targetMid, msgM);
+        msgM.statusStr = MsgSendStatus.fail.name;
+        App.app.chatService.fireMsg(msgM, true);
       }
     } catch (e) {
       App.logger.severe(e);
     }
-    msgM.status = MsgSendStatus.fail.name;
-    App.app.chatService.fireMsg(msgM, localMid, null);
-    App.app.chatService.fireReaction(ReactionTypes.edit, targetMid, msgM);
+    msgM.statusStr = MsgSendStatus.fail.name;
+    App.app.chatService.fireMsg(msgM, true);
 
     return false;
   }
@@ -339,8 +330,7 @@ class SendReply implements AbstractSend {
     final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
     App.app.chatService.mainTaskQueue
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-              App.app.chatService.fireMsg(msgM, localMid, null);
-              App.app.chatService.fireSnippet(msgM);
+              App.app.chatService.fireMsg(msgM, true);
             }));
 
     // Send to server.
@@ -354,21 +344,19 @@ class SendReply implements AbstractSend {
         chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
         App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-                  App.app.chatService.fireMsg(chatMsgM, localMid, null);
-                  App.app.chatService.fireSnippet(chatMsgM);
+                  App.app.chatService.fireMsg(chatMsgM, true);
+                  // App.app.chatService.fireSnippet(chatMsgM);
                 }));
         return true;
       } else {
         App.logger.severe(res.statusCode);
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-        App.app.chatService.fireMsg(msgM, localMid, null);
-        App.app.chatService.fireSnippet(msgM);
+        App.app.chatService.fireMsg(msgM, true);
       }
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-      App.app.chatService.fireMsg(msgM, localMid, null);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
     }
 
     return false;
@@ -395,8 +383,7 @@ class SendReply implements AbstractSend {
 
     App.app.chatService.mainTaskQueue
         .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-              App.app.chatService.fireMsg(msgM, localMid, null);
-              App.app.chatService.fireSnippet(msgM);
+              App.app.chatService.fireMsg(msgM, true);
             }));
 
     // Send to server.
@@ -410,21 +397,19 @@ class SendReply implements AbstractSend {
         chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
         App.app.chatService.mainTaskQueue
             .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-                  App.app.chatService.fireMsg(chatMsgM, localMid, null);
-                  App.app.chatService.fireSnippet(chatMsgM);
+                  App.app.chatService.fireMsg(chatMsgM, true);
+                  // App.app.chatService.fireSnippet(chatMsgM);
                 }));
         return true;
       } else {
         App.logger.severe(res.statusCode);
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-        App.app.chatService.fireMsg(msgM, localMid, null);
-        App.app.chatService.fireSnippet(msgM);
+        App.app.chatService.fireMsg(msgM, true);
       }
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-      App.app.chatService.fireMsg(msgM, localMid, null);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
     }
 
     return false;
@@ -536,8 +521,7 @@ class SendFile implements AbstractSend {
           .saveImageThumb(chatId!, thumbBytes, localMid, filename);
 
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
-      App.app.chatService.fireMsg(msgM, localMid, thumbFile);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
 
       await FileHandler.singleton
           .saveImageNormal(chatId, fileBytes, localMid, filename);
@@ -546,9 +530,9 @@ class SendFile implements AbstractSend {
       file = (await FileHandler.singleton
           .saveFile(chatId!, fileBytes, localMid, filename))!;
 
-      chatMsgM.status = MsgSendStatus.sending.name;
-      App.app.chatService.fireMsg(chatMsgM, localMid, file);
-      App.app.chatService.fireSnippet(chatMsgM);
+      chatMsgM.statusStr = MsgSendStatus.sending.name;
+      App.app.chatService.fireMsg(chatMsgM, true);
+      // App.app.chatService.fireSnippet(chatMsgM);
     }
 
     return true;
@@ -576,8 +560,8 @@ class SendFile implements AbstractSend {
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-      App.app.chatService.fireMsg(msgM, localMid, file);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
+
       return false;
     }
 
@@ -590,8 +574,8 @@ class SendFile implements AbstractSend {
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
-      App.app.chatService.fireMsg(msgM, localMid, file);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
+
       return false;
     }
 
@@ -617,23 +601,188 @@ class SendFile implements AbstractSend {
         if (await ChatMsgDao()
             .updateMsgStatusByLocalMid(msgM, MsgSendStatus.success)) {
           SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
-          App.app.chatService.fireSnippet(msgM);
-          App.app.chatService.fireMsg(msgM, localMid, file);
+
+          App.app.chatService.fireMsg(msgM, true);
           return true;
         }
       } else {
         App.logger.severe(res.statusCode);
         final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
         SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
-        App.app.chatService.fireMsg(msgM, localMid, file);
-        App.app.chatService.fireSnippet(msgM);
+        App.app.chatService.fireMsg(msgM, true);
       }
     } catch (e) {
       App.logger.severe(e);
       final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
       SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
-      App.app.chatService.fireMsg(msgM, localMid, file);
-      App.app.chatService.fireSnippet(msgM);
+      App.app.chatService.fireMsg(msgM, true);
+
+      return false;
+    }
+
+    SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
+    return true;
+  }
+}
+
+class SendAudio implements AbstractSend {
+  @override
+  Future<bool> sendMessage(String localMid, String path, SendType type,
+      {int? gid,
+      int? uid,
+      int? targetMid,
+      Uint8List? blob,
+      void Function(double progress)? progress}) async {
+    String contentType;
+    String filename;
+    File file;
+    int size;
+
+    contentType = lookupMimeType(path) ?? "";
+    filename = p.basename(path);
+    file = File(path);
+    size = file.lengthSync();
+
+    Map<String, dynamic> properties = {
+      "cid": localMid,
+      'name': filename,
+      'size': size
+    };
+
+    ChatMsg message;
+    if (gid != null && gid != -1) {
+      final expiresIn = (await GroupInfoDao().getGroupByGid(gid))
+          ?.properties
+          .burnAfterReadSecond;
+      final detail = MsgNormal(
+          properties: properties,
+          contentType: typeAudio,
+          expiresIn: expiresIn,
+          content: filename);
+
+      message = ChatMsg(
+          target: MsgTargetGroup(gid).toJson(),
+          mid: await AbstractSend.getFakeMid(),
+          fromUid: App.app.userDb!.uid,
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+          detail: detail.toJson());
+    } else {
+      final expiresIn = (await UserInfoDao().getUserByUid(uid!))
+          ?.properties
+          .burnAfterReadSecond;
+      final detail = MsgNormal(
+          properties: properties,
+          contentType: typeAudio,
+          expiresIn: expiresIn,
+          content: filename);
+
+      message = ChatMsg(
+          target: MsgTargetUser(uid).toJson(),
+          mid: await AbstractSend.getFakeMid(),
+          fromUid: App.app.userDb!.uid,
+          createdAt: DateTime.now().millisecondsSinceEpoch,
+          detail: detail.toJson());
+    }
+
+    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+    App.app.chatService.mainTaskQueue
+        .add(() => ChatMsgDao().addOrUpdate(chatMsgM));
+
+    Uint8List fileBytes = await file.readAsBytes();
+
+    // Put task into sending queue first to avoid empty sending status in
+    // chat page
+    ValueNotifier<double> progress0 = ValueNotifier(0);
+    final task = SendTask(
+        localMid: localMid,
+        sendTask: () => _apiSendVoice(contentType, filename, message, chatMsgM,
+                fileBytes, localMid, file, uid, gid, (progress) {
+              progress0.value = progress;
+            }));
+    task.progress = progress0;
+    SendTaskQueue.singleton.addTask(task);
+
+    final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.sending);
+    App.app.chatService.fireMsg(msgM, true);
+
+    return true;
+  }
+
+  Future<bool> _apiSendVoice(
+      String contentType,
+      String filename,
+      ChatMsg message,
+      ChatMsgM chatMsgM,
+      Uint8List fileBytes,
+      String localMid,
+      File file,
+      int? uid,
+      int? gid,
+      void Function(double progress)? progress) async {
+    // prepare
+    final prepareReq =
+        FilePrepareRequest(contentType: contentType, filename: filename);
+    String fileId;
+
+    try {
+      final resourceApi = ResourceApi();
+      fileId = (await resourceApi.prepareFile(prepareReq)).data!;
+    } catch (e) {
+      App.logger.severe(e);
+      final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+      App.app.chatService.fireMsg(msgM, true);
+
+      return false;
+    }
+
+    // upload
+    final fileUploader = FileUploader(
+        fileBytes: fileBytes, fileId: fileId, onUploadProgress: progress);
+    FileUploadResponse uploadRes;
+    try {
+      uploadRes = (await fileUploader.upload(contentType))!.data!;
+    } catch (e) {
+      App.logger.severe(e);
+      final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+      App.app.chatService.fireMsg(msgM, true);
+
+      return false;
+    }
+
+    // send
+    try {
+      Response<int> res;
+
+      if (gid != null && gid != -1) {
+        final groupApi = GroupApi();
+        res = await groupApi.sendAudioMsg(gid, localMid, uploadRes.path);
+      } else {
+        final userApi = UserApi();
+        res = await userApi.sendAudioMsg(
+            chatMsgM.dmUid, chatMsgM.localMid, uploadRes.path);
+      }
+      if (res.statusCode == 200 && res.data != null) {
+        message.mid = res.data!;
+        final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
+        if (await ChatMsgDao()
+            .updateMsgStatusByLocalMid(msgM, MsgSendStatus.success)) {
+          SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
+
+          App.app.chatService.fireMsg(msgM, true);
+          return true;
+        }
+      } else {
+        App.logger.severe(res.statusCode);
+        final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+        SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
+        App.app.chatService.fireMsg(msgM, true);
+      }
+    } catch (e) {
+      App.logger.severe(e);
+      final msgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+      SendTaskQueue.singleton.removeTaskByLocalMid(localMid);
+      App.app.chatService.fireMsg(msgM, true);
+
       return false;
     }
 

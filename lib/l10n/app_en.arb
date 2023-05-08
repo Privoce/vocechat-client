@@ -47,7 +47,6 @@
 
     "titleContacts": "Contacts",
 
-    "contactDetailPageMessage" : "Send Message",
     "contactDetailPageRemove" : "Remove from server",
 
     "chatTextFieldHint": "Message",
@@ -60,12 +59,21 @@
     "settingsPageConfig": "Configuration",
     "settingsPageConfigFirebase": "Firebase",
     "settingsPageConfigFooter": "Please use web client for SMTP, Login Methods and Third-party App Settings.",
-    "settingsPageAbout": "About",
 
+    "addContact":"Add Contact",
+    "addContacts":"Add Contacts",
     "archive":"Archive",
+    "archiveBubbleAnd":"and",
+    "archiveBubbleMore":"more...",
+    "audioMessage":"Audio Message",
     "autoDeleteMessage":"Auto-delete Messages",
     "autoDeleteMessageTitle":"Delete messages sent by myself in this chat after a certain time period.",
     "autoDeleteMessageDes":"This will remove the message data stored on both the server and client side.",
+    "avatar":"Avatar",
+
+    "birthday":"Birthday",
+    "block":"Block",
+    "blockWarning":"The user will be removed from the contact list and the two parties will not be able to chat. All messages and data will be preserved.",
 
     "call" : "Call",
     "cancel": "Cancel",
@@ -94,6 +102,7 @@
     "email": "Email",
     "emailConflictError":"Email conflicts with an existing account.",
     
+    "female":"Female",
     "fetchingServerInfo":"Fetching Server Info",
     "fetchingServerInfoError":"Failed to obtain server information, please check the network.",
     "file":"File",
@@ -105,9 +114,14 @@
     "forwarded":"forwarded",
     "forwardTo":"Forward to",
 
+    "gender":"Gender",
+    "goToSettings":"Go to Settings",
+
+    "holdAndSpeak":"Hold and Speak",
     "hour":"hour",
     "hours":"hours",
 
+    "idNumber":"ID Number",
     "image":"Image",
     "imageBeDeletedDes":"Image might have been deleted.",
     "inputInvitationLink":"Input Invitation Link",
@@ -124,11 +138,14 @@
     "logoutWarning":"Are you sure to log out",
     "logoutWarningWithQM":"Are you sure to log out?",
 
+    "male":"Male",
     "message": "Message",
     "messageDetail":"Message Detail",
     "messageDeletionFailed":"Message deletion failed",
     "messageHasBeenDeleted":"This message has been deleted.",
     "members":"Members",
+    "microphonePermissionRequired":"Microphone Permission Required",
+    "microphonePermissionRequiredDes":"Microphone permission is required to record voice messages. Please go to Settings to grant permission.",
     "minute":"minute",
     "minutes":"minutes",
     "mute" : "Mute",
@@ -139,7 +156,9 @@
     "newPrivateChannel":"New Private Channel",
     "newPublicChannel":"New Public Channel",
     "next": "Next",
+    "nickname":"Nick name",  
     "noContent":"No Content",
+    "other":"Other",
 
     "off":"Off",
     "ok": "OK",
@@ -155,12 +174,19 @@
     "publicChannelToPrivateTitle":"Change to Private Channel",
     "publicChannelToPrivateContent":"This channel will not be visible to new server members. Current members will not be affected.",
 
+    "qrCode":"QR Code",
+
     "registrationSuccess":"Registration Success",
     "registerEmailSentDes":"A registration email has been sent, please check your email inbox.",
     "registrationFailed": "Registration Failed",
     "registrationFailedDes": "An error occurred during registration. Please try again later or contact server admins for help.",
+    "releaseToCancel":"Release to cancel",
+    "releaseToSend":"Release to send",
     "rememberMe": "Remember me",
+    "removeContact":"Remove Contact",
+    "removeContactWarning":"The contact will be removed from Contact List but you can still chat. All messages and data will be preserved.",
     "reply": "Reply",
+    "repliedMessageDeleted":"The replied message has been deleted.",
     "replyingTo":"Replying to",
     "retry":"Retry",
     "resend":"Resend",
@@ -170,11 +196,13 @@
     "scanQrCodeToRegister": "Scan this QR Code to register",
     "save": "Save",
     "savedItems": "Saved Items",
+    "searching":"Searching",
     "second":"second",
     "seconds":"seconds",
     "select":"Select",
     "setNewAvatar": "Set a new avatar",
     "send": "Send",
+    "sendMessage":"Send Message",
     "share":"Share",
     "shareInvitationLink":"Share Invitation Link",
     "shareQrCode": "Share QR Code",
@@ -187,14 +215,21 @@
     "to":"to",
     "today":"Today",
     "transferOwnership":"Transfer Ownership",
-
+    
+    "unblock":"Unblock",
     "unmute": "Unmute",
     "unpin":"Unpin",
     "unsupportedMessageType":"Unsupported Message Type",
     "uploadError": "Upload Error",
     "uploadErrorContent": "Avatar size exceeds limit.",
+    "userBlocked":"This user has been blocked by you.",
+    "userEmail":"User Email",
+    "userId":"User ID",
+    "userNotContact":"This user is not in your contact list.",
+    "userSearchNoResult":"User does not exist, or is not allowed to be searched.",
     "version": "Version",
     "video" : "Video",
+    "viewChatHistory":"View Chat History",
     "voice" : "Voice",
     "week":"week",
     "weeks":"weeks",
@@ -316,6 +351,10 @@
     "noFCMTokenLoginTitle":"Push Notification",
     "noFCMTokenLoginDes":"Login process will continue, but Push notification service will not be available. You may check your network condition (VoceChat needs to visit Google service).",
     "noFCMTokenReloadTitle":"Push Notification",
-    "noFCMTokenReloadDes":"Failed to register device info. Push notification service will not be available. You may check your network condition (VoceChat needs to visit Google service)."
+    "noFCMTokenReloadDes":"Failed to register device info. Push notification service will not be available. You may check your network condition (VoceChat needs to visit Google service).",
     
+    "settingsPageMyInfo":"My Info",
+    "settingsPageAccountSettings": "Account Settings",
+    "settingsPageAbout": "About",
+    "settingsPageLogout": "Logout"
 }

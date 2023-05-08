@@ -23,21 +23,22 @@ class UserProperties {
   late int readIndex;
   late String draft;
 
-  UserProperties(
-    this.burnAfterReadSecond,
-    this.enableMute,
-    this.muteExpiresAt,
-    this.readIndex,
-    this.draft,
-  );
+  /// Indicates whether the user is pinned.
+  ///
+  /// If the user is pinned, the pinnedAt field will be set to the time provided
+  /// by the server. Otherwise, the pinnedAt field will be null.
+  late int? pinnedAt;
 
-  UserProperties.update({
-    int? burnAfterReadSecond,
-    bool? enableMute,
-    this.muteExpiresAt,
-    int? readIndex,
-    String? draft,
-  }) {
+  UserProperties(this.burnAfterReadSecond, this.enableMute, this.muteExpiresAt,
+      this.readIndex, this.draft, this.pinnedAt);
+
+  UserProperties.update(
+      {int? burnAfterReadSecond,
+      bool? enableMute,
+      this.muteExpiresAt,
+      int? readIndex,
+      String? draft,
+      this.pinnedAt}) {
     this.burnAfterReadSecond = burnAfterReadSecond ?? 0;
 
     this.enableMute = enableMute ?? false;

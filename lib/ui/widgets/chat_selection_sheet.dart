@@ -302,7 +302,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
                   return Column(
                     children: List<Widget>.generate(groupList.length, (index) {
                       final group = groupList[index];
-                      final avatar = group.isPublic == 1
+                      final avatar = group.isPublic
                           ? Icon(AppIcons.channel, size: 20)
                           : Icon(AppIcons.private_channel, size: 20);
                       return GestureDetector(
@@ -391,7 +391,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
             title: each.groupInfo.name,
             gid: each.gid,
             time: each.updatedAt,
-            isPublicChannel: each.isPublic == 1);
+            isPublicChannel: each.isPublic);
         recents.add(uiForward);
       }
     }
@@ -431,7 +431,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
             title: each.groupInfo.name,
             gid: each.gid,
             time: 0,
-            isPublicChannel: each.isPublic == 1);
+            isPublicChannel: each.isPublic);
         recents.add(uiForward);
       }
     }

@@ -34,7 +34,7 @@ class ChannelMembersPage extends StatelessWidget {
       body: SafeArea(
         child: FutureBuilder<List<UserInfoM>?>(
           future: GroupInfoDao().getUserListByGid(groupInfoM.gid,
-              groupInfoM.isPublic == 1, groupInfoM.groupInfo.members ?? []),
+              groupInfoM.isPublic, groupInfoM.groupInfo.members ?? []),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return ContactList(
@@ -42,8 +42,13 @@ class ChannelMembersPage extends StatelessWidget {
                   avatarSize: VoceAvatarSize.s36,
                   ownerUid: groupInfoM.groupInfo.owner,
                   onTap: (user) {
-                    Navigator.of(context)
-                        .pushNamed(ContactDetailPage.route, arguments: user);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            ContactDetailPage(userInfoM: user),
+                      ),
+                    );
+                    ;
                   });
             }
             return SizedBox.shrink();

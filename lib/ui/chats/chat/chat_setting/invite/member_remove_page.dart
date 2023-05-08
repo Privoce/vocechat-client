@@ -140,13 +140,13 @@ class _MemberRemovePageState extends State<MemberRemovePage>
   Future<List<UserInfoM>?> prepareUserList() async {
     return GroupInfoDao().getUserListByGid(
         widget.groupInfoMNotifier.value.gid,
-        widget.groupInfoMNotifier.value.isPublic == 1,
+        widget.groupInfoMNotifier.value.isPublic,
         widget.groupInfoMNotifier.value.groupInfo.members ?? [],
         batchSize: 0);
   }
 
   Widget _buildSendBtn() {
-    if (widget.groupInfoMNotifier.value.isPublic == 1) {
+    if (widget.groupInfoMNotifier.value.isPublic) {
       return SizedBox.shrink();
     }
     return ValueListenableBuilder<List<int>>(

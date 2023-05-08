@@ -6,41 +6,37 @@ String uuid() {
   return Uuid().v4();
 }
 
-String makeDbName(String userName) {
-  return '${userName}_${Uuid().v4().replaceAll('-', '')}.db';
-}
-
 class PageMeta {
-  //一页的记录数量
+  /// The number of records in one page.
+  ///
+  /// Default value is [defaultPageSize], or 16 if set to -1.
   int pageSize = -1;
 
-  //页号，从1开始编号
+  /// The current page number, start from 1.
   int pageNumber = -1;
 
-  //总的记录数据
+  /// The total number of records.
   int recordCount = -1;
 
-  //分页数量
+  /// The total number of pages.
   int get pages =>
-      (pageSize < 0 || recordCount < 1) ? -1 : (pageSize / recordCount).ceil();
+      (pageSize < 0 || recordCount < 1) ? -1 : (recordCount / pageSize).ceil();
 
-  //starting index
+  /// starting index
   int get offset => (pageNumber - 1) * pageSize;
 
-  //page size
+  /// page size
   int get limit => pageSize;
 
-  //如果已经达到最后一后，则返回false
-  bool nextPage() {
-    if (pageNumber < pages) {
-      pageNumber++;
-      return true;
-    }
-    return false;
+  /// If has next page.
+  ///
+  /// If reaches the last page, return false.
+  bool get hasNextPage {
+    return pageNumber < pages;
   }
 }
 
-//由于名字Page在flutter中已有命名，所以增加Data以区别不同
+/// A generic class containing page meta and records.
 class PageData<T> {
   PageMeta meta = PageMeta();
   List<T> records = [];

@@ -46,7 +46,7 @@ class _MemberAddPageState extends State<MemberAddPage>
             : 1;
     _tabController = TabController(length: tabCount, vsync: this);
 
-    if (widget.groupInfoMNotifier.value.isPublic != 1) {
+    if (!widget.groupInfoMNotifier.value.isPublic) {
       selectNotifier.value =
           widget.groupInfoMNotifier.value.groupInfo.members ?? [];
     }
@@ -65,7 +65,7 @@ class _MemberAddPageState extends State<MemberAddPage>
       tabViews.add(InviteLinkView(widget.groupInfoMNotifier.value.gid));
     }
 
-    if (widget.groupInfoMNotifier.value.isPublic == 0) {
+    if (!widget.groupInfoMNotifier.value.isPublic) {
       tabs.insert(
           0, Tab(text: AppLocalizations.of(context)!.memberAddPageAddMembers));
       tabViews.insert(0, _buildMembersTab());
@@ -156,7 +156,7 @@ class _MemberAddPageState extends State<MemberAddPage>
   }
 
   Widget _buildAddBtn() {
-    if (widget.groupInfoMNotifier.value.isPublic == 1) {
+    if (widget.groupInfoMNotifier.value.isPublic) {
       return SizedBox.shrink();
     }
     return ValueListenableBuilder<List<int>>(

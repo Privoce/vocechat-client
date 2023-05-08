@@ -212,19 +212,6 @@ class _FilePageState extends State<FilePage> {
     }
   }
 
-  // Future<void> _onDelete(ReactionTypes reaction, int mid, bool ready,
-  //     [ChatMsgM? content]) async {
-  //   // if ()ReactionTypes, int, bool, [ChatMsgM?]
-  //   showAppAlert(
-  //       context: context,
-  //       title: "This file has been deleted.",
-  //       content: "This page will be popped.",
-  //       actions: [
-  //         AppAlertDialogAction(
-  //             text: "OK", action: () => Navigator.of(context).pop())
-  //       ]);
-  // }
-
   Future<void> _download(String filePath, BuildContext context) async {
     _status.value = FilePageStatus.downloading;
     await widget.getFile(

@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
@@ -15,11 +14,13 @@ class GroupInfoM extends Equatable with M {
   int gid = -1;
   String lastLocalMid = "";
   String info = "";
-  // Uint8List avatar = Uint8List(0);
   String _properties = "";
-  int isPublic = 1;
-  int isActive = 1;
+  int _isPublic = 1;
+  int _isActive = 1;
   int updatedAt = 0;
+
+  bool get isPublic => _isPublic == 1;
+  bool get isActive => _isActive == 1;
 
   GroupInfoM();
 
@@ -36,7 +37,7 @@ class GroupInfoM extends Equatable with M {
   }
 
   GroupInfoM.item(this.gid, this.lastLocalMid, this.info, this._properties,
-      this.isPublic, this.isActive, this.updatedAt);
+      this._isPublic, this._isActive, this.updatedAt);
 
   GroupInfoM.fromGroupInfo(
     GroupInfo groupInfo,
@@ -44,13 +45,8 @@ class GroupInfoM extends Equatable with M {
   ) {
     gid = groupInfo.gid;
     info = jsonEncode(groupInfo.toJson());
-    isPublic = groupInfo.isPublic ? 1 : 0;
-    this.isActive = isActive ? 1 : 0;
-    // updatedAt = DateTime.now().millisecondsSinceEpoch;
-
-    // if (avatar != null) {
-    //   this.avatar = avatar;
-    // }
+    _isPublic = groupInfo.isPublic ? 1 : 0;
+    _isActive = isActive ? 1 : 0;
   }
 
   static GroupInfoM fromMap(Map<String, dynamic> map) {
@@ -67,17 +63,14 @@ class GroupInfoM extends Equatable with M {
     if (map.containsKey(F_info)) {
       m.info = map[F_info];
     }
-    // if (map.containsKey(F_avatar)) {
-    //   m.avatar = map[F_avatar];
-    // }
     if (map.containsKey(F_properties)) {
       m._properties = map[F_properties];
     }
     if (map.containsKey(F_isPublic)) {
-      m.isPublic = map[F_isPublic];
+      m._isPublic = map[F_isPublic];
     }
     if (map.containsKey(F_isActive)) {
-      m.isActive = map[F_isActive];
+      m._isActive = map[F_isActive];
     }
     if (map.containsKey(F_createdAt)) {
       m.createdAt = map[F_createdAt];
@@ -93,7 +86,6 @@ class GroupInfoM extends Equatable with M {
   static const F_gid = 'gid';
   static const F_lastLocalMid = 'last_local_mid';
   static const F_info = 'info';
-  // static const F_avatar = 'avatar';
   static const F_properties = 'properties';
   static const F_isPublic = 'is_public';
   static const F_isActive = 'is_active';
@@ -105,10 +97,9 @@ class GroupInfoM extends Equatable with M {
         GroupInfoM.F_gid: gid,
         GroupInfoM.F_lastLocalMid: lastLocalMid,
         GroupInfoM.F_info: info,
-        // GroupInfoM.F_avatar: avatar,
         GroupInfoM.F_properties: _properties,
-        GroupInfoM.F_isPublic: isPublic,
-        GroupInfoM.F_isActive: isActive,
+        GroupInfoM.F_isPublic: _isPublic,
+        GroupInfoM.F_isActive: _isActive,
         GroupInfoM.F_createdAt: createdAt,
         GroupInfoM.F_updatedAt: updatedAt,
       };
@@ -118,7 +109,7 @@ class GroupInfoM extends Equatable with M {
 
   @override
   List<Object?> get props =>
-      [gid, lastLocalMid, info, _properties, isPublic, isActive, createdAt];
+      [gid, lastLocalMid, info, _properties, _isPublic, _isActive, createdAt];
 }
 
 class GroupInfoDao extends Dao<GroupInfoM> {
@@ -133,7 +124,6 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       if (old != null) {
         m.id = old.id;
         m.createdAt = old.createdAt;
-        // m.avatar = old.avatar;
         m._properties = jsonEncode(old.properties);
         await super.update(m);
       } else {
@@ -240,7 +230,7 @@ class GroupInfoDao extends Dao<GroupInfoM> {
         oldInfo.avatarUpdatedAt = avatarUpdatedAt;
       }
       if (isPublic != null) {
-        old.isPublic = isPublic ? 1 : 0;
+        old._isPublic = isPublic ? 1 : 0;
         oldInfo.isPublic = isPublic;
 
         if (isPublic) {
@@ -285,12 +275,16 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     }
   }
 
+  /// Update properties of GroupInfoM.
+  ///
+  /// To cancel [pinnedAt], set it to 0 or -1.
   Future<GroupInfoM?> updateProperties(int gid,
       {int? burnAfterReadSecond,
       bool? enableMute,
       int? muteExpiresAt,
       int? readIndex,
-      String? draft}) async {
+      String? draft,
+      int? pinnedAt}) async {
     GroupInfoM? old =
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
     if (old != null) {
@@ -319,6 +313,14 @@ class GroupInfoDao extends Dao<GroupInfoM> {
         oldProperties.draft = draft;
       }
 
+      if (pinnedAt != null) {
+        if (pinnedAt > 0) {
+          oldProperties.pinnedAt = pinnedAt;
+        } else {
+          oldProperties.pinnedAt = null;
+        }
+      }
+
       old._properties = json.encode(oldProperties);
       await super.update(old);
     }
@@ -329,7 +331,7 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     GroupInfoM? old =
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
     if (old != null) {
-      old.isActive = 0;
+      old._isActive = 0;
       await super.update(old);
     }
     return old;
@@ -371,7 +373,7 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       return null;
     }
 
-    if (group.isPublic == 1) {
+    if (group.isPublic) {
       String sqlStr =
           "SELECT * FROM ${UserInfoM.F_tableName} WHERE json_extract(${UserInfoM.F_info}, '\$.name') LIKE '%$input%'";
 
@@ -452,17 +454,29 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     }
   }
 
-  // Future<ChatServerM?> currentServer() async {
-  //   ChatServerM? chatServer = await get(await OrgSettingDao.dao.getCurrentServerId());
-  //   return chatServer;
-  // }
+  /// Empty pinned status of GroupInfoM.
+  ///
+  /// If [ssePinnedGidList] is not empty, the pinned status of GroupInfoM whose uid is
+  /// not in [ssePinnedGidList] will be cleared.
+  /// [ssePinnedGidList] is the list of uid which is pushed by server, that is, the
+  /// channel with a valid [pinnedAt].
+  Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedGidList) async {
+    final ssePinnedGidSet = Set<int>.from(ssePinnedGidList);
 
-  // Future<void> updateCompanyFromServer(ChatServerM m) async {
-  //   ChatClient chat = createChatClient(createClientChannel(m.tls.toTrue(), m.url, m.port));
-  //   Company res = await chat.companyGet(EmptyReq(token: ""));
-  //   m.serverName = res.name;
-  //   m.logo = imageWebStringToBytes(res.logo);
-  //   await get(await OrgSettingDao.dao.getCurrentServerId());
-  //   return;
-  // }
+    final localPinnedGids = (await getChannelList())
+            ?.where((element) => element.properties.pinnedAt != null)
+            .map((e) => e.gid)
+            .toList() ??
+        [];
+
+    final complementGidList = localPinnedGids
+        .where((element) => !ssePinnedGidSet.contains(element))
+        .toList();
+
+    for (final gid in complementGidList) {
+      await updateProperties(gid, pinnedAt: -1);
+    }
+
+    return true;
+  }
 }

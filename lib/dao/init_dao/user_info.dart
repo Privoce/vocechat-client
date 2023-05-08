@@ -7,19 +7,28 @@ import 'package:azlistview/azlistview.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lpinyin/lpinyin.dart';
+import 'package:vocechat_client/api/models/user/contact_info.dart';
+import 'package:vocechat_client/api/models/user/user_contact.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
+import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/properties_models/user_properties.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+
+enum ContactInfoStatus { added, blocked }
 
 class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   int uid = -1;
   String info = "";
   String _properties = "";
-  // Uint8List avatarBytes = Uint8List(0);
+
+  String contactStatus = "";
+  int contactCreatedAt = 0;
+  int contactUpdatedAt = 0;
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     //data['uid'] = this.uid;
@@ -56,6 +65,8 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
     }
   }
 
+  bool get deleted => uid == -1;
+
   String get propertiesStr => _properties;
 
   UserInfoUpdate get userInfoUpdate {
@@ -64,11 +75,33 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
 
   UserInfoM();
 
-  UserInfoM.item(this.uid, this.info, this._properties);
+  UserInfoM.item(this.uid, this.info, this._properties,
+      {this.contactStatus = "",
+      this.contactCreatedAt = 0,
+      this.contactUpdatedAt = 0});
 
-  UserInfoM.fromUserInfo(UserInfo userInfo, this._properties) {
+  UserInfoM.fromUserInfo(UserInfo userInfo, this._properties,
+      {this.contactStatus = "",
+      this.contactCreatedAt = 0,
+      this.contactUpdatedAt = 0}) {
     uid = userInfo.uid;
     info = jsonEncode(userInfo.toJson());
+  }
+
+  UserInfoM.fromUserAndContactInfo(UserInfo userInfo, ContactInfo contactInfo) {
+    uid = userInfo.uid;
+    info = jsonEncode(userInfo.toJson());
+    contactStatus = contactInfo.status;
+    contactCreatedAt = contactInfo.createdAt;
+    contactUpdatedAt = contactInfo.updatedAt;
+  }
+
+  UserInfoM.fromUserContact(UserContact userContact) {
+    uid = userContact.targetInfo.uid;
+    info = jsonEncode(userContact.targetInfo.toJson());
+    contactStatus = userContact.contactInfo.status;
+    contactCreatedAt = userContact.contactInfo.createdAt;
+    contactUpdatedAt = userContact.contactInfo.updatedAt;
   }
 
   UserInfoM.deleted() {
@@ -89,11 +122,17 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
     if (map.containsKey(F_properties)) {
       m._properties = map[F_properties];
     }
-    // if (map.containsKey(F_avatar)) {
-    //   m.avatarBytes = map[F_avatar];
-    // }
     if (map.containsKey(F_createdAt)) {
       m.createdAt = map[F_createdAt];
+    }
+    if (map.containsKey(F_contactStatus)) {
+      m.contactStatus = map[F_contactStatus];
+    }
+    if (map.containsKey(F_contactCreatedAt)) {
+      m.contactCreatedAt = map[F_contactCreatedAt];
+    }
+    if (map.containsKey(F_contactUpdatedAt)) {
+      m.contactUpdatedAt = map[F_contactUpdatedAt];
     }
 
     return m;
@@ -103,16 +142,20 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   static const F_uid = 'uid';
   static const F_info = 'info';
   static const F_properties = 'properties';
-  // static const F_avatar = 'avatar';
   static const F_createdAt = 'created_at';
+  static const F_contactStatus = 'contact_status';
+  static const F_contactCreatedAt = 'contact_created_at';
+  static const F_contactUpdatedAt = 'contact_updated_at';
 
   @override
   Map<String, Object> get values => {
         UserInfoM.F_uid: uid,
         UserInfoM.F_info: info,
         UserInfoM.F_properties: _properties,
-        // UserInfoM.F_avatar: avatarBytes,
         UserInfoM.F_createdAt: createdAt,
+        UserInfoM.F_contactStatus: contactStatus,
+        UserInfoM.F_contactCreatedAt: contactCreatedAt,
+        UserInfoM.F_contactUpdatedAt: contactUpdatedAt,
       };
 
   static MMeta meta = MMeta.fromType(UserInfoM, UserInfoM.fromMap)
@@ -122,7 +165,15 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   String getSuspensionTag() => initial;
 
   @override
-  List<Object?> get props => [uid, info, _properties, createdAt];
+  List<Object?> get props => [
+        uid,
+        info,
+        // _properties,
+        // createdAt,
+        contactStatus,
+        contactCreatedAt,
+        contactUpdatedAt
+      ];
 }
 
 class UserInfoDao extends Dao<UserInfoM> {
@@ -130,16 +181,25 @@ class UserInfoDao extends Dao<UserInfoM> {
     UserInfoM.meta;
   }
 
+  /// Add or update UserInfoM. This will not update [ContactInfo] fields.
+  /// But it will add [ContactInfo] fields if no previous records found.
+  ///
+  /// UserInfoM extends EquatableMixin and it can be compared by
+  /// [uid], [info]
+  ///
+  /// When these fields are the same, the UserInfoM will not be updated.
   Future<UserInfoM> addOrUpdate(UserInfoM m) async {
     UserInfoM? old =
         await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [m.uid]);
     if (old != null) {
+      if (old == m) return old;
+
       m.id = old.id;
       m.createdAt = old.createdAt;
-      // if (m.avatarBytes.isEmpty) {
-      //   m.avatarBytes = old.avatarBytes;
-      // }
-      // m.avatar = old.avatar;
+      m.contactStatus = old.contactStatus;
+      m.contactCreatedAt = old.contactCreatedAt;
+      m.contactUpdatedAt = old.contactUpdatedAt;
+
       await super.update(m);
 
       App.logger.info("UserInfoM updated. ${m.uid}");
@@ -151,16 +211,128 @@ class UserInfoDao extends Dao<UserInfoM> {
     return m;
   }
 
+  /// Add or update UserInfoM. This will update [ContactInfo] fields.
+  ///
+  /// UserInfoM extends EquatableMixin and it can be compared by
+  /// [uid], [info], [contactStatus], [contactCreatedAt] and
+  /// [contactUpdatedAt].
+  ///
+  /// When these fields are the same, the UserInfoM will not be updated.
+  Future<UserInfoM> addOrUpdateWithContactInfo(UserInfoM m) async {
+    UserInfoM? old =
+        await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [m.uid]);
+    if (old != null) {
+      if (old == m &&
+          old.contactStatus == m.contactStatus &&
+          old.contactCreatedAt == m.contactCreatedAt &&
+          old.contactUpdatedAt == m.contactUpdatedAt) return old;
+
+      m.id = old.id;
+      m.createdAt = old.createdAt;
+
+      await super.update(m);
+
+      App.logger.info("UserInfoM updated. ${m.uid}");
+    } else {
+      await super.add(m);
+      App.logger.info("UserInfoM added. ${m.uid}");
+    }
+
+    return m;
+  }
+
+  /// Empty contact status of UserInfoM.
+  ///
+  /// If [uidList] is not empty, the contact status of UserInfoM whose uid is
+  /// not in [uidList] will be emptied.
+  /// [uidList] is the list of uid which is pushed by server, that is, the
+  /// contacts with valid [contactStatus].
+  Future<bool> emptyUnpushedContactStatus(List<int> uidList) async {
+    final allUids = ((await getUserList()) ?? []).map((e) => e.uid).toList();
+
+    final unpushedUids =
+        allUids.where((element) => !uidList.contains(element)).toList();
+
+    for (final uid in unpushedUids) {
+      UserInfoM? old =
+          await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
+      if (old != null) {
+        old.contactStatus = "";
+        await super.update(old);
+        App.logger.info("UserInfoM contact status emptyed. ${old.uid}");
+      }
+    }
+    return true;
+  }
+
+  /// Empty pinned status of UserInfoM.
+  ///
+  /// If [ssePinnedUidList] is not empty, the pinned status of UserInfoM whose uid is
+  /// not in [ssePinnedUidList] will be cleared.
+  /// [ssePinnedUidList] is the list of uid which is pushed by server, that is, the
+  /// user with a valid [pinnedAt].
+  Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedUidList) async {
+    final ssePinnedUidSet = Set<int>.from(ssePinnedUidList);
+
+    final dmInfoDao = DmInfoDao();
+    final localPinnedUids = (await dmInfoDao.getDmUserInfoMList())
+            ?.where((element) => element.properties.pinnedAt != null)
+            .map((e) => e.uid)
+            .toList() ??
+        [];
+    final complementUidList = localPinnedUids
+        .where((element) => !ssePinnedUidSet.contains(element))
+        .toList();
+
+    for (final uid in complementUidList) {
+      await updateProperties(uid, pinnedAt: -1);
+    }
+
+    return true;
+  }
+
+  Future<UserInfoM?> updateContactInfo(int uid,
+      {String? status, int? contactCreatedAt, int? contactUpdatedAt}) async {
+    UserInfoM? old =
+        await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
+    if (old != null) {
+      if (status != null) {
+        old.contactStatus = status;
+      }
+
+      if (contactCreatedAt != null) {
+        old.contactCreatedAt = max(old.contactCreatedAt, contactCreatedAt);
+      }
+
+      if (contactUpdatedAt != null) {
+        old.contactUpdatedAt = max(old.contactUpdatedAt, contactUpdatedAt);
+      }
+
+      await super.update(old);
+
+      App.logger.info("UserInfoM contact info updated. ${old.uid}");
+    } else {
+      App.logger.info("UserInfoM not found. $uid");
+    }
+
+    return old;
+  }
+
+  /// Update properties of UserInfoM.
+  ///
+  /// To cancel [pinnedAt], set it to 0 or -1.
   Future<UserInfoM?> updateProperties(int uid,
       {int? burnAfterReadSecond,
       bool? enableMute,
       int? muteExpiresAt,
       int? readIndex,
-      String? draft}) async {
+      String? draft,
+      int? pinnedAt}) async {
     UserInfoM? old =
         await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
     if (old != null) {
       UserProperties oldProperties = old.properties;
+
       if (burnAfterReadSecond != null) {
         oldProperties.burnAfterReadSecond = burnAfterReadSecond;
       }
@@ -185,8 +357,18 @@ class UserInfoDao extends Dao<UserInfoM> {
         oldProperties.draft = draft;
       }
 
+      if (pinnedAt != null) {
+        if (pinnedAt > 0) {
+          oldProperties.pinnedAt = pinnedAt;
+        } else {
+          oldProperties.pinnedAt = null;
+        }
+      }
+
       old._properties = json.encode(oldProperties);
       await super.update(old);
+      App.logger.info(
+          "UserInfoM properties updated. uid:$uid, buryAfterReadSecond: $burnAfterReadSecond, enableMute: $enableMute, muteExpiresAt: $muteExpiresAt, readIndex: $readIndex, draft: $draft, pinnedAt: $pinnedAt");
     }
     return old;
   }
@@ -215,6 +397,23 @@ class UserInfoDao extends Dao<UserInfoM> {
     return super.list(orderBy: orderBy);
   }
 
+  /// Get a list of UserInfoM
+  ///
+  /// Only show contactInfoStatus == [ContactInfoStatus.added]
+  Future<List<UserInfoM>?> getContactList() async {
+    String sqlStr =
+        "SELECT * FROM ${UserInfoM.F_tableName} WHERE ${UserInfoM.F_contactStatus} = '${ContactInfoStatus.added.name}' ORDER BY ${UserInfoM.F_uid} ASC";
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+
+    final list = records.map((e) => UserInfoM.fromMap(e)).toList();
+
+    final me = await getUserByUid(App.app.userDb!.uid);
+    if (me != null) {
+      list.add(me);
+    }
+    return list;
+  }
+
   Future<int> getUserCount() async {
     String sqlStr = "SELECT COUNT(*) FROM ${UserInfoM.F_tableName}";
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
@@ -231,8 +430,6 @@ class UserInfoDao extends Dao<UserInfoM> {
   Future<List<UserInfoM>?> getUsersWithDraft() async {
     String sqlStr =
         "SELECT * FROM ${UserInfoM.F_tableName} WHERE json_extract(json(IIF(${UserInfoM.F_properties} <> '',${UserInfoM.F_properties}, NULL)) , '\$.draft') != ''";
-    // String sqlStr =
-    // "SELECT * FROM ${UserInfoM.F_tableName} WHERE json_extract(${UserInfoM.F_properties} , '\$.draft') != ''";
 
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
     if (records.isNotEmpty) {
