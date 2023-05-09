@@ -1,15 +1,12 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:saver_gallery/saver_gallery.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/main.dart';
-import 'package:vocechat_client/mixins/orientation_mixins.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -239,9 +236,14 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
         return;
       }
 
-      final result =
-          await ImageGallerySaver.saveFile(singleImageData!.imageFile.path);
-      if (result["isSuccess"]) {
+      final image = singleImageData!.imageFile;
+      final name = image.path.split("/").last;
+      final imageBytes = await image.readAsBytes();
+
+      final result = await SaverGallery.saveImage(imageBytes,
+          name: name, androidExistNotSave: false);
+
+      if (result.isSuccess) {
         _saveBtnStatus.value = ButtonStatus.success;
         await Future.delayed(Duration(seconds: 2)).then((_) async {
           _saveBtnStatus.value = ButtonStatus.normal;

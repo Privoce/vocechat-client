@@ -478,12 +478,15 @@ class VoceSendService {
       properties
           .addAll({'height': decodedImage.height, 'width': decodedImage.width});
 
+      print(properties);
+
       // Save image to local storage first. The [ChatPageController] will have
       // an image file to prepare for [tileData].
       // Only save compressed image for normal image;
       // Save original image for gif.
 
       if (isGif) {
+        print("isGif");
         // TODO: change to save File instead of bytes.
         FileHandler.singleton
             .saveImageNormal(chatId, fileBytes, localMid, filename);
