@@ -38,7 +38,8 @@ class ChannelAvatarHander extends VoceFileHander {
   }
 
   /// Read file from local storage, if not exist, fetch from server.
-  Future<File?> readOrFetch(GroupInfoM groupInfoM, {String? dbName}) async {
+  Future<File?> readOrFetch(GroupInfoM groupInfoM,
+      {String? dbName, bool enableServerRetry = false}) async {
     final fileName = generateFileName(groupInfoM);
     final file = await read(fileName, dbName: dbName);
     if (file != null) {
@@ -51,7 +52,8 @@ class ChannelAvatarHander extends VoceFileHander {
 
     try {
       final resourceApi = ResourceApi();
-      final res = await resourceApi.getGroupAvatar(groupInfoM.gid);
+      final res = await resourceApi.getGroupAvatar(groupInfoM.gid,
+          enableServerRetry: enableServerRetry);
       if (res != null &&
           res.statusCode == 200 &&
           res.data != null &&

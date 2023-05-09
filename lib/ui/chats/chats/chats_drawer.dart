@@ -235,8 +235,9 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
       final chatServer = await ChatServerDao.dao.getServerById(serverId);
 
       final userAvatarBytes = await (await UserAvatarHander().readOrFetch(
-        UserInfoM.fromUserInfo(userDb.userInfo, ""),
-      ))
+              UserInfoM.fromUserInfo(userDb.userInfo, ""),
+              enableServerRetry: false,
+              enableServerFetch: false))
           ?.readAsBytes();
 
       if (chatServer == null || userDb.loggedIn == 0) {

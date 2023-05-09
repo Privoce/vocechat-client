@@ -32,7 +32,10 @@ class UserAvatarHander extends VoceFileHander {
   }
 
   /// Read file from local storage, if not exist, fetch from server.
-  Future<File?> readOrFetch(UserInfoM userInfoM, {String? dbName}) async {
+  Future<File?> readOrFetch(UserInfoM userInfoM,
+      {String? dbName,
+      bool enableServerRetry = true,
+      bool enableServerFetch = true}) async {
     final fileName = generateFileName(userInfoM);
     final file = await read(fileName, dbName: dbName);
 
@@ -44,16 +47,19 @@ class UserAvatarHander extends VoceFileHander {
       }
     }
 
-    try {
-      final resourceApi = ResourceApi();
-      final res = await resourceApi.getUserAvatar(userInfoM.uid);
-      if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
-        final file =
-            await save(generateFileName(userInfoM), res.data!, dbName: dbName);
-        return file;
+    if (enableServerFetch) {
+      try {
+        final resourceApi = ResourceApi();
+        final res = await resourceApi.getUserAvatar(userInfoM.uid,
+            enableServerRetry: enableServerRetry);
+        if (res.statusCode == 200 && res.data != null && res.data!.isNotEmpty) {
+          final file = await save(generateFileName(userInfoM), res.data!,
+              dbName: dbName);
+          return file;
+        }
+      } catch (e) {
+        App.logger.warning(e);
       }
-    } catch (e) {
-      App.logger.warning(e);
     }
 
     return null;

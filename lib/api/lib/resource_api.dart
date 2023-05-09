@@ -41,8 +41,9 @@ class ResourceApi {
     return newRes;
   }
 
-  Future<Response<Uint8List>> getUserAvatar(int uid) async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<Uint8List>> getUserAvatar(int uid,
+      {bool enableServerRetry = true}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableServerRetry);
     final res = await dio.get<List<int>>("/avatar?uid=$uid",
         options: Options(responseType: ResponseType.bytes));
 
@@ -61,8 +62,9 @@ class ResourceApi {
     return newRes;
   }
 
-  Future<Response<Uint8List>?> getGroupAvatar(int gid) async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<Uint8List>?> getGroupAvatar(int gid,
+      {bool enableServerRetry = true}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableServerRetry);
 
     // Do not treat 404 as an exception to avoid Dio package flaw: can't catch
     // 404 exception for this request.

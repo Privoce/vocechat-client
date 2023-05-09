@@ -36,6 +36,8 @@ class VoceUserAvatar extends StatefulWidget {
 
   final void Function(int uid)? onTap;
 
+  final bool enableServerRetry;
+
   const VoceUserAvatar(
       {Key? key,
       required this.size,
@@ -45,6 +47,7 @@ class VoceUserAvatar extends StatefulWidget {
       this.userInfoM,
       this.avatarBytes,
       this.name,
+      this.enableServerRetry = false,
       required this.uid,
       this.backgroundColor = Colors.blue,
       this.onTap})
@@ -62,6 +65,7 @@ class VoceUserAvatar extends StatefulWidget {
       this.backgroundColor = Colors.blue,
       this.onTap})
       : avatarBytes = null,
+        enableServerRetry = false,
         userInfoM = null,
         _deleted = false,
         super(key: key);
@@ -73,7 +77,8 @@ class VoceUserAvatar extends StatefulWidget {
       this.isCircle = useCircleAvatar,
       this.enableOnlineStatus = true,
       this.backgroundColor = Colors.blue,
-      this.onTap})
+      this.onTap,
+      this.enableServerRetry = true})
       : avatarBytes = null,
         name = userInfoM.userInfo.name,
         uid = userInfoM.uid,
@@ -89,7 +94,8 @@ class VoceUserAvatar extends StatefulWidget {
       this.uid,
       this.backgroundColor = Colors.blue,
       bool? enableOnlineStatus,
-      this.onTap})
+      this.onTap,
+      this.enableServerRetry = true})
       : userInfoM = null,
         avatarBytes = null,
         enableOnlineStatus =
@@ -104,6 +110,7 @@ class VoceUserAvatar extends StatefulWidget {
     this.isCircle = useCircleAvatar,
     this.backgroundColor = Colors.red,
   })  : userInfoM = null,
+        enableServerRetry = false,
         avatarBytes = null,
         name = null,
         uid = null,
@@ -240,7 +247,8 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Future<void> _getImageFile() async {
     if (widget.userInfoM != null &&
         widget.userInfoM!.userInfo.avatarUpdatedAt != 0) {
-      imageFile = await UserAvatarHander().readOrFetch(widget.userInfoM!);
+      imageFile = await UserAvatarHander().readOrFetch(widget.userInfoM!,
+          enableServerRetry: widget.enableServerRetry);
 
       if (imageFile != null && (await imageFile!.exists()) && mounted) {
         setState(() {});

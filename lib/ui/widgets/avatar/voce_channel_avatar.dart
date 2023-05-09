@@ -23,6 +23,8 @@ class VoceChannelAvatar extends StatefulWidget {
 
   final String? name;
 
+  final bool enableServerRetry;
+
   /// Builds a ChannelAvatar with GroupInfoM
   ///
   /// Widget will show letter avatar if avatarBytes are not available
@@ -30,7 +32,8 @@ class VoceChannelAvatar extends StatefulWidget {
       {Key? key,
       required GroupInfoM this.groupInfoM,
       required this.size,
-      this.isCircle = useCircleAvatar})
+      this.isCircle = useCircleAvatar,
+      this.enableServerRetry = true})
       : name = groupInfoM.groupInfo.name,
         _isDefaultPublicChannel = groupInfoM.isPublic,
         avatarBytes = null,
@@ -40,7 +43,8 @@ class VoceChannelAvatar extends StatefulWidget {
       {Key? key,
       required Uint8List this.avatarBytes,
       required this.size,
-      this.isCircle = useCircleAvatar})
+      this.isCircle = useCircleAvatar,
+      this.enableServerRetry = true})
       : groupInfoM = null,
         name = null,
         _isDefaultPublicChannel = null,
@@ -50,7 +54,8 @@ class VoceChannelAvatar extends StatefulWidget {
       {Key? key,
       required String this.name,
       required this.size,
-      this.isCircle = useCircleAvatar})
+      this.isCircle = useCircleAvatar,
+      this.enableServerRetry = true})
       : groupInfoM = null,
         _isDefaultPublicChannel = null,
         avatarBytes = null,
@@ -59,6 +64,7 @@ class VoceChannelAvatar extends StatefulWidget {
   const VoceChannelAvatar.defaultPublicChannel(
       {Key? key, required this.size, this.isCircle = useCircleAvatar})
       : groupInfoM = null,
+        enableServerRetry = false,
         name = null,
         _isDefaultPublicChannel = true,
         avatarBytes = null,
@@ -67,6 +73,7 @@ class VoceChannelAvatar extends StatefulWidget {
   const VoceChannelAvatar.defaultPrivateChannel(
       {Key? key, required this.size, this.isCircle = useCircleAvatar})
       : groupInfoM = null,
+        enableServerRetry = false,
         name = null,
         _isDefaultPublicChannel = false,
         avatarBytes = null,
@@ -94,7 +101,8 @@ class _VoceChannelAvatarState extends State<VoceChannelAvatar> {
     if (widget.groupInfoM != null &&
         widget.groupInfoM!.groupInfo.avatarUpdatedAt != 0) {
       return FutureBuilder<File?>(
-          future: ChannelAvatarHander().readOrFetch(widget.groupInfoM!),
+          future: ChannelAvatarHander().readOrFetch(widget.groupInfoM!,
+              enableServerRetry: widget.enableServerRetry),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return VoceAvatar.file(
