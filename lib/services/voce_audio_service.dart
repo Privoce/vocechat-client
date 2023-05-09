@@ -1,3 +1,4 @@
+import 'package:audio_session/audio_session.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 
 class VoceAudioService {
@@ -28,6 +29,8 @@ class VoceAudioService {
       }
     }
 
+    final session = await AudioSession.instance;
+    await session.configure(AudioSessionConfiguration.speech());
     await controller.startPlayer(finishMode: FinishMode.pause);
   }
 

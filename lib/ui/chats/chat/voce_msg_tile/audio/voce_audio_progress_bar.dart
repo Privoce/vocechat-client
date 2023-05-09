@@ -148,7 +148,8 @@ class _VoceProgressBarState extends State<VoceProgressBar>
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
                   millisecToTime(widget.duration),
-                  style: const TextStyle(
+                  style: TextStyle(
+                    color: Colors.grey[700],
                     fontSize: 14,
                   ),
                 ),
