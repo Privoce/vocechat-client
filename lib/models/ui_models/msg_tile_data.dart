@@ -101,6 +101,8 @@ class MsgTileData {
   ///
   /// Only fetches local data.
   Future<void> localPrepare() async {
+    setGeneralData();
+
     if (isChannel && chatMsgMNotifier.value.pin > 0) {
       final pinnedBy = chatMsgMNotifier.value.pin;
       pinnedByUserInfoM.value = await UserInfoDao().getUserByUid(pinnedBy);
