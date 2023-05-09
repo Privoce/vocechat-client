@@ -84,11 +84,15 @@ class SharedFuncs {
 
   /// Translate bytes to readable file size string.
   static String getFileSizeString(int bytes) {
-    const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    const int base = 1000;
-    var i = (log(bytes) / log(base)).floor();
-    return ((bytes / pow(base, i)).toStringAsFixed(1)) +
-        suffixes[i].toUpperCase();
+    try {
+      const suffixes = ["b", "kb", "mb", "gb", "tb"];
+      const int base = 1000;
+      var i = (log(bytes) / log(base)).floor();
+      return ((bytes / pow(base, i)).toStringAsFixed(1)) +
+          suffixes[i].toUpperCase();
+    } catch (e) {
+      return "0 kb";
+    }
   }
 
   /// Get first, or first two, if exists, initials of a name string, used for
