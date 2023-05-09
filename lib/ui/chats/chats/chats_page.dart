@@ -167,6 +167,8 @@ class _ChatsPageState extends State<ChatsPage>
           .addOrUpdate(DmInfoM.item(chatMsgM.dmUid, "", chatMsgM.createdAt));
     }
 
+    calUnreadCountSum();
+
     if (mounted) {
       setState(() {});
     }
@@ -184,6 +186,7 @@ class _ChatsPageState extends State<ChatsPage>
     clearChats();
     await prepareChannels();
     await prepareDms();
+    calUnreadCountSum();
     if (mounted) {
       setState(() {});
     }
@@ -202,6 +205,7 @@ class _ChatsPageState extends State<ChatsPage>
                     mentionsKey: mentionsKey,
                     controller: controller))).then((value) async {
           // await tileData.setChannel();
+          calUnreadCountSum();
           controller.dispose();
         });
       });
@@ -217,6 +221,7 @@ class _ChatsPageState extends State<ChatsPage>
                     mentionsKey: mentionsKey,
                     controller: controller))).then((value) async {
           // await tileData.setUser();
+          calUnreadCountSum();
           controller.dispose();
         });
       });
@@ -259,10 +264,10 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   void calUnreadCountSum() {
-    // int count = 0;
-    // for (var element in _uiChats) {
-    //   count += element.unreadCount.value;
-    // }
-    // count;
+    int count = 0;
+    for (var element in chatTileMap.values) {
+      count += element.unreadCount.value;
+    }
+    unreadCountSum.value = count;
   }
 }
