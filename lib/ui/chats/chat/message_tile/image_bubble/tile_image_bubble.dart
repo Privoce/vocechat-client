@@ -38,6 +38,17 @@ class VoceTileImageBubble extends StatefulWidget {
   })  : tileData = null,
         super(key: key);
 
+  static Future<ImageGalleryData> getSingleImageList(File imageFile) async {
+    return ImageGalleryData(imageItemList: [
+      SingleImageGetters(getInitImageFile: () async {
+        return SingleImageData(imageFile: imageFile, isOriginal: true);
+      }, getServerImageFile:
+          (isOriginal, imageNotifier, onReceiveProgress) async {
+        return SingleImageData(imageFile: imageFile, isOriginal: true);
+      })
+    ], initialPage: 0);
+  }
+
   static Future<ImageGalleryData> defaultGetImageList(
     ChatMsgM centerMsgM,
   ) async {

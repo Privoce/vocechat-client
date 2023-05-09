@@ -342,6 +342,8 @@ class ChatPageController {
   /// Includes all messages except *delete* type of *reaction* messages.
   Future<void> onMessage(ChatMsgM chatMsgM, bool afterReady,
       {bool? snippetOnly}) async {
+    print("################# ${chatMsgM.values}");
+
     if (snippetOnly ?? false) return;
 
     // TODO: handle afterReady.

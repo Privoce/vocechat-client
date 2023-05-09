@@ -484,6 +484,7 @@ class VoceChatService {
   Future<void> _handleChatMsg(Map<String, dynamic> chatJson) async {
     assert(chatJson.containsKey("type") && chatJson["type"] == sseChat);
 
+    print("############## _handleChatMsg: $chatJson");
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
     // Do filtering if SSE pushes duplicated messages.
@@ -1338,8 +1339,10 @@ class VoceChatService {
           fromUid: chatMsg.fromUid,
           createdAt: chatMsg.createdAt,
           detail: detail.toJson());
+      print("################## handleMsgNormal: ${c.toJson()}");
       ChatMsgM chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
       await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
+        print("################## handleMsgNormal: ${dbMsgM.values}");
         switch (detail.contentType) {
           case typeText:
           case typeMarkdown:

@@ -168,7 +168,7 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   List<Object?> get props => [
         uid,
         info,
-        // _properties,
+        _properties,
         // createdAt,
         contactStatus,
         contactCreatedAt,

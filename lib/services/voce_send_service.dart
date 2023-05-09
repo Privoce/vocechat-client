@@ -197,19 +197,20 @@ class VoceSendService {
 
       if (isGif) {
         // TODO: change to save File instead of bytes.
-        FileHandler.singleton
+        await FileHandler.singleton
             .saveImageNormal(chatId, fileBytes, localMid, filename);
       } else {
         // TODO: change to save File instead of bytes.
         final thumbBytes =
             await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
         uploadBytes = thumbBytes;
-        FileHandler.singleton
+        await FileHandler.singleton
             .saveImageThumb(chatId, thumbBytes, localMid, filename);
       }
     } else {
       // TODO: change to save File instead of bytes.
-      FileHandler.singleton.saveFile(chatId, fileBytes, localMid, filename);
+      await FileHandler.singleton
+          .saveFile(chatId, fileBytes, localMid, filename);
     }
 
     final detail = MsgNormal(
@@ -478,8 +479,6 @@ class VoceSendService {
       properties
           .addAll({'height': decodedImage.height, 'width': decodedImage.width});
 
-      print(properties);
-
       // Save image to local storage first. The [ChatPageController] will have
       // an image file to prepare for [tileData].
       // Only save compressed image for normal image;
@@ -488,19 +487,20 @@ class VoceSendService {
       if (isGif) {
         print("isGif");
         // TODO: change to save File instead of bytes.
-        FileHandler.singleton
+        await FileHandler.singleton
             .saveImageNormal(chatId, fileBytes, localMid, filename);
       } else {
         // TODO: change to save File instead of bytes.
         final thumbBytes =
             await FlutterImageCompress.compressWithList(fileBytes, quality: 25);
         uploadBytes = thumbBytes;
-        FileHandler.singleton
+        await FileHandler.singleton
             .saveImageThumb(chatId, thumbBytes, localMid, filename);
       }
     } else {
       // TODO: change to save File instead of bytes.
-      FileHandler.singleton.saveFile(chatId, fileBytes, localMid, filename);
+      await FileHandler.singleton
+          .saveFile(chatId, fileBytes, localMid, filename);
     }
 
     final detail = MsgNormal(
@@ -602,6 +602,8 @@ class VoceSendService {
       Uint8List fileBytes,
       ChatMsgM chatMsgM,
       void Function(double progress)? progress) async {
+    print("############## _uploadAndSendFile ${chatMsgM.values}");
+
     // Prepare
     final prepareReq =
         FilePrepareRequest(contentType: contentType, filename: filename);
@@ -650,6 +652,8 @@ class VoceSendService {
         final mid = res.data!;
         chatMsgM.mid = mid;
         await ChatMsgDao().add(chatMsgM).then((savedMsgM) async {
+          print(
+              "############## _uploadAndSendFile success ${savedMsgM.values}");
           App.app.chatService
               .fireMsg(savedMsgM..status = MsgSendStatus.success, true);
         });

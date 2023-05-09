@@ -92,16 +92,21 @@ class GroupApi {
   }
 
   Future<Response<int>> sendTextMsg(
-    int gid,
-    String msg,
-    Map<String, dynamic>? properties,
-  ) async {
+      int gid, String msg, Map<String, dynamic>? properties) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
     dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode(properties)));
     dio.options.headers["content-type"] = typeText;
     // dio.options.receiveTimeout = Duration(milliseconds: 10000);
     dio.options.receiveTimeout = 10000;
+
+    Map<String, dynamic> refererHeader = {
+      'referer': App.app.chatServerM.fullUrl
+    };
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      refererHeader = {'referer': "https://privoce.voce.chat"};
+    }
+    dio.options.headers.addAll(refererHeader);
 
     final res = await dio.post("/$gid/send", data: msg);
 
@@ -126,6 +131,15 @@ class GroupApi {
     dio.options.headers["x-properties"] =
         base64.encode(utf8.encode(json.encode({'cid': cid})));
     dio.options.headers["content-type"] = typeText;
+
+    Map<String, dynamic> refererHeader = {
+      'referer': App.app.chatServerM.fullUrl
+    };
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      refererHeader = {'referer': "https://privoce.voce.chat"};
+    }
+    dio.options.headers.addAll(refererHeader);
+
     final res = await dio.post("/$gid/send", data: msg);
 
     var newRes = Response<int>(
@@ -154,6 +168,14 @@ class GroupApi {
         base64.encode(utf8.encode(json.encode(properties)));
     dio.options.headers["content-type"] = typeArchive;
 
+    Map<String, dynamic> refererHeader = {
+      'referer': App.app.chatServerM.fullUrl
+    };
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      refererHeader = {'referer': "https://privoce.voce.chat"};
+    }
+    dio.options.headers.addAll(refererHeader);
+
     final res = await dio.post("/$gid/send", data: archiveId);
 
     var newRes = Response<int>(
@@ -175,6 +197,14 @@ class GroupApi {
   Future<Response<int>> sendFileMsg(int gid, String cid, String path,
       {int? width, int? height}) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    Map<String, dynamic> refererHeader = {
+      'referer': App.app.chatServerM.fullUrl
+    };
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      refererHeader = {'referer': "https://privoce.voce.chat"};
+    }
+    dio.options.headers.addAll(refererHeader);
 
     Map<String, dynamic> properties = {'cid': cid};
     if (width != null && height != null) {
@@ -210,6 +240,14 @@ class GroupApi {
     String path,
   ) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
+
+    Map<String, dynamic> refererHeader = {
+      'referer': App.app.chatServerM.fullUrl
+    };
+    if (App.app.chatServerM.url == "dev.voce.chat") {
+      refererHeader = {'referer': "https://privoce.voce.chat"};
+    }
+    dio.options.headers.addAll(refererHeader);
 
     Map<String, dynamic> properties = {'cid': cid};
 

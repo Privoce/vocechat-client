@@ -193,7 +193,7 @@ class VoceFileBubble extends StatelessWidget {
 
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => FilePage(
-            filePath: filePath,
+            // filePath: filePath,
             fileName: fileName,
             extension: extension,
             size: size,

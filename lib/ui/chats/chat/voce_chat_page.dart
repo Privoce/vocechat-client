@@ -910,15 +910,13 @@ class _VoceChatPageState extends State<VoceChatPage> {
     }
 
     // Select
-    if (isSuccessSent) {
-      actions.add(MsgActionTile(
-          icon: AppIcons.select,
-          title: AppLocalizations.of(context)!.select,
-          onTap: () {
-            Navigator.pop(context);
-            selectEnabled.value = true;
-          }));
-    }
+    actions.add(MsgActionTile(
+        icon: AppIcons.select,
+        title: AppLocalizations.of(context)!.select,
+        onTap: () {
+          Navigator.pop(context);
+          selectEnabled.value = true;
+        }));
 
     // Delete
     if (isSelf || isAdmin || isChannelOwner) {

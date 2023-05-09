@@ -5,6 +5,11 @@ import 'package:vocechat_client/api/models/msg/msg_archive/archive_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive_user.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
+import 'package:vocechat_client/services/file_handler.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/file_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/tile_image_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_file_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
@@ -107,6 +112,9 @@ class _VoceArchiveContentBubbleState extends State<VoceArchiveContentBubble> {
   Widget _buildContent() {
     // TODO: update error message widget.
     String errorMsg = "Unsupported type.";
+
+    print(widget.archiveMsg.toJson());
+
     switch (widget.archiveMsg.contentType) {
       case typeText:
         return Text(widget.archiveMsg.content ?? "No content",
@@ -128,22 +136,43 @@ class _VoceArchiveContentBubbleState extends State<VoceArchiveContentBubble> {
                     widget.archiveMsg.thumbnailId!, widget.archiveMsg.fileName),
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
-                    return Image.file(snapshot.data!);
+                    // return Image.file(snapshot.data!);
+                    return VoceImageBubble(
+                        imageFile: snapshot.data,
+                        getImageList: () =>
+                            VoceTileImageBubble.getSingleImageList(
+                                snapshot.data!));
                   }
                   return const SizedBox();
                 });
           } else {
-            return const SizedBox();
+            errorMsg = "Unsupported Image.";
           }
         } else {
-          return const SizedBox();
+          // Only show file tile in msg list. Raw file won't be saved to db.
+          String? name = widget.archiveMsg.properties?["name"];
+          int? size = widget.archiveMsg.properties?["size"];
+
+          if (name != null && size != null) {
+            return VoceFileBubble(
+                filePath: widget.archiveId,
+                name: name,
+                size: size,
+                getLocalFile: () => FileHandler.singleton.getLocalArchiveFile(
+                    widget.archiveId, widget.archiveMsg.fileId!, name),
+                getFile: (onProgress) async {
+                  return FileHandler.singleton.getArchiveFile(widget.archiveId,
+                      widget.archiveMsg.fileId!, name, onProgress);
+                });
+          }
         }
+        break;
       default:
-        return Text(errorMsg,
-            style: const TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 14,
-                color: Color(0xFF344054)));
     }
+    return Text(errorMsg,
+        style: const TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+            color: Color(0xFF344054)));
   }
 }

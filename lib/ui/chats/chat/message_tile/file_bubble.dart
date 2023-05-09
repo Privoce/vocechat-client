@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/file_page.dart';
@@ -24,8 +21,8 @@ class FileBubble extends StatelessWidget {
   final Future<File?> Function(Function(int, int)) getFile;
   final ChatMsgM? chatMsgM;
 
-  FileBubble(
-      {required this.filePath,
+  const FileBubble(
+      {super.key, required this.filePath,
       required this.name,
       required this.size,
       required this.getLocalFile,
@@ -151,34 +148,9 @@ class FileBubble extends StatelessWidget {
   bool fileExists(String filePath) => File(filePath).existsSync();
 
   Future setFilePath(String type, String assetPath) async {
-    final _directory = await getTemporaryDirectory();
-    return "${_directory.path}/fileview/${base64.encode(utf8.encode(assetPath))}.$type";
+    final directory = await getTemporaryDirectory();
+    return "${directory.path}/fileview/${base64.encode(utf8.encode(assetPath))}.$type";
   }
-
-  // Future onNetworkTap(BuildContext context, String title, String type,
-  //     String downloadUrl) async {
-  //   String filePath = await setFilePath(type, title);
-  //   if (fileExists(filePath)) {
-  //     Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-  //       return LocalFileViewerPage(filePath: filePath);
-  //     }));
-  //   } else {
-  //     Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-  //       return NetworkFileViewerPage(
-  //         downloadUrl: downloadUrl,
-  //         downloadPath: filePath,
-  //       );
-  //     }));
-  //   }
-  // }
-  // Future onNetworkTap(BuildContext context, String fileName, String extension,
-  //     String path) async {
-  //   Navigator.of(context).push(MaterialPageRoute(builder: (ctx) {
-  //     return PDFBubble(
-  //       url: path,
-  //     );
-  //   }));
-  // }
 
   Future<void> _viewFile(BuildContext context) async {
     final fileName = p.basenameWithoutExtension(name);
@@ -186,7 +158,6 @@ class FileBubble extends StatelessWidget {
 
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => FilePage(
-            filePath: filePath,
             fileName: fileName,
             extension: extension,
             size: size,

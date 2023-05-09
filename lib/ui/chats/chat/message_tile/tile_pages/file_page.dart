@@ -25,7 +25,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 enum FilePageStatus { download, open, share, downloading }
 
 class FilePage extends StatefulWidget {
-  final String filePath;
+
 
   /// This file name does not contain extension.
   final String fileName;
@@ -36,7 +36,7 @@ class FilePage extends StatefulWidget {
   final ChatMsgM? chatMsgM;
 
   FilePage(
-      {required this.filePath,
+      {
       required this.fileName,
       required this.extension,
       required this.size,
@@ -136,7 +136,7 @@ class _FilePageState extends State<FilePage> {
                               child:
                                   Text(AppLocalizations.of(context)!.download),
                               onPressed: () {
-                                _download(widget.filePath, context);
+                                _download(context);
                               });
                         case FilePageStatus.open:
                           return CupertinoButton.filled(
@@ -212,7 +212,7 @@ class _FilePageState extends State<FilePage> {
     }
   }
 
-  Future<void> _download(String filePath, BuildContext context) async {
+  Future<void> _download(BuildContext context) async {
     _status.value = FilePageStatus.downloading;
     await widget.getFile(
       (p0, p1) {

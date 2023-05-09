@@ -65,16 +65,16 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
 
     if (widget.tileData != null && widget.tileData!.needServerPrepare) {
       widget.tileData!.serverPrepare().then((_) {
-        widget.archive = widget.tileData!.archive;
-        widget.archiveId =
-            widget.tileData!.chatMsgMNotifier.value.msgNormal!.content;
+        setState(() {
+          widget.archive = widget.tileData!.archive;
+          widget.archiveId =
+              widget.tileData!.chatMsgMNotifier.value.msgNormal!.content;
 
-        users = widget.archive?.users ?? [];
-        msgs = widget.archive?.messages ?? [];
+          users = widget.archive?.users ?? [];
+          msgs = widget.archive?.messages ?? [];
 
-        afterServerPrepare = true;
-
-        setState(() {});
+          afterServerPrepare = true;
+        });
       });
     }
   }
@@ -86,10 +86,8 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
         // no server data
         return const EmptyDataPlaceholder();
       } else {
-        // TODO: add loading placeholder.
+        return CupertinoActivityIndicator();
       }
-      // TODO: to be removed
-      return Container();
     } else {
       return _buildArchiveMsgList();
     }
@@ -98,67 +96,64 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
   Widget _buildArchiveMsgList() {
     final listLength = calListLength();
 
-    return CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: !enableDetailPage()
-            ? null
-            : () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => ArchivePage(
-                    archive: widget.archive,
-                    filePath: widget.archiveId,
-                    getFile: getFile))),
-        child: AbsorbPointer(
-          absorbing: !widget.isFullPage,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: AppColors.grey100),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(AppIcons.forward, size: 12, color: AppColors.grey400),
-                    const SizedBox(width: 4),
-                    Text(AppLocalizations.of(context)!.forwarded,
-                        style: TextStyle(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 12,
-                            color: AppColors.grey400))
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: List.generate(listLength, (index) {
-                    if (!widget.isFullPage && index == widget.lengthLimit) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            " ${AppLocalizations.of(context)!.archiveBubbleAnd} ${msgs.length - widget.lengthLimit} ${AppLocalizations.of(context)!.archiveBubbleMore}",
-                            style: const TextStyle(fontSize: 14),
-                            textAlign: TextAlign.right,
-                          ),
-                        ],
-                      );
-                    }
-
-                    final msg = msgs[index];
-                    final user = users[msg.fromUser];
-
-                    return VoceArchiveContentBubble(
-                        archiveMsg: msg,
-                        archiveId: widget.archiveId,
-                        archiveUser: user,
-                        getFile: getFile);
-                  }),
-                )
-              ],
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8), color: AppColors.grey100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(AppIcons.forward, size: 12, color: AppColors.grey400),
+              const SizedBox(width: 4),
+              Text(AppLocalizations.of(context)!.forwarded,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12,
+                      color: AppColors.grey400))
+            ],
           ),
-        ));
+          const SizedBox(height: 4),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(listLength, (index) {
+              if (!widget.isFullPage && index == widget.lengthLimit) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: !enableDetailPage()
+                          ? null
+                          : () => Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => ArchivePage(
+                                  archive: widget.archive,
+                                  filePath: widget.archiveId,
+                                  getFile: getFile))),
+                      child: Text(
+                        " ${AppLocalizations.of(context)!.archiveBubbleAnd} ${msgs.length - widget.lengthLimit} ${AppLocalizations.of(context)!.archiveBubbleMore}",
+                        style: const TextStyle(fontSize: 14),
+                        textAlign: TextAlign.right,
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              final msg = msgs[index];
+              final user = users[msg.fromUser];
+
+              return VoceArchiveContentBubble(
+                  archiveMsg: msg,
+                  archiveId: widget.archiveId,
+                  archiveUser: user,
+                  getFile: getFile);
+            }),
+          )
+        ],
+      ),
+    );
   }
 
   int calListLength() {
