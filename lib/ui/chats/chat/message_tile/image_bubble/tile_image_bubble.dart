@@ -161,6 +161,16 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
     imageFile = widget.imageFile;
     getImageList = widget.getImageList;
 
+    try {
+      final detail =
+          json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
+      detailProperties = detail['properties'];
+      width = detailProperties?["width"] ?? 240;
+      height = detailProperties?["height"] ?? 140;
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
     if (widget.tileData != null && widget.tileData!.needServerPrepare) {
       widget.tileData!.serverPrepare().then((value) {
         if (mounted) {
@@ -188,6 +198,7 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
   Widget build(BuildContext context) {
     if (widget.tileData != null && widget.tileData!.needServerPrepare) {
       // The constrains will remain the same as the original image.
+      print(width != null && height != null);
       return Container(
           constraints: const BoxConstraints(maxHeight: 140),
           child: (width != null && height != null)
