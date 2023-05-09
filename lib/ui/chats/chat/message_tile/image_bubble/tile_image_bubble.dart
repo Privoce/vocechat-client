@@ -163,21 +163,23 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
 
     if (widget.tileData != null && widget.tileData!.needServerPrepare) {
       widget.tileData!.serverPrepare().then((value) {
-        setState(() {
-          try {
-            final detail =
-                json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
-            detailProperties = detail['properties'];
-            width = detailProperties?["width"] ?? 240;
-            height = detailProperties?["height"] ?? 140;
+        if (mounted) {
+          setState(() {
+            try {
+              final detail =
+                  json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
+              detailProperties = detail['properties'];
+              width = detailProperties?["width"] ?? 240;
+              height = detailProperties?["height"] ?? 140;
 
-            imageFile = widget.tileData!.imageFile;
-            getImageList = () => VoceTileImageBubble.defaultGetImageList(
-                widget.tileData!.chatMsgMNotifier.value);
-          } catch (e) {
-            App.logger.severe(e);
-          }
-        });
+              imageFile = widget.tileData!.imageFile;
+              getImageList = () => VoceTileImageBubble.defaultGetImageList(
+                  widget.tileData!.chatMsgMNotifier.value);
+            } catch (e) {
+              App.logger.severe(e);
+            }
+          });
+        }
       });
     }
   }

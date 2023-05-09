@@ -62,8 +62,10 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
   final ValueNotifier<bool> selected = ValueNotifier(false);
 
-// Auto-deletion variables.
+  // Auto-deletion variables.
   Timer? _autoDeleteTimer;
+
+  final ValueNotifier<bool> _isAutoDelete = ValueNotifier(false);
   final ValueNotifier<int> _autoDeleteCountDown = ValueNotifier(0);
 
   /// Selection icon size, also used for status icon size.
@@ -72,11 +74,15 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   @override
   void initState() {
     super.initState();
+    _isAutoDelete.value = widget.tileData.isAutoDelete;
+
     initAutoDeleteTimer();
+    widget.tileData.chatMsgMNotifier.addListener(_onChatMsgMChange);
   }
 
   @override
   void dispose() {
+    widget.tileData.chatMsgMNotifier.removeListener(_onChatMsgMChange);
     _autoDeleteTimer?.cancel();
     super.dispose();
   }
@@ -91,21 +97,26 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
             valueListenable: widget.tileData.pinnedByUserInfoM,
             builder: (context, pinnedBy, _) {
               final isPinned = pinnedBy != null;
-              return Container(
-                  decoration: BoxDecoration(
-                    color: _getMsgTileBgColor(isPinned: isPinned),
-                  ),
-                  constraints:
-                      BoxConstraints(minHeight: avatarSize, maxWidth: width),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (isPinned) _buildPinnedBy(pinnedBy),
-                      _buildTileWithSelectionIcon(),
-                    ],
-                  ));
+              return ValueListenableBuilder<bool>(
+                  valueListenable: _isAutoDelete,
+                  builder: (context, isAutoDelete, _) {
+                    return Container(
+                        decoration: BoxDecoration(
+                          color: _getMsgTileBgColor(
+                              isPinned: isPinned, isAutoDelete: isAutoDelete),
+                        ),
+                        constraints: BoxConstraints(
+                            minHeight: avatarSize, maxWidth: width),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isPinned) _buildPinnedBy(pinnedBy),
+                            _buildTileWithSelectionIcon(),
+                          ],
+                        ));
+                  });
             }));
   }
 
@@ -443,43 +454,52 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   }
 
   Widget _buildAutoDeleteCountDown(BuildContext context) {
-    if (!widget.tileData.isAutoDelete) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: ValueListenableBuilder<int>(
-          valueListenable: _autoDeleteCountDown,
-          builder: (context, countDown, _) {
-            return SizedBox(
-              height: 20,
-              width: double.maxFinite,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Icon(Icons.access_time, size: 14, color: AppColors.grey400),
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    child: Text(
-                      _printDuration(Duration(milliseconds: countDown)),
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                        color: AppColors.grey400,
-                        fontSize: 14,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+      child: ValueListenableBuilder<bool>(
+          valueListenable: _isAutoDelete,
+          builder: (context, isAutoDelete, _) {
+            if (!isAutoDelete) {
+              return const SizedBox.shrink();
+            } else {
+              return ValueListenableBuilder<int>(
+                  valueListenable: _autoDeleteCountDown,
+                  builder: (context, countDown, _) {
+                    return SizedBox(
+                      height: 20,
+                      width: double.maxFinite,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Icon(Icons.access_time,
+                              size: 14, color: AppColors.grey400),
+                          const SizedBox(width: 4),
+                          SizedBox(
+                            child: Text(
+                              _printDuration(Duration(milliseconds: countDown)),
+                              textAlign: TextAlign.end,
+                              style: TextStyle(
+                                color: AppColors.grey400,
+                                fontSize: 14,
+                                fontFeatures: const [
+                                  FontFeature.tabularFigures()
+                                ],
+                              ),
+                            ),
+                          )
+                        ],
                       ),
-                    ),
-                  )
-                ],
-              ),
-            );
+                    );
+                  });
+            }
           }),
     );
   }
 
-  Color _getMsgTileBgColor({required bool isPinned}) {
-    final isAutoDeletion = widget.tileData.isAutoDelete;
-    if (isAutoDeletion) {
+  Color _getMsgTileBgColor(
+      {required bool isPinned, required bool isAutoDelete}) {
+    if (isAutoDelete) {
       return const Color.fromRGBO(249, 241, 239, 1);
     } else if (isPinned) {
       return const Color.fromRGBO(239, 252, 255, 1);
@@ -580,6 +600,21 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
         });
       }
     }
+  }
+
+  void _onChatMsgMChange() {
+    final chatMsgM = widget.tileData.chatMsgMNotifier.value;
+    final isAutoDelete = (chatMsgM.msgNormal?.expiresIn != null &&
+            chatMsgM.msgNormal!.expiresIn! > 0) ||
+        (chatMsgM.msgReply?.expiresIn != null &&
+            chatMsgM.msgReply!.expiresIn! > 0);
+
+    if (!isAutoDelete) {
+      _autoDeleteTimer?.cancel();
+    } else {
+      initAutoDeleteTimer();
+    }
+    _isAutoDelete.value = isAutoDelete;
   }
 }
 

@@ -113,8 +113,6 @@ class _VoceArchiveContentBubbleState extends State<VoceArchiveContentBubble> {
     // TODO: update error message widget.
     String errorMsg = "Unsupported type.";
 
-    print(widget.archiveMsg.toJson());
-
     switch (widget.archiveMsg.contentType) {
       case typeText:
         return Text(widget.archiveMsg.content ?? "No content",

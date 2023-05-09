@@ -23,7 +23,6 @@ class MsgTileData {
   String name = "";
   int time = 0;
   ValueNotifier<MsgSendStatus> status = ValueNotifier(MsgSendStatus.success);
-  bool isAutoDelete = false;
 
   /// Only for files (images and files)
   ValueNotifier<double> progress = ValueNotifier(0);
@@ -67,10 +66,6 @@ class MsgTileData {
     avatarUpdatedAt = userInfoM.userInfo.avatarUpdatedAt;
     name = userInfoM.userInfo.name;
     time = chatMsgM.createdAt;
-    isAutoDelete = (chatMsgM.msgNormal?.expiresIn != null &&
-            chatMsgM.msgNormal!.expiresIn! > 0) ||
-        (chatMsgM.msgReply?.expiresIn != null &&
-            chatMsgM.msgReply!.expiresIn! > 0);
 
     chatMsgMNotifier.addListener(statusListener);
 
@@ -94,6 +89,11 @@ class MsgTileData {
   // -- Property getters
   bool get isSelf => SharedFuncs.isSelf(chatMsgMNotifier.value.fromUid);
   bool get isChannel => chatMsgMNotifier.value.isGroupMsg;
+  bool get isAutoDelete =>
+      (chatMsgMNotifier.value.msgNormal?.expiresIn != null &&
+          chatMsgMNotifier.value.msgNormal!.expiresIn! > 0) ||
+      (chatMsgMNotifier.value.msgReply?.expiresIn != null &&
+          chatMsgMNotifier.value.msgReply!.expiresIn! > 0);
 
   // Async secondary setters
 

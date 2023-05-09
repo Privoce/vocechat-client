@@ -342,8 +342,6 @@ class ChatPageController {
   /// Includes all messages except *delete* type of *reaction* messages.
   Future<void> onMessage(ChatMsgM chatMsgM, bool afterReady,
       {bool? snippetOnly}) async {
-    print("################# ${chatMsgM.values}");
-
     if (snippetOnly ?? false) return;
 
     // TODO: handle afterReady.
@@ -351,7 +349,6 @@ class ChatPageController {
     if (isChannel && chatMsgM.gid == groupInfoMNotifier!.value.gid ||
         isUser && chatMsgM.dmUid == userInfoMNotifier!.value.uid) {
       final tileData = await prepareTileData(chatMsgM);
-      // await tileData.localPrepare();
 
       taskQueue.add(() async {
         insert(findInsertIndex(chatMsgM), tileData);

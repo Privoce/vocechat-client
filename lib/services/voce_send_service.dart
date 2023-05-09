@@ -602,8 +602,6 @@ class VoceSendService {
       Uint8List fileBytes,
       ChatMsgM chatMsgM,
       void Function(double progress)? progress) async {
-    print("############## _uploadAndSendFile ${chatMsgM.values}");
-
     // Prepare
     final prepareReq =
         FilePrepareRequest(contentType: contentType, filename: filename);
@@ -652,8 +650,6 @@ class VoceSendService {
         final mid = res.data!;
         chatMsgM.mid = mid;
         await ChatMsgDao().add(chatMsgM).then((savedMsgM) async {
-          print(
-              "############## _uploadAndSendFile success ${savedMsgM.values}");
           App.app.chatService
               .fireMsg(savedMsgM..status = MsgSendStatus.success, true);
         });
