@@ -248,47 +248,31 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   }
 
   Widget _buildTitle(BuildContext context) {
-    if (widget.isSelf) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.end,
+    List<InlineSpan> spanList = [
+      TextSpan(
+          text: widget.tileData.name,
+          style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+              color: Color(0xFF344054))),
+      WidgetSpan(child: SizedBox(width: 4)),
+      TextSpan(
+          text: " ${widget.tileData.time.toChatTime24StrEn(context)}",
+          style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+              color: Color(0xFFBFBFBF)))
+    ];
+
+    return Row(
+        mainAxisAlignment:
+            widget.isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
-          Text(
-            " ${widget.tileData.time.toChatTime24StrEn(context)}",
-            style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-                color: Color(0xFFBFBFBF)),
-          ),
-          const SizedBox(width: 8),
-          Text(widget.tileData.name,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: Color(0xFF344054)))
-        ],
-      );
-    } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(widget.tileData.name,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  color: Color(0xFF344054))),
-          const SizedBox(width: 8),
-          Text(
-            " ${widget.tileData.time.toChatTime24StrEn(context)}",
-            style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
-                color: Color(0xFFBFBFBF)),
-          )
-        ],
-      );
-    }
+          RichText(
+              text: TextSpan(
+                  children:
+                      widget.isSelf ? spanList.reversed.toList() : spanList)),
+        ]);
   }
 
   Widget _buildContent(BuildContext context) {
