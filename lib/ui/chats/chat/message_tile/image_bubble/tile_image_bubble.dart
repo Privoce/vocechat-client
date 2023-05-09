@@ -157,8 +157,8 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
             final detail =
                 json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
             detailProperties = detail['properties'];
-            width = detailProperties?["width"];
-            height = detailProperties?["height"];
+            width = detailProperties?["width"] ?? 240;
+            height = detailProperties?["height"] ?? 140;
 
             imageFile = widget.tileData!.imageFile;
             getImageList = () => VoceTileImageBubble.defaultGetImageList(

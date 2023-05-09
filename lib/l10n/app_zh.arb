@@ -291,7 +291,7 @@
     "memberRemovePageTitle": "移除频道成员",
     "memberRemovePageRemove": "移除",
 
-    "chatPageSelectionWarning":"多选模式中无法转发或保存被转发的或发送失败的消息。",
+    "chatPageSelectionWarning":"语音/被转发/发送失败的消息无法被多选转发或保存。",
     "chatPageCantFindFileWarning":"无法找到文件",
     "chatPageCantFindFileWarningContent":"文件也许已被删除。请发一条新消息。",
     "chatPageCantFindImageWarning":"无法找到图片",

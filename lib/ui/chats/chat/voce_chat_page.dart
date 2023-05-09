@@ -788,8 +788,8 @@ class _VoceChatPageState extends State<VoceChatPage> {
                 selectedMsgCantMultipleArchive.value =
                     selectedMsgMap.values.any(
                   (element) {
-                    return element.value.detailContentType ==
-                            MsgContentType.archive ||
+                    return element.value.isArchiveMsg ||
+                        element.value.isAudioMsg ||
                         element.value.status != MsgSendStatus.success;
                   },
                 );
@@ -893,16 +893,16 @@ class _VoceChatPageState extends State<VoceChatPage> {
           onTap: () => _onTapPin(chatMsgM, isPinned == -1)));
     }
 
-    // Archive
-    if (!chatMsgM.isArchiveMsg && isSuccessSent) {
+    // Save
+    if (!chatMsgM.isArchiveMsg && !chatMsgM.isAudioMsg && isSuccessSent) {
       actions.add(MsgActionTile(
           icon: AppIcons.bookmark,
-          title: AppLocalizations.of(context)!.archive,
+          title: AppLocalizations.of(context)!.save,
           onTap: () => _onTapSave(chatMsgM)));
     }
 
     // Forward
-    if (isSuccessSent) {
+    if (!chatMsgM.isAudioMsg && isSuccessSent) {
       actions.add(MsgActionTile(
           icon: AppIcons.forward,
           title: AppLocalizations.of(context)!.forward,

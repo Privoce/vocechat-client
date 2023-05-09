@@ -288,7 +288,7 @@
     "memberRemovePageTitle": "Remove Members",
     "memberRemovePageRemove": "Remove",
 
-    "chatPageSelectionWarning":"Can't forward or save a forwarded/unsuccessful message in selection mode.",
+    "chatPageSelectionWarning":"Can't forward or save an Audio/forwarded/unsuccessful message in selection mode.",
     "chatPageCantFindFileWarning":"Can't Find File",
     "chatPageCantFindFileWarningContent":"File might have been deleted. Please send a new message.",
     "chatPageCantFindImageWarning":"Can't Find Image File",
