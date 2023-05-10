@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.80", "build_num": 50},
+    "latest": {"version": "0.2.83", "build_num": 53},
     "logs":  [
+        {"time": 1680948278556, "version": "0.2.83", "build_num": 53, "updates": [
+            "- refactor: performance improvements.",
+            "- add: audio messages."
+        ]},
         {"time": 1680948278556, "version": "0.2.80", "build_num": 50, "updates": [
             "- refactor: avatar data storage and fetching strategy.",
             "- fix: HEIF image sending issue.",
