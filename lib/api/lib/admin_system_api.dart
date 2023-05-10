@@ -102,7 +102,11 @@ class AdminSystemApi {
         extra: res.extra);
 
     if (res.statusCode == 200 && res.data != null) {
-      newRes.data = res.data;
+      if (res.data == true) {
+        newRes.data = res.data;
+      } else {
+        newRes.data = false;
+      }
     }
     return newRes;
   }

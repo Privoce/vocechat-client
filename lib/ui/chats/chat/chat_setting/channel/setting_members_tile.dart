@@ -6,7 +6,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_members_page.dart';
@@ -57,7 +57,7 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
     bool isAdmin = App.app.userDb?.userInfo.isAdmin ?? false;
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
           color: Colors.white,
           border: Border.symmetric(
               horizontal:
@@ -72,7 +72,7 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                 },
               ));
             },
-            showVerticalEdge: widget.groupInfoMNotifier.value.isPublic == 1,
+            showVerticalEdge: widget.groupInfoMNotifier.value.isPublic,
             title: AppLocalizations.of(context)!.members,
             trailing: ValueListenableBuilder<int>(
                 valueListenable: memberCountNotifier,
@@ -84,9 +84,9 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                           color: AppColors.labelColorLightSec));
                 }),
           ),
-          if (widget.groupInfoMNotifier.value.isPublic != 1)
-            Divider(indent: 16),
-          if (widget.groupInfoMNotifier.value.isPublic != 1)
+          if (!widget.groupInfoMNotifier.value.isPublic)
+            const Divider(indent: 16),
+          if (!widget.groupInfoMNotifier.value.isPublic)
             Column(
               children: [
                 Container(
@@ -130,7 +130,7 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                                     showModalBottomSheet(
                                         context: context,
                                         isScrollControlled: true,
-                                        shape: RoundedRectangleBorder(
+                                        shape: const RoundedRectangleBorder(
                                             borderRadius: BorderRadius.only(
                                                 topLeft: Radius.circular(8),
                                                 topRight: Radius.circular(8))),
@@ -167,7 +167,7 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                                     showModalBottomSheet(
                                         context: context,
                                         isScrollControlled: true,
-                                        shape: RoundedRectangleBorder(
+                                        shape: const RoundedRectangleBorder(
                                             borderRadius: BorderRadius.only(
                                                 topLeft: Radius.circular(8),
                                                 topRight: Radius.circular(8))),
@@ -198,9 +198,13 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                             final user = memberList[index];
                             return GestureDetector(
                               onTap: () {
-                                Navigator.of(context).pushNamed(
-                                    ContactDetailPage.route,
-                                    arguments: user);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ContactDetailPage(userInfoM: user),
+                                  ),
+                                );
+                                ;
                               },
                               child: Padding(
                                 padding:
@@ -223,11 +227,9 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                 )
               ],
             ),
-          if (widget.groupInfoMNotifier.value.isPublic != 1 &&
-              (isAdmin || isOwner))
-            Divider(indent: 16),
-          if (widget.groupInfoMNotifier.value.isPublic != 1 &&
-              (isAdmin || isOwner))
+          if (!widget.groupInfoMNotifier.value.isPublic && (isAdmin || isOwner))
+            const Divider(indent: 16),
+          if (!widget.groupInfoMNotifier.value.isPublic && (isAdmin || isOwner))
             BannerTile(
                 showVerticalEdge: false,
                 title: AppLocalizations.of(context)!.transferOwnership,
@@ -247,14 +249,14 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
     }
 
     if (action == EventActions.update) {
-      if (groupInfoM.isPublic == 1) {
+      if (groupInfoM.isPublic) {
         memberCountNotifier.value = await UserInfoDao().getUserCount();
       } else {
         memberCountNotifier.value = groupInfoM.groupInfo.members?.length ?? 0;
       }
       int count = ((MediaQuery.of(context).size.width - 16) / 52).floor();
       final users = (await GroupInfoDao().getUserListByGid(groupInfoM.gid,
-              groupInfoM.isPublic == 1, groupInfoM.groupInfo.members ?? [],
+              groupInfoM.isPublic, groupInfoM.groupInfo.members ?? [],
               batchSize: count - 1)) ??
           [];
 

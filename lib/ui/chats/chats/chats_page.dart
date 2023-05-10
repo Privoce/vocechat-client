@@ -1,31 +1,26 @@
-import 'dart:typed_data';
-import 'package:vocechat_client/app_consts.dart';
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
-import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/globals.dart';
-import 'package:vocechat_client/models/ui_models/ui_chat.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
+import 'package:vocechat_client/models/ui_models/chat_tile_data.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_icons_icons.dart';
-import 'package:vocechat_client/ui/chats/chat/chat_page.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
-import 'package:vocechat_client/ui/chats/chats/chat_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/chats/chats/voce_chat_tile.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
+
+// TODO: resume unread count sum later.
 
 class ChatsPage extends StatefulWidget {
   static const route = "/chats/chats";
@@ -38,12 +33,11 @@ class ChatsPage extends StatefulWidget {
 
 class _ChatsPageState extends State<ChatsPage>
     with AutomaticKeepAliveClientMixin<ChatsPage> {
-  final List<UiChat> _uiChats = [];
-  final Map<int, UserInfoM> _userInfoMap = {};
-
   TaskQueue taskQueue = TaskQueue(enableStatusDisplay: true);
 
   ValueNotifier<int> memberCountNotifier = ValueNotifier(0);
+
+  final Map<String, ChatTileData> chatTileMap = {};
 
   int count = 0;
 
@@ -55,34 +49,27 @@ class _ChatsPageState extends State<ChatsPage>
     super.initState();
     prepareChats();
     getMemberCount();
-    globals.unreadCountSum.value = calUnreadCountSum();
-    App.app.chatService.subscribeGroups(_onChannel);
-    App.app.chatService.subscribeSnippet(_onSnippet);
-    App.app.chatService.subscribeUsers(_onUser);
-    App.app.chatService.subscribeUserStatus(_onUserStatus);
-    App.app.chatService.subscribeReady(_onReady);
+    calUnreadCountSum();
+
+    App.app.chatService.subscribeMsg(_onMessage);
+    App.app.chatService.subscribeRefresh(_onRefresh);
 
     eventBus.on<UserChangeEvent>().listen((event) {
       clearChats();
       prepareChats();
       getMemberCount();
 
-      globals.unreadCountSum.value = calUnreadCountSum();
-      App.app.chatService.subscribeGroups(_onChannel);
-      App.app.chatService.subscribeSnippet(_onSnippet);
-      App.app.chatService.subscribeUsers(_onUser);
-      App.app.chatService.subscribeUserStatus(_onUserStatus);
-      App.app.chatService.subscribeReady(_onReady);
+      calUnreadCountSum();
+
+      App.app.chatService.subscribeMsg(_onMessage);
+      App.app.chatService.subscribeRefresh(_onRefresh);
     });
   }
 
   @override
   void dispose() {
-    App.app.chatService.unsubscribeGroups(_onChannel);
-    App.app.chatService.unsubscribeSnippet(_onSnippet);
-    App.app.chatService.unsubscribeUsers(_onUser);
-    App.app.chatService.unsubscribeUserStatus(_onUserStatus);
-    App.app.chatService.unsubscribeReady(_onReady);
+    App.app.chatService.unsubscribeMsg(_onMessage);
+    App.app.chatService.unsubscribeRefresh(_onRefresh);
     super.dispose();
   }
 
@@ -95,507 +82,149 @@ class _ChatsPageState extends State<ChatsPage>
       appBar: ChatsBar(
         memberCountNotifier: memberCountNotifier,
         showDrawer: () => Scaffold.of(context).openDrawer(),
-        onCreateChannel: (groupInfoM) {
-          final uiChat = UiChat(
-              // avatar: groupInfoM.avatar,
-              title: groupInfoM.groupInfo.name,
-              groupInfoM: groupInfoM,
-              isPrivateChannel: groupInfoM.isPublic != 1,
-              isMuted: groupInfoM.properties.enableMute,
-              updatedAt: groupInfoM.updatedAt);
-
-          addOrReplaceChannel(uiChat);
-
-          _onTapChannel(groupInfoM.gid);
+        onCreateChannel: (groupInfoM) async {
+          final tileData = await ChatTileData.fromChannel(groupInfoM);
+          final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
+          if (chatId != null) {
+            chatTileMap.addAll({chatId: tileData});
+            onTap(tileData);
+          }
         },
-        onCreateDm: (userInfoM) {
-          _onTapDm(userInfoM.uid);
+        onCreateDm: (userInfoM) async {
+          final tileData = await ChatTileData.fromUser(userInfoM);
+          final chatId = SharedFuncs.getChatId(uid: userInfoM.uid);
+          if (chatId != null) {
+            chatTileMap.addAll({chatId: tileData});
+            onTap(tileData);
+          }
         },
       ),
       body: _buildChats(),
     );
   }
 
-  int getUiChatIndex({int? gid, int? uid}) {
-    int index = -1;
-    if (gid != null) {
-      index = _uiChats.indexWhere((element) => element.groupInfoM?.gid == gid);
-    } else if (uid != null) {
-      index = _uiChats.indexWhere((element) => element.userInfoM?.uid == uid);
+  List<ChatTileData> sortTileData() {
+    final List<ChatTileData> pinned = [];
+    final List<ChatTileData> unpinned = [];
+
+    for (var tileData in chatTileMap.values) {
+      if (tileData.pinnedAt > 0) {
+        pinned.add(tileData);
+      } else {
+        unpinned.add(tileData);
+      }
     }
 
-    return index;
-  }
+    pinned.sort((a, b) {
+      if (a.pinnedAt != b.pinnedAt) {
+        return b.pinnedAt - a.pinnedAt;
+      } else {
+        return b.updatedAt.value - a.updatedAt.value;
+      }
+    });
 
-  /// Should use inside setState method to get UI updated.
-  void addOrReplaceChannel(UiChat uiChat, [int insertAt = 0]) {
-    assert(uiChat.groupInfoM != null);
+    unpinned.sort((a, b) => b.updatedAt.value - a.updatedAt.value);
 
-    int idx = _uiChats.indexWhere(
-        (element) => element.groupInfoM?.gid == uiChat.groupInfoM?.gid);
-    if (idx > -1) {
-      _uiChats.removeAt(idx);
-    }
-    _uiChats.insert(insertAt, uiChat);
-  }
-
-  /// Should use inside setState method to get UI updated.
-  void addOrReplaceDm(UiChat uiChat, [int insertAt = 0]) {
-    assert(uiChat.userInfoM != null);
-
-    int idx = _uiChats.indexWhere(
-        (element) => element.userInfoM?.uid == uiChat.userInfoM?.uid);
-    if (idx > -1) {
-      _uiChats.removeAt(idx);
-    }
-    _uiChats.insert(insertAt, uiChat);
+    return [...pinned] + [...unpinned];
   }
 
   Widget _buildChats() {
-    _uiChats.sort(((a, b) => b.updatedAt.value.compareTo(a.updatedAt.value)));
+    final chatTileList = sortTileData();
 
     return ListView.separated(
-      itemCount: _uiChats.length,
+      itemCount: chatTileList.length,
       itemBuilder: (context, index) {
-        final uiChat = _uiChats[index];
-        if (uiChat.isChannel) {
-          return _buildChannelTile(uiChat);
-        } else {
-          return _buildDmTile(uiChat);
-        }
+        return VoceChatTile(tileData: chatTileList[index], onTap: onTap);
       },
       separatorBuilder: (context, index) {
-        return Divider(indent: 80);
+        return const Divider(indent: 80);
       },
     );
   }
 
-  Widget _buildChannelTile(UiChat uiChat) {
-    assert(uiChat.groupInfoM != null);
+  /// [VoceChatService] Message listener
+  ///
+  /// Only do its work when [afterReady] is true.
+  Future<void> _onMessage(ChatMsgM chatMsgM, bool afterReady,
+      {bool? snippetOnly}) async {
+    if (!afterReady) return;
 
-    final avatar = VoceChannelAvatar.channel(
-        groupInfoM: uiChat.groupInfoM!, size: VoceAvatarSize.s48);
-
-    return ChatTile(
-        onTap: () => _onTapChannel(uiChat.groupInfoM!.gid),
-        name: uiChat.title,
-        snippet: uiChat.snippet,
-        updatedAt: uiChat.updatedAt,
-        isMuted: uiChat.isMuted,
-        draft: uiChat.draft,
-        unreadCount: uiChat.unreadCount,
-        unreadMentionCount: uiChat.unreadMentionCount,
-        isPrivateChannel: uiChat.isPrivateChannel,
-        avatar: avatar);
-  }
-
-  Widget _buildDmTile(UiChat uiChat) {
-    assert(uiChat.userInfoM != null && uiChat.onlineNotifier != null);
-
-    Widget avatar = VoceUserAvatar.user(
-        userInfoM: uiChat.userInfoM!,
-        size: VoceAvatarSize.s48,
-        enableOnlineStatus: true);
-
-    return Slidable(
-      endActionPane:
-          ActionPane(extentRatio: 0.2, motion: DrawerMotion(), children: [
-        SlidableAction(
-          flex: 1,
-          onPressed: (context) {
-            _onDeleteDm(uiChat.userInfoM!.uid);
-          },
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
-          label: 'Hide',
-        ),
-      ]),
-      child: ChatTile(
-          onTap: () => _onTapDm(uiChat.userInfoM!.uid),
-          name: uiChat.title,
-          snippet: uiChat.snippet,
-          draft: uiChat.draft,
-          isMuted: uiChat.isMuted,
-          updatedAt: uiChat.updatedAt,
-          unreadCount: uiChat.unreadCount,
-          unreadMentionCount: uiChat.unreadMentionCount,
-          avatar: avatar),
-    );
-  }
-
-  void _onDeleteDm(int dmUid) async {
-    try {
-      await DmInfoDao().removeByDmUid(dmUid);
-
-      final index = getUiChatIndex(uid: dmUid);
-      if (index > -1) _uiChats.removeAt(index);
-      if (mounted) {
-        setState(() {});
+    final chatId =
+        SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+    if (chatId != null && chatTileMap.containsKey(chatId)) {
+      chatTileMap[chatId]?.updateByChatMsg(chatMsgM);
+    } else {
+      // if no current chat session, create a new one
+      final tileData = await ChatTileData.fromChatMsgM(chatMsgM);
+      final chatId =
+          SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
+      if (chatId != null && tileData != null) {
+        chatTileMap.addAll({chatId: tileData});
       }
-    } catch (e) {
-      App.logger.severe(e);
+
+      // Only work when [afterReady] is true.
+      await DmInfoDao()
+          .addOrUpdate(DmInfoM.item(chatMsgM.dmUid, "", chatMsgM.createdAt));
+    }
+
+    calUnreadCountSum();
+
+    if (mounted) {
+      setState(() {});
     }
   }
 
-  void _onTapChannel(int gid) async {
-    final groupInfoM = (await GroupInfoDao().getGroupByGid(gid))!;
-
-    final groupInfo = groupInfoM.groupInfo;
-
-    final hintText =
-        AppLocalizations.of(context)!.chatTextFieldHint + " #${groupInfo.name}";
-    // final msgCount = await ChatMsgDao().getChatMsgCount(gid: gid);
-    final draft = groupInfoM.properties.draft;
-
-    GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
-    int unreadCount = await ChatMsgDao().getGroupUnreadCount(gid);
-    Navigator.push(
-        context,
-        MaterialPageRoute<String?>(
-          builder: (context) => ChatPage(
-              mentionsKey: mentionsKey,
-              title: groupInfo.name,
-              hintText: hintText,
-              draft: draft,
-              // msgCount: msgCount,
-              groupInfoNotifier: ValueNotifier(groupInfoM),
-              unreadCount: unreadCount),
-        )).then((_) async {
-      final index = getUiChatIndex(gid: gid);
-      if (index > -1) {
-        final unreadCount = await ChatMsgDao().getGroupUnreadCount(gid);
-        final unreadMentionCount =
-            await ChatMsgDao().getGroupUnreadMentionCount(gid);
-
-        _uiChats[index].unreadCount.value = unreadCount;
-        _uiChats[index].unreadMentionCount.value = unreadMentionCount;
-
-        globals.unreadCountSum.value = calUnreadCountSum();
-      }
-
-      final draft = mentionsKey.currentState?.controller?.text;
-
-      await GroupInfoDao().updateProperties(gid, draft: draft).then((value) {
-        if (value != null) {
-          App.app.chatService.fireChannel(value, EventActions.update);
-        }
-      });
-    });
-  }
-
-  void _onTapDm(int dmUid) async {
-    final userInfoM = (await UserInfoDao().getUserByUid(dmUid))!;
-
-    final hintText = AppLocalizations.of(context)!.chatTextFieldHint +
-        " @${userInfoM.userInfo.name}";
-    final draft = userInfoM.properties.draft;
-    // final msgCount = await ChatMsgDao().getChatMsgCount(uid: dmUid);
-    GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
-    int unreadCount = await ChatMsgDao().getDmUnreadCount(dmUid);
-    Navigator.push(
-        context,
-        MaterialPageRoute<String?>(
-          builder: (context) => ChatPage(
-              mentionsKey: mentionsKey,
-              title: userInfoM.userInfo.name,
-              // msgCount: msgCount,
-              hintText: hintText,
-              draft: draft,
-              userInfoNotifier: ValueNotifier(userInfoM),
-              unreadCount: unreadCount),
-        )).then((_) async {
-      final index = getUiChatIndex(uid: dmUid);
-      if (index > -1) {
-        final unreadCount = await ChatMsgDao().getDmUnreadCount(dmUid);
-
-        _uiChats[index].unreadCount.value = unreadCount;
-        globals.unreadCountSum.value = calUnreadCountSum();
-      }
-
-      final draft = mentionsKey.currentState?.controller?.text;
-
-      UserInfoDao().updateProperties(dmUid, draft: draft).then((value) async {
-        if (value != null) {
-          if ((await DmInfoDao().getDmInfo(value.uid)) != null) {
-            App.app.chatService.fireUser(value, EventActions.update);
-          } else {
-            App.app.chatService.fireUser(value, EventActions.create);
-          }
-        }
-      });
-    });
-  }
-
-  Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
-    taskQueue.add(() async {
-      switch (action) {
-        case EventActions.create:
-        case EventActions.update:
-          final index = getUiChatIndex(gid: groupInfoM.gid);
-
-          if (index > -1) {
-            // _uiChats[index].avatar.value = groupInfoM.avatar;
-            _uiChats[index].title.value = groupInfoM.groupInfo.name;
-            _uiChats[index].isMuted.value = groupInfoM.properties.enableMute;
-            _uiChats[index].draft.value = groupInfoM.properties.draft;
-            _uiChats[index].isPrivateChannel.value =
-                !groupInfoM.groupInfo.isPublic;
-          } else {
-            final uiChat = UiChat(
-                // avatar: groupInfoM.avatar,
-                title: groupInfoM.groupInfo.name,
-                groupInfoM: groupInfoM,
-                isPrivateChannel: groupInfoM.isPublic != 1,
-                isMuted: groupInfoM.properties.enableMute,
-                updatedAt: groupInfoM.updatedAt);
-
-            addOrReplaceChannel(uiChat);
-          }
-          break;
-
-        case EventActions.delete:
-          final index = getUiChatIndex(gid: groupInfoM.gid);
-          if (index > -1) {
-            _uiChats.removeAt(index);
-          }
-          break;
-        default:
-      }
-    });
-  }
-
-  /// Only response to update and delete. User initiazed in [onSnippet].
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
-    taskQueue.add(() async {
-      _userInfoMap.addAll({userInfoM.uid: userInfoM});
-
-      final index = getUiChatIndex(uid: userInfoM.uid);
-
-      switch (action) {
-        case EventActions.create:
-          if (userInfoM.properties.draft.isEmpty) {
-            break;
-          }
-          final localMid =
-              await ChatMsgDao().getLatestLocalMidInDm(userInfoM.uid);
-          final latestMsgM = await ChatMsgDao().getMsgBylocalMid(localMid);
-          int updatedAt =
-              latestMsgM?.createdAt ?? DateTime.now().millisecondsSinceEpoch;
-          String snippet =
-              latestMsgM != null ? _processSnippet(latestMsgM) : "";
-
-          final uiChat = UiChat(
-              // avatar: userInfoM.avatarBytes,
-              title: userInfoM.userInfo.name,
-              userInfoM: userInfoM,
-              isMuted: userInfoM.properties.enableMute,
-              onlineNotifier: ValueNotifier(false),
-              snippet: snippet,
-              updatedAt: updatedAt,
-              draft: userInfoM.properties.draft);
-
-          addOrReplaceDm(uiChat);
-
-          break;
-        case EventActions.update:
-          if (index > -1) {
-            // _uiChats[index].avatar.value = userInfoM.avatarBytes;
-            _uiChats[index].title.value = userInfoM.userInfo.name;
-            _uiChats[index].isMuted.value = userInfoM.properties.enableMute;
-            _uiChats[index].draft.value = userInfoM.properties.draft;
-          }
-
-          break;
-        case EventActions.delete:
-          final index = getUiChatIndex(uid: userInfoM.uid);
-          if (index > -1) {
-            _uiChats.removeAt(index);
-          }
-          break;
-        default:
-      }
-
-      getMemberCount();
-    });
-  }
-
-  Future<void> _onSnippet(ChatMsgM chatMsgM) async {
-    taskQueue.add(() async {
-      final uid = chatMsgM.isGroupMsg ? chatMsgM.fromUid : chatMsgM.dmUid;
-
-      final userInfoM = await UserInfoDao().getUserByUid(uid);
-      if (userInfoM == null) {
-        App.logger.warning("No UserInfo found. uid: $uid");
-      }
-
-      String snippet = _processSnippet(chatMsgM);
-
-      if (chatMsgM.isGroupMsg) {
-        final groupInfoM = await GroupInfoDao().getGroupByGid(chatMsgM.gid);
-
-        if (userInfoM != null && groupInfoM != null) {
-          final maxMid = await ChatMsgDao().getChannelMaxMid(groupInfoM.gid);
-          if (maxMid != -1 && chatMsgM.mid < maxMid) {
-            return;
-          }
-
-          // Prepare snippet.
-          String s = await SharedFuncs.parseMention(snippet);
-          if (userInfoM.userInfo.uid == App.app.userDb!.uid) {
-            s = "${AppLocalizations.of(context)!.you}: $s";
-          } else {
-            s = "${userInfoM.userInfo.name}: $s";
-          }
-
-          final unreadCount =
-              await ChatMsgDao().getGroupUnreadCount(chatMsgM.gid);
-          final unreadMentionCount =
-              await ChatMsgDao().getGroupUnreadMentionCount(chatMsgM.gid);
-
-          final index = getUiChatIndex(gid: chatMsgM.gid);
-          if (index > -1) {
-            // setState(() {
-            _uiChats[index].snippet.value = s;
-            _uiChats[index].updatedAt.value = chatMsgM.createdAt;
-            _uiChats[index].unreadCount.value = unreadCount;
-            _uiChats[index].unreadMentionCount.value = unreadMentionCount;
-            // });
-          } else {
-            // Target channel not shown in chats list.
-          }
-          await GroupInfoDao()
-              .updateLastLocalMidBy(chatMsgM.gid, chatMsgM.localMid);
-        }
-      } else {
-        if (userInfoM != null) {
-          final maxMid = await ChatMsgDao().getDmMaxMid(userInfoM.uid);
-          if (chatMsgM.edited == 1 && maxMid != -1 && chatMsgM.mid < maxMid) {
-            return;
-          }
-
-          final unreadCount =
-              await ChatMsgDao().getDmUnreadCount(userInfoM.uid);
-
-          final index = getUiChatIndex(uid: uid);
-          if (index > -1) {
-            // setState(() {
-            _uiChats[index].snippet.value = snippet;
-            _uiChats[index].updatedAt.value = chatMsgM.createdAt;
-            _uiChats[index].unreadCount.value = unreadCount;
-            // });
-          } else {
-            final uiChat = UiChat(
-                userInfoM: userInfoM,
-                // avatar: userInfoM.avatarBytes,
-                title: userInfoM.userInfo.name,
-                snippet: snippet,
-                updatedAt: chatMsgM.createdAt,
-                unreadCount: unreadCount,
-                onlineNotifier: ValueNotifier(false));
-            // setState(() {
-            addOrReplaceDm(uiChat);
-            // });
-          }
-          DmInfoDao().addOrReplace(DmInfoM.item(
-              chatMsgM.dmUid, chatMsgM.localMid, chatMsgM.createdAt));
-        }
-      }
-      globals.unreadCountSum.value = calUnreadCountSum();
-
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  String _processSnippet(ChatMsgM chatMsgM) {
-    String snippet;
-
-    switch (chatMsgM.detailType) {
-      case MsgDetailType.normal:
-        switch (chatMsgM.detailContentType) {
-          case MsgContentType.text:
-            snippet =
-                chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
-            break;
-          case MsgContentType.markdown:
-            snippet =
-                "[Markdown]${chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? ""}";
-
-            break;
-          case MsgContentType.file:
-            final name = chatMsgM.msgNormal?.properties?["name"] ?? "";
-
-            if (chatMsgM.isImageMsg) {
-              snippet = "[${AppLocalizations.of(context)!.image}] $name";
-            } else {
-              snippet = "[${AppLocalizations.of(context)!.file}] $name";
-            }
-            break;
-          case MsgContentType.archive:
-            snippet = "[${AppLocalizations.of(context)!.archive}]";
-            break;
-          default:
-            snippet =
-                chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
-            break;
-        }
-        break;
-      case MsgDetailType.reaction:
-        switch (chatMsgM.msgReaction!.type) {
-          case "edit":
-            snippet = chatMsgM.msgReaction?.detail["content"] ?? "";
-            break;
-          default:
-            snippet = AppLocalizations.of(context)!.unsupportedMessageType;
-        }
-        break;
-      case MsgDetailType.reply:
-        switch (chatMsgM.detailContentType) {
-          case MsgContentType.text:
-            snippet =
-                chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
-            break;
-          case MsgContentType.markdown:
-            snippet =
-                "[Markdown]${chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? ""}";
-
-            break;
-          default:
-            snippet = AppLocalizations.of(context)!.unsupportedMessageType;
-            break;
-        }
-        break;
-      default:
-        snippet = AppLocalizations.of(context)!.unsupportedMessageType;
-    }
-    return snippet;
-  }
-
-  Future<void> _onUserStatus(int uid, bool isOnline) async {
-    final index = getUiChatIndex(uid: uid);
-    if (index > -1) {
-      _uiChats[index].onlineNotifier?.value = isOnline;
-    }
-  }
-
-  void _onReady() {
-    taskQueue.add(() async {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+  void _onRefresh() {
+    prepareChats();
   }
 
   void clearChats() {
-    _uiChats.clear();
+    chatTileMap.clear();
   }
 
   Future<void> prepareChats() async {
+    clearChats();
     await prepareChannels();
     await prepareDms();
+    calUnreadCountSum();
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  void onTap(ChatTileData tileData) async {
+    if (tileData.isChannel) {
+      GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
+      ChatPageController controller =
+          ChatPageController.channel(groupInfoMNotifier: tileData.groupInfoM!);
+      controller.prepare().then((value) {
+        Navigator.push(
+            context,
+            MaterialPageRoute<String?>(
+                builder: (context) => VoceChatPage.channel(
+                    mentionsKey: mentionsKey,
+                    controller: controller))).then((value) async {
+          // await tileData.setChannel();
+          calUnreadCountSum();
+          controller.dispose();
+        });
+      });
+    } else {
+      GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
+      ChatPageController controller =
+          ChatPageController.user(userInfoMNotifier: tileData.userInfoM!);
+      controller.prepare().then((value) {
+        Navigator.push(
+            context,
+            MaterialPageRoute<String?>(
+                builder: (context) => VoceChatPage.user(
+                    mentionsKey: mentionsKey,
+                    controller: controller))).then((value) async {
+          // await tileData.setUser();
+          calUnreadCountSum();
+          controller.dispose();
+        });
+      });
     }
   }
 
@@ -604,104 +233,26 @@ class _ChatsPageState extends State<ChatsPage>
 
     if (groupList != null) {
       for (GroupInfoM groupInfoM in groupList) {
-        final localMid =
-            await ChatMsgDao().getLatestLocalMidInGroup(groupInfoM.gid);
-        final latestMsgM = await ChatMsgDao().getMsgBylocalMid(localMid);
-        final unreadCount =
-            await ChatMsgDao().getGroupUnreadCount(groupInfoM.gid);
-        final unreadMentionCount =
-            await ChatMsgDao().getGroupUnreadMentionCount(groupInfoM.gid);
-        final draft = groupInfoM.properties.draft;
+        final channelTileData = await ChatTileData.fromChannel(groupInfoM);
+        final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
 
-        if (latestMsgM != null) {
-          String s =
-              await SharedFuncs.parseMention(_processSnippet(latestMsgM));
-
-          final userInfoM =
-              await UserInfoDao().getUserByUid(latestMsgM.fromUid);
-          if (userInfoM != null) {
-            if (userInfoM.uid == App.app.userDb!.uid) {
-              s = "${AppLocalizations.of(context)!.you}: " + s;
-            } else {
-              s = userInfoM.userInfo.name + ": " + s;
-            }
-          }
-
-          final uiChat = UiChat(
-            // avatar: groupInfoM.avatar,
-            title: groupInfoM.groupInfo.name,
-            snippet: s,
-            unreadMentionCount: unreadMentionCount,
-            draft: draft,
-            groupInfoM: groupInfoM,
-            updatedAt: latestMsgM.createdAt,
-            isPrivateChannel: groupInfoM.isPublic != 1,
-            unreadCount: unreadCount,
-          );
-
-          addOrReplaceChannel(uiChat);
-        } else {
-          final uiChat = UiChat(
-              // avatar: groupInfoM.avatar,
-              title: groupInfoM.groupInfo.name,
-              groupInfoM: groupInfoM,
-              updatedAt: groupInfoM.createdAt,
-              isPrivateChannel: groupInfoM.isPublic != 1);
-
-          addOrReplaceChannel(uiChat);
+        if (chatId != null) {
+          chatTileMap.addAll({chatId: channelTileData});
         }
       }
-
-      globals.unreadCountSum.value = calUnreadCountSum();
     }
   }
 
   Future<void> prepareDms() async {
     final dmList = await DmInfoDao().getDmList();
+    if (dmList == null) return;
 
-    if (dmList != null && dmList.isNotEmpty) {
-      for (final dm in dmList) {
-        final userInfoM = await UserInfoDao().getUserByUid(dm.dmUid);
-        if (userInfoM != null) {
-          _userInfoMap.addAll({userInfoM.uid: userInfoM});
-          userInfoM.onlineNotifier =
-              App.app.onlineStatusMap[userInfoM.uid] ?? ValueNotifier(false);
-
-          final latestMsgM =
-              await ChatMsgDao().getMsgBylocalMid(dm.lastLocalMid);
-          final unreadCount =
-              await ChatMsgDao().getDmUnreadCount(userInfoM.uid);
-          final draft = userInfoM.properties.draft;
-
-          if (latestMsgM != null) {
-            String s = _processSnippet(latestMsgM);
-
-            final uiChat = UiChat(
-                // avatar: userInfoM.avatarBytes,
-                title: userInfoM.userInfo.name,
-                userInfoM: userInfoM,
-                snippet: s,
-                draft: draft,
-                unreadCount: unreadCount,
-                updatedAt: latestMsgM.createdAt,
-                onlineNotifier: ValueNotifier(false));
-
-            addOrReplaceDm(uiChat);
-          } else {
-            final uiChat = UiChat(
-                // avatar: userInfoM.avatarBytes,
-                title: userInfoM.userInfo.name,
-                userInfoM: userInfoM,
-                onlineNotifier: ValueNotifier(false));
-
-            addOrReplaceDm(uiChat);
-          }
-        } else {
-          App.logger.warning("Can't find userInfo in ui. uid: ${dm.dmUid}");
-        }
+    for (final dm in dmList) {
+      final dmTileData = await ChatTileData.fromUid(dm.dmUid);
+      final chatId = SharedFuncs.getChatId(uid: dm.dmUid);
+      if (chatId != null && dmTileData != null) {
+        chatTileMap.addAll({chatId: dmTileData});
       }
-
-      globals.unreadCountSum.value = calUnreadCountSum();
     }
   }
 
@@ -712,17 +263,11 @@ class _ChatsPageState extends State<ChatsPage>
     }
   }
 
-  int calUnreadCountSum() {
+  void calUnreadCountSum() {
     int count = 0;
-    for (var element in _uiChats) {
+    for (var element in chatTileMap.values) {
       count += element.unreadCount.value;
     }
-    return count;
+    unreadCountSum.value = count;
   }
-}
-
-/// The data behind a chat tile.
-class VoceChatTileData {
-  // Variables for all instances
-  // final String? avatarPath;
 }

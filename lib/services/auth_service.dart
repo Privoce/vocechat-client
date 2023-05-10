@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,13 +17,14 @@ import 'package:vocechat_client/api/models/token/credential.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/main.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -195,6 +197,7 @@ class AuthService {
 
     final req = TokenLoginRequest(
         device: device, credential: credential, deviceToken: deviceToken);
+    // final req = TokenLoginRequest(device: device, credential: credential);
     return req;
   }
 
@@ -294,11 +297,6 @@ class AuthService {
         await storage.delete(key: dbName);
       }
 
-      final avatarBytes = userInfo.avatarUpdatedAt == 0
-          ? Uint8List(0)
-          : (await ResourceApi().getUserAvatar(userInfo.uid)).data ??
-              Uint8List(0);
-
       final chatServerId = App.app.chatServerM.id;
 
       final old = await UserDbMDao.dao.first(
@@ -319,7 +317,6 @@ class AuthService {
             expiredIn,
             1,
             -1,
-            // avatarBytes,
             "",
             0);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);
@@ -336,7 +333,6 @@ class AuthService {
             expiredIn,
             1,
             old.usersVersion,
-            // avatarBytes,
             "",
             old.maxMid);
         newUserDb = await UserDbMDao.dao.addOrUpdate(m);
@@ -345,11 +341,13 @@ class AuthService {
       App.app.userDb = newUserDb;
       StatusM statusM = StatusM.item(newUserDb.id);
       await StatusMDao.dao.replace(statusM);
-      // _setTimer(expiredIn);
 
       await initCurrentDb(dbName);
 
-      App.app.chatService = ChatService();
+      final userInfoM = UserInfoM.fromUserInfo(userInfo, "");
+      await UserInfoDao().addOrReplace(userInfoM);
+
+      App.app.chatService = VoceChatService();
       App.app.statusService = StatusService();
 
       return true;

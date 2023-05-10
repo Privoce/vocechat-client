@@ -187,10 +187,14 @@ class MsgTileFrame extends StatelessWidget {
     if (uid == null || uid < 1) {
       return;
     }
-    final userInfoM = await UserInfoDao().getUserByUid(uid);
-    if (userInfoM != null) {
-      Navigator.pushNamed(context, ContactDetailPage.route,
-          arguments: userInfoM);
-    }
+    await UserInfoDao().getUserByUid(uid).then((userInfoM) {
+      if (userInfoM != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ContactDetailPage(userInfoM: userInfoM),
+          ),
+        );
+      }
+    });
   }
 }

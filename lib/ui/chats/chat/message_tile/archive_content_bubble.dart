@@ -55,7 +55,7 @@ class ArchiveContentBubble extends StatelessWidget {
                     archiveId, archiveMsg.thumbnailId!, archiveMsg.fileName),
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
-                    return ImageBubble(
+                    return VoceImageBubble(
                         imageFile: snapshot.data!,
                         getImageList: _getImageGalleryData);
                   } else {

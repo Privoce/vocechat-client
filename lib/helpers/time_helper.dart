@@ -106,6 +106,7 @@ extension ChatTimeDisplay on int {
     microsecond: 1/100,000 second
     millisecond: 1/1,000 second
    */
+
   String toChatTime24StrEn(BuildContext context) {
     final messageTime = DateTime.fromMillisecondsSinceEpoch(this).toLocal();
     return messageTime.toTime24StringEn(context);

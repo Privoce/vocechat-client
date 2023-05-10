@@ -8,6 +8,7 @@ class MsgReply {
   final Map<String, dynamic>? properties;
   final String contentType;
   final String content;
+  final int? expiresIn;
   final String type;
 
   MsgReply(
@@ -15,6 +16,7 @@ class MsgReply {
       required this.contentType,
       required this.content,
       this.properties,
+      this.expiresIn,
       this.type = 'reply'});
 
   factory MsgReply.fromJson(Map<String, dynamic> json) =>

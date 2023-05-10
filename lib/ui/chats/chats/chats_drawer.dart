@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -233,9 +234,11 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
 
       final chatServer = await ChatServerDao.dao.getServerById(serverId);
 
-      final userAvatarBytes =
-          await (await UserAvatarHander().readOrFetch(userDb.uid))
-              ?.readAsBytes();
+      final userAvatarBytes = await (await UserAvatarHander().readOrFetch(
+              UserInfoM.fromUserInfo(userDb.userInfo, ""),
+              enableServerRetry: false,
+              enableServerFetch: false))
+          ?.readAsBytes();
 
       if (chatServer == null || userDb.loggedIn == 0) {
         continue;
@@ -247,7 +250,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
           serverName: chatServer.properties.serverName,
           serverUrl: chatServer.fullUrl,
           username: userDb.userInfo.name,
-          userEmail: userDb.userInfo.email ?? "",
+          userEmail: userDb.userInfo.email!,
           selected: status.userDbId == userDb.id,
           userDbM: userDb)));
     }

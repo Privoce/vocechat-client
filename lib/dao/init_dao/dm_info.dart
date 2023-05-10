@@ -2,6 +2,7 @@
 
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
 class DmInfoM with M {
   int dmUid = -1;
@@ -79,6 +80,24 @@ class DmInfoDao extends Dao<DmInfoM> {
   Future<List<DmInfoM>?> getDmList() async {
     String orderBy = "${DmInfoM.F_updatedAt} ASC";
     return super.list(orderBy: orderBy);
+  }
+
+  Future<List<UserInfoM>?> getDmUserInfoMList() async {
+    final dmInfoList = await getDmList();
+    if (dmInfoList == null) {
+      return null;
+    }
+
+    List<UserInfoM> userInfoMList = [];
+    for (DmInfoM dmInfoM in dmInfoList) {
+      final userInfoM = await UserInfoDao().getUserByUid(dmInfoM.dmUid);
+      if (userInfoM != null) {
+        userInfoMList.add(userInfoM);
+      }
+    }
+    if (userInfoMList.isEmpty) return null;
+
+    return userInfoMList;
   }
 
   Future<DmInfoM?> getDmInfo(int dmUid) async {

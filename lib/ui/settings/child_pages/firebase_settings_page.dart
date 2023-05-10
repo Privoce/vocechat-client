@@ -74,7 +74,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
               title: AppLocalizations.of(context)!.firebaseEnable,
               titleWidget:
                   _loading ? CupertinoActivityIndicator() : SizedBox.shrink(),
-              keepArrow: false,
+              keepTrailingArrow: false,
               trailing: CupertinoSwitch(
                   value: _enabled,
                   onChanged: (value) {

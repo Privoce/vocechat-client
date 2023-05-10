@@ -20,6 +20,7 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 // enum MsgType {text, markdown, image, file}
 
@@ -29,12 +30,31 @@ class ChatMsgM with M {
   int fromUid = -1;
   int dmUid = -1;
   int gid = -1;
-  int edited = 0;
-  String status =
+  int _edited = 0;
+  String statusStr =
       MsgSendStatus.success.name; // MsgStatus: fail, success, sending
   String detail = ""; // only normal msg json.
   String _reactions = ""; // ChatMsgReactions
   int pin = 0;
+
+  set status(MsgSendStatus status) {
+    statusStr = status.name;
+  }
+
+  MsgSendStatus get status {
+    switch (statusStr) {
+      case "success":
+        return MsgSendStatus.success;
+      case "fail":
+        return MsgSendStatus.fail;
+      case "readyToSend":
+        return MsgSendStatus.readyToSend;
+      case "sending":
+        return MsgSendStatus.sending;
+      default:
+        return MsgSendStatus.success;
+    }
+  }
 
   MsgNormal? get msgNormal {
     if (detail.isNotEmpty && json.decode(detail)['type'] == 'normal') {
@@ -65,12 +85,40 @@ class ChatMsgM with M {
     return Set<ReactionInfo>.from(l.map((e) => ReactionInfo.fromJson(e)));
   }
 
-  // int get serverCreatedAt {
-  //   return
-  // }
+  bool get shouldShowProgressWhenSending {
+    return isFileMsg || isAudioMsg;
+  }
+
+  bool get pinned {
+    return pin != 0;
+  }
+
+  bool get edited {
+    return _edited != 0;
+  }
 
   bool get isGroupMsg {
     return dmUid == -1 && gid != -1;
+  }
+
+  bool get isNormalMsg {
+    return detailType == MsgDetailType.normal;
+  }
+
+  bool get isReplyMsg {
+    return detailType == MsgDetailType.reply;
+  }
+
+  bool get isReactionMsg {
+    return detailType == MsgDetailType.reaction;
+  }
+
+  bool get isEditReactionMsg {
+    return isReactionMsg && msgReaction?.type == "edit";
+  }
+
+  bool get isDeleteReactionMsg {
+    return isReactionMsg && msgReaction?.type == "delete";
   }
 
   /// normal, reaction and reply.
@@ -91,33 +139,27 @@ class ChatMsgM with M {
     }
   }
 
-  /// text/plain, text/markdown, vocechat/file, vocechat/archive
-  /// in msgNormal.detail
-  String get detailContentTypeStr {
-    return json.decode(detail)["content_type"] ?? "";
-  }
-
-  /// MIME
-  /// in msgNormal.detail.properties
-  String get fileContentTypeStr {
-    return json.decode(detail)["properties"]["content_type"] ?? "";
-  }
-
-  MsgContentType? get detailContentType {
-    switch (json.decode(detail)["content_type"]) {
-      case typeText:
-        return MsgContentType.text;
-      case typeMarkdown:
-        return MsgContentType.markdown;
-      case typeFile:
-        return MsgContentType.file;
-      case typeArchive:
-        return MsgContentType.archive;
-      default:
-        return null;
+  bool get isTextMsg {
+    try {
+      final type = json.decode(detail)["content_type"] as String?;
+      return type == typeText;
+    } catch (e) {
+      return false;
     }
   }
 
+  bool get isMarkdownMsg {
+    try {
+      final type = json.decode(detail)["content_type"] as String?;
+      return type == typeMarkdown;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// Check whether a message is of type vocechat/file
+  ///
+  /// Includes all files, includes images and file. Audio, archives are not included.
   bool get isFileMsg {
     try {
       final type = json.decode(detail)["content_type"] as String?;
@@ -140,6 +182,24 @@ class ChatMsgM with M {
     try {
       final type = json.decode(detail)["properties"]["content_type"] as String?;
       return type?.toLowerCase() == 'image/gif';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  bool get isAudioMsg {
+    try {
+      final type = json.decode(detail)["content_type"] as String?;
+      return type == typeAudio;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  bool get isArchiveMsg {
+    try {
+      final type = json.decode(detail)["content_type"] as String?;
+      return type == typeArchive;
     } catch (e) {
       return false;
     }
@@ -175,6 +235,35 @@ class ChatMsgM with M {
     return false;
   }
 
+  /// text/plain, text/markdown, vocechat/file, vocechat/archive
+  /// in msgNormal.detail
+  String get detailContentTypeStr {
+    return json.decode(detail)["content_type"] ?? "";
+  }
+
+  /// MIME
+  /// in msgNormal.detail.properties
+  String get fileContentTypeStr {
+    return json.decode(detail)["properties"]["content_type"] ?? "";
+  }
+
+  MsgContentType? get detailContentType {
+    switch (json.decode(detail)["content_type"]) {
+      case typeText:
+        return MsgContentType.text;
+      case typeMarkdown:
+        return MsgContentType.markdown;
+      case typeFile:
+        return MsgContentType.file;
+      case typeArchive:
+        return MsgContentType.archive;
+      case typeAudio:
+        return MsgContentType.audio;
+      default:
+        return null;
+    }
+  }
+
   ChatMsgM();
 
   ChatMsgM.item(
@@ -183,8 +272,8 @@ class ChatMsgM with M {
       this.fromUid,
       this.dmUid,
       this.gid,
-      this.edited,
-      this.status,
+      this._edited,
+      this.statusStr,
       createdAt,
       this.detail,
       this._reactions,
@@ -210,7 +299,7 @@ class ChatMsgM with M {
 
     gid = chatMsg.target["gid"] ?? -1;
 
-    this.status = status.name;
+    this.statusStr = status.name;
     createdAt = chatMsg.createdAt;
   }
 
@@ -220,8 +309,8 @@ class ChatMsgM with M {
     fromUid = old.fromUid;
     dmUid = old.dmUid;
     gid = old.dmUid;
-    edited = old.edited;
-    status = old.status;
+    _edited = old._edited;
+    statusStr = old.statusStr;
     createdAt = old.createdAt;
     detail = old.detail;
     _reactions = old._reactions;
@@ -260,7 +349,7 @@ class ChatMsgM with M {
     }
     gid = chatMsg.target["gid"] ?? -1;
 
-    this.status = status.name;
+    this.statusStr = status.name;
     createdAt = chatMsg.createdAt;
   }
 
@@ -285,11 +374,11 @@ class ChatMsgM with M {
       m.gid = map[F_gid];
     }
     if (map.containsKey(F_edited)) {
-      m.edited = map[F_edited];
+      m._edited = map[F_edited];
     }
 
     if (map.containsKey(F_status)) {
-      m.status = map[F_status];
+      m.statusStr = map[F_status];
     }
     if (map.containsKey(F_detail)) {
       m.detail = map[F_detail];
@@ -327,8 +416,8 @@ class ChatMsgM with M {
         ChatMsgM.F_fromUid: fromUid,
         ChatMsgM.F_dmUid: dmUid,
         ChatMsgM.F_gid: gid,
-        ChatMsgM.F_edited: edited,
-        ChatMsgM.F_status: status,
+        ChatMsgM.F_edited: _edited,
+        ChatMsgM.F_status: statusStr,
         ChatMsgM.F_detail: detail,
         ChatMsgM.F_reactions: _reactions,
         ChatMsgM.F_pin: pin,
@@ -418,7 +507,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
         where: '${ChatMsgM.F_localMid} = ?', whereArgs: [msgM.localMid]);
     if (old != null) {
       msgM = old;
-      msgM.status = status.name;
+      msgM.statusStr = status.name;
       await super.update(msgM);
       App.logger.info(
           "Chat Msg status updated. mid: ${msgM.mid}, localMid: ${msgM.localMid}, status: $status");
@@ -435,8 +524,8 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       Map oldDetail = json.decode(old.detail);
       oldDetail["content"] = newContent;
       old.detail = json.encode(oldDetail);
-      old.edited = 1;
-      old.status = status.name;
+      old._edited = 1;
+      old.statusStr = status.name;
 
       await super.update(old);
       App.logger.info("ChatMsg Edit Updated. msg: ${old.values}");
@@ -445,16 +534,16 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return null;
   }
 
-  Future<ChatMsgM?> pinMsgByMid(int mid) async {
-    ChatMsgM? old =
-        await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
-    if (old != null) {
-      old.pin = 1;
-      await super.update(old);
-      App.logger.info("ChatMsg Edit Updated. msg: ${old.values}");
-      return old;
+  Future<ChatMsgM?> pinMsgByMid(int mid, int uid) async {
+    try {
+      final sqlstr = 'UPDATE ${ChatMsgM.F_tableName} SET ${ChatMsgM.F_pin} = '
+          '$uid WHERE ${ChatMsgM.F_mid} = $mid RETURNING *';
+      List<Map<String, dynamic>> result = await db.rawQuery(sqlstr);
+      return ChatMsgM.fromMap(result.first);
+    } catch (e) {
+      App.logger.severe(e);
+      return null;
     }
-    return null;
   }
 
   Future<ChatMsgM?> reactMsgByMid(
@@ -772,6 +861,28 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return "";
   }
 
+  Future<ChatMsgM?> getDmLatestMsgM(int uid) async {
+    // String sqlStr =
+    //     'SELECT MAX(${ChatMsgM.F_createdAt}), * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid';
+    String sqlStr =
+        'SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid AND ${ChatMsgM.F_mid} = (SELECT MAX(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid)';
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+    if (records.isNotEmpty) {
+      return ChatMsgM.fromMap(records.first);
+    }
+    return null;
+  }
+
+  Future<ChatMsgM?> getChannelLatestMsgM(int gid) async {
+    String sqlStr =
+        'SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid} = $gid AND ${ChatMsgM.F_mid} = (SELECT MAX(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid} = $gid)';
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+    if (records.isNotEmpty) {
+      return ChatMsgM.fromMap(records.first);
+    }
+    return null;
+  }
+
   /// Get the message id of the latest message in this DM.
   ///
   /// returns -1 if no message in DM.
@@ -803,16 +914,19 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return targetMid;
   }
 
+  /// Delete a message by its mid.
+  ///
+  /// Returns the [ChatMsgM] object of the deleted message.
+  /// Returns null if the message could not be found.
   Future<int> deleteMsgByMid(int targetMid) async {
-    // m is the notification msg, targetMid is the real msg to be deleted.
-
     final deleteCount = await db.delete(ChatMsgM.F_tableName,
         where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
     App.logger.info("Msg deleted. Mid: $targetMid");
 
-    // if (deleteCount == 0) {
-    //   // the original message could not be found.
-    // }
+    if (deleteCount == 0) {
+      // the original message could not be found.
+      return -1;
+    }
 
     return targetMid;
   }

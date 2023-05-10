@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -44,6 +46,11 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
     _nameController.text = _userInfo?.name ?? "";
 
     _nameChanged = false;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override
@@ -89,13 +96,8 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
       avatar: ValueListenableBuilder<UserInfoM?>(
           valueListenable: widget.userInfoNotifier,
           builder: (context, userInfoM, _) {
-            // return UserAvatar(
-            //     uid: userInfoM?.uid ?? -1,
-            //     avatarSize: VoceAvatarSize.s84,
-            //     name: userInfoM?.userInfo.name ?? "",
-            //     avatarBytes: userInfoM?.avatarBytes ?? Uint8List(0));
             if (userInfoM == null) {
-              return VoceUserAvatar.deleted(size: VoceAvatarSize.s84);
+              return const VoceUserAvatar.deleted(size: VoceAvatarSize.s84);
             } else {
               return VoceUserAvatar.user(
                   userInfoM: userInfoM, size: VoceAvatarSize.s84);
@@ -162,6 +164,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
       if (res.statusCode == 200) {
         App.logger.info("User Avatar changed.");
         _uploadNotifier.value = false;
+
         return;
       } else if (res.statusCode == 413) {
         App.logger.severe("Payload too large");

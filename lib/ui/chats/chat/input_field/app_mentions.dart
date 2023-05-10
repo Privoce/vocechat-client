@@ -7,7 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:universal_html/js_util.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
+import 'package:vocechat_client/ui/chats/chat/input_field/voice_button.dart';
 
 /// A custom implementation of [TextEditingController] to support @ mention or other
 /// trigger based mentions.
@@ -120,7 +123,7 @@ class AppMentions extends StatefulWidget {
       {required this.mentions,
       Key? key,
       this.defaultText,
-      this.suggestionPosition = SuggestionPosition.Bottom,
+      this.suggestionPosition = SuggestionPosition.bottom,
       this.suggestionListHeight = 300.0,
       this.onMarkupChanged,
       this.onMentionAdd,
@@ -168,7 +171,12 @@ class AppMentions extends StatefulWidget {
       this.onSuggestionVisibleChanged,
       this.inputFormatters,
       this.selectionControls,
-      this.contextMenuBuilder})
+      this.contextMenuBuilder,
+      this.inputFieldType,
+      this.hasText,
+      required this.voiceButtonState,
+      this.uid,
+      this.gid})
       : super(key: key);
 
   final bool hideSuggestionList;
@@ -192,7 +200,7 @@ class AppMentions extends StatefulWidget {
 
   /// Suggestion modal position, can be alligned to top or bottom.
   ///
-  /// Defaults to [SuggestionPosition.Bottom].
+  /// Defaults to [SuggestionPosition.bottom].
   final SuggestionPosition suggestionPosition;
 
   /// Triggers when the suggestion was added by tapping on suggestion.
@@ -374,6 +382,16 @@ class AppMentions extends StatefulWidget {
   final Widget Function(BuildContext context, EditableTextState state)?
       contextMenuBuilder;
 
+  // input field type
+  final ValueNotifier<InputType>? inputFieldType;
+
+  final ValueNotifier<bool>? hasText;
+
+  ValueNotifier<VoiceButtonType> voiceButtonState;
+
+  final int? uid;
+  final int? gid;
+
   @override
   AppMentionsState createState() => AppMentionsState();
 }
@@ -381,8 +399,12 @@ class AppMentions extends StatefulWidget {
 class AppMentionsState extends State<AppMentions> {
   AnnotationEditingController? controller;
   ValueNotifier<bool> showSuggestions = ValueNotifier(false);
+  late ValueNotifier<VoiceButtonType> _voiceButtonState;
+
   LengthMap? _selectedMention;
   String _pattern = '';
+
+  late final ValueNotifier<InputType> _fieldType;
 
   Map<String, Annotation> mapToAnotation() {
     final data = <String, Annotation>{};
@@ -501,6 +523,10 @@ class AppMentionsState extends State<AppMentions> {
 
       widget.onSearchChanged!(str[0], str.substring(1));
     }
+
+    if (widget.hasText != null) {
+      widget.hasText!.value = controller!.text.isNotEmpty;
+    }
   }
 
   @override
@@ -508,6 +534,8 @@ class AppMentionsState extends State<AppMentions> {
     final data = mapToAnotation();
 
     controller = AnnotationEditingController(data, widget.enableMention);
+
+    _voiceButtonState = widget.voiceButtonState;
 
     if (widget.defaultText != null) {
       controller!.text = widget.defaultText!;
@@ -517,6 +545,8 @@ class AppMentionsState extends State<AppMentions> {
 
     controller!.addListener(suggestionListerner);
     controller!.addListener(inputListeners);
+
+    _fieldType = widget.inputFieldType ?? ValueNotifier(InputType.text);
 
     super.initState();
   }
@@ -548,44 +578,58 @@ class AppMentionsState extends State<AppMentions> {
       children: [
         ...widget.leading,
         Expanded(
-          child: TextField(
-            selectionControls: widget.selectionControls,
-            maxLines: widget.maxLines,
-            minLines: widget.minLines,
-            maxLength: widget.maxLength,
-            focusNode: widget.focusNode,
-            keyboardType: widget.keyboardType,
-            keyboardAppearance: widget.keyboardAppearance,
-            textInputAction: widget.textInputAction,
-            textCapitalization: widget.textCapitalization,
-            style: widget.style,
-            textAlign: widget.textAlign,
-            textDirection: widget.textDirection,
-            readOnly: widget.readOnly,
-            showCursor: widget.showCursor,
-            autofocus: widget.autofocus,
-            autocorrect: widget.autocorrect,
-            maxLengthEnforcement: widget.maxLengthEnforcement,
-            cursorColor: widget.cursorColor,
-            cursorRadius: widget.cursorRadius,
-            cursorWidth: widget.cursorWidth,
-            buildCounter: widget.buildCounter,
-            autofillHints: widget.autofillHints,
-            decoration: widget.decoration,
-            expands: widget.expands,
-            onEditingComplete: widget.onEditingComplete,
-            onTap: widget.onTap,
-            onSubmitted: widget.onSubmitted,
-            enabled: widget.enabled,
-            enableInteractiveSelection: widget.enableInteractiveSelection,
-            enableSuggestions: widget.enableSuggestions,
-            scrollController: widget.scrollController,
-            scrollPadding: widget.scrollPadding,
-            scrollPhysics: widget.scrollPhysics,
-            controller: controller,
-            inputFormatters: widget.inputFormatters,
-            contextMenuBuilder: widget.contextMenuBuilder,
-          ),
+          child: ValueListenableBuilder<InputType>(
+              valueListenable: _fieldType,
+              builder: (context, type, child) {
+                switch (type) {
+                  case InputType.voice:
+                    return VoiceButton(
+                      voiceButtonTypeNotifier: _voiceButtonState,
+                      uid: widget.uid,
+                      gid: widget.gid,
+                    );
+                  default:
+                    return TextField(
+                      selectionControls: widget.selectionControls,
+                      maxLines: widget.maxLines,
+                      minLines: widget.minLines,
+                      maxLength: widget.maxLength,
+                      focusNode: widget.focusNode,
+                      keyboardType: widget.keyboardType,
+                      keyboardAppearance: widget.keyboardAppearance,
+                      textInputAction: widget.textInputAction,
+                      textCapitalization: widget.textCapitalization,
+                      style: widget.style,
+                      textAlign: widget.textAlign,
+                      textDirection: widget.textDirection,
+                      readOnly: widget.readOnly,
+                      showCursor: widget.showCursor,
+                      autofocus: widget.autofocus,
+                      autocorrect: widget.autocorrect,
+                      maxLengthEnforcement: widget.maxLengthEnforcement,
+                      cursorColor: widget.cursorColor,
+                      cursorRadius: widget.cursorRadius,
+                      cursorWidth: widget.cursorWidth,
+                      buildCounter: widget.buildCounter,
+                      autofillHints: widget.autofillHints,
+                      decoration: widget.decoration,
+                      expands: widget.expands,
+                      onEditingComplete: widget.onEditingComplete,
+                      onTap: widget.onTap,
+                      onSubmitted: widget.onSubmitted,
+                      enabled: widget.enabled,
+                      enableInteractiveSelection:
+                          widget.enableInteractiveSelection,
+                      enableSuggestions: widget.enableSuggestions,
+                      scrollController: widget.scrollController,
+                      scrollPadding: widget.scrollPadding,
+                      scrollPhysics: widget.scrollPhysics,
+                      controller: controller,
+                      inputFormatters: widget.inputFormatters,
+                      contextMenuBuilder: widget.contextMenuBuilder,
+                    );
+                }
+              }),
         ),
         ...widget.trailing,
       ],
@@ -599,38 +643,41 @@ class AppMentionsState extends State<AppMentions> {
         child: PortalTarget(
             anchor: Aligned(
                 follower: Alignment.bottomCenter, target: Alignment.topCenter),
-            portalFollower: ValueListenableBuilder(
-              valueListenable: showSuggestions,
-              builder: (BuildContext context, bool show, Widget? child) {
-                return show && !widget.hideSuggestionList
-                    ? OptionList(
-                        suggestionListHeight: widget.suggestionListHeight,
-                        suggestionBuilder: list.suggestionBuilder,
-                        suggestionListDecoration:
-                            widget.suggestionListDecoration,
-                        data: list.data.where((element) {
-                          final ele = element['display'].toLowerCase();
-                          final str = _selectedMention!.str
-                              .toLowerCase()
-                              .replaceAll(RegExp(_pattern), '');
-
-                          return ele == str ? false : ele.contains(str);
-                        }).toList(),
-                        onTap: (value) {
-                          addMention(value, list);
-                          showSuggestions.value = false;
-                        },
-                      )
-                    : Container();
-              },
-            ),
+            portalFollower: _buildMentionsPortal(list),
             child: inputField),
       );
     }
   }
+
+  ValueListenableBuilder<bool> _buildMentionsPortal(Mention list) {
+    return ValueListenableBuilder(
+      valueListenable: showSuggestions,
+      builder: (BuildContext context, bool show, Widget? child) {
+        return show && !widget.hideSuggestionList
+            ? OptionList(
+                suggestionListHeight: widget.suggestionListHeight,
+                suggestionBuilder: list.suggestionBuilder,
+                suggestionListDecoration: widget.suggestionListDecoration,
+                data: list.data.where((element) {
+                  final ele = element['display'].toLowerCase();
+                  final str = _selectedMention!.str
+                      .toLowerCase()
+                      .replaceAll(RegExp(_pattern), '');
+
+                  return ele == str ? false : ele.contains(str);
+                }).toList(),
+                onTap: (value) {
+                  addMention(value, list);
+                  showSuggestions.value = false;
+                },
+              )
+            : Container();
+      },
+    );
+  }
 }
 
-enum SuggestionPosition { Top, Bottom }
+enum SuggestionPosition { top, bottom }
 
 class LengthMap {
   LengthMap({

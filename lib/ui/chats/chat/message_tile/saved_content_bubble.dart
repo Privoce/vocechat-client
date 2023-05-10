@@ -52,7 +52,7 @@ class SavedContentBubble extends StatelessWidget {
                   if (snapshot.hasData && snapshot.data != null) {
                     final tag = archiveId + archiveMsg.thumbnailId.toString();
 
-                    return ImageBubble(
+                    return VoceImageBubble(
                         imageFile: snapshot.data!,
                         getImageList: () async {
                           return ImageGalleryData(imageItemList: [

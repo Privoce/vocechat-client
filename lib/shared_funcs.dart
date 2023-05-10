@@ -84,11 +84,15 @@ class SharedFuncs {
 
   /// Translate bytes to readable file size string.
   static String getFileSizeString(int bytes) {
-    const suffixes = ["b", "kb", "mb", "gb", "tb"];
-    const int base = 1000;
-    var i = (log(bytes) / log(base)).floor();
-    return ((bytes / pow(base, i)).toStringAsFixed(1)) +
-        suffixes[i].toUpperCase();
+    try {
+      const suffixes = ["b", "kb", "mb", "gb", "tb"];
+      const int base = 1000;
+      var i = (log(bytes) / log(base)).floor();
+      return ((bytes / pow(base, i)).toStringAsFixed(1)) +
+          suffixes[i].toUpperCase();
+    } catch (e) {
+      return "0 kb";
+    }
   }
 
   /// Get first, or first two, if exists, initials of a name string, used for
@@ -106,26 +110,11 @@ class SharedFuncs {
         : '';
   }
 
-  static MsgSendStatus getMsgSendStatus(String status) {
-    switch (status) {
-      case "success":
-        return MsgSendStatus.success;
-      case "fail":
-        return MsgSendStatus.fail;
-      case "readyToSend":
-        return MsgSendStatus.readyToSend;
-      case "sending":
-        return MsgSendStatus.sending;
-      default:
-        return MsgSendStatus.success;
-    }
-  }
-
   static SendType getSendType(ChatMsgM chatMsgM) {
     if (chatMsgM.detailType == MsgDetailType.normal &&
         (chatMsgM.detailContentType == MsgContentType.text ||
             chatMsgM.detailContentType == MsgContentType.markdown) &&
-        chatMsgM.edited == 0) {
+        !chatMsgM.edited) {
       return SendType.normal;
     } else if (chatMsgM.detailContentType == MsgContentType.file) {
       return SendType.file;
@@ -133,7 +122,7 @@ class SharedFuncs {
       return SendType.reply;
     } else if (chatMsgM.detailType == MsgDetailType.normal &&
         chatMsgM.detailContentType == MsgContentType.text &&
-        chatMsgM.edited == 1) {
+        chatMsgM.edited) {
       return SendType.edit;
     }
     return SendType.normal;

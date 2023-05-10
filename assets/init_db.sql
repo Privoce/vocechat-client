@@ -6,8 +6,10 @@ CREATE TABLE IF NOT EXISTS user_info (
   uid INTEGER NOT NULL,
   info TEXT NOT NULL, -- raw json from server.
   properties TEXT NOT NULL,
-  -- avatar BLOB NOT NULL, 
-  created_at INTEGER NOT NULL);
+  created_at INTEGER NOT NULL,
+  contact_status TEXT NOT NULL,
+  contact_created_at INTEGER NOT NULL,
+  contact_updated_at INTEGER NOT NULL);
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_uid ON user_info(uid);
 
@@ -16,7 +18,6 @@ CREATE TABLE IF NOT EXISTS group_info (
   gid integer NOT NULL,
   last_local_mid TEXT NOT NULL,
   info TEXT NOT NULL, -- raw json from server.
-  -- avatar BLOB NOT NULL,
   properties TEXT NOT NULL,
   is_public integer NOT NULL,
   is_active integer NOT NULL,
@@ -110,4 +111,5 @@ CREATE TABLE IF NOT EXISTS unmatched_reaction (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_target_mid ON unmatched_reaction(target_mid);
+
 

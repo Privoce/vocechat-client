@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/file_handler/channel_avatar_handler.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
@@ -23,6 +23,8 @@ class VoceChannelAvatar extends StatefulWidget {
 
   final String? name;
 
+  final bool enableServerRetry;
+
   /// Builds a ChannelAvatar with GroupInfoM
   ///
   /// Widget will show letter avatar if avatarBytes are not available
@@ -30,9 +32,10 @@ class VoceChannelAvatar extends StatefulWidget {
       {Key? key,
       required GroupInfoM this.groupInfoM,
       required this.size,
-      this.isCircle = useCircleAvatar})
+      this.isCircle = useCircleAvatar,
+      this.enableServerRetry = true})
       : name = groupInfoM.groupInfo.name,
-        _isDefaultPublicChannel = groupInfoM.isPublic == 1,
+        _isDefaultPublicChannel = groupInfoM.isPublic,
         avatarBytes = null,
         super(key: key);
 
@@ -40,7 +43,8 @@ class VoceChannelAvatar extends StatefulWidget {
       {Key? key,
       required Uint8List this.avatarBytes,
       required this.size,
-      this.isCircle = useCircleAvatar})
+      this.isCircle = useCircleAvatar,
+      this.enableServerRetry = true})
       : groupInfoM = null,
         name = null,
         _isDefaultPublicChannel = null,
@@ -50,7 +54,8 @@ class VoceChannelAvatar extends StatefulWidget {
       {Key? key,
       required String this.name,
       required this.size,
-      this.isCircle = useCircleAvatar})
+      this.isCircle = useCircleAvatar,
+      this.enableServerRetry = true})
       : groupInfoM = null,
         _isDefaultPublicChannel = null,
         avatarBytes = null,
@@ -59,6 +64,7 @@ class VoceChannelAvatar extends StatefulWidget {
   const VoceChannelAvatar.defaultPublicChannel(
       {Key? key, required this.size, this.isCircle = useCircleAvatar})
       : groupInfoM = null,
+        enableServerRetry = false,
         name = null,
         _isDefaultPublicChannel = true,
         avatarBytes = null,
@@ -67,6 +73,7 @@ class VoceChannelAvatar extends StatefulWidget {
   const VoceChannelAvatar.defaultPrivateChannel(
       {Key? key, required this.size, this.isCircle = useCircleAvatar})
       : groupInfoM = null,
+        enableServerRetry = false,
         name = null,
         _isDefaultPublicChannel = false,
         avatarBytes = null,
@@ -94,11 +101,11 @@ class _VoceChannelAvatarState extends State<VoceChannelAvatar> {
     if (widget.groupInfoM != null &&
         widget.groupInfoM!.groupInfo.avatarUpdatedAt != 0) {
       return FutureBuilder<File?>(
-          future: ChannelAvatarHander().readOrFetch(widget.groupInfoM!.gid),
+          future: ChannelAvatarHander().readOrFetch(widget.groupInfoM!,
+              enableServerRetry: widget.enableServerRetry),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return VoceAvatar.file(
-                  key: ValueKey("${snapshot.data!.lastModifiedSync()}"),
                   file: snapshot.data!,
                   size: widget.size,
                   isCircle: widget.isCircle);
@@ -134,7 +141,9 @@ class _VoceChannelAvatarState extends State<VoceChannelAvatar> {
   Future<void> _onChannelChanged(
       GroupInfoM groupInfoM, EventActions action) async {
     if (groupInfoM.gid == widget.groupInfoM?.gid) {
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 }

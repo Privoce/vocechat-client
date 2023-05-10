@@ -9,7 +9,7 @@ import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -238,7 +238,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         builder: (context, groupInfoM, _) {
           bool isAdmin = App.app.userDb?.userInfo.isAdmin ?? false;
           bool isOwner = App.app.userDb?.uid == groupInfoM.groupInfo.owner;
-          bool isPublic = groupInfoM.isPublic == 1;
+          bool isPublic = groupInfoM.isPublic;
           bool showSwitch = false;
 
           if (isPublic) {
@@ -248,13 +248,13 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           }
 
           if (showSwitch) {
-            final isPublic = groupInfoM.isPublic == 0 ? false : true;
+            final isPublic = groupInfoM.isPublic;
             return Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: BannerTileGroup(bannerTileList: [
                   BannerTile(
                     title: AppLocalizations.of(context)!.publicChannel,
-                    keepArrow: false,
+                    keepTrailingArrow: false,
                     trailing: CupertinoSwitch(
                         value: isPublic,
                         onChanged: (_isPublic) async {
@@ -331,7 +331,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           bool isOwner = App.app.userDb?.uid == groupInfoM.groupInfo.owner;
 
           bool showDeleteBtn = isAdmin || isOwner;
-          bool showLeaveBtn = groupInfoM.isPublic != 1;
+          bool showLeaveBtn = !groupInfoM.isPublic;
 
           return Column(
             children: [

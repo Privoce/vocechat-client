@@ -18,4 +18,12 @@ final ValueNotifier<int> unreadCountSum = ValueNotifier(0);
 /// private channels need be deleted due to safety concerns.
 bool enablePublicChannels = true;
 
+const bool enableContact = false;
+
+/// A global variable showing whether to allow self message tile.
+///
+/// A self message tile aligns to the right side of the screen, and is used to
+/// display messages sent by the user.
+const bool enableSelfMsgTile = false;
+
 EventBus eventBus = EventBus();

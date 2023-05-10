@@ -63,60 +63,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
                         Navigator.of(context).pop();
                       },
                       child: Icon(Icons.close)),
-                  actions: [
-                    _buildSubmitButton()
-                    // _isSending
-                    //     ? Padding(
-                    //         padding: const EdgeInsets.only(right: 8.0),
-                    //         child: CupertinoActivityIndicator(),
-                    //       )
-                    //     : CupertinoButton(
-                    //         child: Text(
-                    //           AppLocalizations.of(context)!.select,
-                    //           style: TextStyle(
-                    //               fontWeight: FontWeight.w400,
-                    //               fontSize: 16,
-                    //               color: AppColors.primary400),
-                    //         ),
-                    //         onPressed: () async {
-                    //           setState(() {
-                    //             _isSending = true;
-                    //           });
-
-                    //           try {
-                    //             bool hasSent = false;
-                    //             if (widget.midList != null) {
-                    //               hasSent = await App.app.chatService
-                    //                   .sendForward(widget.midList!,
-                    //                       uidNotifier.value, gidNotifier.value);
-                    //             } else if (widget.archiveId != null) {
-                    //               hasSent = await App.app.chatService
-                    //                   .sendArchiveForward(widget.archiveId!,
-                    //                       uidNotifier.value, gidNotifier.value);
-                    //             }
-
-                    //             if (hasSent) {
-                    //               setState(() {
-                    //                 _isSending = false;
-                    //                 Navigator.of(context).pop();
-                    //               });
-                    //             } else {
-                    //               App.logger.severe("Send failed");
-                    //               setState(() {
-                    //                 _isSending = false;
-                    //                 Navigator.of(context).pop();
-                    //               });
-                    //             }
-                    //           } catch (e) {
-                    //             App.logger.severe(e);
-
-                    //             setState(() {
-                    //               _isSending = false;
-                    //               Navigator.of(context).pop();
-                    //             });
-                    //           }
-                    //         })
-                  ]),
+                  actions: [_buildSubmitButton()]),
               SizedBox(
                 height: 36,
                 child: TabBar(
@@ -302,7 +249,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
                   return Column(
                     children: List<Widget>.generate(groupList.length, (index) {
                       final group = groupList[index];
-                      final avatar = group.isPublic == 1
+                      final avatar = group.isPublic
                           ? Icon(AppIcons.channel, size: 20)
                           : Icon(AppIcons.private_channel, size: 20);
                       return GestureDetector(
@@ -391,7 +338,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
             title: each.groupInfo.name,
             gid: each.gid,
             time: each.updatedAt,
-            isPublicChannel: each.isPublic == 1);
+            isPublicChannel: each.isPublic);
         recents.add(uiForward);
       }
     }
@@ -431,7 +378,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
             title: each.groupInfo.name,
             gid: each.gid,
             time: 0,
-            isPublicChannel: each.isPublic == 1);
+            isPublicChannel: each.isPublic);
         recents.add(uiForward);
       }
     }

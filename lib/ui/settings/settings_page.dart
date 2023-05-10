@@ -5,14 +5,14 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/settings/child_pages/firebase_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/language_setting_page.dart';
-import 'package:vocechat_client/ui/settings/child_pages/reload_notification_page.dart';
+// import 'package:vocechat_client/ui/settings/child_pages/reload_notification_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
@@ -29,7 +29,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class SettingPage extends StatefulWidget {
   static const route = "/settings";
 
-  SettingPage({Key? key}) : super(key: key);
+  const SettingPage({Key? key}) : super(key: key);
 
   @override
   State<SettingPage> createState() => _SettingPageState();
@@ -73,12 +73,10 @@ class _SettingPageState extends State<SettingPage> {
                   _buildUserInfo(),
                   _buildServer(context),
                   _buildLanguage(context),
-                  _buildPushNotificationToken(context),
                   _buildAbout(),
                   // if (App.app.userDb?.userInfo.isAdmin ?? false)
-                  // _buildConfigs(context),
-
-                  SizedBox(height: 8),
+                  //   _buildConfigs(context),
+                  // SizedBox(height: 8),
                   _buildButtons(context)
                 ],
               )),
@@ -90,13 +88,15 @@ class _SettingPageState extends State<SettingPage> {
   Widget _buildUserInfo() {
     return AvatarInfoTile(
       avatar: FutureBuilder<UserInfoM?>(
-          future: UserInfoDao().getUserByUid(App.app.userDb!.userInfo.uid),
+          future: UserInfoDao().getUserByUid(App.app.userDb!.uid),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return VoceUserAvatar.user(
-                  userInfoM: snapshot.data!, size: VoceAvatarSize.s84);
+                  key: UniqueKey(),
+                  userInfoM: snapshot.data!,
+                  size: VoceAvatarSize.s84);
             } else {
-              return VoceUserAvatar.deleted(size: VoceAvatarSize.s84);
+              return const VoceUserAvatar.deleted(size: VoceAvatarSize.s84);
             }
           }),
       titleWidget: ValueListenableBuilder<UserInfoM?>(
@@ -115,7 +115,7 @@ class _SettingPageState extends State<SettingPage> {
           builder: (context, userInfoM, _) {
             if (userInfoM != null) {
               final userInfo = userInfoM.userInfo;
-              return Text(userInfo.email ?? "",
+              return Text(userInfo.email!,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.labelMedium);
             } else {
@@ -182,19 +182,6 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  Widget _buildPushNotificationToken(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: BannerTile(
-          onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-              return ReloadNotificationPage();
-            })));
-          },
-          title: AppLocalizations.of(context)!.resetFcmToken),
-    );
-  }
-
   Widget _buildConfigs(BuildContext context) {
     return BannerTile(
         onTap: () {
@@ -209,7 +196,7 @@ class _SettingPageState extends State<SettingPage> {
   Widget _buildAbout() {
     return BannerTile(
         title: AppLocalizations.of(context)!.settingsPageAbout,
-        keepArrow: true,
+        keepTrailingArrow: true,
         enableTap: true,
         onTap: () => Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => SettingsAboutPage())),

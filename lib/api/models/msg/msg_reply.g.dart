@@ -11,6 +11,7 @@ MsgReply _$MsgReplyFromJson(Map<String, dynamic> json) => MsgReply(
       contentType: json['content_type'] as String,
       content: json['content'] as String,
       properties: json['properties'] as Map<String, dynamic>?,
+      expiresIn: json['expires_in'] as int?,
       type: json['type'] as String? ?? 'reply',
     );
 
@@ -19,5 +20,6 @@ Map<String, dynamic> _$MsgReplyToJson(MsgReply instance) => <String, dynamic>{
       'properties': instance.properties,
       'content_type': instance.contentType,
       'content': instance.content,
+      'expires_in': instance.expiresIn,
       'type': instance.type,
     };

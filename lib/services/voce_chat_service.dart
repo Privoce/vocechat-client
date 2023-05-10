@@ -11,11 +11,12 @@ import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
+import 'package:vocechat_client/api/models/user/contact_info.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/services/file_handler/channel_avatar_handler.dart';
-import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
+import 'package:vocechat_client/dao/init_dao/dm_info.dart';
+import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -40,28 +41,27 @@ import '../dao/org_dao/chat_server.dart';
 
 enum EventActions { create, delete, update }
 
-enum ReactionTypes { edit, like, delete }
-
 typedef UsersAware = Future<void> Function(
     UserInfoM userInfoM, EventActions action);
 typedef GroupAware = Future<void> Function(
     GroupInfoM groupInfoM, EventActions action);
-typedef MsgAware = Future<void> Function(
-    ChatMsgM chatMsgM, String localMid, dynamic data);
-typedef ReactionAware = Future<void> Function(ReactionTypes reaction, int mid,
-    [ChatMsgM? content]);
-typedef SnippetAware = Future<void> Function(ChatMsgM chatMsgM);
+
+typedef MsgAware = Future<void> Function(ChatMsgM chatMsgM, bool afterReady,
+    {bool? snippetOnly});
+
+typedef MidDeleteAware = Future<void> Function(int targetMid);
+typedef LocalmidDeleteAware = Future<void> Function(String localMid);
 typedef UserStatusAware = Future<void> Function(int uid, bool isOnline);
 typedef OrgInfoAware = Future<void> Function(ChatServerM chatServerM);
 
-class ChatService {
-  ChatService() {
+class VoceChatService {
+  VoceChatService() {
     setReadIndexTimer();
 
     sseQueue = SseQueue(
         closure: handleSseStream,
         afterTaskCheck: () async {
-          fireReady();
+          // _handleReady();
         });
     mainTaskQueue = TaskQueue();
   }
@@ -75,10 +75,12 @@ class ChatService {
 
   final Set<UsersAware> _userListeners = {};
   final Set<GroupAware> _groupListeners = {};
-  final Set<MsgAware> _normalMsgListeners = {};
-  final Set<ReactionAware> _reactionListeners = {};
-  final Set<VoidCallback> _readyListeners = {};
-  final Set<SnippetAware> _snippetListeners = {};
+  final Set<MsgAware> _msgListeners = {};
+  final Set<MidDeleteAware> _midDeleteListeners = {};
+  final Set<LocalmidDeleteAware> _lmidDeleteListeners = {};
+
+  final Set<VoidCallback> _refreshListeners = {};
+
   final Set<UserStatusAware> _userStatusListeners = {};
   final Set<OrgInfoAware> _orgInfoListeners = {};
 
@@ -86,8 +88,31 @@ class ChatService {
   late TaskQueue mainTaskQueue;
   late Timer readIndexTimer;
 
+  bool afterReady = false;
+
+  final Map<int, ChatMsgM> dmInfoMap = {}; // {uid: createdAt}
+
   /// Used to avoid duplicated messages.
   final Set<int> midSet = {};
+
+  Future<void> initContacts() async {
+    if (enableContact) {
+      final res = await UserApi().getUserContacts();
+      if (res.statusCode == 200 && res.data != null) {
+        final dao = UserInfoDao();
+        final userInfoMList =
+            res.data!.map((e) => UserInfoM.fromUserContact(e)).toList();
+        for (final each in userInfoMList) {
+          await dao.addOrUpdate(each);
+        }
+
+        final uidList = userInfoMList.map((e) => e.uid).toList();
+        await dao.emptyUnpushedContactStatus(uidList);
+      }
+    } else {
+      return;
+    }
+  }
 
   void initSse() async {
     Sse.sse.close();
@@ -100,7 +125,7 @@ class ChatService {
     }
 
     try {
-      Sse.sse.connect();
+      initContacts().then((_) => Sse.sse.connect());
     } catch (e) {
       App.logger.severe(e);
     }
@@ -133,9 +158,7 @@ class ChatService {
 
   /// Update max mid that has been already read every 5 seconds.
   void setReadIndexTimer() async {
-    readIndexTimer = Timer.periodic(Duration(seconds: 5), (_) async {
-      // Also detects
-
+    readIndexTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
       Map<String, List> readIndexMap = {};
 
       for (var key in readIndexUser.keys) {
@@ -158,12 +181,11 @@ class ChatService {
 
       if (readIndexMap.isNotEmpty) {
         App.logger.info(readIndexMap);
-        final userApi = UserApi();
-        final res = await userApi.updateReadIndex(json.encode(readIndexMap));
-        // if (res.statusCode == 200) {
+
+        UserApi().updateReadIndex(json.encode(readIndexMap));
+
         readIndexUser.clear();
         readIndexGroup.clear();
-        // }
       }
     });
   }
@@ -188,38 +210,38 @@ class ChatService {
 
   void subscribeMsg(MsgAware msgAware) {
     unsubscribeMsg(msgAware);
-    _normalMsgListeners.add(msgAware);
+    _msgListeners.add(msgAware);
   }
 
   void unsubscribeMsg(MsgAware msgAware) {
-    _normalMsgListeners.remove(msgAware);
+    _msgListeners.remove(msgAware);
   }
 
-  void subscribeReaction(ReactionAware reactionAware) {
-    unsubscribeReaction(reactionAware);
-    _reactionListeners.add(reactionAware);
+  void subscribeMidDelete(MidDeleteAware deleteAware) {
+    unsubscribeMidDelete(deleteAware);
+    _midDeleteListeners.add(deleteAware);
   }
 
-  void unsubscribeReaction(ReactionAware reactionAware) {
-    _reactionListeners.remove(reactionAware);
+  void unsubscribeMidDelete(MidDeleteAware deleteAware) {
+    _midDeleteListeners.remove(deleteAware);
   }
 
-  void subscribeReady(VoidCallback readyAware) {
-    unsubscribeReady(readyAware);
-    _readyListeners.add(readyAware);
+  void subscribeLmidDelete(LocalmidDeleteAware deleteAware) {
+    unsubscribeLmidDelete(deleteAware);
+    _lmidDeleteListeners.add(deleteAware);
   }
 
-  void unsubscribeReady(VoidCallback readyAware) {
-    _reactionListeners.remove(readyAware);
+  void unsubscribeLmidDelete(LocalmidDeleteAware deleteAware) {
+    _lmidDeleteListeners.remove(deleteAware);
   }
 
-  void subscribeSnippet(SnippetAware snippetAware) {
-    unsubscribeSnippet(snippetAware);
-    _snippetListeners.add(snippetAware);
+  void subscribeRefresh(VoidCallback refreshAware) {
+    unsubscribeRefresh(refreshAware);
+    _refreshListeners.add(refreshAware);
   }
 
-  void unsubscribeSnippet(SnippetAware snippetAware) {
-    _snippetListeners.remove(snippetAware);
+  void unsubscribeRefresh(VoidCallback readyAware) {
+    _refreshListeners.remove(readyAware);
   }
 
   void subscribeUserStatus(UserStatusAware statusAware) {
@@ -263,40 +285,52 @@ class ChatService {
     }
   }
 
-  void fireMsg(ChatMsgM chatMsgM, String localMid, dynamic data) {
-    for (MsgAware msgAware in _normalMsgListeners) {
+  /// Fire the [targetMid] of a [ChatMsgM] that needs to be deleted to all
+  /// listeners.
+  ///
+  /// Use this when firing *Delete* in *Reaction*. Only used for server-send
+  /// deletion commands.
+  void fireMidDelete(int targetMid) {
+    for (MidDeleteAware deleteAware in _midDeleteListeners) {
       try {
-        msgAware(chatMsgM, localMid, data);
+        deleteAware(targetMid);
       } catch (e) {
         App.logger.severe(e);
       }
     }
   }
 
-  void fireReaction(ReactionTypes reaction, int mid, [ChatMsgM? chatMsgM]) {
-    for (ReactionAware reactionAware in _reactionListeners) {
+  void fireLmidDelete(String localMid) {
+    for (LocalmidDeleteAware deleteAware in _lmidDeleteListeners) {
       try {
-        reactionAware(reaction, mid, chatMsgM);
+        deleteAware(localMid);
       } catch (e) {
         App.logger.severe(e);
       }
     }
   }
 
-  void fireReady() {
-    for (VoidCallback readyAware in _readyListeners) {
+  /// Fire a [ChatMsgM] object to all listeners.
+  ///
+  /// Use this when firing all types of messages except *Delete* in
+  /// *Reaction*.
+  void fireMsg(ChatMsgM chatMsgM, bool afterReady,
+      {bool? snippetOnly = false}) {
+    cumulateDmInfo(chatMsgM);
+
+    for (MsgAware msgAware in _msgListeners) {
       try {
-        readyAware();
+        msgAware(chatMsgM, afterReady, snippetOnly: snippetOnly);
       } catch (e) {
         App.logger.severe(e);
       }
     }
   }
 
-  void fireSnippet(ChatMsgM chatMsgM) {
-    for (SnippetAware snippetAware in _snippetListeners) {
+  void fireRefresh() {
+    for (VoidCallback refreshAware in _refreshListeners) {
       try {
-        snippetAware(chatMsgM);
+        refreshAware();
       } catch (e) {
         App.logger.severe(e);
       }
@@ -360,6 +394,7 @@ class ChatService {
         case sseJoinedGroup:
         case sseKickFromGroup:
         case ssePinnedMessageUpdated:
+        case ssePinnedChats:
         case sseReady:
         case sseRelatedGroups:
         case sseUserJoinedGroup:
@@ -400,6 +435,9 @@ class ChatService {
           break;
         case sseKickFromGroup:
           await _handleKickFromGroup(map);
+          break;
+        case ssePinnedChats:
+          await _handlePinnedChats(map);
           break;
         case ssePinnedMessageUpdated:
           await _handlePinnedMessageUpdated(map);
@@ -455,7 +493,7 @@ class ChatService {
     }
 
     final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.status == MsgSendStatus.success.name) {
+    if (msg != null && msg.statusStr == MsgSendStatus.success.name) {
       return;
     }
 
@@ -499,7 +537,7 @@ class ChatService {
     }
 
     final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.status == MsgSendStatus.success.name) {
+    if (msg != null && msg.statusStr == MsgSendStatus.success.name) {
       return;
     }
 
@@ -541,9 +579,6 @@ class ChatService {
 
         if (oldGroupInfoM != newGroupInfoM && newGroupInfoM != null) {
           fireChannel(newGroupInfoM, EventActions.update);
-          if (await shouldGetChannelAvatar(oldGroupInfoM, newGroupInfoM)) {
-            await getGroupAvatar(newGroupInfoM);
-          }
         }
       }
     } catch (e) {
@@ -564,9 +599,6 @@ class ChatService {
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
         fireChannel(value, EventActions.create);
-        if (await shouldGetChannelAvatar(oldGroupInfoM, groupInfoM)) {
-          await getGroupAvatar(groupInfoM);
-        }
       });
     } catch (e) {
       App.logger.severe(e);
@@ -586,6 +618,47 @@ class ChatService {
     }
   }
 
+  Future<void> _handlePinnedChats(Map<String, dynamic> map) async {
+    assert(map["type"] == ssePinnedChats);
+
+    try {
+      // To record pinned uids and gids,
+      // compare local pinned uids and gids, take complement sets, and
+      // clear the complement's [pinnedAt] property.
+      List<int> ssePinnedUids = [];
+      List<int> ssePinnedGids = [];
+
+      final userInfoDao = UserInfoDao();
+      final groupInfoDao = GroupInfoDao();
+
+      final chats = map["chats"] as List<dynamic>;
+      for (final chat in chats) {
+        final uid = chat["target"]?["uid"] as int?;
+        final gid = chat["target"]?["gid"] as int?;
+        final updatedAt = chat["updated_at"] as int?;
+
+        if (uid != null) {
+          ssePinnedUids.add(uid);
+          final user = await userInfoDao.getUserByUid(uid);
+          if (user != null) {
+            await userInfoDao.updateProperties(uid, pinnedAt: updatedAt);
+          }
+        } else if (gid != null) {
+          ssePinnedGids.add(gid);
+          final group = await groupInfoDao.getGroupByGid(gid);
+          if (group != null) {
+            await groupInfoDao.updateProperties(gid, pinnedAt: updatedAt);
+          }
+        }
+      }
+
+      await userInfoDao.emptyUnpushedPinnedStatus(ssePinnedUids);
+      await groupInfoDao.emptyUnpushedPinnedStatus(ssePinnedGids);
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
   Future<void> _handlePinnedMessageUpdated(Map<String, dynamic> map) async {
     assert(map["type"] == ssePinnedMessageUpdated);
 
@@ -600,8 +673,14 @@ class ChatService {
       }
       await GroupInfoDao()
           .updatePins(gid, mid, pinnedMsg: pinnedMsg)
-          .then((value) {
-        if (value != null) fireChannel(value, EventActions.update);
+          .then((updatedGroupInfoM) async {
+        final pinnedBy = pinnedMsg?.createdBy;
+        await ChatMsgDao().pinMsgByMid(mid, pinnedBy ?? -1).then((updatedMsgM) {
+          if (updatedGroupInfoM != null && updatedMsgM != null) {
+            fireMsg(updatedMsgM, true);
+            fireChannel(updatedGroupInfoM, EventActions.update);
+          }
+        });
       });
     } catch (e) {
       App.logger.severe(e);
@@ -609,20 +688,11 @@ class ChatService {
   }
 
   Future<void> _handleReady() async {
+    saveDmInfoMap();
+    afterReady = true;
+
     App.app.statusService?.fireSseLoading(SseStatus.successful);
-
-    // find DMs with draft and fire user to chats page.
-    final usersWithDraft = await UserInfoDao().getUsersWithDraft();
-    if (usersWithDraft == null) {
-      fireReady();
-      return;
-    }
-
-    for (var userInfoM in usersWithDraft) {
-      fireUser(userInfoM, EventActions.create);
-    }
-
-    fireReady();
+    fireRefresh();
   }
 
   Future<void> _handleRelatedGroups(Map<String, dynamic> relatedGroups) async {
@@ -668,45 +738,12 @@ class ChatService {
         if (oldGroupInfoM != groupInfoM) {
           await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
             fireChannel(groupInfoM, EventActions.create);
-            if (await shouldGetChannelAvatar(oldGroupInfoM, groupInfoM)) {
-              await getGroupAvatar(groupInfoM);
-            }
           });
         }
       }
     } catch (e) {
       App.logger.severe(e);
     }
-  }
-
-  Future<bool> shouldGetChannelAvatar(GroupInfoM? prev, GroupInfoM curr) async {
-    // No local groupInfoM, or has local groupInfoM but no local data,
-    // and server has a new avatar.
-    final a = ((prev == null ||
-            !(await ChannelAvatarHander()
-                .exists(ChannelAvatarHander.generateFileName(curr.gid)))) &&
-        curr.groupInfo.avatarUpdatedAt != 0);
-
-    // Has local groupInfoM, but server has a newer avatar.
-    final b = (prev != null &&
-        curr.groupInfo.avatarUpdatedAt > prev.groupInfo.avatarUpdatedAt);
-
-    return a || b;
-  }
-
-  Future<bool> shouldGetUserAvatar(UserInfoM? prev, UserInfoM curr) async {
-    // No local UserInfoM, or has local UserInfoM but no local data,
-    // and server has a new avatar.
-    final a = ((prev == null ||
-            !(await ChannelAvatarHander()
-                .exists(ChannelAvatarHander.generateFileName(curr.uid)))) &&
-        curr.userInfo.avatarUpdatedAt != 0);
-
-    // Has local UserInfoM, but server has a newer avatar.
-    final b = (prev != null &&
-        curr.userInfo.avatarUpdatedAt > prev.userInfo.avatarUpdatedAt);
-
-    return a || b;
   }
 
   Future<void> _handleUserJoinedGroup(Map<String, dynamic> map) async {
@@ -775,9 +812,6 @@ class ChatService {
             if (oldUserInfoM != userInfoM) {
               await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
                 fireUser(value, EventActions.create);
-                if (await shouldGetUserAvatar(oldUserInfoM, userInfoM)) {
-                  await getUserAvatar(userInfoM);
-                }
               });
             }
 
@@ -798,9 +832,6 @@ class ChatService {
                     .addOrUpdate(newUserInfoM)
                     .then((value) async {
                   fireUser(value, EventActions.update);
-                  if (await shouldGetUserAvatar(old, newUserInfoM)) {
-                    await getUserAvatar(newUserInfoM);
-                  }
                 });
               }
             }
@@ -1114,39 +1145,131 @@ class ChatService {
         }
       }
     }
+
+    {
+      // handle "add_contacts"
+      final addContacts = map["add_contacts"] as List?;
+      if (addContacts != null && addContacts.isNotEmpty) {
+        final dao = UserInfoDao();
+        for (var contact in addContacts) {
+          final contactInfo = ContactInfo.fromJson(contact["info"]);
+          final targetUid = contact["target_uid"] as int;
+          await dao
+              .updateContactInfo(targetUid,
+                  status: contactInfo.status,
+                  contactCreatedAt: contactInfo.createdAt,
+                  contactUpdatedAt: contactInfo.updatedAt)
+              .then((value) {
+            if (value != null) {
+              fireUser(value, EventActions.update);
+            }
+          });
+        }
+      }
+    }
+
+    {
+      // handle "remove_contacts"
+      final removeContacts = map["remove_contacts"] as List?;
+      if (removeContacts != null) {
+        final dao = UserInfoDao();
+        for (final uid in removeContacts) {
+          await dao.updateContactInfo((uid as int), status: "").then((value) {
+            if (value != null) {
+              fireUser(value, EventActions.update);
+            }
+          });
+        }
+      }
+    }
+
+    {
+      // handle "add_pin_chats"
+      final addPinChats = map["add_pin_chats"] as List?;
+      if (addPinChats != null) {
+        final userInfoDao = UserInfoDao();
+        final groupInfoDao = GroupInfoDao();
+        for (final chat in addPinChats) {
+          final uid = chat["target"]?["uid"] as int?;
+          final gid = chat["target"]?["gid"] as int?;
+          final updatedAt = chat["updated_at"] as int?;
+
+          if (uid != null) {
+            await userInfoDao
+                .updateProperties(uid, pinnedAt: updatedAt)
+                .then((value) {
+              if (value != null) {
+                fireUser(value, EventActions.update);
+              }
+            });
+          } else if (gid != null) {
+            await groupInfoDao
+                .updateProperties(gid, pinnedAt: updatedAt)
+                .then((value) {
+              if (value != null) {
+                fireChannel(value, EventActions.update);
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // handle "remove_pin_chats"
+      final removePinChats = map["remove_pin_chats"] as List?;
+      if (removePinChats != null) {
+        final userInfoDao = UserInfoDao();
+        final groupInfoDao = GroupInfoDao();
+        for (final data in removePinChats) {
+          final uid = data["uid"] as int?;
+          final gid = data["gid"] as int?;
+          const updatedAt = -1;
+
+          if (uid != null) {
+            await userInfoDao
+                .updateProperties(uid, pinnedAt: updatedAt)
+                .then((value) {
+              if (value != null) {
+                fireUser(value, EventActions.update);
+              }
+            });
+          } else if (gid != null) {
+            await groupInfoDao
+                .updateProperties(gid, pinnedAt: updatedAt)
+                .then((value) {
+              if (value != null) {
+                fireChannel(value, EventActions.update);
+              }
+            });
+          }
+        }
+      }
+    }
   }
 
   Future<void> _handleUsersSnapshot(Map<String, dynamic> usersSnapshot) async {
     assert(usersSnapshot.containsKey("type") &&
         usersSnapshot["type"] == sseUsersSnapshot);
 
+    final dao = UserInfoDao();
+
     try {
       final List<dynamic> userMaps = usersSnapshot["users"];
+      final userInfoMList = userMaps.map((e) {
+        final userInfo = UserInfo.fromJson(e);
+        return UserInfoM.fromUserInfo(userInfo, "");
+      }).toList();
 
-      // add users to db
-      if (userMaps.isNotEmpty) {
-        for (var userMap in userMaps) {
-          UserInfo userInfo = UserInfo.fromJson(userMap);
-          UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
-
-          final oldUserInfoM = await UserInfoDao().getUserByUid(userInfoM.uid);
-
-          if (oldUserInfoM != userInfoM) {
-            await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
-              fireUser(value, EventActions.create);
-              if (await shouldGetUserAvatar(oldUserInfoM, userInfoM)) {
-                await getUserAvatar(userInfoM);
-              }
-            });
-          }
-        }
-      }
+      await dao.batchAdd(userInfoMList);
 
       final int version = usersSnapshot["version"];
 
       await UserDbMDao.dao
           .updateUsersVersion(App.app.userDb!.id, version)
-          .then((value) => App.app.userDb?.usersVersion = version);
+          .then((userDbM) => App.app.userDb = userDbM);
+
+      fireRefresh();
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1207,120 +1330,61 @@ class ChatService {
     }
 
     try {
-      ChatMsgM chatMsgM;
+      // TODO: handle data pre-download as soon as the messages are received
+      // (before UI renders, which is the current option) in a later version.
+      ChatMsg c = ChatMsg(
+          target: chatMsg.target,
+          mid: chatMsg.mid,
+          fromUid: chatMsg.fromUid,
+          createdAt: chatMsg.createdAt,
+          detail: detail.toJson());
 
-      switch (detail.contentType) {
-        case typeText:
-          ChatMsg c = ChatMsg(
-              target: chatMsg.target,
-              mid: chatMsg.mid,
-              fromUid: chatMsg.fromUid,
-              createdAt: chatMsg.createdAt,
-              detail: detail.toJson());
-          chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-          mainTaskQueue
-              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
-                    String s = value.msgNormal?.content ??
-                        value.msgReply?.content ??
-                        "";
-                    fireSnippet(value);
-                    fireMsg(value, localMid, s);
-                    midSet.remove(value.mid);
-                  }));
+      ChatMsgM chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
+      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
+        switch (detail.contentType) {
+          case typeText:
+          case typeMarkdown:
+          case typeFile:
+          case typeAudio:
+            fireMsg(dbMsgM, afterReady);
+            midSet.remove(dbMsgM.mid);
+            break;
 
-          break;
-        case typeMarkdown:
-          ChatMsg c = ChatMsg(
-              target: chatMsg.target,
-              mid: chatMsg.mid,
-              fromUid: chatMsg.fromUid,
-              createdAt: chatMsg.createdAt,
-              detail: detail.toJson());
-          chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
+          case typeArchive:
+            getArchive(chatMsgM).then((_) {
+              fireMsg(dbMsgM, afterReady);
+              midSet.remove(dbMsgM.mid);
+            });
+            break;
+          default:
+            break;
+        }
+      });
 
-          mainTaskQueue
-              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-                    fireSnippet(value);
-                    fireMsg(value, localMid, detail.content);
-                    midSet.remove(value.mid);
-                  }));
+      // switch (detail.contentType) {
+      //   case typeText:
+      //   case typeMarkdown:
+      //   case typeFile:
+      //   case typeAudio:
+      //   case typeArchive:
+      //     ChatMsg c = ChatMsg(
+      //         target: chatMsg.target,
+      //         mid: chatMsg.mid,
+      //         fromUid: chatMsg.fromUid,
+      //         createdAt: chatMsg.createdAt,
+      //         detail: detail.toJson());
+      //     ChatMsgM chatMsgM =
+      //         ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
+      //     await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
+      //       fireMsg(dbMsgM);
+      //       midSet.remove(dbMsgM.mid);
+      //     });
 
-          break;
+      //     break;
 
-        case typeFile:
-          ChatMsg c = ChatMsg(
-              target: chatMsg.target,
-              mid: chatMsg.mid,
-              fromUid: chatMsg.fromUid,
-              createdAt: chatMsg.createdAt,
-              detail: detail.toJson());
-          chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-          mainTaskQueue
-              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) {
-                    fireSnippet(chatMsgM);
-                    midSet.remove(value.mid);
-                  }));
-
-          // thumb will only be downloaded if file is an image.
-          try {
-            if (chatMsgM.isImageMsg) {
-              if (chatMsgM.isGifImageMsg) {
-                mainTaskQueue.add(() => FileHandler.singleton
-                        .getImageNormal(chatMsgM)
-                        .then((image) {
-                      if (image != null) {
-                        fireMsg(chatMsgM, chatMsgM.localMid, image);
-                      } else {
-                        fireMsg(chatMsgM, localMid, null);
-                      }
-                    }));
-              } else {
-                mainTaskQueue.add(() =>
-                    FileHandler.singleton.getImageThumb(chatMsgM).then((thumb) {
-                      if (thumb != null) {
-                        fireMsg(chatMsgM, chatMsgM.localMid, thumb);
-                      } else {
-                        fireMsg(chatMsgM, localMid, null);
-                      }
-                    }));
-              }
-            } else {
-              fireMsg(chatMsgM, localMid, null);
-            }
-          } catch (e) {
-            App.logger.severe(e);
-          }
-
-          break;
-
-        case typeArchive:
-          ChatMsg c = ChatMsg(
-              target: chatMsg.target,
-              mid: chatMsg.mid,
-              fromUid: chatMsg.fromUid,
-              createdAt: chatMsg.createdAt,
-              detail: detail.toJson());
-          chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-
-          mainTaskQueue
-              .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
-                    fireSnippet(value);
-                    midSet.remove(value.mid);
-                  }));
-
-          getArchive(chatMsgM).catchError((e) {
-            App.logger.severe(e);
-          }).then((value) {
-            if (value != null) {
-              fireMsg(chatMsgM, localMid, value.archive);
-            } else {
-              fireMsg(chatMsgM, localMid, null);
-            }
-          });
-          break;
-        default:
-          break;
-      }
+      //   default:
+      //     break;
+      // }
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1339,39 +1403,73 @@ class ChatService {
         case "edit":
           final edit = detailJson["content"] as String;
 
-          mainTaskQueue.add(() => ChatMsgDao()
-                  .editMsgByMid(targetMid, edit, MsgSendStatus.success)
-                  .then((newMsgM) {
-                if (newMsgM != null) {
-                  fireSnippet(newMsgM);
-                  fireReaction(ReactionTypes.edit, targetMid, newMsgM);
-                  midSet.remove(newMsgM.mid);
-                }
-              }));
+          await ChatMsgDao()
+              .editMsgByMid(targetMid, edit, MsgSendStatus.success)
+              .then((dbMsgM) {
+            if (dbMsgM != null) {
+              fireMsg(dbMsgM, afterReady);
+              midSet.remove(dbMsgM.mid);
+            }
+          });
 
           break;
         case "like":
           final reaction = detailJson["action"] as String;
 
-          mainTaskQueue.add(() => ChatMsgDao()
-                  .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
-                      DateTime.now().millisecondsSinceEpoch)
-                  .then((newMsgM) {
-                if (newMsgM != null) {
-                  fireReaction(ReactionTypes.like, targetMid, newMsgM);
-                  midSet.remove(newMsgM.mid);
-                }
-              }));
+          await ChatMsgDao()
+              .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
+                  DateTime.now().millisecondsSinceEpoch)
+              .then((dbMsgM) {
+            if (dbMsgM != null) {
+              fireMsg(dbMsgM, afterReady);
+              midSet.remove(dbMsgM.mid);
+            }
+          });
 
           break;
         case "delete":
           final int? targetMid = chatMsg.detail["mid"];
+
           if (targetMid == null) return;
 
-          // final targetMsgM = await ChatMsgDao().getMsgByMid(targetMid);
-          // if (targetMsgM == null) return;
+          ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
+            if (mid < 0) return;
 
-          mainTaskQueue.add(() => _deleteMsg(targetMid));
+            int? gid = chatMsg.target["gid"];
+            int? uid = chatMsg.target["uid"];
+
+            // Must be kept to get real dmUid.
+            if (uid != null && SharedFuncs.isSelf(uid)) {
+              uid = chatMsg.fromUid;
+            }
+
+            // Delete message in UI and its related files in file system.
+            {
+              fireMidDelete(targetMid);
+              FileHandler.singleton
+                  .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
+              AudioFileHandler().deleteWithChatMsgM(ChatMsgM()
+                ..mid = targetMid
+                ..gid = gid ?? -1
+                ..dmUid = uid ?? -1);
+            }
+
+            // Update latest message in UI.
+            {
+              final dao = ChatMsgDao();
+              ChatMsgM? latestMsgM;
+
+              if (gid != null) {
+                latestMsgM = await dao.getChannelLatestMsgM(gid);
+              } else if (uid != null) {
+                latestMsgM = await dao.getDmLatestMsgM(uid);
+              }
+              if (latestMsgM != null) {
+                fireMsg(latestMsgM, afterReady, snippetOnly: true);
+              }
+            }
+          });
+
           break;
 
         default:
@@ -1379,44 +1477,6 @@ class ChatService {
     } catch (e) {
       App.logger.severe(e);
     }
-  }
-
-  Future<void> _deleteMsg(int targetMid) async {
-    final targetMsgM = await ChatMsgDao().getMsgByMid(targetMid);
-    if (targetMsgM == null) return;
-
-    await ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
-      if (mid < 0) {
-        return;
-      }
-
-      await FileHandler.singleton
-          .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
-      fireReaction(ReactionTypes.delete, mid);
-
-      // delete without remaining hint words in msg list.
-      if (targetMsgM.isGroupMsg) {
-        final curMaxMid = await ChatMsgDao().getChannelMaxMid(targetMsgM.gid);
-        if (curMaxMid > -1) {
-          final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
-
-          if (msg != null) {
-            fireSnippet(msg);
-            midSet.remove(msg.mid);
-          }
-        }
-      } else {
-        final curMaxMid = await ChatMsgDao().getDmMaxMid(targetMsgM.dmUid);
-        if (curMaxMid > -1) {
-          final msg = await ChatMsgDao().getMsgByMid(curMaxMid);
-
-          if (msg != null) {
-            fireSnippet(msg);
-            midSet.remove(msg.mid);
-          }
-        }
-      }
-    });
   }
 
   Future<void> _handleReply(ChatMsg chatMsg) async {
@@ -1437,12 +1497,10 @@ class ChatService {
       chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgSendStatus.success);
-      mainTaskQueue
-          .add(() => ChatMsgDao().addOrUpdate(chatMsgM).then((value) async {
-                fireSnippet(value);
-                fireMsg(value, localMid, msgReplyJson['content']);
-                midSet.remove(value.mid);
-              }));
+      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
+        fireMsg(dbMsgM, afterReady);
+        midSet.remove(dbMsgM.mid);
+      });
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1669,61 +1727,17 @@ class ChatService {
     return (await resourceApi.getOpenGraphicParse(url)).data;
   }
 
-  Future<void> getGroupAvatar(GroupInfoM groupInfoM) async {
-    final gid = groupInfoM.gid;
-
-    final resourceApi = ResourceApi();
-    await resourceApi.getGroupAvatar(gid).then((res) async {
-      App.logger.info("GID $gid Avatar obtained.");
-      if (res != null &&
-          res.statusCode == 200 &&
-          res.data != null &&
-          res.data!.isNotEmpty) {
-        await ChannelAvatarHander()
-            .save(ChannelAvatarHander.generateFileName(gid), res.data!)
-            .then((newAvatarFile) async {
-          // Remove possible old avatar in cache.
-          if (newAvatarFile != null) {
-            final file = File(newAvatarFile.path);
-            final imageProvider = FileImage(file);
-            final key = await imageProvider.obtainKey(ImageConfiguration());
-
-            // Evict the image from the cache
-            PaintingBinding.instance.imageCache.evict(key);
-
-            fireChannel(groupInfoM, EventActions.update);
-          }
-        });
-      }
-    }).catchError((e) {
-      App.logger.severe(e);
-    });
+  void cumulateDmInfo(ChatMsgM chatMsgM) {
+    dmInfoMap.addAll({chatMsgM.dmUid: chatMsgM});
   }
 
-  Future<void> getUserAvatar(UserInfoM userInfoM) async {
-    final uid = userInfoM.uid;
-    final resourceApi = ResourceApi();
-    await resourceApi.getUserAvatar(uid).then((res) async {
-      App.logger.info("UID $uid Avatar obtained.");
-      if (res.statusCode == 200 && res.data != null) {
-        await UserAvatarHander()
-            .save(UserAvatarHander.generateFileName(uid), res.data!)
-            .then((newAvatarFile) async {
-          // Remove possible old avatar in cache.
-          if (newAvatarFile != null) {
-            final file = File(newAvatarFile.path);
-            final imageProvider = FileImage(file);
-            final key = await imageProvider.obtainKey(ImageConfiguration());
+  Future<void> saveDmInfoMap() async {
+    final dmInfoDao = DmInfoDao();
 
-            // Evict the image from the cache
-            PaintingBinding.instance.imageCache.evict(key);
-
-            fireUser(userInfoM, EventActions.update);
-          }
-        });
-      }
-    }).catchError((e) {
-      App.logger.severe(e);
-    });
+    for (final each in dmInfoMap.values.toList()) {
+      if (each.dmUid < 0) continue;
+      final info = DmInfoM.item(each.dmUid, "", each.createdAt);
+      await dmInfoDao.addOrUpdate(info);
+    }
   }
 }

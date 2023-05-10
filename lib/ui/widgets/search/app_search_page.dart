@@ -66,14 +66,15 @@ class AppSearchPage extends StatelessWidget {
                       children: List<Widget>.generate(users.length, (index) {
                         final userInfoM = users[index];
                         return ContactTile(
-                          userInfoM,
-                          SharedFuncs.isSelf(userInfoM.uid),
-                          enableSubtitleEmail: true,
-                          avatarSize: VoceAvatarSize.s42,
-                          onTap: () => Navigator.pushNamed(
-                              context, ContactDetailPage.route,
-                              arguments: userInfoM),
-                        );
+                            userInfoM, SharedFuncs.isSelf(userInfoM.uid),
+                            enableSubtitleEmail: true,
+                            avatarSize: VoceAvatarSize.s40,
+                            onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ContactDetailPage(userInfoM: userInfoM),
+                                  ),
+                                ));
                       }),
                     );
                     resultList.add(userCol);

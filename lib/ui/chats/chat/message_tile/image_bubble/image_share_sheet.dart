@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -13,7 +13,6 @@ import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
-import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -208,8 +207,14 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
     _saveBtnStatus.value = ButtonStatus.inProgress;
 
     try {
-      final result = await ImageGallerySaver.saveFile(widget.imageFile.path);
-      if (result["isSuccess"]) {
+      final image = widget.imageFile;
+      final name = image.path.split("/").last;
+      final imageBytes = await image.readAsBytes();
+
+      final result = await SaverGallery.saveImage(imageBytes,
+          name: name, androidExistNotSave: false);
+
+      if (result.isSuccess) {
         _saveBtnStatus.value = ButtonStatus.success;
         await Future.delayed(Duration(seconds: 2)).then((_) async {
           _saveBtnStatus.value = ButtonStatus.normal;

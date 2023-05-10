@@ -116,7 +116,7 @@ class PinnedMsgTile extends StatelessWidget {
           future: getThumbImage(chatId!, msg.content, imageName),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              return ImageBubble(
+              return VoceImageBubble(
                 imageFile: snapshot.data!,
                 getImageList: () async {
                   return ImageGalleryData(imageItemList: [

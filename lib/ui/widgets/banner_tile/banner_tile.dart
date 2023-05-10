@@ -12,9 +12,10 @@ class BannerTile extends StatelessWidget {
   final Widget? titleWidget;
   final bool keepTitle;
   final Widget? trailing;
-  final bool keepArrow;
+  final bool keepTrailingArrow;
   final String? header;
   final String? footer;
+  final double? height;
   bool showVerticalEdge;
 
   BannerTile(
@@ -24,10 +25,11 @@ class BannerTile extends StatelessWidget {
       this.titleWidget,
       this.keepTitle = true,
       this.trailing,
-      this.keepArrow = true,
+      this.keepTrailingArrow = true,
       this.showVerticalEdge = true,
       this.header,
-      this.footer});
+      this.footer,
+      this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,7 @@ class BannerTile extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                       fontSize: 14))),
         Container(
-          height: 48,
+          height: height ?? 48,
           width: double.maxFinite,
           decoration: BoxDecoration(
               color: Colors.white,
@@ -72,7 +74,7 @@ class BannerTile extends StatelessWidget {
                     ),
                   Spacer(),
                   if (trailing != null) trailing!,
-                  if (keepArrow)
+                  if (keepTrailingArrow)
                     Padding(
                       padding: const EdgeInsets.only(left: 12),
                       child: Icon(Icons.arrow_forward_ios,

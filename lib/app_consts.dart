@@ -11,7 +11,7 @@ enum LoginType { password, magiclink }
 /// Each type corresponds to an API.
 /// Markdown not included as it is currently not supported by phones according
 /// to development plan.
-enum SendType { normal, file, edit, reply, cancel }
+enum SendType { normal, file, edit, reply, audio, cancel }
 
 enum MsgSendStatus { fail, success, sending, readyToSend }
 
@@ -29,7 +29,7 @@ typedef TokenAware = Future<void> Function(TokenStatus status);
 
 /// [MsgContentType] is consistant with server definition.
 /// Original String consts are defined separately.
-enum MsgContentType { text, markdown, file, archive }
+enum MsgContentType { text, markdown, file, audio, archive }
 
 /// [MsgDetailType] is consistant with server definition.
 enum MsgDetailType { normal, reaction, reply }
@@ -38,6 +38,7 @@ const typeText = "text/plain";
 const typeMarkdown = "text/markdown";
 const typeFile = "vocechat/file";
 const typeArchive = "vocechat/archive";
+const typeAudio = "vocechat/audio";
 
 /// Email RegEx from https://www.w3.org/TR/2012/WD-html-markup-20120329/input.email.html
 // const emailRegEx =

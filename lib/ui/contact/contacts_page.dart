@@ -19,8 +19,6 @@ class ContactsPage extends StatefulWidget {
 
 class _ContactsPageState extends State<ContactsPage>
     with AutomaticKeepAliveClientMixin {
-  // late final _contactFuture;
-
   bool keepAlive = true;
 
   @override
@@ -42,29 +40,39 @@ class _ContactsPageState extends State<ContactsPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
         backgroundColor: Colors.white,
-        appBar: ContactsBar(),
+        appBar: const ContactsBar(),
         body: SafeArea(
           child: FutureBuilder<List<UserInfoM>?>(
-            future: getContactList(),
+            future: enableContact ? getContactList() : getUserList(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done &&
                   snapshot.hasData) {
                 return ContactList(
                     key: Key(App.app.userDb!.dbName),
                     userList: snapshot.data!,
-                    onTap: (userInfoM) => Navigator.of(context).pushNamed(
-                        ContactDetailPage.route,
-                        arguments: userInfoM));
+                    onTap: (userInfoM) => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ContactDetailPage(userInfoM: userInfoM),
+                          ),
+                        ));
               }
-              return Center(child: CupertinoActivityIndicator());
+              return const Center(child: CupertinoActivityIndicator());
             },
           ),
         ));
   }
 
+  Future<List<UserInfoM>?> getUserList() async {
+    final userList = await UserInfoDao().getUserList();
+    return userList;
+  }
+
   Future<List<UserInfoM>?> getContactList() async {
-    return UserInfoDao().getUserList();
+    final contactList = await UserInfoDao().getContactList();
+    return contactList;
   }
 }

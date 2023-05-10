@@ -4,6 +4,7 @@ const sseHeartbeat = "heartbeat";
 const sseJoinedGroup = "joined_group";
 const sseKick = "kick";
 const sseKickFromGroup = "kick_from_group";
+const ssePinnedChats = "pinned_chats";
 const ssePinnedMessageUpdated = "pinned_message_updated";
 const sseReady = "ready";
 const sseRelatedGroups = "related_groups";

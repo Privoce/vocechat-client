@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -42,7 +43,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
 
   @override
   // Size get preferredSize => Size(double.maxFinite, 98);
-  Size get preferredSize => Size(double.maxFinite, barHeight);
+  Size get preferredSize => const Size(double.maxFinite, barHeight);
 
   ChatsBar(
       {required this.onCreateChannel,
@@ -52,8 +53,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
       required this.showDrawer,
       Key? key})
       : super(key: key) {
-    _isAdmin =
-        UserInfo.fromJson(jsonDecode(App.app.userDb!.info)).isAdmin ?? false;
+    _isAdmin = UserInfo.fromJson(jsonDecode(App.app.userDb!.info)).isAdmin;
   }
 
   @override
@@ -264,24 +264,20 @@ class _ChatsBarState extends State<ChatsBar> {
       ),
       centerTitle: false,
       actions: [
-        // IconButton(
+        // CupertinoButton(
+        //     child: Text("test"),
         //     onPressed: () async {
-        //       Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-        //         return TempPageInstruction();
-        //       })));
-        //     },
-        //     icon: Text(
-        //       "inst",
-        //       style: TextStyle(color: Colors.black),
-        //     )),
+        //       final data = await UserInfoDao().getUserList();
+        //       print(data?.length);
+        //     }),
         Padding(
-            padding: EdgeInsets.only(right: 10),
+            padding: const EdgeInsets.only(right: 10),
             child: PopupMenuButton(
               icon: Icon(Icons.add, color: AppColors.darkGrey, size: 24),
               splashRadius: 1,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
-              offset: Offset(0.0, 50.0),
+              offset: const Offset(0.0, 50.0),
               onSelected: (action) async {
                 switch (action as AddActions) {
                   case AddActions.channel:
@@ -314,7 +310,7 @@ class _ChatsBarState extends State<ChatsBar> {
                   case AddActions.dm:
                     final route = PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          NewDmPage(),
+                          const NewDmPage(),
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {
                         const begin = Offset(0.0, 1.0);
@@ -411,7 +407,7 @@ class _ChatsBarState extends State<ChatsBar> {
     // print("TOKEN: $_tokenStatus");
     // print("TASK: $_taskStatus");
     if (_isSuccessful() || _isInitial()) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     } else if (_tokenStatus == TokenStatus.unauthorized) {
       return CupertinoButton(
           padding: EdgeInsets.zero,
@@ -462,14 +458,14 @@ class _ChatsBarState extends State<ChatsBar> {
           child: Icon(Icons.error, color: Colors.red.shade600));
     }
 
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 
   void _reLogin() async {
     final userDb = App.app.userDb;
     if (userDb == null) return;
 
-    final storage = FlutterSecureStorage();
+    final storage = const FlutterSecureStorage();
     final password = await storage.read(key: userDb.dbName);
 
     final route = PageRouteBuilder(
@@ -498,12 +494,12 @@ class _ChatsBarState extends State<ChatsBar> {
   PopupMenuItem _buildItem(Widget leading, String title, AddActions action) {
     return PopupMenuItem<AddActions>(
         height: _tileHeight,
-        padding: EdgeInsets.only(left: 10),
+        padding: const EdgeInsets.only(left: 10),
         value: action,
         child: Row(
           children: [
             leading,
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Flexible(
               child: Text(
                 title,

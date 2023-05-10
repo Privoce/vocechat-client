@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/services/chat_service.dart';
+import 'package:vocechat_client/globals.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/contact/contact_tile.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
@@ -54,7 +56,7 @@ class _ContactListState extends State<ContactList>
 
     if (widget.enableUserUpdate) {
       App.app.chatService.subscribeUsers(_onUser);
-      App.app.chatService.subscribeReady(() {
+      App.app.chatService.subscribeRefresh(() {
         if (mounted) {
           setState(() {});
         }
@@ -65,17 +67,19 @@ class _ContactListState extends State<ContactList>
   @override
   void dispose() {
     if (widget.enableUserUpdate) {
-      App.app.chatService.unsubscribeReady(() {
+      App.app.chatService.unsubscribeRefresh(() {
         if (mounted) {
           setState(() {});
         }
       });
     }
+    App.app.chatService.unsubscribeUsers(_onUser);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return _buildContactList();
   }
 
@@ -150,51 +154,32 @@ class _ContactListState extends State<ContactList>
           ],
         );
       },
-      physics: BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       indexBarData: SuspensionUtil.getTagIndexList(_contactList),
       indexHintBuilder: (context, hint) {
         return Container(
           alignment: Alignment.center,
           width: 60.0,
           height: 60.0,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.cyan,
             shape: BoxShape.circle,
           ),
-          child:
-              Text(hint, style: TextStyle(color: Colors.white, fontSize: 30.0)),
+          child: Text(hint,
+              style: const TextStyle(color: Colors.white, fontSize: 30.0)),
         );
       },
-      indexBarMargin: EdgeInsets.all(10),
-      indexBarOptions: IndexBarOptions(
+      indexBarMargin: const EdgeInsets.all(10),
+      indexBarOptions: const IndexBarOptions(
           hapticFeedback: HapticFeedback.mediumImpact,
           indexHintAlignment: Alignment.centerRight,
           needRebuild: true),
     );
   }
 
-  // Widget _buildSelect(int uid) {
-  //   const size = 40.0;
-  //   return Container(
-  //     height: size,
-  //     width: size,
-  //     margin: EdgeInsets.only(right: 40),
-  //     child: ValueListenableBuilder<List<int>>(
-  //       valueListenable: widget.selectNotifier!,
-  //       builder: (context, uidList, _) {
-  //         return Center(
-  //           child: uidList.contains(uid)
-  //               ? Icon(AppIcons.select, color: Colors.cyan, size: 24)
-  //               : SizedBox.shrink(),
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
-
   Widget _buildSusWidget(String susTag) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(color: AppColors.grey100),
       height: 20,
       width: double.infinity,
@@ -210,22 +195,48 @@ class _ContactListState extends State<ContactList>
   Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
     switch (action) {
       case EventActions.create:
-        if (!_uidSet.contains(userInfoM.uid)) {
-          _uidSet.add(userInfoM.uid);
-          _contactList.add(userInfoM);
-        }
-
-        break;
       case EventActions.update:
-        if (!_uidSet.contains(userInfoM.uid)) {
+        // Should handle one special case: add self to contact list anyway.
+        if (SharedFuncs.isSelf(userInfoM.uid)) {
           _uidSet.add(userInfoM.uid);
-          App.logger
-              .warning("User with uid: ${userInfoM.uid} not found in UI.");
+
+          final index = _contactList
+              .indexWhere((element) => element.uid == userInfoM.uid);
+          if (index > -1) {
+            _contactList[index] = userInfoM;
+          } else {
+            _contactList.add(userInfoM);
+          }
+          break;
         }
 
-        _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-        _contactList.add(userInfoM);
+        // Then handle general case.
+        if (enableContact) {
+          if (userInfoM.contactStatus == ContactInfoStatus.added.name) {
+            _uidSet.add(userInfoM.uid);
 
+            final index = _contactList
+                .indexWhere((element) => element.uid == userInfoM.uid);
+            if (index > -1) {
+              _contactList[index] = userInfoM;
+            } else {
+              _contactList.add(userInfoM);
+            }
+          } else {
+            _uidSet.remove(userInfoM.uid);
+            _contactList.removeWhere((element) => element.uid == userInfoM.uid);
+          }
+        } else {
+          _uidSet.add(userInfoM.uid);
+
+          final index = _contactList
+              .indexWhere((element) => element.uid == userInfoM.uid);
+          if (index > -1) {
+            _contactList[index] = userInfoM;
+          } else {
+            _contactList.add(userInfoM);
+          }
+        }
         break;
       case EventActions.delete:
         if (_uidSet.contains(userInfoM.uid)) {
@@ -238,9 +249,8 @@ class _ContactListState extends State<ContactList>
       default:
         break;
     }
-    SuspensionUtil.sortListBySuspensionTag(_contactList);
-    SuspensionUtil.setShowSuspensionStatus(_contactList);
-    // setState(() {});
+
+    _prepareContactList();
   }
 
   void _prepareContactList() async {
@@ -254,7 +264,9 @@ class _ContactListState extends State<ContactList>
       // show sus tag.
       SuspensionUtil.setShowSuspensionStatus(_contactList);
 
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     } catch (e) {
       App.logger.severe(e);
     }
