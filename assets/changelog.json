@@ -1,7 +1,7 @@
 {   
-    "latest": {"version": "0.2.84", "build_num": 54},
+    "latest": {"version": "0.2.85", "build_num": 54},
     "logs":  [
-        {"time": 1683679410395, "version": "0.2.84", "build_num": 54, "updates": [
+        {"time": 1683679410395, "version": "0.2.85", "build_num": 55, "updates": [
             "- refactor: performance improvements.",
             "- add: audio messages."
         ]},
