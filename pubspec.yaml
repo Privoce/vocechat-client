@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 
-version: 0.2.83+53
+version: 0.2.84+54
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -87,9 +87,9 @@ dependencies:
   async: ^2.9.0
   shared_preferences: ^2.0.17
   record: ^4.4.4
-  audio_waveforms: ^1.0.4
   audio_session: ^0.1.13
   provider: ^6.0.5
+  audioplayers: ^3.0.1
 
   # voce_image_viewer:
   #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/

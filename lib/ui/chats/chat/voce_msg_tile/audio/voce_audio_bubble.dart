@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/models/ui_models/audio_info.dart';
@@ -58,7 +57,7 @@ class _VoceAudioBubbleState extends State<VoceAudioBubble>
       return FractionallySizedBox(
         widthFactor: calAudioBubbleWidthFactor(audioInfo!.duration),
         child: VoceProgressBar(
-          controller: audioInfo!.controller,
+          player: audioInfo!.player,
           duration: audioInfo!.duration,
           textAlignment: getTextAlignment(),
           height: widget.height ?? 36,

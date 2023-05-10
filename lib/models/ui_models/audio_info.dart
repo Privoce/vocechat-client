@@ -1,11 +1,11 @@
-import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class AudioInfo {
   /// The controller of the audio.
-  final PlayerController controller;
+  final AudioPlayer player;
 
   /// The duration of the audio in milliseconds.
   final int duration;
 
-  AudioInfo(this.controller, this.duration);
+  AudioInfo(this.player, this.duration);
 }

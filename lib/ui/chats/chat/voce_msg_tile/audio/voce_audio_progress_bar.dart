@@ -1,16 +1,16 @@
-import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/services/voce_audio_service.dart';
 
 class VoceProgressBar extends StatefulWidget {
   final int duration;
-  final PlayerController controller;
+  final AudioPlayer player;
   final AlignmentGeometry textAlignment;
   final double height;
 
   const VoceProgressBar({
     super.key,
-    required this.controller,
+    required this.player,
     required this.duration,
     required this.height,
     this.textAlignment = Alignment.centerLeft,
@@ -31,7 +31,7 @@ class _VoceProgressBarState extends State<VoceProgressBar>
   void initState() {
     super.initState();
 
-    widget.controller.onPlayerStateChanged.listen((event) {
+    widget.player.onPlayerStateChanged.listen((event) {
       if (mounted) {
         setState(() {
           if (event == PlayerState.playing) {
@@ -63,7 +63,7 @@ class _VoceProgressBarState extends State<VoceProgressBar>
 
   @override
   void dispose() {
-    widget.controller.pausePlayer();
+    widget.player.pause();
     _animationController.dispose();
 
     super.dispose();
@@ -84,7 +84,7 @@ class _VoceProgressBarState extends State<VoceProgressBar>
             _progress = 0;
           }
           _animationController.forward(from: _progress);
-          VoceAudioService().play(widget.controller);
+          VoceAudioService().play(widget.player);
         } else {
           _animationController.stop();
           VoceAudioService().stop();
