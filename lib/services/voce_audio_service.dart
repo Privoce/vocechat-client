@@ -1,5 +1,5 @@
 import 'package:audio_session/audio_session.dart';
-import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class VoceAudioService {
   static final VoceAudioService _voceAudioService =
@@ -11,39 +11,41 @@ class VoceAudioService {
 
   VoceAudioService._internal();
 
-  final Set<PlayerController> _controllers = {};
+  final Set<AudioPlayer> _players = {};
 
-  void addController(PlayerController controller) {
-    _controllers.add(controller);
+  void addController(AudioPlayer player) {
+    _players.add(player);
   }
 
-  void removeController(PlayerController controller) {
-    _controllers.remove(controller);
+  void removeController(AudioPlayer controller) {
+    _players.remove(controller);
   }
 
-  void play(PlayerController controller) async {
-    _controllers.add(controller);
-    for (final each in _controllers) {
+  void play(AudioPlayer controller) async {
+    _players.add(controller);
+    for (final each in _players) {
       if (each != controller) {
-        each.pausePlayer();
+        each.pause();
       }
     }
 
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
-    await controller.startPlayer(finishMode: FinishMode.pause);
+    await controller.resume();
+
+    controller.onPlayerStateChanged.listen((event) {});
   }
 
   void stop() async {
-    for (final each in _controllers) {
-      each.pausePlayer();
+    for (final each in _players) {
+      each.pause();
     }
   }
 
   void clear() {
-    for (final each in _controllers) {
-      each.pausePlayer();
+    for (final each in _players) {
+      each.dispose();
     }
-    _controllers.clear();
+    _players.clear();
   }
 }
