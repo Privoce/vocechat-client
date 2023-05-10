@@ -33,7 +33,9 @@ class VoceAudioService {
     await session.configure(AudioSessionConfiguration.speech());
     await controller.resume();
 
-    controller.onPlayerStateChanged.listen((event) {});
+    controller.onPlayerStateChanged.listen((event) {
+      print(event);
+    });
   }
 
   void stop() async {

@@ -6,11 +6,8 @@ CREATE TABLE IF NOT EXISTS user_info (
   uid INTEGER NOT NULL,
   info TEXT NOT NULL, -- raw json from server.
   properties TEXT NOT NULL,
-  created_at INTEGER NOT NULL,
-  contact_status TEXT NOT NULL,
-  contact_created_at INTEGER NOT NULL,
-  contact_updated_at INTEGER NOT NULL);
-
+  created_at INTEGER NOT NULL
+);
 CREATE UNIQUE INDEX IF NOT EXISTS index_uid ON user_info(uid);
 
 CREATE TABLE IF NOT EXISTS group_info (
