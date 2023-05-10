@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -101,6 +101,7 @@ class MsgTileData {
   ///
   /// Only fetches local data.
   Future<void> localPrepare() async {
+    print("localPrepare");
     setGeneralData();
 
     if (isChannel && chatMsgMNotifier.value.pin > 0) {
@@ -226,11 +227,12 @@ class MsgTileData {
         .readAudioFile(chatMsgMNotifier.value, serverFetch: serverFetch);
     if (audioFile == null) return;
 
-    final controller = PlayerController();
-    await controller.preparePlayer(
-        path: audioFile.path, shouldExtractWaveform: false);
-    final duration = await controller.getDuration();
-    audioInfo = AudioInfo(controller, duration);
+    final player = AudioPlayer();
+
+    await player.setSource(DeviceFileSource(audioFile.path));
+
+    final duration = await player.getDuration();
+    audioInfo = AudioInfo(player, duration?.inMilliseconds ?? 0);
   }
 
   Future<void> setNormalArchive({bool serverFetch = true}) async {
@@ -306,11 +308,11 @@ class MsgTileData {
 
     if (repliedAudioFile == null) return;
 
-    final controller = PlayerController();
-    await controller.preparePlayer(
-        path: repliedAudioFile.path, shouldExtractWaveform: false);
-    final duration = await controller.getDuration();
-    repliedAudioInfo = AudioInfo(controller, duration);
+    final player = AudioPlayer();
+    await player.setSource(DeviceFileSource(repliedAudioFile.path));
+    final duration = await player.getDuration();
+
+    repliedAudioInfo = AudioInfo(player, duration?.inMilliseconds ?? 0);
   }
 
   Future<void> setRepliedArchive({bool serverFetch = true}) async {
