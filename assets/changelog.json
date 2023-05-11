@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.85", "build_num": 54},
+    "latest": {"version": "0.2.86", "build_num": 56},
     "logs":  [
+        {"time": 1683764399889, "version": "0.2.86", "build_num": 56, "updates": [
+            "- fix: error in login process"
+        ]},
         {"time": 1683679410395, "version": "0.2.85", "build_num": 55, "updates": [
             "- refactor: performance improvements.",
             "- add: audio messages."
