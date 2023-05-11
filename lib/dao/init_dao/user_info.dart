@@ -25,10 +25,6 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   String info = "";
   String _properties = "";
 
-  String contactStatus = "";
-  int contactCreatedAt = 0;
-  int contactUpdatedAt = 0;
-
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     //data['uid'] = this.uid;
@@ -75,15 +71,16 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
 
   UserInfoM();
 
-  UserInfoM.item(this.uid, this.info, this._properties,
-      {this.contactStatus = "",
-      this.contactCreatedAt = 0,
-      this.contactUpdatedAt = 0});
+  UserInfoM.item(
+    this.uid,
+    this.info,
+    this._properties,
+  );
 
-  UserInfoM.fromUserInfo(UserInfo userInfo, this._properties,
-      {this.contactStatus = "",
-      this.contactCreatedAt = 0,
-      this.contactUpdatedAt = 0}) {
+  UserInfoM.fromUserInfo(
+    UserInfo userInfo,
+    this._properties,
+  ) {
     uid = userInfo.uid;
     info = jsonEncode(userInfo.toJson());
   }
@@ -91,17 +88,11 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   UserInfoM.fromUserAndContactInfo(UserInfo userInfo, ContactInfo contactInfo) {
     uid = userInfo.uid;
     info = jsonEncode(userInfo.toJson());
-    contactStatus = contactInfo.status;
-    contactCreatedAt = contactInfo.createdAt;
-    contactUpdatedAt = contactInfo.updatedAt;
   }
 
   UserInfoM.fromUserContact(UserContact userContact) {
     uid = userContact.targetInfo.uid;
     info = jsonEncode(userContact.targetInfo.toJson());
-    contactStatus = userContact.contactInfo.status;
-    contactCreatedAt = userContact.contactInfo.createdAt;
-    contactUpdatedAt = userContact.contactInfo.updatedAt;
   }
 
   UserInfoM.deleted() {
@@ -125,15 +116,6 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
     if (map.containsKey(F_createdAt)) {
       m.createdAt = map[F_createdAt];
     }
-    if (map.containsKey(F_contactStatus)) {
-      m.contactStatus = map[F_contactStatus];
-    }
-    if (map.containsKey(F_contactCreatedAt)) {
-      m.contactCreatedAt = map[F_contactCreatedAt];
-    }
-    if (map.containsKey(F_contactUpdatedAt)) {
-      m.contactUpdatedAt = map[F_contactUpdatedAt];
-    }
 
     return m;
   }
@@ -143,9 +125,6 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   static const F_info = 'info';
   static const F_properties = 'properties';
   static const F_createdAt = 'created_at';
-  static const F_contactStatus = 'contact_status';
-  static const F_contactCreatedAt = 'contact_created_at';
-  static const F_contactUpdatedAt = 'contact_updated_at';
 
   @override
   Map<String, Object> get values => {
@@ -153,9 +132,6 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
         UserInfoM.F_info: info,
         UserInfoM.F_properties: _properties,
         UserInfoM.F_createdAt: createdAt,
-        UserInfoM.F_contactStatus: contactStatus,
-        UserInfoM.F_contactCreatedAt: contactCreatedAt,
-        UserInfoM.F_contactUpdatedAt: contactUpdatedAt,
       };
 
   static MMeta meta = MMeta.fromType(UserInfoM, UserInfoM.fromMap)
@@ -170,9 +146,6 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
         info,
         _properties,
         // createdAt,
-        contactStatus,
-        contactCreatedAt,
-        contactUpdatedAt
       ];
 }
 
@@ -196,9 +169,6 @@ class UserInfoDao extends Dao<UserInfoM> {
 
       m.id = old.id;
       m.createdAt = old.createdAt;
-      m.contactStatus = old.contactStatus;
-      m.contactCreatedAt = old.contactCreatedAt;
-      m.contactUpdatedAt = old.contactUpdatedAt;
 
       await super.update(m);
 
@@ -222,10 +192,7 @@ class UserInfoDao extends Dao<UserInfoM> {
     UserInfoM? old =
         await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [m.uid]);
     if (old != null) {
-      if (old == m &&
-          old.contactStatus == m.contactStatus &&
-          old.contactCreatedAt == m.contactCreatedAt &&
-          old.contactUpdatedAt == m.contactUpdatedAt) return old;
+      if (old == m) return old;
 
       m.id = old.id;
       m.createdAt = old.createdAt;
@@ -257,7 +224,6 @@ class UserInfoDao extends Dao<UserInfoM> {
       UserInfoM? old =
           await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
       if (old != null) {
-        old.contactStatus = "";
         await super.update(old);
         App.logger.info("UserInfoM contact status emptyed. ${old.uid}");
       }
@@ -289,33 +255,6 @@ class UserInfoDao extends Dao<UserInfoM> {
     }
 
     return true;
-  }
-
-  Future<UserInfoM?> updateContactInfo(int uid,
-      {String? status, int? contactCreatedAt, int? contactUpdatedAt}) async {
-    UserInfoM? old =
-        await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
-    if (old != null) {
-      if (status != null) {
-        old.contactStatus = status;
-      }
-
-      if (contactCreatedAt != null) {
-        old.contactCreatedAt = max(old.contactCreatedAt, contactCreatedAt);
-      }
-
-      if (contactUpdatedAt != null) {
-        old.contactUpdatedAt = max(old.contactUpdatedAt, contactUpdatedAt);
-      }
-
-      await super.update(old);
-
-      App.logger.info("UserInfoM contact info updated. ${old.uid}");
-    } else {
-      App.logger.info("UserInfoM not found. $uid");
-    }
-
-    return old;
   }
 
   /// Update properties of UserInfoM.
@@ -400,19 +339,19 @@ class UserInfoDao extends Dao<UserInfoM> {
   /// Get a list of UserInfoM
   ///
   /// Only show contactInfoStatus == [ContactInfoStatus.added]
-  Future<List<UserInfoM>?> getContactList() async {
-    String sqlStr =
-        "SELECT * FROM ${UserInfoM.F_tableName} WHERE ${UserInfoM.F_contactStatus} = '${ContactInfoStatus.added.name}' ORDER BY ${UserInfoM.F_uid} ASC";
-    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+  // Future<List<UserInfoM>?> getContactList() async {
+  //   String sqlStr =
+  //       "SELECT * FROM ${UserInfoM.F_tableName} WHERE ${UserInfoM.F_contactStatus} = '${ContactInfoStatus.added.name}' ORDER BY ${UserInfoM.F_uid} ASC";
+  //   List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
 
-    final list = records.map((e) => UserInfoM.fromMap(e)).toList();
+  //   final list = records.map((e) => UserInfoM.fromMap(e)).toList();
 
-    final me = await getUserByUid(App.app.userDb!.uid);
-    if (me != null) {
-      list.add(me);
-    }
-    return list;
-  }
+  //   final me = await getUserByUid(App.app.userDb!.uid);
+  //   if (me != null) {
+  //     list.add(me);
+  //   }
+  //   return list;
+  // }
 
   Future<int> getUserCount() async {
     String sqlStr = "SELECT COUNT(*) FROM ${UserInfoM.F_tableName}";

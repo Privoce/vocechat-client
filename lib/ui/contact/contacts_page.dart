@@ -46,7 +46,8 @@ class _ContactsPageState extends State<ContactsPage>
         appBar: const ContactsBar(),
         body: SafeArea(
           child: FutureBuilder<List<UserInfoM>?>(
-            future: enableContact ? getContactList() : getUserList(),
+            // future: enableContact ? getContactList() : getUserList(),
+            future: getUserList(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done &&
                   snapshot.hasData) {
@@ -71,8 +72,8 @@ class _ContactsPageState extends State<ContactsPage>
     return userList;
   }
 
-  Future<List<UserInfoM>?> getContactList() async {
-    final contactList = await UserInfoDao().getContactList();
-    return contactList;
-  }
+  // Future<List<UserInfoM>?> getContactList() async {
+  //   final contactList = await UserInfoDao().getContactList();
+  //   return contactList;
+  // }
 }

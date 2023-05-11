@@ -1148,39 +1148,39 @@ class VoceChatService {
 
     {
       // handle "add_contacts"
-      final addContacts = map["add_contacts"] as List?;
-      if (addContacts != null && addContacts.isNotEmpty) {
-        final dao = UserInfoDao();
-        for (var contact in addContacts) {
-          final contactInfo = ContactInfo.fromJson(contact["info"]);
-          final targetUid = contact["target_uid"] as int;
-          await dao
-              .updateContactInfo(targetUid,
-                  status: contactInfo.status,
-                  contactCreatedAt: contactInfo.createdAt,
-                  contactUpdatedAt: contactInfo.updatedAt)
-              .then((value) {
-            if (value != null) {
-              fireUser(value, EventActions.update);
-            }
-          });
-        }
-      }
+      // final addContacts = map["add_contacts"] as List?;
+      // if (addContacts != null && addContacts.isNotEmpty) {
+      //   final dao = UserInfoDao();
+      //   for (var contact in addContacts) {
+      //     final contactInfo = ContactInfo.fromJson(contact["info"]);
+      //     final targetUid = contact["target_uid"] as int;
+      //     await dao
+      //         .updateContactInfo(targetUid,
+      //             status: contactInfo.status,
+      //             contactCreatedAt: contactInfo.createdAt,
+      //             contactUpdatedAt: contactInfo.updatedAt)
+      //         .then((value) {
+      //       if (value != null) {
+      //         fireUser(value, EventActions.update);
+      //       }
+      //     });
+      //   }
+      // }
     }
 
     {
       // handle "remove_contacts"
-      final removeContacts = map["remove_contacts"] as List?;
-      if (removeContacts != null) {
-        final dao = UserInfoDao();
-        for (final uid in removeContacts) {
-          await dao.updateContactInfo((uid as int), status: "").then((value) {
-            if (value != null) {
-              fireUser(value, EventActions.update);
-            }
-          });
-        }
-      }
+      // final removeContacts = map["remove_contacts"] as List?;
+      // if (removeContacts != null) {
+      //   final dao = UserInfoDao();
+      //   for (final uid in removeContacts) {
+      //     await dao.updateContactInfo((uid as int), status: "").then((value) {
+      //       if (value != null) {
+      //         fireUser(value, EventActions.update);
+      //       }
+      //     });
+      //   }
+      // }
     }
 
     {

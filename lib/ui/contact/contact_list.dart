@@ -211,32 +211,32 @@ class _ContactListState extends State<ContactList>
         }
 
         // Then handle general case.
-        if (enableContact) {
-          if (userInfoM.contactStatus == ContactInfoStatus.added.name) {
-            _uidSet.add(userInfoM.uid);
+        // if (enableContact) {
+        //   if (userInfoM.contactStatus == ContactInfoStatus.added.name) {
+        //     _uidSet.add(userInfoM.uid);
 
-            final index = _contactList
-                .indexWhere((element) => element.uid == userInfoM.uid);
-            if (index > -1) {
-              _contactList[index] = userInfoM;
-            } else {
-              _contactList.add(userInfoM);
-            }
-          } else {
-            _uidSet.remove(userInfoM.uid);
-            _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-          }
+        //     final index = _contactList
+        //         .indexWhere((element) => element.uid == userInfoM.uid);
+        //     if (index > -1) {
+        //       _contactList[index] = userInfoM;
+        //     } else {
+        //       _contactList.add(userInfoM);
+        //     }
+        //   } else {
+        //     _uidSet.remove(userInfoM.uid);
+        //     _contactList.removeWhere((element) => element.uid == userInfoM.uid);
+        //   }
+        // } else {
+        _uidSet.add(userInfoM.uid);
+
+        final index =
+            _contactList.indexWhere((element) => element.uid == userInfoM.uid);
+        if (index > -1) {
+          _contactList[index] = userInfoM;
         } else {
-          _uidSet.add(userInfoM.uid);
-
-          final index = _contactList
-              .indexWhere((element) => element.uid == userInfoM.uid);
-          if (index > -1) {
-            _contactList[index] = userInfoM;
-          } else {
-            _contactList.add(userInfoM);
-          }
+          _contactList.add(userInfoM);
         }
+        // }
         break;
       case EventActions.delete:
         if (_uidSet.contains(userInfoM.uid)) {

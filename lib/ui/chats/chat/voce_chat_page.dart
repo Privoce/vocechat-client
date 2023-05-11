@@ -197,71 +197,72 @@ class _VoceChatPageState extends State<VoceChatPage> {
   }
 
   Widget _buildContactStatusFloating() {
-    if (widget.userInfoNotifier == null ||
-        SharedFuncs.isSelf(widget.userInfoNotifier!.value.uid)) {
-      return const SizedBox.shrink();
-    }
+    // if (widget.userInfoNotifier == null ||
+    //     SharedFuncs.isSelf(widget.userInfoNotifier!.value.uid)) {
+    //   return const SizedBox.shrink();
+    // }
 
-    return ValueListenableBuilder<UserInfoM>(
-      valueListenable: widget.userInfoNotifier!,
-      builder: (context, userInfoM, child) {
-        Widget widget;
-        if (userInfoM.contactStatus == ContactInfoStatus.blocked.name) {
-          widget = Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                child: Text(AppLocalizations.of(context)!.userBlocked,
-                    style: AppTextStyles.labelMedium),
-              ),
-              CupertinoButton(
-                  padding: const EdgeInsets.all(4.0),
-                  onPressed: () => _unblockContact(userInfoM.uid),
-                  child: _buildContactStatusActionBtn(AppIcons.ban,
-                      AppLocalizations.of(context)!.unblock, context))
-            ],
-          );
-        } else if (userInfoM.contactStatus == "") {
-          widget = Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                child: Text(AppLocalizations.of(context)!.userNotContact,
-                    style: AppTextStyles.labelMedium),
-              ),
-              Wrap(
-                // mainAxisAlignment: MainAxisAlignment.center,
-                alignment: WrapAlignment.center,
-                children: [
-                  CupertinoButton(
-                      padding: const EdgeInsets.all(4.0),
-                      onPressed: () => _addContact(userInfoM.uid),
-                      child: _buildContactStatusActionBtn(AppIcons.member_add,
-                          AppLocalizations.of(context)!.addContact, context)),
-                  CupertinoButton(
-                      padding: const EdgeInsets.all(4.0),
-                      onPressed: () => _blockContact(userInfoM.uid),
-                      child: _buildContactStatusActionBtn(AppIcons.ban,
-                          AppLocalizations.of(context)!.block, context))
-                ],
-              )
-            ],
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-        return Container(
-            constraints: const BoxConstraints(minHeight: 48),
-            width: double.maxFinite,
-            color: Colors.grey[200],
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Center(child: widget));
-      },
-    );
+    // return ValueListenableBuilder<UserInfoM>(
+    //   valueListenable: widget.userInfoNotifier!,
+    //   builder: (context, userInfoM, child) {
+    //     Widget widget;
+    //     if (userInfoM.contactStatus == ContactInfoStatus.blocked.name) {
+    //       widget = Column(
+    //         crossAxisAlignment: CrossAxisAlignment.center,
+    //         mainAxisSize: MainAxisSize.min,
+    //         children: [
+    //           Padding(
+    //             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+    //             child: Text(AppLocalizations.of(context)!.userBlocked,
+    //                 style: AppTextStyles.labelMedium),
+    //           ),
+    //           CupertinoButton(
+    //               padding: const EdgeInsets.all(4.0),
+    //               onPressed: () => _unblockContact(userInfoM.uid),
+    //               child: _buildContactStatusActionBtn(AppIcons.ban,
+    //                   AppLocalizations.of(context)!.unblock, context))
+    //         ],
+    //       );
+    //     } else if (userInfoM.contactStatus == "") {
+    //       widget = Column(
+    //         crossAxisAlignment: CrossAxisAlignment.center,
+    //         mainAxisSize: MainAxisSize.min,
+    //         children: [
+    //           Padding(
+    //             padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+    //             child: Text(AppLocalizations.of(context)!.userNotContact,
+    //                 style: AppTextStyles.labelMedium),
+    //           ),
+    //           Wrap(
+    //             // mainAxisAlignment: MainAxisAlignment.center,
+    //             alignment: WrapAlignment.center,
+    //             children: [
+    //               CupertinoButton(
+    //                   padding: const EdgeInsets.all(4.0),
+    //                   onPressed: () => _addContact(userInfoM.uid),
+    //                   child: _buildContactStatusActionBtn(AppIcons.member_add,
+    //                       AppLocalizations.of(context)!.addContact, context)),
+    //               CupertinoButton(
+    //                   padding: const EdgeInsets.all(4.0),
+    //                   onPressed: () => _blockContact(userInfoM.uid),
+    //                   child: _buildContactStatusActionBtn(AppIcons.ban,
+    //                       AppLocalizations.of(context)!.block, context))
+    //             ],
+    //           )
+    //         ],
+    //       );
+    //     } else {
+    //       return const SizedBox.shrink();
+    //     }
+    //     return Container(
+    //         constraints: const BoxConstraints(minHeight: 48),
+    //         width: double.maxFinite,
+    //         color: Colors.grey[200],
+    //         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+    //         child: Center(child: widget));
+    //   },
+    // );
+    return Container();
   }
 
   Container _buildContactStatusActionBtn(
@@ -290,89 +291,89 @@ class _VoceChatPageState extends State<VoceChatPage> {
   }
 
   Future<void> _unblockContact(int uid) async {
-    showBusyDialog();
+    // showBusyDialog();
 
-    await UserApi()
-        .updateContactRequest(uid, UpdateContactAction.unblock)
-        .then((res) async {
-      if (res.statusCode == 200) {
-        await UserInfoDao()
-            .updateContactInfo(uid, status: "")
-            .then((updatedUserInfoM) async {
-          if (updatedUserInfoM != null) {
-            App.app.chatService.fireUser(updatedUserInfoM, EventActions.update);
-          }
-          dismissBusyDialog();
-        });
-      } else {
-        dismissBusyDialog();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppLocalizations.of(context)!.networkError)));
-      }
-    }).onError((error, stackTrace) {
-      App.logger.severe(error);
-      dismissBusyDialog();
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
-    });
+    // await UserApi()
+    //     .updateContactRequest(uid, UpdateContactAction.unblock)
+    //     .then((res) async {
+    //   if (res.statusCode == 200) {
+    //     await UserInfoDao()
+    //         .updateContactInfo(uid, status: "")
+    //         .then((updatedUserInfoM) async {
+    //       if (updatedUserInfoM != null) {
+    //         App.app.chatService.fireUser(updatedUserInfoM, EventActions.update);
+    //       }
+    //       dismissBusyDialog();
+    //     });
+    //   } else {
+    //     dismissBusyDialog();
+    //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //         content: Text(AppLocalizations.of(context)!.networkError)));
+    //   }
+    // }).onError((error, stackTrace) {
+    //   App.logger.severe(error);
+    //   dismissBusyDialog();
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
+    // });
   }
 
   Future<void> _blockContact(int uid) async {
     // Remove contact from contact list.
     // All messages will be kept.
-    showBusyDialog();
+    // showBusyDialog();
 
-    await UserApi()
-        .updateContactRequest(uid, UpdateContactAction.block)
-        .then((res) async {
-      if (res.statusCode == 200) {
-        await UserInfoDao()
-            .updateContactInfo(uid, status: ContactInfoStatus.blocked.name)
-            .then((updatedUserInfoM) async {
-          if (updatedUserInfoM != null) {
-            App.app.chatService.fireUser(updatedUserInfoM, EventActions.update);
-          }
-          dismissBusyDialog();
-        });
-      } else {
-        dismissBusyDialog();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppLocalizations.of(context)!.networkError)));
-      }
-    }).onError((error, stackTrace) {
-      App.logger.severe(error);
-      dismissBusyDialog();
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
-    });
+    // await UserApi()
+    //     .updateContactRequest(uid, UpdateContactAction.block)
+    //     .then((res) async {
+    //   if (res.statusCode == 200) {
+    //     await UserInfoDao()
+    //         .updateContactInfo(uid, status: ContactInfoStatus.blocked.name)
+    //         .then((updatedUserInfoM) async {
+    //       if (updatedUserInfoM != null) {
+    //         App.app.chatService.fireUser(updatedUserInfoM, EventActions.update);
+    //       }
+    //       dismissBusyDialog();
+    //     });
+    //   } else {
+    //     dismissBusyDialog();
+    //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //         content: Text(AppLocalizations.of(context)!.networkError)));
+    //   }
+    // }).onError((error, stackTrace) {
+    //   App.logger.severe(error);
+    //   dismissBusyDialog();
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
+    // });
   }
 
   Future<void> _addContact(int uid) async {
-    showBusyDialog();
+    // showBusyDialog();
 
-    await UserApi()
-        .updateContactRequest(uid, UpdateContactAction.add)
-        .then((res) async {
-      if (res.statusCode == 200) {
-        await UserInfoDao()
-            .updateContactInfo(uid, status: ContactInfoStatus.added.name)
-            .then((updatedUserInfoM) async {
-          if (updatedUserInfoM != null) {
-            App.app.chatService.fireUser(updatedUserInfoM, EventActions.update);
-          }
-          dismissBusyDialog();
-        });
-      } else {
-        dismissBusyDialog();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(AppLocalizations.of(context)!.networkError)));
-      }
-    }).onError((error, stackTrace) {
-      App.logger.severe(error);
-      dismissBusyDialog();
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
-    });
+    // await UserApi()
+    //     .updateContactRequest(uid, UpdateContactAction.add)
+    //     .then((res) async {
+    //   if (res.statusCode == 200) {
+    //     await UserInfoDao()
+    //         .updateContactInfo(uid, status: ContactInfoStatus.added.name)
+    //         .then((updatedUserInfoM) async {
+    //       if (updatedUserInfoM != null) {
+    //         App.app.chatService.fireUser(updatedUserInfoM, EventActions.update);
+    //       }
+    //       dismissBusyDialog();
+    //     });
+    //   } else {
+    //     dismissBusyDialog();
+    //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    //         content: Text(AppLocalizations.of(context)!.networkError)));
+    //   }
+    // }).onError((error, stackTrace) {
+    //   App.logger.severe(error);
+    //   dismissBusyDialog();
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
+    // });
   }
 
   Widget _buildSelectionBottomBar() {
@@ -507,9 +508,9 @@ class _VoceChatPageState extends State<VoceChatPage> {
     return ValueListenableBuilder<UserInfoM>(
         valueListenable: widget.userInfoNotifier!,
         builder: (context, userInfoM, _) {
-          if (userInfoM.contactStatus == ContactInfoStatus.blocked.name) {
-            return _buildBlockedBottomBar();
-          }
+          // if (userInfoM.contactStatus == ContactInfoStatus.blocked.name) {
+          //   return _buildBlockedBottomBar();
+          // }
           return _buildTextField();
         });
   }
