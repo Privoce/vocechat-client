@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +10,6 @@ import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
-import 'package:vocechat_client/api/models/user/contact_info.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
@@ -594,8 +592,6 @@ class VoceChatService {
 
       final groupInfo = GroupInfo.fromJson(groupMap);
       GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
-
-      final oldGroupInfoM = await GroupInfoDao().getGroupByGid(groupInfoM.gid);
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
         fireChannel(value, EventActions.create);
@@ -1567,6 +1563,7 @@ class VoceChatService {
         .getThumb(chatMsgM.localMid)
         .catchError((e) {
       App.logger.severe(e);
+      return null;
     }).then((value) {
       if (value != null) {
         for (var item in value) {

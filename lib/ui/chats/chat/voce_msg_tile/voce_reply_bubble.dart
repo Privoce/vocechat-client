@@ -1,23 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/ui_models/audio_info.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
-
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/tile_image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/audio/voce_audio_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/empty_data_placeholder.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:path/path.dart' as path;
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 // ignore: must_be_immutable

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
+// ignore: must_be_immutable
 class AppBannerButton extends StatelessWidget {
   String? title;
   Widget? titleWidget;

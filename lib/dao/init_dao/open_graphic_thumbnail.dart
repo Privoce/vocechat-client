@@ -98,7 +98,7 @@ class OpenGraphicThumbnailDao extends Dao<OpenGraphicThumbnailM> {
     return m;
   }
 
-  Future<List<OpenGraphicThumbnailM>> getThumb(String id) async {
+  Future<List<OpenGraphicThumbnailM>?> getThumb(String id) async {
     return super.query(
         columns: ['id', 'thumbnail', 'siteName', 'title', 'description', 'url'],
         where: "${OpenGraphicThumbnailM.F_id} = ?",

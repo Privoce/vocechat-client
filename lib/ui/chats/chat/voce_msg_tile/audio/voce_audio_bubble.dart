@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/models/ui_models/audio_info.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
-import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/audio/voce_audio_progress_bar.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/empty_data_placeholder.dart';
 

@@ -1,10 +1,8 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/mixins/orientation_mixins.dart';
 import 'package:vocechat_client/services/file_handler.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_share_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 
 class SingleImagePage extends StatefulWidget {

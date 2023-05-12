@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive_msg.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/services/file_handler.dart';
@@ -11,7 +11,6 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_ga
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ArchiveContentBubble extends StatelessWidget {
   final ArchiveMsg archiveMsg;
@@ -107,6 +106,7 @@ class ArchiveContentBubble extends StatelessWidget {
       if (imageFile != null) {
         return SingleImageData(imageFile: imageFile, isOriginal: true);
       }
+      return null;
     });
 
     return ImageGalleryData(imageItemList: [getters], initialPage: 0);

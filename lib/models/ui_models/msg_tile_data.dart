@@ -101,7 +101,6 @@ class MsgTileData {
   ///
   /// Only fetches local data.
   Future<void> localPrepare() async {
-    print("localPrepare");
     setGeneralData();
 
     if (isChannel && chatMsgMNotifier.value.pin > 0) {

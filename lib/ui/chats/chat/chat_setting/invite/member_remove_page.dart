@@ -1,14 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 
 class MemberRemovePage extends StatefulWidget {
@@ -26,14 +25,10 @@ class _MemberRemovePageState extends State<MemberRemovePage>
 
   final ValueNotifier<List<int>> selectNotifier = ValueNotifier([]);
 
-  late bool _isSending;
-
   @override
   void initState() {
     super.initState();
     membersFuture = prepareUserList();
-
-    _isSending = false;
   }
 
   @override
@@ -161,9 +156,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
           return CupertinoButton(
               padding: EdgeInsets.all(4),
               onPressed: () async {
-                setState(() {
-                  _isSending = true;
-                });
+                setState(() {});
 
                 try {
                   final removes = selectNotifier.value;
@@ -172,16 +165,13 @@ class _MemberRemovePageState extends State<MemberRemovePage>
                       widget.groupInfoMNotifier.value.gid, removes.toList());
                   if (hasSent.statusCode == 200) {
                     setState(() {
-                      _isSending = false;
                       Navigator.of(context).pop();
                     });
                   }
                 } catch (e) {
                   App.logger.severe(e);
 
-                  setState(() {
-                    _isSending = false;
-                  });
+                  setState(() {});
                 }
               },
               child: Text(

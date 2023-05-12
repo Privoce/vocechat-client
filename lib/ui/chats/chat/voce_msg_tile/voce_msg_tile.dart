@@ -32,7 +32,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoceMsgTile extends StatefulWidget {
   final MsgTileData tileData;
-  final Animation<double> animation;
+
   // Selection
   final ValueNotifier<bool>? enableSelection;
   final void Function(MsgTileData tileData, bool selected)? onSelectChange;
@@ -42,7 +42,6 @@ class VoceMsgTile extends StatefulWidget {
   VoceMsgTile({
     Key? key,
     required this.tileData,
-    required this.animation,
     this.enableSelection,
     this.onSelectChange,
   }) : super(key: key) {
@@ -91,33 +90,31 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    return SizeTransition(
-        sizeFactor: widget.animation,
-        child: ValueListenableBuilder<UserInfoM?>(
-            valueListenable: widget.tileData.pinnedByUserInfoM,
-            builder: (context, pinnedBy, _) {
-              final isPinned = pinnedBy != null;
-              return ValueListenableBuilder<bool>(
-                  valueListenable: _isAutoDelete,
-                  builder: (context, isAutoDelete, _) {
-                    return Container(
-                        decoration: BoxDecoration(
-                          color: _getMsgTileBgColor(
-                              isPinned: isPinned, isAutoDelete: isAutoDelete),
-                        ),
-                        constraints: BoxConstraints(
-                            minHeight: avatarSize, maxWidth: width),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (isPinned) _buildPinnedBy(pinnedBy),
-                            _buildTileWithSelectionIcon(),
-                          ],
-                        ));
-                  });
-            }));
+    return ValueListenableBuilder<UserInfoM?>(
+        valueListenable: widget.tileData.pinnedByUserInfoM,
+        builder: (context, pinnedBy, _) {
+          final isPinned = pinnedBy != null;
+          return ValueListenableBuilder<bool>(
+              valueListenable: _isAutoDelete,
+              builder: (context, isAutoDelete, _) {
+                return Container(
+                    decoration: BoxDecoration(
+                      color: _getMsgTileBgColor(
+                          isPinned: isPinned, isAutoDelete: isAutoDelete),
+                    ),
+                    constraints:
+                        BoxConstraints(minHeight: avatarSize, maxWidth: width),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isPinned) _buildPinnedBy(pinnedBy),
+                        _buildTileWithSelectionIcon(),
+                      ],
+                    ));
+              });
+        });
   }
 
   Widget _buildPinnedBy(UserInfoM? pinnedBy) {

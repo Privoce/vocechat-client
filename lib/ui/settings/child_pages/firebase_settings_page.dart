@@ -1,20 +1,16 @@
 import 'package:flutter/cupertino.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/admin_firebase_api.dart';
-
 import 'package:vocechat_client/api/models/admin/fcm/fcm.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/extensions.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
-
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class FirebaseSettingPage extends StatefulWidget {
   @override

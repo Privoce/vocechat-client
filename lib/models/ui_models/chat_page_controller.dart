@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -24,14 +23,12 @@ class ChatPageController {
   ChatPageController.user(
       {required ValueNotifier<UserInfoM> this.userInfoMNotifier})
       : groupInfoMNotifier = null {
-    _initReadIndex = userInfoMNotifier!.value.properties.readIndex;
     handleSubscriptions();
   }
 
   ChatPageController.channel(
       {required ValueNotifier<GroupInfoM> this.groupInfoMNotifier})
       : userInfoMNotifier = null {
-    _initReadIndex = groupInfoMNotifier!.value.properties.readIndex;
     handleSubscriptions();
   }
 
@@ -43,7 +40,6 @@ class ChatPageController {
   // Properties and meta data
   ValueNotifier<UserInfoM>? userInfoMNotifier;
   ValueNotifier<GroupInfoM>? groupInfoMNotifier;
-  late int _initReadIndex;
 
   // UI variables
   ValueNotifier<bool> isLoadingNotifier = ValueNotifier(false);
@@ -63,6 +59,7 @@ class ChatPageController {
   bool get isChannel => groupInfoMNotifier != null && userInfoMNotifier == null;
   bool get isUser => groupInfoMNotifier == null && userInfoMNotifier != null;
   bool get reachesEnd => !_pageMeta.hasNextPage;
+  int get count => tileDataList.length;
 
   void handleSubscriptions() {
     App.app.chatService.subscribeMsg(onMessage);
@@ -221,7 +218,7 @@ class ChatPageController {
     }
 
     final tileData = MsgTileData(chatMsgM: chatMsgM, userInfoM: userInfoM!);
-    await tileData.localPrepare();
+    // await tileData.localPrepare();
 
     return tileData;
   }
@@ -251,7 +248,8 @@ class ChatPageController {
     // }
 
     for (int i = 0; i < validMsgList.length; i++) {
-      listKey.currentState?.insertItem(insertIndex + i);
+      listKey.currentState
+          ?.insertItem(insertIndex + i, duration: Duration(milliseconds: 300));
     }
 
     // Need more tests to see if it works.
@@ -332,7 +330,8 @@ class ChatPageController {
 
   Widget _buildRemovedItem(
       MsgTileData item, BuildContext context, Animation<double> animation) {
-    return VoceMsgTile(tileData: item, animation: animation);
+    return SizeTransition(
+        sizeFactor: animation, child: VoceMsgTile(tileData: item));
   }
 
   // -- Subscriptions

@@ -3,13 +3,10 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/msg/msg_reaction.dart';
 import 'package:vocechat_client/api/models/msg/msg_reply.dart';
-import 'package:vocechat_client/api/models/msg/msg_target_group.dart';
-import 'package:vocechat_client/api/models/msg/msg_target_user.dart';
 import 'package:vocechat_client/api/models/msg/reaction_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -18,9 +15,7 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/unmatched_reaction.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
-import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
-import 'package:vocechat_client/shared_funcs.dart';
 
 // enum MsgType {text, markdown, image, file}
 
@@ -903,7 +898,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     // m is the notification msg, targetMid is the real msg to be deleted.
     final int targetMid = m.mid;
 
-    final deleteCount = await db.delete(ChatMsgM.F_tableName,
+    await db.delete(ChatMsgM.F_tableName,
         where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
     App.logger.info("Msg deleted. Mid: $targetMid");
 

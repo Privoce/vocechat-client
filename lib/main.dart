@@ -6,36 +6,34 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
-import 'package:intl/intl.dart';
+import 'package:simple_logger/simple_logger.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
-import 'package:vocechat_client/firebase_options.dart';
-import 'package:vocechat_client/services/sse/sse.dart';
-import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/services/status_service.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
-import 'package:vocechat_client/ui/auth/login_page.dart';
-import 'package:vocechat_client/ui/auth/password_register_page.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
-import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/firebase_options.dart';
 import 'package:vocechat_client/services/auth_service.dart';
-import 'package:vocechat_client/services/voce_chat_service.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/services/db.dart';
-import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
+import 'package:vocechat_client/services/sse/sse.dart';
+import 'package:vocechat_client/services/status_service.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/login_page.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
+import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
+import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contacts_page.dart';
 import 'package:vocechat_client/ui/settings/settings_page.dart';
-import 'package:simple_logger/simple_logger.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -296,17 +294,15 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   Future<void> _initLocale() async {
-    final systemLocale = Intl.getCurrentLocale();
     if (App.app.userDb != null) {
       final userDbM = await UserDbMDao.dao.getUserDbById(App.app.userDb!.id);
       final userLanguageTag = userDbM?.userInfo.language;
 
       if (userLanguageTag != null && userLanguageTag.isNotEmpty) {
         final split = userLanguageTag.split("-");
-        String languageTag = "", scriptTag = "", regionTag = "";
+        String languageTag = "", regionTag = "";
         try {
           languageTag = split[0];
-          scriptTag = split[1];
           regionTag = split[2];
         } catch (e) {
           App.logger.warning(e);

@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive_msg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -12,7 +12,6 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_ga
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SavedContentBubble extends StatelessWidget {
   final ArchiveMsg archiveMsg;
@@ -50,8 +49,6 @@ class SavedContentBubble extends StatelessWidget {
                     archiveMsg.thumbnailId!, false),
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
-                    final tag = archiveId + archiveMsg.thumbnailId.toString();
-
                     return VoceImageBubble(
                         imageFile: snapshot.data!,
                         getImageList: () async {

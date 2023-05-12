@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:azlistview/azlistview.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';

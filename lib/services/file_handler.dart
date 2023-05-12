@@ -6,7 +6,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:path/path.dart' as p;
 import 'package:vocechat_client/shared_funcs.dart';

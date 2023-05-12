@@ -7,7 +7,6 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_ga
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/single_image_item.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/empty_data_placeholder.dart';
-import 'package:vocechat_client/ui/widgets/empty_content_placeholder.dart';
 
 class VoceImageBubble extends StatefulWidget {
   // final ChatMsgM chatMsgM;

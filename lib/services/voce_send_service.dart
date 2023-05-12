@@ -24,10 +24,8 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
-import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
-import 'package:vocechat_client/services/task_queue.dart';
 
 import 'package:path/path.dart' as p;
 import 'package:vocechat_client/shared_funcs.dart';
@@ -40,8 +38,6 @@ class VoceSendService {
   }
 
   VoceSendService._internal();
-
-  TaskQueue _imageTaskQueue = TaskQueue();
 
   Future<void> sendUserText(int uid, String content) async {
     final fakeMid = await _getFakeMid();
@@ -463,16 +459,16 @@ class VoceSendService {
     final isImage = contentType.startsWith("image");
     final isGif = contentType == "image/gif";
 
+    final chatId = SharedFuncs.getChatId(gid: gid)!;
+    final fileBytes = await file.readAsBytes();
+    Uint8List uploadBytes = fileBytes;
+
     Map<String, dynamic> properties = {
       "cid": localMid,
       "content_type": contentType,
       'name': filename,
       'size': size
     };
-
-    final chatId = SharedFuncs.getChatId(gid: gid)!;
-    final fileBytes = await file.readAsBytes();
-    Uint8List uploadBytes = fileBytes;
 
     if (isImage) {
       final decodedImage = await decodeImageFromList(await file.readAsBytes());

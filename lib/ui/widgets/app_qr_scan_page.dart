@@ -13,8 +13,11 @@ import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+// ignore: must_be_immutable
 class AppQrScanPage extends StatelessWidget {
   MobileScannerController cameraController = MobileScannerController();
+
+  AppQrScanPage({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,24 +1,22 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/models/ui_models/chat_tile_data.dart';
-import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/task_queue.dart';
+import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 import 'package:vocechat_client/ui/chats/chats/voce_chat_tile.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // TODO: resume unread count sum later.
 

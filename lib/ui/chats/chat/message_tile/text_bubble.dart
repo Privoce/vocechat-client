@@ -2,17 +2,17 @@ import 'package:any_link_preview/any_link_preview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/extensions.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/extensions.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/full_text_page.dart';
 
+// ignore: must_be_immutable
 class TextBubble extends StatefulWidget {
   final String content;
   final bool edited;
@@ -26,7 +26,6 @@ class TextBubble extends StatefulWidget {
   late TextStyle _normalStyle;
   late TextStyle _mentionStyle;
 
-  late bool _hasOg;
   Map<String, dynamic>? openGraphicThumbnail;
   TextBubble(
       {Key? key,
@@ -48,7 +47,6 @@ class TextBubble extends StatefulWidget {
         fontSize: 16,
         color: AppColors.primaryHover,
         fontWeight: FontWeight.w400);
-    _hasOg = false;
   }
 
   @override
@@ -66,7 +64,6 @@ class _TextBubbleState extends State<TextBubble> {
         String url = match[0]!;
 
         if (url.isNotEmpty) {
-          widget._hasOg = true;
           // App.app.chatService.createOpenGraphicThumbnail(
           //     widget.content, widget.chatMsgM!.localMid, widget.chatMsgM);
           children.add(TextSpan(
@@ -97,7 +94,6 @@ class _TextBubbleState extends State<TextBubble> {
                     final thumbnail = item['thumbnail'];
                     final url = item['url'];
                     final title = item['title'];
-                    final desc = item['desc'];
                     return Container(
                         padding: EdgeInsets.all(8),
                         decoration: BoxDecoration(
@@ -122,12 +118,12 @@ class _TextBubbleState extends State<TextBubble> {
                                 ),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    String _url = url;
+                                    String url0 = url;
                                     try {
-                                      await launchUrl(Uri.parse(_url));
+                                      await launchUrl(Uri.parse(url0));
                                     } catch (e) {
                                       App.logger.severe(e);
-                                      throw "error: $_url";
+                                      throw "error: $url0";
                                     }
                                   },
                                   child: Image.memory(thumbnail,

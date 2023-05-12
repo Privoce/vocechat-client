@@ -1,13 +1,11 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/saved_content_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/saved_content_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 
 class SavedBubble extends StatelessWidget {

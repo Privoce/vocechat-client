@@ -3,26 +3,25 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/org_dao/chat_server.dart';
-import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
+import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/invite_user_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_channel_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_dm_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum AddActions { channel, private, dm, user }
 
@@ -71,8 +70,6 @@ class _ChatsBarState extends State<ChatsBar> {
   late Uint8List _logoBytes;
   late String _serverName;
   late String _serverDescription;
-
-  final GlobalKey<ScaffoldState> _key = GlobalKey();
 
   @override
   void initState() {

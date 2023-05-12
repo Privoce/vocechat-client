@@ -90,6 +90,7 @@ dependencies:
   audio_session: ^0.1.13
   provider: ^6.0.5
   audioplayers: ^3.0.1
+  scrollable_positioned_list: ^0.3.8
 
   # voce_image_viewer:
   #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/

@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 
+// ignore: must_be_immutable
 class FullTextPage extends StatelessWidget {
   final String content;
   final bool edited;

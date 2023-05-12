@@ -10,6 +10,7 @@ import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/init_dao/properties_models/group_properties.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
+// ignore: must_be_immutable
 class GroupInfoM extends Equatable with M {
   int gid = -1;
   String lastLocalMid = "";

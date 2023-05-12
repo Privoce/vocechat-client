@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +6,6 @@ import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler.dart';
@@ -128,6 +126,7 @@ class PinnedMsgTile extends StatelessWidget {
                           return SingleImageData(
                               imageFile: originalImage, isOriginal: true);
                         }
+                        return null;
                       },
                     )
                   ], initialPage: 0);

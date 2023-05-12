@@ -2,11 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:vocechat_client/api/lib/group_api.dart';
-import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:vocechat_client/api/lib/group_api.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 
 class InviteLinkView extends StatefulWidget {
   final int gid;
@@ -33,6 +32,7 @@ class _InviteLinkViewState extends State<InviteLinkView>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Padding(
       padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
       child: Column(
