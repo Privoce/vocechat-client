@@ -671,7 +671,7 @@ class _VoceChatPageState extends State<VoceChatPage>
   Future<bool> delete(ChatMsgM old) async {
     try {
       await MessageApi().delete(old.mid).then((response) async {
-        if (response.statusCode == 200 || (old.status == MsgSendStatus.fail)) {
+        if (response.statusCode == 200 || (old.status == MsgStatus.fail)) {
           // successfully deleted or failed to send.
 
           FileHandler.singleton.deleteWithChatMsgM(old);
@@ -792,7 +792,7 @@ class _VoceChatPageState extends State<VoceChatPage>
                     (element) {
                       return element.value.isArchiveMsg ||
                           element.value.isAudioMsg ||
-                          element.value.status != MsgSendStatus.success;
+                          element.value.status != MsgStatus.success;
                     },
                   );
                 },
@@ -844,7 +844,7 @@ class _VoceChatPageState extends State<VoceChatPage>
   /// It is an old version of [_buildPressDownActions]. To be replaced after
   /// the development and UI debug of [VoceContextMenu] finishes.
   List<MsgActionTile> _buildOldLongPressActions(MsgTileData tileData) {
-    final isSuccessSent = tileData.status.value == MsgSendStatus.success;
+    final isSuccessSent = tileData.status.value == MsgStatus.success;
     final isSelf = SharedFuncs.isSelf(tileData.userInfoM.uid);
     final isAdmin = tileData.userInfoM.userInfo.isAdmin;
     final isChannelOwner =

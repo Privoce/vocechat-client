@@ -12,7 +12,6 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
-import 'package:vocechat_client/dao/init_dao/unmatched_reaction.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/task_queue.dart';
@@ -27,27 +26,27 @@ class ChatMsgM with M {
   int gid = -1;
   int _edited = 0;
   String statusStr =
-      MsgSendStatus.success.name; // MsgStatus: fail, success, sending
+      MsgStatus.success.name; // MsgStatus: fail, success, sending
   String detail = ""; // only normal msg json.
   String _reactions = ""; // ChatMsgReactions
   int pin = 0;
 
-  set status(MsgSendStatus status) {
+  set status(MsgStatus status) {
     statusStr = status.name;
   }
 
-  MsgSendStatus get status {
+  MsgStatus get status {
     switch (statusStr) {
       case "success":
-        return MsgSendStatus.success;
+        return MsgStatus.success;
       case "fail":
-        return MsgSendStatus.fail;
+        return MsgStatus.fail;
       case "readyToSend":
-        return MsgSendStatus.readyToSend;
+        return MsgStatus.readyToSend;
       case "sending":
-        return MsgSendStatus.sending;
+        return MsgStatus.sending;
       default:
-        return MsgSendStatus.success;
+        return MsgStatus.success;
     }
   }
 
@@ -276,7 +275,7 @@ class ChatMsgM with M {
     super.createdAt = createdAt;
   }
 
-  ChatMsgM.fromMsg(ChatMsg chatMsg, this.localMid, MsgSendStatus status) {
+  ChatMsgM.fromMsg(ChatMsg chatMsg, this.localMid, MsgStatus status) {
     mid = chatMsg.mid;
     fromUid = chatMsg.fromUid;
 
@@ -315,7 +314,8 @@ class ChatMsgM with M {
   ChatMsgM.fromDeleted(ChatMsg chatMsg, this.localMid) {
     mid = chatMsg.mid;
     fromUid = chatMsg.fromUid;
-    detail = json.encode(chatMsg.detail);
+    detail = "";
+    status = MsgStatus.deleted;
     if (chatMsg.target.containsKey("uid")) {
       if (fromUid == App.app.userDb!.uid) {
         dmUid = chatMsg.target["uid"];
@@ -329,7 +329,7 @@ class ChatMsgM with M {
     createdAt = chatMsg.createdAt;
   }
 
-  ChatMsgM.fromReply(ChatMsg chatMsg, this.localMid, MsgSendStatus status) {
+  ChatMsgM.fromReply(ChatMsg chatMsg, this.localMid, MsgStatus status) {
     mid = chatMsg.mid;
     fromUid = chatMsg.fromUid;
     detail = json.encode(chatMsg.detail);
@@ -424,8 +424,6 @@ class ChatMsgM with M {
 }
 
 class ChatMsgDao extends Dao<ChatMsgM> {
-  final Set<int> unmatchedReactionSet = {};
-
   TaskQueue taskQueue = TaskQueue();
 
   ChatMsgDao() {
@@ -444,24 +442,6 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     } else {
       await super.add(m);
       App.logger.info("Chat Msg added. m: ${m.values}");
-    }
-
-    if (m.mid > 0 && unmatchedReactionSet.contains(m.mid)) {
-      final unmatchedReactions =
-          await UnmatchedReactionDao().getUnmatchedReactions(m.mid);
-      if (unmatchedReactions != null) {
-        TaskQueue q = TaskQueue(enableStatusDisplay: false);
-        final rs = unmatchedReactions.reactionList as List<String>;
-        for (var r in rs) {
-          final reactionInfo = ReactionInfo.fromJson(jsonDecode(r));
-          q.add(() {
-            return reactMsgByMid(m.mid, reactionInfo.fromUid,
-                reactionInfo.reaction, reactionInfo.createdAt);
-          });
-        }
-        UnmatchedReactionDao().deleteReactions(m.mid);
-        unmatchedReactionSet.remove(m.mid);
-      }
     }
 
     return m;
@@ -497,7 +477,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   }
 
   Future<bool> updateMsgStatusByLocalMid(
-      ChatMsgM msgM, MsgSendStatus status) async {
+      ChatMsgM msgM, MsgStatus status) async {
     ChatMsgM? old = await first(
         where: '${ChatMsgM.F_localMid} = ?', whereArgs: [msgM.localMid]);
     if (old != null) {
@@ -512,7 +492,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   }
 
   Future<ChatMsgM?> editMsgByMid(
-      int mid, String newContent, MsgSendStatus status) async {
+      int mid, String newContent, MsgStatus status) async {
     ChatMsgM? old =
         await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
     if (old != null) {
@@ -562,10 +542,6 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       App.logger.info(
           "ChatMsg Reactions Updated. mid: ${old.mid}, localMid: ${old.localMid}");
       return old;
-    } else {
-      final r = jsonEncode(ReactionInfo(fromUid, reaction, time));
-      unmatchedReactionSet.add(mid);
-      UnmatchedReactionDao().addReaction(mid, r);
     }
 
     return null;
@@ -909,16 +885,21 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return targetMid;
   }
 
-  /// Delete a message by its mid.
+  /// Set a [ChatMsgM] object with empty detail and [MsgStatus.deleted] status.
   ///
-  /// Returns the [ChatMsgM] object of the deleted message.
-  /// Returns null if the message could not be found.
+  ///
+  /// The message should be removed/hidden from UI, but still stays in database,
+  /// with basic information like [ChatMsgM.mid] and [ChatMsgM.createdAt].
+  /// Returns the [mid] of the deleted message.
+  /// Returns -1 if the message could not be found.
   Future<int> deleteMsgByMid(int targetMid) async {
-    final deleteCount = await db.delete(ChatMsgM.F_tableName,
-        where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
+    final sqlStr =
+        "UPDATE ${ChatMsgM.F_tableName} SET ${ChatMsgM.F_detail} = '',${ChatMsgM.F_status} = 'deleted'  WHERE ${ChatMsgM.F_mid} = $targetMid";
+    final updateCount = await db.rawUpdate(sqlStr);
+
     App.logger.info("Msg deleted. Mid: $targetMid");
 
-    if (deleteCount == 0) {
+    if (updateCount == 0) {
       // the original message could not be found.
       return -1;
     }

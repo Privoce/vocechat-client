@@ -58,37 +58,34 @@ class VoceSendService {
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
-    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
 
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
 
       await UserApi().sendTextMsg(uid, content, localMid).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM =
-                ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
+            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
             await chatMsgDao.update(savedMsgM).then((value) {
               App.app.chatService.fireMsg(savedMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
-                  .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                  .fireMsg(chatMsgM..status = MsgStatus.fail, true);
             });
           } else {
             App.logger.severe(
                 "Message send failed, statusCode: ${response.statusCode}");
             App.app.chatService
-                .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                .fireMsg(chatMsgM..status = MsgStatus.fail, true);
           }
         },
       ).onError((error, stackTrace) {
         App.logger.severe(error);
-        App.app.chatService
-            .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+        App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       });
     });
   }
@@ -117,38 +114,34 @@ class VoceSendService {
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
-    ChatMsgM chatMsgM =
-        ChatMsgM.fromReply(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromReply(message, localMid, MsgStatus.fail);
 
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
 
       await MessageApi().reply(targetMid, content, detail.properties).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM =
-                ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
+            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
             await chatMsgDao.update(savedMsgM).then((value) {
               App.app.chatService.fireMsg(savedMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
-                  .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                  .fireMsg(chatMsgM..status = MsgStatus.fail, true);
             });
           } else {
             App.logger.severe(
                 "Reply message send failed, statusCode: ${response.statusCode}");
             App.app.chatService
-                .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                .fireMsg(chatMsgM..status = MsgStatus.fail, true);
           }
         },
       ).onError((error, stackTrace) {
         App.logger.severe(error);
-        App.app.chatService
-            .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+        App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       });
     });
   }
@@ -222,10 +215,9 @@ class VoceSendService {
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
 
-    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -279,10 +271,9 @@ class VoceSendService {
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
 
-    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -332,37 +323,34 @@ class VoceSendService {
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
-    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
 
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
 
       await GroupApi().sendTextMsg(gid, content, detail.properties).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM =
-                ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
+            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
             await chatMsgDao.update(savedMsgM).then((value) {
               App.app.chatService.fireMsg(savedMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
-                  .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                  .fireMsg(chatMsgM..status = MsgStatus.fail, true);
             });
           } else {
             App.logger.severe(
                 "Message send failed, statusCode: ${response.statusCode}");
             App.app.chatService
-                .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                .fireMsg(chatMsgM..status = MsgStatus.fail, true);
           }
         },
       ).onError((error, stackTrace) {
         App.logger.severe(error);
-        App.app.chatService
-            .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+        App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       });
     });
   }
@@ -405,38 +393,34 @@ class VoceSendService {
         fromUid: App.app.userDb!.uid,
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
-    ChatMsgM chatMsgM =
-        ChatMsgM.fromReply(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromReply(message, localMid, MsgStatus.fail);
 
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
 
       await MessageApi().reply(targetMid, content, detail.properties).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM =
-                ChatMsgM.fromMsg(message, localMid, MsgSendStatus.success);
+            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
             await chatMsgDao.update(savedMsgM).then((value) {
               App.app.chatService.fireMsg(savedMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
-                  .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                  .fireMsg(chatMsgM..status = MsgStatus.fail, true);
             });
           } else {
             App.logger.severe(
                 "Reply message send failed, statusCode: ${response.statusCode}");
             App.app.chatService
-                .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+                .fireMsg(chatMsgM..status = MsgStatus.fail, true);
           }
         },
       ).onError((error, stackTrace) {
         App.logger.severe(error);
-        App.app.chatService
-            .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+        App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       });
     });
   }
@@ -512,10 +496,9 @@ class VoceSendService {
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
 
-    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -570,10 +553,9 @@ class VoceSendService {
         createdAt: DateTime.now().millisecondsSinceEpoch,
         detail: detail.toJson());
 
-    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgSendStatus.fail);
+    ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
     await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService
-          .fireMsg(savedMsgM..status = MsgSendStatus.sending, true);
+      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -647,18 +629,17 @@ class VoceSendService {
         chatMsgM.mid = mid;
         await ChatMsgDao().add(chatMsgM).then((savedMsgM) async {
           App.app.chatService
-              .fireMsg(savedMsgM..status = MsgSendStatus.success, true);
+              .fireMsg(savedMsgM..status = MsgStatus.success, true);
         });
         return true;
       } else {
         App.logger.severe(res.statusCode);
-        App.app.chatService
-            .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+        App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
         return false;
       }
     } catch (e) {
       App.logger.severe(e);
-      App.app.chatService.fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       return false;
     }
   }
@@ -718,18 +699,17 @@ class VoceSendService {
         chatMsgM.mid = mid;
         await ChatMsgDao().add(chatMsgM).then((savedMsgM) async {
           App.app.chatService
-              .fireMsg(savedMsgM..status = MsgSendStatus.success, true);
+              .fireMsg(savedMsgM..status = MsgStatus.success, true);
         });
         return true;
       } else {
         App.logger.severe(res.statusCode);
-        App.app.chatService
-            .fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+        App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
         return false;
       }
     } catch (e) {
       App.logger.severe(e);
-      App.app.chatService.fireMsg(chatMsgM..status = MsgSendStatus.fail, true);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       return false;
     }
   }
@@ -741,8 +721,7 @@ class VoceSendService {
     }
 
     // Fire status to UI message list, but only change db after server responses.
-    App.app.chatService
-        .fireMsg(targetMsgM..status = MsgSendStatus.sending, true);
+    App.app.chatService.fireMsg(targetMsgM..status = MsgStatus.sending, true);
 
     // Send to server.
     MessageApi api = MessageApi();
@@ -752,7 +731,7 @@ class VoceSendService {
         // the reaction message id.
         if (response.statusCode == 200) {
           await ChatMsgDao()
-              .editMsgByMid(targetMid, content, MsgSendStatus.success)
+              .editMsgByMid(targetMid, content, MsgStatus.success)
               .then((savedMsgM) {
             if (savedMsgM != null) {
               App.app.chatService.fireMsg(savedMsgM, true);
@@ -770,7 +749,7 @@ class VoceSendService {
   }
 
   Future<bool> sendReaction(ChatMsgM targetMsgM, String reaction) async {
-    final sendingMsgM = targetMsgM..status = MsgSendStatus.sending;
+    final sendingMsgM = targetMsgM..status = MsgStatus.sending;
     App.app.chatService.fireMsg(sendingMsgM, true);
     bool succeed = false;
 
@@ -790,7 +769,7 @@ class VoceSendService {
     } else {
       // fail. SSE won't push any new message. So we need to roll back the
       // message status.
-      final rollbackMsgM = targetMsgM..status = MsgSendStatus.success;
+      final rollbackMsgM = targetMsgM..status = MsgStatus.success;
       App.app.chatService.fireMsg(rollbackMsgM, true);
       return false;
     }

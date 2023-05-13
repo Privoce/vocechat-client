@@ -22,7 +22,7 @@ class MsgTileData {
   int avatarUpdatedAt = 0;
   String name = "";
   int time = 0;
-  ValueNotifier<MsgSendStatus> status = ValueNotifier(MsgSendStatus.success);
+  ValueNotifier<MsgStatus> status = ValueNotifier(MsgStatus.success);
 
   /// Only for files (images and files)
   ValueNotifier<double> progress = ValueNotifier(0);
@@ -70,11 +70,11 @@ class MsgTileData {
     chatMsgMNotifier.addListener(statusListener);
 
     // Still need the following for initial status.
-    MsgSendStatus status = chatMsgMNotifier.value.status;
-    if (status != MsgSendStatus.success) {
+    MsgStatus status = chatMsgMNotifier.value.status;
+    if (status != MsgStatus.success) {
       status = SendTaskQueue.singleton
               .isWaitingOrExecuting(chatMsgMNotifier.value.localMid)
-          ? MsgSendStatus.sending
+          ? MsgStatus.sending
           : status;
     }
 

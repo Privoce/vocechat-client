@@ -48,10 +48,9 @@ class MsgActionsSheet extends StatelessWidget {
             // msgTile,
             _buildTopBar(),
             // _buildTextCopyBubble(),
-            if (chatMsgM.statusStr == MsgSendStatus.success.name)
+            if (chatMsgM.statusStr == MsgStatus.success.name)
               _buildReactions(context),
-            if (chatMsgM.statusStr == MsgSendStatus.success.name)
-              const Divider(),
+            if (chatMsgM.statusStr == MsgStatus.success.name) const Divider(),
             _buildActions()
           ],
         ),

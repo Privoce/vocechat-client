@@ -14,6 +14,7 @@ import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
+import 'package:vocechat_client/dao/init_dao/reaction.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
@@ -46,6 +47,8 @@ typedef GroupAware = Future<void> Function(
 
 typedef MsgAware = Future<void> Function(ChatMsgM chatMsgM, bool afterReady,
     {bool? snippetOnly});
+typedef ReactionAware = Future<void> Function(
+    ReactionM reaction, bool afterReady);
 
 typedef MidDeleteAware = Future<void> Function(int targetMid);
 typedef LocalmidDeleteAware = Future<void> Function(String localMid);
@@ -74,6 +77,7 @@ class VoceChatService {
   final Set<UsersAware> _userListeners = {};
   final Set<GroupAware> _groupListeners = {};
   final Set<MsgAware> _msgListeners = {};
+  final Set<ReactionAware> _reactionListeners = {};
   final Set<MidDeleteAware> _midDeleteListeners = {};
   final Set<LocalmidDeleteAware> _lmidDeleteListeners = {};
 
@@ -215,6 +219,15 @@ class VoceChatService {
     _msgListeners.remove(msgAware);
   }
 
+  void subscribeReaction(ReactionAware reactionAware) {
+    unsubscribeReaction(reactionAware);
+    _reactionListeners.add(reactionAware);
+  }
+
+  void unsubscribeReaction(ReactionAware reactionAware) {
+    _reactionListeners.remove(reactionAware);
+  }
+
   void subscribeMidDelete(MidDeleteAware deleteAware) {
     unsubscribeMidDelete(deleteAware);
     _midDeleteListeners.add(deleteAware);
@@ -319,6 +332,16 @@ class VoceChatService {
     for (MsgAware msgAware in _msgListeners) {
       try {
         msgAware(chatMsgM, afterReady, snippetOnly: snippetOnly);
+      } catch (e) {
+        App.logger.severe(e);
+      }
+    }
+  }
+
+  void fireReaction(ReactionM reaction, bool afterReady) {
+    for (ReactionAware reactionAware in _reactionListeners) {
+      try {
+        reactionAware(reaction, afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -491,7 +514,7 @@ class VoceChatService {
     }
 
     final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.statusStr == MsgSendStatus.success.name) {
+    if (msg != null && msg.statusStr == MsgStatus.success.name) {
       return;
     }
 
@@ -535,7 +558,7 @@ class VoceChatService {
     }
 
     final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.statusStr == MsgSendStatus.success.name) {
+    if (msg != null && msg.statusStr == MsgStatus.success.name) {
       return;
     }
 
@@ -1335,7 +1358,7 @@ class VoceChatService {
           createdAt: chatMsg.createdAt,
           detail: detail.toJson());
 
-      ChatMsgM chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
+      ChatMsgM chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgStatus.success);
       await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
         switch (detail.contentType) {
           case typeText:
@@ -1388,88 +1411,137 @@ class VoceChatService {
 
   Future<void> _handleMsgReaction(ChatMsg chatMsg) async {
     final msgReactionJson = chatMsg.detail;
-    final targetMid = msgReactionJson["mid"]!;
 
     assert(msgReactionJson["type"] == "reaction");
 
     try {
-      final detailJson = msgReactionJson["detail"] as Map<String, dynamic>;
+      if (msgReactionJson["detail"]["type"] == 'delete') {
+        final int? targetMid = chatMsg.detail["mid"];
 
-      switch (detailJson["type"]) {
-        case "edit":
-          final edit = detailJson["content"] as String;
+        if (targetMid == null) return;
 
-          await ChatMsgDao()
-              .editMsgByMid(targetMid, edit, MsgSendStatus.success)
-              .then((dbMsgM) {
-            if (dbMsgM != null) {
-              fireMsg(dbMsgM, afterReady);
-              midSet.remove(dbMsgM.mid);
+        ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
+          if (mid < 0) return;
+
+          int? gid = chatMsg.target["gid"];
+          int? uid = chatMsg.target["uid"];
+
+          // Must be kept to get real dmUid.
+          if (uid != null && SharedFuncs.isSelf(uid)) {
+            uid = chatMsg.fromUid;
+          }
+
+          // Delete message in UI and its related files in file system.
+          {
+            fireMidDelete(targetMid);
+            FileHandler.singleton
+                .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
+            AudioFileHandler().deleteWithChatMsgM(ChatMsgM()
+              ..mid = targetMid
+              ..gid = gid ?? -1
+              ..dmUid = uid ?? -1);
+          }
+
+          // Update latest message in UI.
+          {
+            final dao = ChatMsgDao();
+            ChatMsgM? latestMsgM;
+
+            if (gid != null) {
+              latestMsgM = await dao.getChannelLatestMsgM(gid);
+            } else if (uid != null) {
+              latestMsgM = await dao.getDmLatestMsgM(uid);
             }
+            if (latestMsgM != null) {
+              fireMsg(latestMsgM, afterReady, snippetOnly: true);
+            }
+          }
+        });
+      } else {
+        final reactionM = ReactionM.fromChatMsg(chatMsg);
+        if (reactionM != null) {
+          await ReactionDao().addOrReplace(reactionM).then((savedReactionM) {
+            fireReaction(savedReactionM, afterReady);
           });
-
-          break;
-        case "like":
-          final reaction = detailJson["action"] as String;
-
-          await ChatMsgDao()
-              .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
-                  DateTime.now().millisecondsSinceEpoch)
-              .then((dbMsgM) {
-            if (dbMsgM != null) {
-              fireMsg(dbMsgM, afterReady);
-              midSet.remove(dbMsgM.mid);
-            }
-          });
-
-          break;
-        case "delete":
-          final int? targetMid = chatMsg.detail["mid"];
-
-          if (targetMid == null) return;
-
-          ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
-            if (mid < 0) return;
-
-            int? gid = chatMsg.target["gid"];
-            int? uid = chatMsg.target["uid"];
-
-            // Must be kept to get real dmUid.
-            if (uid != null && SharedFuncs.isSelf(uid)) {
-              uid = chatMsg.fromUid;
-            }
-
-            // Delete message in UI and its related files in file system.
-            {
-              fireMidDelete(targetMid);
-              FileHandler.singleton
-                  .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
-              AudioFileHandler().deleteWithChatMsgM(ChatMsgM()
-                ..mid = targetMid
-                ..gid = gid ?? -1
-                ..dmUid = uid ?? -1);
-            }
-
-            // Update latest message in UI.
-            {
-              final dao = ChatMsgDao();
-              ChatMsgM? latestMsgM;
-
-              if (gid != null) {
-                latestMsgM = await dao.getChannelLatestMsgM(gid);
-              } else if (uid != null) {
-                latestMsgM = await dao.getDmLatestMsgM(uid);
-              }
-              if (latestMsgM != null) {
-                fireMsg(latestMsgM, afterReady, snippetOnly: true);
-              }
-            }
-          });
-
-          break;
-
-        default:
+        }
       }
+
+      // switch (detailJson["type"]) {
+      //   case "edit":
+
+      //     // await ChatMsgDao()
+      //     //     .editMsgByMid(targetMid, edit, MsgSendStatus.success)
+      //     //     .then((dbMsgM) {
+      //     //   if (dbMsgM != null) {
+      //     //     fireMsg(dbMsgM, afterReady);
+      //     //     midSet.remove(dbMsgM.mid);
+      //     //   }
+      //     // });
+      //     // final reaction = ReactionM.item(mid: edit, targetMid: targetMid, targetGid: targetGid, targetUid: targetUid, fromUid: fromUid, actionEmoji: actionEmoji, editedText: editedText, deleted: deleted)
+      //     // await ReactionDao().add
+
+      //     break;
+      //   case "like":
+      //     final reaction = detailJson["action"] as String;
+
+      //     await ChatMsgDao()
+      //         .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
+      //             DateTime.now().millisecondsSinceEpoch)
+      //         .then((dbMsgM) {
+      //       if (dbMsgM != null) {
+      //         fireMsg(dbMsgM, afterReady);
+      //         midSet.remove(dbMsgM.mid);
+      //       }
+      //     });
+
+      //     break;
+      //   case "delete":
+      //     final int? targetMid = chatMsg.detail["mid"];
+
+      //     if (targetMid == null) return;
+
+      //     ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
+      //       if (mid < 0) return;
+
+      //       int? gid = chatMsg.target["gid"];
+      //       int? uid = chatMsg.target["uid"];
+
+      //       // Must be kept to get real dmUid.
+      //       if (uid != null && SharedFuncs.isSelf(uid)) {
+      //         uid = chatMsg.fromUid;
+      //       }
+
+      //       // Delete message in UI and its related files in file system.
+      //       {
+      //         fireMidDelete(targetMid);
+      //         FileHandler.singleton
+      //             .deleteWithChatMsgM(ChatMsgM()..mid = targetMid);
+      //         AudioFileHandler().deleteWithChatMsgM(ChatMsgM()
+      //           ..mid = targetMid
+      //           ..gid = gid ?? -1
+      //           ..dmUid = uid ?? -1);
+      //       }
+
+      //       // Update latest message in UI.
+      //       {
+      //         final dao = ChatMsgDao();
+      //         ChatMsgM? latestMsgM;
+
+      //         if (gid != null) {
+      //           latestMsgM = await dao.getChannelLatestMsgM(gid);
+      //         } else if (uid != null) {
+      //           latestMsgM = await dao.getDmLatestMsgM(uid);
+      //         }
+      //         if (latestMsgM != null) {
+      //           fireMsg(latestMsgM, afterReady, snippetOnly: true);
+      //         }
+      //       }
+      //     });
+
+      //     break;
+
+      //   default:
+      // }
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1492,7 +1564,7 @@ class VoceChatService {
     try {
       chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
-          ChatMsgM.fromReply(chatMsg, localMid, MsgSendStatus.success);
+          ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
       await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
         fireMsg(dbMsgM, afterReady);
         midSet.remove(dbMsgM.mid);

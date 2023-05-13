@@ -79,7 +79,7 @@ dependencies:
   video_player: ^2.4.8
   scroll_to_index: ^3.0.1
   sqflite_common_ffi: ^2.1.1+1
-  sqlite3_flutter_libs: ^0.5.8
+  sqlite3_flutter_libs: ^0.5.15
   flutter_secure_storage: ^7.0.1
   uni_links: ^0.5.1
   qr_flutter: ^4.0.0

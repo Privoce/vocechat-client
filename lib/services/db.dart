@@ -101,7 +101,7 @@ Future<void> initCurrentDb(String dbName) async {
         .create(recursive: true); // App will terminate if create fails.
     db = await databaseFactory.openDatabase(path,
         options: OpenDatabaseOptions(
-          version: 5,
+          version: 6,
           onCreate: (db, version) async {
             // Multiple sql strings are not supported in Android, thus change to single
             // sql string and execute one after another.
@@ -124,32 +124,33 @@ Future<void> initCurrentDb(String dbName) async {
             }
           },
           onUpgrade: (db, oldVersion, newVersion) async {
-            if (oldVersion < newVersion && oldVersion < 2) {
+            if (oldVersion < newVersion && oldVersion < 6) {
               try {
-                db.execute(
-                    "ALTER TABLE group_info DROP COLUMN IF EXISTS avatar");
-              } catch (e) {
-                App.logger.warning(e);
-              }
-            }
-
-            if (oldVersion < newVersion && oldVersion < 3) {
-              try {
-                db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS avatar");
-              } catch (e) {
-                App.logger.warning(e);
-              }
-            }
-
-            if (oldVersion < newVersion && oldVersion < 5) {
-              try {
+                await db.execute("ALTER TABLE group_info DROP COLUMN avatar");
+                await db.execute("ALTER TABLE user_info DROP COLUMN avatar");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_status");
+                    "ALTER TABLE user_info DROP COLUMN contact_status");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_created_at");
+                    "ALTER TABLE user_info DROP COLUMN contact_created_at");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_updated_at");
+                    "ALTER TABLE user_info DROP COLUMN contact_updated_at");
+                await db.execute("DROP TABLE unmatched_reaction");
+                await db.execute("DROP INDEX index_target_mid");
+                await db.execute('''
+CREATE TABLE IF NOT EXISTS reactions (
+  id TEXT PRIMARY KEY, 
+  mid INTEGER PRIMARY KEY,
+  target_mid INTEGER NOT NULL,
+  target_gid INTEGER NOT NULL,
+  target_uid INTEGER NOT NULL,
+  from_uid INTEGER NOT NULL,
+  action_emoji TEXT NOT NULL, 
+  edited_text TEXT NOT NULL,
+  deleted INTEGER NOT NULL,
+  'type' TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY(target_mid) REFERENCES chat_msg(mid) ON DELETE CASCADE
+)''');
               } catch (e) {
                 App.logger.warning(e);
               }

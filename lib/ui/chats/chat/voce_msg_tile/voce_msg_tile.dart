@@ -410,11 +410,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
           return SizedBox(
             height: selectSize,
             width: selectSize,
-            child: ValueListenableBuilder<MsgSendStatus>(
+            child: ValueListenableBuilder<MsgStatus>(
               valueListenable: widget.tileData.status,
               builder: (context, status, child) {
                 switch (status) {
-                  case MsgSendStatus.sending:
+                  case MsgStatus.sending:
                     if (widget.tileData.chatMsgMNotifier.value
                         .shouldShowProgressWhenSending) {
                       final task = SendTaskQueue.singleton.getTask(
@@ -435,9 +435,9 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                     }
                     return const CupertinoActivityIndicator();
 
-                  case MsgSendStatus.success:
+                  case MsgStatus.success:
                     return const SizedBox.shrink();
-                  case MsgSendStatus.fail:
+                  case MsgStatus.fail:
 
                     // TODO: show retry button and its functions.
                     return const Icon(Icons.error_outline, color: Colors.red);
