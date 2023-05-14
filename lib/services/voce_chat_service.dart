@@ -346,7 +346,7 @@ class VoceChatService {
     }
   }
 
-  void fireRefresh() {
+  void fireReady() {
     for (VoidCallback refreshAware in _refreshListeners) {
       try {
         refreshAware();
@@ -700,16 +700,20 @@ class VoceChatService {
   }
 
   Future<void> _handleReady() async {
+    App.logger.info("SseService: Ready");
     deleteMemoryMsgs();
+
+    // [saveMaxMid] must be called before [saveReactions] and [saveChatMsgs],
+    // as the later functions will clear [msgMap] and [reactionMap].
+    await saveMaxMid();
     await saveReactions();
     await saveChatMsgs();
     await saveDmInfoMap();
-    await saveMaxMid();
 
     afterReady = true;
 
     App.app.statusService?.fireSseLoading(SseStatus.successful);
-    fireRefresh();
+    fireReady();
   }
 
   void deleteMemoryMsgs() {
@@ -730,7 +734,16 @@ class VoceChatService {
       }
       return max;
     });
-    await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, maxMid);
+
+    final maxReactionMid = reactionMap.values.fold<int>(0, (max, reaction) {
+      if (reaction.mid > max) {
+        return reaction.mid;
+      }
+      return max;
+    });
+
+    final finalMaxMid = [maxMid, maxReactionMid].reduce(max);
+    await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, finalMaxMid);
   }
 
   Future<void> saveChatMsgs() async {
@@ -1323,7 +1336,7 @@ class VoceChatService {
           .updateUsersVersion(App.app.userDb!.id, version)
           .then((userDbM) => App.app.userDb = userDbM);
 
-      fireRefresh();
+      fireReady();
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1400,9 +1413,9 @@ class VoceChatService {
 
   Future<void> cumulateMsg(ChatMsgM chatMsgM) async {
     if (afterReady) {
-      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) {
+      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
         fireMsg(dbMsgM, afterReady);
-        UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, dbMsgM.mid);
+        await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, dbMsgM.mid);
       });
     } else {
       msgMap.addAll({chatMsgM.mid: chatMsgM});
@@ -1496,9 +1509,10 @@ class VoceChatService {
       chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
-      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
-        fireMsg(dbMsgM, afterReady);
-      });
+      // await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
+      //   fireMsg(dbMsgM, afterReady);
+      // });
+      cumulateMsg(chatMsgM);
     } catch (e) {
       App.logger.severe(e);
     }
