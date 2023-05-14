@@ -772,30 +772,37 @@ class _VoceChatPageState extends State<VoceChatPage>
               ),
             ));
 
-            final msgTile = SizeTransition(
-              key: key,
-              sizeFactor: ani,
-              child: VoceMsgTile(
-                tileData: tileData,
-                enableSelection: selectEnabled,
-                onSelectChange: (tileData, selected) {
-                  final chatMsgM = tileData.chatMsgMNotifier;
-                  if (selected) {
-                    // UI is selected, need to also add it to the message map
-                    selectedMsgMap.addAll({chatMsgM.value.localMid: chatMsgM});
-                  } else {
-                    selectedMsgMap.remove(chatMsgM.value.localMid);
-                  }
+            final msgTile = GestureDetector(
+              // For debug only.
+              // onTap: () {
+              //   print(tileData.chatMsgMNotifier.value.values);
+              // },
+              child: SizeTransition(
+                key: key,
+                sizeFactor: ani,
+                child: VoceMsgTile(
+                  tileData: tileData,
+                  enableSelection: selectEnabled,
+                  onSelectChange: (tileData, selected) {
+                    final chatMsgM = tileData.chatMsgMNotifier;
+                    if (selected) {
+                      // UI is selected, need to also add it to the message map
+                      selectedMsgMap
+                          .addAll({chatMsgM.value.localMid: chatMsgM});
+                    } else {
+                      selectedMsgMap.remove(chatMsgM.value.localMid);
+                    }
 
-                  selectedMsgCantMultipleArchive.value =
-                      selectedMsgMap.values.any(
-                    (element) {
-                      return element.value.isArchiveMsg ||
-                          element.value.isAudioMsg ||
-                          element.value.status != MsgStatus.success;
-                    },
-                  );
-                },
+                    selectedMsgCantMultipleArchive.value =
+                        selectedMsgMap.values.any(
+                      (element) {
+                        return element.value.isArchiveMsg ||
+                            element.value.isAudioMsg ||
+                            element.value.status != MsgStatus.success;
+                      },
+                    );
+                  },
+                ),
               ),
             );
 

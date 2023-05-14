@@ -15,7 +15,7 @@ enum SendType { normal, file, edit, reply, audio, cancel }
 
 enum MsgReactionType { edit, action, delete, none }
 
-enum MsgStatus { fail, success, sending, readyToSend, deleted }
+enum MsgStatus { fail, success, sending, readyToSend }
 
 enum LoadingStatus { loading, success, disconnected }
 

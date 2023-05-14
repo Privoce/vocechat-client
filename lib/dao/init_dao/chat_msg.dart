@@ -121,6 +121,7 @@ class ChatMsgM with M {
   }
 
   MsgDetailType? get detailType {
+    if (detail.isEmpty) return null;
     switch (json.decode(detail)["type"]) {
       case "normal":
         return MsgDetailType.normal;
@@ -309,24 +310,6 @@ class ChatMsgM with M {
     detail = old.detail;
     _reactions = old._reactions;
     pin = old.pin;
-  }
-
-  ChatMsgM.fromDeleted(ChatMsg chatMsg, this.localMid) {
-    mid = chatMsg.mid;
-    fromUid = chatMsg.fromUid;
-    detail = "";
-    status = MsgStatus.deleted;
-    if (chatMsg.target.containsKey("uid")) {
-      if (fromUid == App.app.userDb!.uid) {
-        dmUid = chatMsg.target["uid"];
-      } else {
-        dmUid = fromUid;
-      }
-    } else {
-      dmUid = -1;
-    }
-    gid = chatMsg.target["gid"] ?? -1;
-    createdAt = chatMsg.createdAt;
   }
 
   ChatMsgM.fromReply(ChatMsg chatMsg, this.localMid, MsgStatus status) {
@@ -680,7 +663,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
         .first(where: "${ChatMsgM.F_localMid} = ?", whereArgs: [localMid]);
   }
 
-  /// Get the max message id in App.
+  /// Get the max message id in App, including 'deleted' messages.
   ///
   /// Returns -1 if there is no message in database.
   Future<int> getMaxMid() async {

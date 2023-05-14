@@ -717,13 +717,26 @@ class VoceChatService {
   }
 
   void deleteMemoryMsgs() {
+    // Handle messages that have been deleted.
     for (final reaction in reactionMap.values) {
       final targetMid = reaction.targetMid;
       if (reaction.type == MsgReactionType.delete &&
           msgMap.containsKey(targetMid)) {
-        msgMap[targetMid]?.detail = "";
-        msgMap[targetMid]?.status = MsgStatus.deleted;
+        msgMap.remove(targetMid);
       }
+    }
+
+    // Handle burn-after-read expired messages.
+    // Data to be deleted should be stored in a temporary list,
+    // as it is not allowed to modify the [msgMap] during the iteration.
+    final List<int> expiredMids = [];
+    for (final msgM in msgMap.values) {
+      if (msgM.expires) {
+        expiredMids.add(msgM.mid);
+      }
+    }
+    for (final mid in expiredMids) {
+      msgMap.remove(mid);
     }
   }
 
