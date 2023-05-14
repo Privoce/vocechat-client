@@ -109,7 +109,6 @@ CREATE TABLE IF NOT EXISTS reactions (
   from_uid INTEGER NOT NULL,
   action_emoji TEXT NOT NULL, 
   edited_text TEXT NOT NULL,
-  deleted INTEGER NOT NULL,
   'type' TEXT NOT NULL,
   created_at INTEGER NOT NULL,
   FOREIGN KEY(target_mid) REFERENCES chat_msg(mid) ON DELETE CASCADE

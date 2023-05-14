@@ -3,7 +3,6 @@
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/dao.dart';
-import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
 
 class ReactionM with M {
   int mid = -1;
@@ -14,13 +13,11 @@ class ReactionM with M {
   String actionEmoji = "";
   String editedText = "";
   String _type = "";
-  int _deleted = 0;
 
   @override
   // ignore: overridden_fields
   int createdAt = 0;
 
-  bool get deleted => _deleted == 1;
   MsgReactionType get type {
     if (_type == MsgReactionType.edit.name) {
       return MsgReactionType.edit;
@@ -46,7 +43,7 @@ class ReactionM with M {
     required bool deleted,
     required MsgReactionType type,
     required this.createdAt,
-  }) : _deleted = deleted ? 1 : 0;
+  });
 
   ReactionM.edit({
     required this.mid,
@@ -56,8 +53,7 @@ class ReactionM with M {
     required this.fromUid,
     required this.editedText,
     required this.createdAt,
-  })  : _deleted = 0,
-        _type = MsgReactionType.edit.name;
+  }) : _type = MsgReactionType.edit.name;
 
   ReactionM.action({
     required this.mid,
@@ -67,8 +63,7 @@ class ReactionM with M {
     required this.fromUid,
     required this.actionEmoji,
     required this.createdAt,
-  })  : _deleted = 0,
-        _type = MsgReactionType.action.name;
+  }) : _type = MsgReactionType.action.name;
 
   ReactionM.delete({
     required this.mid,
@@ -77,8 +72,7 @@ class ReactionM with M {
     required this.targetUid,
     required this.fromUid,
     required this.createdAt,
-  })  : _deleted = 1,
-        _type = MsgReactionType.delete.name;
+  }) : _type = MsgReactionType.delete.name;
 
   static ReactionM fromEdit(Map<String, dynamic> json) {
     return ReactionM.edit(
@@ -184,9 +178,6 @@ class ReactionM with M {
     if (map.containsKey(F_editedText)) {
       m.editedText = map[F_editedText];
     }
-    if (map.containsKey(F_deleted)) {
-      m._deleted = map[F_deleted];
-    }
     if (map.containsKey(F_type)) {
       m._type = map[F_type];
     }
@@ -205,7 +196,6 @@ class ReactionM with M {
   static const F_fromUid = 'from_uid';
   static const F_actionEmoji = 'action_emoji';
   static const F_editedText = 'edited_text';
-  static const F_deleted = 'deleted';
   static const F_type = 'type';
   static const F_createdAt = 'created_at';
 
@@ -218,7 +208,6 @@ class ReactionM with M {
         ReactionM.F_fromUid: fromUid,
         ReactionM.F_actionEmoji: actionEmoji,
         ReactionM.F_editedText: editedText,
-        ReactionM.F_deleted: _deleted,
         ReactionM.F_type: _type,
         ReactionM.F_createdAt: createdAt
       };
