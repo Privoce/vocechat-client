@@ -150,7 +150,7 @@ class _ChatsPageState extends State<ChatsPage>
     final chatId =
         SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId != null && chatTileMap.containsKey(chatId)) {
-      chatTileMap[chatId]?.updateByChatMsg(chatMsgM);
+      await chatTileMap[chatId]?.updateByChatMsg(chatMsgM);
     } else {
       // if no current chat session, create a new one
       final tileData = await ChatTileData.fromChatMsgM(chatMsgM);
