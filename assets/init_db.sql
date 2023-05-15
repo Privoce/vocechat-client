@@ -39,10 +39,8 @@ CREATE TABLE IF NOT EXISTS chat_msg (
   from_uid INTEGER NOT NULL,
   dm_uid INTEGER NOT NULL,
   gid INTEGER NOT NULL,
-  edited INTEGER NOT NULL,
   status TEXT NOT NULL,
   detail TEXT NOT NULL,
-  reactions TEXT NOT NULL,
   pin integer NOT NULL,
   created_at integer NOT NULL
 );

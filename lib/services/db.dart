@@ -136,6 +136,8 @@ Future<void> initCurrentDb(String dbName) async {
                     "ALTER TABLE user_info DROP COLUMN contact_updated_at");
                 await db.execute("DROP TABLE unmatched_reaction");
                 await db.execute("DROP INDEX index_target_mid");
+                await db.execute("ALTER TABLE chat_msg DROP COLUMN reactions");
+                await db.execute("ALTER TABLE chat_msg DROP COLUMN edited");
                 await db.execute('''
 CREATE TABLE IF NOT EXISTS reactions (
   id TEXT PRIMARY KEY, 

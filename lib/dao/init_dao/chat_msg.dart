@@ -24,11 +24,11 @@ class ChatMsgM with M {
   int fromUid = -1;
   int dmUid = -1;
   int gid = -1;
-  int _edited = 0;
+  // int _edited = 0;
   String statusStr =
       MsgStatus.success.name; // MsgStatus: fail, success, sending
   String detail = ""; // only normal msg json.
-  String _reactions = ""; // ChatMsgReactions
+  // String _reactions = ""; // ChatMsgReactions
   int pin = 0;
 
   set status(MsgStatus status) {
@@ -71,13 +71,13 @@ class ChatMsgM with M {
     return null;
   }
 
-  Set<ReactionInfo> get reactions {
-    if (_reactions.isEmpty) {
-      return {};
-    }
-    Iterable l = json.decode(_reactions);
-    return Set<ReactionInfo>.from(l.map((e) => ReactionInfo.fromJson(e)));
-  }
+  // Set<ReactionInfo> get reactions {
+  //   if (_reactions.isEmpty) {
+  //     return {};
+  //   }
+  //   Iterable l = json.decode(_reactions);
+  //   return Set<ReactionInfo>.from(l.map((e) => ReactionInfo.fromJson(e)));
+  // }
 
   bool get shouldShowProgressWhenSending {
     return isFileMsg || isAudioMsg;
@@ -87,9 +87,9 @@ class ChatMsgM with M {
     return pin != 0;
   }
 
-  bool get edited {
-    return _edited != 0;
-  }
+  // bool get edited {
+  //   return _edited != 0;
+  // }
 
   bool get isGroupMsg {
     return dmUid == -1 && gid != -1;
@@ -267,11 +267,11 @@ class ChatMsgM with M {
       this.fromUid,
       this.dmUid,
       this.gid,
-      this._edited,
+      // this._edited,
       this.statusStr,
       createdAt,
       this.detail,
-      this._reactions,
+      // this._reactions,
       this.pin) {
     super.createdAt = createdAt;
   }
@@ -304,11 +304,11 @@ class ChatMsgM with M {
     fromUid = old.fromUid;
     dmUid = old.dmUid;
     gid = old.dmUid;
-    _edited = old._edited;
+    // _edited = old._edited;
     statusStr = old.statusStr;
     createdAt = old.createdAt;
     detail = old.detail;
-    _reactions = old._reactions;
+    // _reactions = old._reactions;
     pin = old.pin;
   }
 
@@ -351,9 +351,9 @@ class ChatMsgM with M {
     if (map.containsKey(F_gid)) {
       m.gid = map[F_gid];
     }
-    if (map.containsKey(F_edited)) {
-      m._edited = map[F_edited];
-    }
+    // if (map.containsKey(F_edited)) {
+    //   m._edited = map[F_edited];
+    // }
 
     if (map.containsKey(F_status)) {
       m.statusStr = map[F_status];
@@ -361,9 +361,9 @@ class ChatMsgM with M {
     if (map.containsKey(F_detail)) {
       m.detail = map[F_detail];
     }
-    if (map.containsKey(F_reactions)) {
-      m._reactions = map[F_reactions];
-    }
+    // if (map.containsKey(F_reactions)) {
+    //   m._reactions = map[F_reactions];
+    // }
     if (map.containsKey(F_pin)) {
       m.pin = map[F_pin];
     }
@@ -380,10 +380,10 @@ class ChatMsgM with M {
   static const F_fromUid = 'from_uid';
   static const F_dmUid = 'dm_uid';
   static const F_gid = 'gid';
-  static const F_edited = 'edited';
+  // static const F_edited = 'edited';
   static const F_status = 'status';
   static const F_detail = 'detail';
-  static const F_reactions = 'reactions';
+  // static const F_reactions = 'reactions';
   static const F_pin = 'pin';
   static const F_createdAt = 'created_at';
 
@@ -394,10 +394,10 @@ class ChatMsgM with M {
         ChatMsgM.F_fromUid: fromUid,
         ChatMsgM.F_dmUid: dmUid,
         ChatMsgM.F_gid: gid,
-        ChatMsgM.F_edited: _edited,
+        // ChatMsgM.F_edited: _edited,
         ChatMsgM.F_status: statusStr,
         ChatMsgM.F_detail: detail,
-        ChatMsgM.F_reactions: _reactions,
+        // ChatMsgM.F_reactions: _reactions,
         ChatMsgM.F_pin: pin,
         ChatMsgM.F_createdAt: createdAt,
       };
@@ -474,23 +474,23 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return false;
   }
 
-  Future<ChatMsgM?> editMsgByMid(
-      int mid, String newContent, MsgStatus status) async {
-    ChatMsgM? old =
-        await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
-    if (old != null) {
-      Map oldDetail = json.decode(old.detail);
-      oldDetail["content"] = newContent;
-      old.detail = json.encode(oldDetail);
-      old._edited = 1;
-      old.statusStr = status.name;
+  // Future<ChatMsgM?> editMsgByMid(
+  //     int mid, String newContent, MsgStatus status) async {
+  //   ChatMsgM? old =
+  //       await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
+  //   if (old != null) {
+  //     Map oldDetail = json.decode(old.detail);
+  //     oldDetail["content"] = newContent;
+  //     old.detail = json.encode(oldDetail);
+  //     old._edited = 1;
+  //     old.statusStr = status.name;
 
-      await super.update(old);
-      App.logger.info("ChatMsg Edit Updated. msg: ${old.values}");
-      return old;
-    }
-    return null;
-  }
+  //     await super.update(old);
+  //     App.logger.info("ChatMsg Edit Updated. msg: ${old.values}");
+  //     return old;
+  //   }
+  //   return null;
+  // }
 
   Future<ChatMsgM?> pinMsgByMid(int mid, int uid) async {
     try {
@@ -504,31 +504,31 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     }
   }
 
-  Future<ChatMsgM?> reactMsgByMid(
-      int mid, int fromUid, String reaction, int time) async {
-    ChatMsgM? old =
-        await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
-    if (old != null) {
-      var reactions = old.reactions;
+  // Future<ChatMsgM?> reactMsgByMid(
+  //     int mid, int fromUid, String reaction, int time) async {
+  //   ChatMsgM? old =
+  //       await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
+  //   if (old != null) {
+  //     var reactions = old.reactions;
 
-      final r = ReactionInfo(fromUid, reaction, time);
+  //     final r = ReactionInfo(fromUid, reaction, time);
 
-      if (reactions.contains(r)) {
-        reactions.remove(r);
-      } else {
-        reactions.add(r);
-      }
+  //     if (reactions.contains(r)) {
+  //       reactions.remove(r);
+  //     } else {
+  //       reactions.add(r);
+  //     }
 
-      final reactionList = reactions.map((e) => json.encode(e)).toList();
-      old._reactions = reactions.isEmpty ? "" : "$reactionList";
-      await super.update(old);
-      App.logger.info(
-          "ChatMsg Reactions Updated. mid: ${old.mid}, localMid: ${old.localMid}");
-      return old;
-    }
+  //     final reactionList = reactions.map((e) => json.encode(e)).toList();
+  //     old._reactions = reactions.isEmpty ? "" : "$reactionList";
+  //     await super.update(old);
+  //     App.logger.info(
+  //         "ChatMsg Reactions Updated. mid: ${old.mid}, localMid: ${old.localMid}");
+  //     return old;
+  //   }
 
-    return null;
-  }
+  //   return null;
+  // }
 
   /// Get a list of DM messages by dmUid (uid).
   ///

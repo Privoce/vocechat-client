@@ -299,36 +299,38 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return ValueListenableBuilder<ChatMsgM>(
         valueListenable: widget.tileData.chatMsgMNotifier,
         builder: (context, chatMsgM, _) {
-          if (chatMsgM.reactions.isEmpty) {
-            return const SizedBox();
-          } else {
-            var map = <String, ReactionItem>{}; // emoji: quantity
+          // TODO: reaction refactor
+          return Text("// TODO: reaction refactor");
+          // if (chatMsgM.reactions.isEmpty) {
+          //   return const SizedBox();
+          // } else {
+          //   var map = <String, ReactionItem>{}; // emoji: quantity
 
-            for (var element in chatMsgM.reactions) {
-              if (!map.containsKey(element.reaction)) {
-                map[element.reaction] = ReactionItem(frequency: 1);
-              } else {
-                map.update(element.reaction, (value) {
-                  return ReactionItem(frequency: value.frequency + 1);
-                });
-              }
+          //   for (var element in chatMsgM.reactions) {
+          //     if (!map.containsKey(element.reaction)) {
+          //       map[element.reaction] = ReactionItem(frequency: 1);
+          //     } else {
+          //       map.update(element.reaction, (value) {
+          //         return ReactionItem(frequency: value.frequency + 1);
+          //       });
+          //     }
 
-              if (element.fromUid == App.app.userDb?.uid) {
-                map[element.reaction]?.isSelfReact = true;
-              }
-            }
+          //     if (element.fromUid == App.app.userDb?.uid) {
+          //       map[element.reaction]?.isSelfReact = true;
+          //     }
+          //   }
 
-            return Wrap(
-                children: List<Widget>.generate(map.length, (index) {
-              final reaction = map.keys.toList()[index];
-              final int quantity = map[reaction]?.frequency ?? 1;
-              final bool isSelf = map[reaction]?.isSelfReact ?? false;
-              return Padding(
-                padding: const EdgeInsets.only(right: 4, top: 2, bottom: 2),
-                child: _buildReactionTile(chatMsgM, reaction, quantity, isSelf),
-              );
-            }));
-          }
+          //   return Wrap(
+          //       children: List<Widget>.generate(map.length, (index) {
+          //     final reaction = map.keys.toList()[index];
+          //     final int quantity = map[reaction]?.frequency ?? 1;
+          //     final bool isSelf = map[reaction]?.isSelfReact ?? false;
+          //     return Padding(
+          //       padding: const EdgeInsets.only(right: 4, top: 2, bottom: 2),
+          //       child: _buildReactionTile(chatMsgM, reaction, quantity, isSelf),
+          //     );
+          //   }));
+          // }
         });
   }
 

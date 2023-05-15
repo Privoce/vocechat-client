@@ -9,11 +9,13 @@ class VoceMdBubble extends StatelessWidget {
   final ChatMsgM chatMsgM;
 
   late final String? _mdText;
-  late final bool _edited;
+  // TODO: reaction refactor
+  // late final bool _edited;
 
   VoceMdBubble({Key? key, required this.chatMsgM}) : super(key: key) {
     _mdText = chatMsgM.msgNormal?.content;
-    _edited = chatMsgM.edited;
+    // TODO: reaction refactor
+    // _edited = chatMsgM.edited;
   }
 
   @override
@@ -33,12 +35,13 @@ class VoceMdBubble extends StatelessWidget {
           }
         },
       ),
-      if (_edited)
-        Text(" (${AppLocalizations.of(context)!.edited})",
-            style: TextStyle(
-                fontSize: 14,
-                color: AppColors.navLink,
-                fontWeight: FontWeight.w400))
+      // TODO: reaction refactor
+      // if (_edited)
+      //   Text(" (${AppLocalizations.of(context)!.edited})",
+      //       style: TextStyle(
+      //           fontSize: 14,
+      //           color: AppColors.navLink,
+      //           fontWeight: FontWeight.w400))
     ]);
   }
 }

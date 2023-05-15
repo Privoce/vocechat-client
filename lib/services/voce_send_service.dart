@@ -730,13 +730,14 @@ class VoceSendService {
         // TODO: change reactions storage strategy later, need response data as
         // the reaction message id.
         if (response.statusCode == 200) {
-          await ChatMsgDao()
-              .editMsgByMid(targetMid, content, MsgStatus.success)
-              .then((savedMsgM) {
-            if (savedMsgM != null) {
-              App.app.chatService.fireMsg(savedMsgM, true);
-            }
-          });
+          // TODO: reaction refactor
+          // await ChatMsgDao()
+          //     .editMsgByMid(targetMid, content, MsgStatus.success)
+          //     .then((savedMsgM) {
+          //   if (savedMsgM != null) {
+          //     App.app.chatService.fireMsg(savedMsgM, true);
+          //   }
+          // });
         } else {
           App.logger.severe(response.statusCode);
           App.app.chatService.fireMsg(targetMsgM, true);

@@ -9,7 +9,8 @@ class VoceTextBubble extends StatelessWidget {
   final ChatMsgM chatMsgM;
 
   late final String _content;
-  late final bool _edited;
+  // TODO: reaction refactor
+  // late final bool _edited;
   late final bool _hasMention;
   late final TextStyle _normalStyle;
   late final TextStyle _mentionStyle;
@@ -18,7 +19,8 @@ class VoceTextBubble extends StatelessWidget {
 
   VoceTextBubble({Key? key, required this.chatMsgM, this.maxLines})
       : super(key: key) {
-    _edited = chatMsgM.edited;
+        // TODO: reaction refactor
+    // _edited = chatMsgM.edited;
     _hasMention = chatMsgM.hasMention;
 
     switch (chatMsgM.detailType) {
@@ -82,13 +84,14 @@ class VoceTextBubble extends StatelessWidget {
             color: AppColors.coolGrey700,
             fontWeight: FontWeight.w400),
       ),
-      if (_edited)
-        TextSpan(
-            text: " (${AppLocalizations.of(context)!.edited})",
-            style: TextStyle(
-                fontSize: 14,
-                color: AppColors.navLink,
-                fontWeight: FontWeight.w400))
+      // TODO: reaction refactor
+      // if (_edited)
+      //   TextSpan(
+      //       text: " (${AppLocalizations.of(context)!.edited})",
+      //       style: TextStyle(
+      //           fontSize: 14,
+      //           color: AppColors.navLink,
+      //           fontWeight: FontWeight.w400))
     ]);
 
     return RichText(

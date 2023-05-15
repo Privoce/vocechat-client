@@ -816,26 +816,28 @@ class _VoceChatPageState extends State<VoceChatPage>
                             topLeft: Radius.circular(8),
                             topRight: Radius.circular(8))),
                     builder: (context) {
-                      return MsgActionsSheet(
-                          // msgTile: msgTile,
-                          reactions: tileData.chatMsgMNotifier.value.reactions,
-                          onReaction: (reaction) {
-                            VoceSendService()
-                                .sendReaction(
-                                    tileData.chatMsgMNotifier.value, reaction)
-                                .then((succeed) {
-                              Navigator.pop(context);
-                              if (!succeed) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            AppLocalizations.of(context)!
-                                                .networkError)));
-                              }
-                            });
-                          },
-                          chatMsgM: tileData.chatMsgMNotifier.value,
-                          actions: _buildOldLongPressActions(tileData));
+                      // TODO: reaction refactor
+                      return Text("// TODO: reaction refactor");
+                      // return MsgActionsSheet(
+                      //     // msgTile: msgTile,
+                      //     reactions: tileData.chatMsgMNotifier.value.reactions,
+                      //     onReaction: (reaction) {
+                      //       VoceSendService()
+                      //           .sendReaction(
+                      //               tileData.chatMsgMNotifier.value, reaction)
+                      //           .then((succeed) {
+                      //         Navigator.pop(context);
+                      //         if (!succeed) {
+                      //           ScaffoldMessenger.of(context).showSnackBar(
+                      //               SnackBar(
+                      //                   content: Text(
+                      //                       AppLocalizations.of(context)!
+                      //                           .networkError)));
+                      //         }
+                      //       });
+                      //     },
+                      //     chatMsgM: tileData.chatMsgMNotifier.value,
+                      //     actions: _buildOldLongPressActions(tileData));
                     },
                   );
                 },
