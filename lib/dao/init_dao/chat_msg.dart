@@ -855,15 +855,7 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     // m is the notification msg, targetMid is the real msg to be deleted.
     final int targetMid = m.mid;
 
-    await db.delete(ChatMsgM.F_tableName,
-        where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
-    App.logger.info("Msg deleted. Mid: $targetMid");
-
-    // if (deleteCount == 0) {
-    //   // the original message could not be found.
-    // }
-
-    return targetMid;
+    return deleteMsgByMid(targetMid);
   }
 
   /// Set a [ChatMsgM] object with empty detail and [MsgStatus.deleted] status.
@@ -874,13 +866,11 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   /// Returns the [mid] of the deleted message.
   /// Returns -1 if the message could not be found.
   Future<int> deleteMsgByMid(int targetMid) async {
-    final sqlStr =
-        "UPDATE ${ChatMsgM.F_tableName} SET ${ChatMsgM.F_detail} = '',${ChatMsgM.F_status} = 'deleted'  WHERE ${ChatMsgM.F_mid} = $targetMid";
-    final updateCount = await db.rawUpdate(sqlStr);
-
+    final deleteCount = await db.delete(ChatMsgM.F_tableName,
+        where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
     App.logger.info("Msg deleted. Mid: $targetMid");
 
-    if (updateCount == 0) {
+    if (deleteCount == 0) {
       // the original message could not be found.
       return -1;
     }

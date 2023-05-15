@@ -2,8 +2,7 @@ import 'dart:core';
 
 import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-
-import '../../dao/init_dao/reaction.dart';
+import 'package:vocechat_client/dao/init_dao/reaction.dart';
 
 // ignore: must_be_immutable
 class ChatFullMsg extends Equatable {

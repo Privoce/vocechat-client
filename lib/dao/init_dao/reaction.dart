@@ -241,11 +241,23 @@ class ReactionDao extends Dao<ReactionM> {
         }
       } else if (e.type == MsgReactionType.edit) {
         editedText = e.editedText;
+      } else if (e.type == MsgReactionType.delete) {
+        await removeReaction(mid);
+        return null;
       }
     }
 
-    return ReactionData(
-        reactionSet: preliminaryReactionSet, editedText: editedText);
+    if (preliminaryReactionSet.isEmpty && editedText == null) {
+      return null;
+    } else {
+      return ReactionData(
+          reactionSet: preliminaryReactionSet, editedText: editedText);
+    }
+  }
+
+  Future<int> removeReaction(int mid) async {
+    return db.delete(ReactionM.F_tableName,
+        where: "${ReactionM.F_targetMid} = ?", whereArgs: [mid]);
   }
 }
 
