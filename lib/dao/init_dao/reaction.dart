@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/dao.dart';
@@ -220,4 +221,86 @@ class ReactionDao extends Dao<ReactionM> {
   ReactionDao() {
     ReactionM.meta;
   }
+
+  Future<ReactionData?> getReactionList(int mid) async {
+    final reactions = await super
+        .query(where: "${ReactionM.F_targetMid} = ?", whereArgs: [mid]);
+    if (reactions.isEmpty) return null;
+
+    Set<SingleReaction> preliminaryReactionSet = {};
+    String? editedText;
+    for (var e in reactions) {
+      if (e.type == MsgReactionType.action) {
+        final singleReaction =
+            SingleReaction(emoji: e.actionEmoji, fromUid: e.fromUid);
+
+        if (preliminaryReactionSet.contains(singleReaction)) {
+          preliminaryReactionSet.remove(singleReaction);
+        } else {
+          preliminaryReactionSet.add(singleReaction);
+        }
+      } else if (e.type == MsgReactionType.edit) {
+        editedText = e.editedText;
+      }
+    }
+
+    return ReactionData(
+        reactionSet: preliminaryReactionSet, editedText: editedText);
+  }
+}
+
+// ignore: must_be_immutable
+class ReactionData extends Equatable {
+  Set<SingleReaction>? reactionSet = {};
+
+  String? editedText;
+
+  Map<String, int> _reactionCountMap = {};
+
+  void addReaction(SingleReaction reaction) {
+    reactionSet ??= {};
+    if (reactionSet!.contains(reaction)) {
+      reactionSet!.remove(reaction);
+      if (reactionSet!.isEmpty) {
+        reactionSet = null;
+      }
+    } else {
+      reactionSet!.add(reaction);
+    }
+    updateReactionCountMap();
+  }
+
+  void updateReactionCountMap() {
+    _reactionCountMap = {};
+    if (reactionSet == null || reactionSet!.isEmpty) return;
+
+    for (var reaction in reactionSet!) {
+      if (_reactionCountMap.containsKey(reaction.emoji)) {
+        _reactionCountMap[reaction.emoji] =
+            _reactionCountMap[reaction.emoji]! + 1;
+      } else {
+        _reactionCountMap[reaction.emoji] = 1;
+      }
+    }
+  }
+
+  Map<String, int> get reactionCountMap => _reactionCountMap;
+  bool get hasReaction => reactionSet != null && reactionSet!.isNotEmpty;
+  bool get hasEditedText => editedText != null && editedText!.isNotEmpty;
+
+  /// A comprehensive data model of reactionMap and editedText
+  ReactionData({this.reactionSet, this.editedText});
+
+  @override
+  List<Object?> get props => [reactionSet, editedText];
+}
+
+class SingleReaction extends Equatable {
+  final String emoji;
+  final int fromUid;
+
+  const SingleReaction({required this.emoji, required this.fromUid});
+
+  @override
+  List<Object?> get props => [emoji, fromUid];
 }

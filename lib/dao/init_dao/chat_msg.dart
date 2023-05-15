@@ -816,8 +816,6 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   }
 
   Future<ChatMsgM?> getDmLatestMsgM(int uid) async {
-    // String sqlStr =
-    //     'SELECT MAX(${ChatMsgM.F_createdAt}), * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid';
     String sqlStr =
         'SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid AND ${ChatMsgM.F_mid} = (SELECT MAX(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid)';
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
