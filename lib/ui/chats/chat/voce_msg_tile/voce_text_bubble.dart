@@ -23,15 +23,19 @@ class VoceTextBubble extends StatelessWidget {
     _edited = chatMsgM.reactionData?.hasEditedText ?? false;
     _hasMention = chatMsgM.hasMention;
 
-    switch (chatMsgM.detailType) {
-      case MsgDetailType.normal:
-        _content = chatMsgM.msgNormal!.content;
-        break;
-      case MsgDetailType.reply:
-        _content = chatMsgM.msgReply!.content;
-        break;
-      default:
-        _content = chatMsgM.msgNormal!.content;
+    if (chatMsgM.reactionData?.hasEditedText == true) {
+      _content = chatMsgM.reactionData!.editedText!;
+    } else {
+      switch (chatMsgM.detailType) {
+        case MsgDetailType.normal:
+          _content = chatMsgM.msgNormal!.content;
+          break;
+        case MsgDetailType.reply:
+          _content = chatMsgM.msgReply!.content;
+          break;
+        default:
+          _content = chatMsgM.msgNormal!.content;
+      }
     }
 
     _normalStyle = TextStyle(

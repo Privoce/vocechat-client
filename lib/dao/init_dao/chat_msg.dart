@@ -430,22 +430,9 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       App.logger.info("Chat Msg added. m: ${m.values}");
     }
 
-    return m;
-  }
+    final reactionData = await ReactionDao().getReactions(m.mid);
 
-  Future<ChatMsgM> addOrUpdateByMid(ChatMsgM m) async {
-    ChatMsgM? old =
-        await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [m.mid]);
-    if (old != null) {
-      m.id = old.id;
-      m.localMid = old.localMid;
-      m.createdAt = old.createdAt;
-      await super.update(m);
-    } else {
-      await super.add(m);
-    }
-    App.logger.info("Chat Msg saved. m: ${m.values}");
-    return m;
+    return m..reactionData = reactionData;
   }
 
   Future<bool> updateMsgByLocalMid(ChatMsgM msgM) async {
@@ -477,90 +464,18 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return false;
   }
 
-  // Future<ChatMsgM?> editMsgByMid(
-  //     int mid, String newContent, MsgStatus status) async {
-  //   ChatMsgM? old =
-  //       await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
-  //   if (old != null) {
-  //     Map oldDetail = json.decode(old.detail);
-  //     oldDetail["content"] = newContent;
-  //     old.detail = json.encode(oldDetail);
-  //     old._edited = 1;
-  //     old.statusStr = status.name;
-
-  //     await super.update(old);
-  //     App.logger.info("ChatMsg Edit Updated. msg: ${old.values}");
-  //     return old;
-  //   }
-  //   return null;
-  // }
-
   Future<ChatMsgM?> pinMsgByMid(int mid, int uid) async {
     try {
       final sqlstr = 'UPDATE ${ChatMsgM.F_tableName} SET ${ChatMsgM.F_pin} = '
           '$uid WHERE ${ChatMsgM.F_mid} = $mid RETURNING *';
       List<Map<String, dynamic>> result = await db.rawQuery(sqlstr);
-      return ChatMsgM.fromMap(result.first);
+      final newMsgM = ChatMsgM.fromMap(result.first);
+      final reactionData = await ReactionDao().getReactions(mid);
+      return newMsgM..reactionData = reactionData;
     } catch (e) {
       App.logger.severe(e);
       return null;
     }
-  }
-
-  // Future<ChatMsgM?> reactMsgByMid(
-  //     int mid, int fromUid, String reaction, int time) async {
-  //   ChatMsgM? old =
-  //       await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [mid]);
-  //   if (old != null) {
-  //     var reactions = old.reactions;
-
-  //     final r = ReactionInfo(fromUid, reaction, time);
-
-  //     if (reactions.contains(r)) {
-  //       reactions.remove(r);
-  //     } else {
-  //       reactions.add(r);
-  //     }
-
-  //     final reactionList = reactions.map((e) => json.encode(e)).toList();
-  //     old._reactions = reactions.isEmpty ? "" : "$reactionList";
-  //     await super.update(old);
-  //     App.logger.info(
-  //         "ChatMsg Reactions Updated. mid: ${old.mid}, localMid: ${old.localMid}");
-  //     return old;
-  //   }
-
-  //   return null;
-  // }
-
-  /// Get a list of DM messages by dmUid (uid).
-  ///
-  /// Result ordered by localMid, ascending order.
-  Future<List<ChatMsgM>?> getDmMsgListByDmUid(int dmUid) async {
-    return super.query(
-        where: "${ChatMsgM.F_dmUid} = ?",
-        whereArgs: [dmUid],
-        orderBy: "${ChatMsgM.F_mid} ASC");
-  }
-
-  /// Get a list of DM messages by dmUid (uid).
-  ///
-  /// Result ordered by createdAt, ascending order.
-  Future<List<ChatMsgM>?> getAllDmMsgList() async {
-    return super.query(
-        where: "${ChatMsgM.F_gid} = ?",
-        whereArgs: [-1],
-        orderBy: "${ChatMsgM.F_mid} ASC");
-  }
-
-  /// Get a list of group messages by group Id (gid).
-  ///
-  /// Result ordered by localMid, ascending order.
-  Future<List<ChatMsgM>?> getGroupMsgListByGid(int gid) async {
-    return super.query(
-        where: "${ChatMsgM.F_gid} = ?",
-        whereArgs: [gid],
-        orderBy: "${ChatMsgM.F_mid} ASC");
   }
 
   /// Get the number of messages in a chat using gid for channels and uid for dms.
@@ -598,12 +513,18 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return -1;
   }
 
-  Future<ChatMsgM?> getMsgByMid(int mid) async {
-    return super.first(where: "${ChatMsgM.F_mid} = ?", whereArgs: [mid]);
+  Future<ChatMsgM?> getMsgByMid(int mid, {bool withReactions = true}) async {
+    final msg =
+        await super.first(where: "${ChatMsgM.F_mid} = ?", whereArgs: [mid]);
+    if (withReactions && msg != null) {
+      final reactionData = await ReactionDao().getReactions(mid);
+      msg.reactionData = reactionData;
+    }
+    return msg;
   }
 
   Future<List<ChatMsgM>?> getPreImageMsgBeforeMid(int mid,
-      {int? limit, int? uid, int? gid}) async {
+      {int? limit, int? uid, int? gid, bool withReactions = false}) async {
     String chatIdStr = "";
     if (uid != null && uid >= 0) {
       chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
@@ -627,13 +548,21 @@ class ChatMsgDao extends Dao<ChatMsgM> {
           .whereType<ChatMsgM>()
           .toList();
 
+      if (withReactions) {
+        final dao = ReactionDao();
+        for (var each in msgList) {
+          final reactionData = await dao.getReactions(each.mid);
+          each.reactionData = reactionData;
+        }
+      }
+
       return msgList;
     }
     return null;
   }
 
   Future<List<ChatMsgM>?> getNextImageMsgAfterMid(int mid,
-      {int? limit, int? uid, int? gid}) async {
+      {int? limit, int? uid, int? gid, bool withReactions = false}) async {
     String chatIdStr = "";
     if (uid != null && uid >= 0) {
       chatIdStr = "${ChatMsgM.F_dmUid} = $uid";
@@ -656,14 +585,30 @@ class ChatMsgDao extends Dao<ChatMsgM> {
           .whereType<ChatMsgM>()
           .toList();
 
+      if (withReactions) {
+        final dao = ReactionDao();
+        for (var each in msgList) {
+          final reactionData = await dao.getReactions(each.mid);
+          each.reactionData = reactionData;
+        }
+      }
+
       return msgList;
     }
     return null;
   }
 
-  Future<ChatMsgM?> getMsgBylocalMid(String localMid) async {
-    return super
+  Future<ChatMsgM?> getMsgBylocalMid(String localMid,
+      {bool withReactions = false}) async {
+    final msg = await super
         .first(where: "${ChatMsgM.F_localMid} = ?", whereArgs: [localMid]);
+
+    if (withReactions && msg != null) {
+      final reactionData = await ReactionDao().getReactions(msg.mid);
+      msg.reactionData = reactionData;
+    }
+
+    return msg;
   }
 
   /// Get the max message id in App, including 'deleted' messages.
@@ -818,22 +763,32 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return "";
   }
 
-  Future<ChatMsgM?> getDmLatestMsgM(int uid) async {
+  Future<ChatMsgM?> getDmLatestMsgM(int uid,
+      {bool withReactions = false}) async {
     String sqlStr =
         'SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid AND ${ChatMsgM.F_mid} = (SELECT MAX(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $uid)';
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
     if (records.isNotEmpty) {
-      return ChatMsgM.fromMap(records.first);
+      final msg = ChatMsgM.fromMap(records.first);
+      if (withReactions) {
+        msg.reactionData = await ReactionDao().getReactions(msg.mid);
+      }
+      return msg;
     }
     return null;
   }
 
-  Future<ChatMsgM?> getChannelLatestMsgM(int gid) async {
+  Future<ChatMsgM?> getChannelLatestMsgM(int gid,
+      {bool withReactions = false}) async {
     String sqlStr =
         'SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid} = $gid AND ${ChatMsgM.F_mid} = (SELECT MAX(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid} = $gid)';
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
     if (records.isNotEmpty) {
-      return ChatMsgM.fromMap(records.first);
+      final msg = ChatMsgM.fromMap(records.first);
+      if (withReactions) {
+        msg.reactionData = await ReactionDao().getReactions(msg.mid);
+      }
+      return msg;
     }
     return null;
   }
@@ -921,35 +876,6 @@ class ChatMsgDao extends Dao<ChatMsgM> {
       return -1;
     }
   }
-  // Future<ChatMsgM> deleteMsgByMid(ChatMsgM m) async {
-  //   final targetMid = json.decode(m.detail)["mid"];
-  //   if (targetMid == null) {
-  //     await super.add(m);
-  //     App.logger
-  //         .info("Deleted Msg Added. mid: ${m.mid}, localMid: ${m.localMid}");
-  //     return m;
-  //   }
-
-  //   ChatMsgM? old =
-  //       await first(where: '${ChatMsgM.F_mid} = ?', whereArgs: [targetMid]);
-  //   if (old != null) {
-  //     old.status = MsgStatus.success.name;
-  //     old.detail = m.detail;
-  //     old._reactions = "";
-  //     old.info = "";
-  //     old._type = MsgType.deleted.name;
-
-  //     await super.update(old);
-  //     App.logger
-  //         .info("Chat Msg removed. mid: ${old.mid}, localMid: ${old.localMid}");
-  //     return old;
-  //   } else {
-  //     await super.add(m);
-  //     App.logger
-  //         .info("Deleted Msg Added. mid: ${m.mid}, localMid: ${m.localMid}");
-  //     return m;
-  //   }
-  // }
 
   @override
   Future<PageData<ChatMsgM>> paginate(PageMeta pageMeta,
@@ -968,26 +894,32 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   }
 
   Future<PageData<ChatMsgM>> paginateLastByGid(
-      PageMeta pageMeta, String orderBy, int gid) async {
+      PageMeta pageMeta, String orderBy, int gid,
+      {bool withReactions = false}) async {
     final msgs = await paginateLast(pageMeta, orderBy,
         where: '${ChatMsgM.F_gid} = ?', whereArgs: [gid]);
 
-    final reactionDao = ReactionDao();
-    for (var msg in msgs.records) {
-      msg.reactionData = await reactionDao.getReactions(msg.mid);
+    if (withReactions) {
+      final reactionDao = ReactionDao();
+      for (var msg in msgs.records) {
+        msg.reactionData = await reactionDao.getReactions(msg.mid);
+      }
     }
 
     return msgs;
   }
 
   Future<PageData<ChatMsgM>> paginateLastByDmUid(
-      PageMeta pageMeta, String orderBy, int dmUid) async {
+      PageMeta pageMeta, String orderBy, int dmUid,
+      {bool withReactions = false}) async {
     final msgs = await paginateLast(pageMeta, orderBy,
         where: '${ChatMsgM.F_dmUid} = ?', whereArgs: [dmUid]);
 
-    final reactionDao = ReactionDao();
-    for (var msg in msgs.records) {
-      msg.reactionData = await reactionDao.getReactions(msg.mid);
+    if (withReactions) {
+      final reactionDao = ReactionDao();
+      for (var msg in msgs.records) {
+        msg.reactionData = await reactionDao.getReactions(msg.mid);
+      }
     }
 
     return msgs;

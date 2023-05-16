@@ -104,10 +104,12 @@ class ChatPageController {
     PageData<ChatMsgM> pageData;
     if (isChannel) {
       pageData = await ChatMsgDao().paginateLastByGid(
-          _pageMeta..pageNumber += 1, '', groupInfoMNotifier!.value.gid);
+          _pageMeta..pageNumber += 1, '', groupInfoMNotifier!.value.gid,
+          withReactions: true);
     } else if (isUser) {
       pageData = await ChatMsgDao().paginateLastByDmUid(
-          _pageMeta..pageNumber += 1, '', userInfoMNotifier!.value.uid);
+          _pageMeta..pageNumber += 1, '', userInfoMNotifier!.value.uid,
+          withReactions: true);
     } else {
       throw Exception('Neither channel nor user');
     }
@@ -218,7 +220,6 @@ class ChatPageController {
     }
 
     final tileData = MsgTileData(chatMsgM: chatMsgM, userInfoM: userInfoM!);
-    // await tileData.localPrepare();
 
     return tileData;
   }
@@ -227,10 +228,12 @@ class ChatPageController {
     PageData<ChatMsgM> pageData;
     if (isChannel) {
       pageData = await ChatMsgDao().paginateLastByGid(
-          _pageMeta..pageNumber += 1, '', groupInfoMNotifier!.value.gid);
+          _pageMeta..pageNumber += 1, '', groupInfoMNotifier!.value.gid,
+          withReactions: true);
     } else if (isUser) {
       pageData = await ChatMsgDao().paginateLastByDmUid(
-          _pageMeta..pageNumber += 1, '', userInfoMNotifier!.value.uid);
+          _pageMeta..pageNumber += 1, '', userInfoMNotifier!.value.uid,
+          withReactions: true);
     } else {
       throw Exception('Neither channel nor user');
     }
@@ -239,13 +242,9 @@ class ChatPageController {
     // will change the length of the list.
     int insertIndex = tileDataList.length;
 
+    // As it is a multi-message insert, [insert] function is not suitable.
     List<ChatMsgM> validMsgList =
         await filterAndDataInsertMsgs(pageData.records.reversed.toList());
-
-    // TODO:
-    // if (validMsgList.length < _pageMeta.pageSize && !_pageMeta.nextPage()) {
-    //   await loadServerHistory();
-    // }
 
     for (int i = 0; i < validMsgList.length; i++) {
       listKey.currentState
@@ -400,8 +399,6 @@ class ChatPageController {
       removeAt(index);
     }
   }
-
-  // load server history
 }
 
 typedef RemovedItemBuilder<T> = Widget Function(

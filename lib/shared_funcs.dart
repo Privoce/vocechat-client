@@ -10,7 +10,6 @@ import 'package:vocechat_client/api/lib/token_api.dart';
 import 'package:vocechat_client/api/models/token/token_renew_request.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
