@@ -505,14 +505,7 @@ class VoceChatService {
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
-    // Do filtering if SSE pushes duplicated messages.
-    // (Due to SSE reconnection error.)
     if (chatMsg.mid < 0) {
-      return;
-    }
-
-    final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.statusStr == MsgStatus.success.name) {
       return;
     }
 
@@ -539,19 +532,12 @@ class VoceChatService {
     }
   }
 
-  Future<void> handleHistoryChatMsg(Map<String, dynamic> chatJson) async {
+  Future<void> handleServerHistory(Map<String, dynamic> chatJson) async {
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
     App.logger.info(chatJson);
 
-    // Do filtering if SSE pushes duplicated messages.
-    // (Due to SSE reconnection error.)
     if (chatMsg.mid < 0) {
-      return;
-    }
-
-    final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.statusStr == MsgStatus.success.name) {
       return;
     }
 

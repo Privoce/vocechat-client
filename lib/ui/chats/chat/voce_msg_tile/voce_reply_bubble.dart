@@ -105,7 +105,6 @@ class _VoceReplyBubbleState extends State<VoceReplyBubble> {
 
   Widget _buildContentBubble(ChatMsgM repliedMsgM) {
     final key = ValueKey(repliedMsgM.localMid);
-    print("repliedMsgM: ${repliedMsgM.msgNormal?.content}");
 
     if (repliedMsgM.isTextMsg) {
       return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
@@ -116,7 +115,7 @@ class _VoceReplyBubbleState extends State<VoceReplyBubble> {
       if (repliedMsgM.isImageMsg) {
         return VoceTileImageBubble.data(
           key: key,
-          imageFile: widget.tileData!.repliedImageFile!,
+          imageFile: widget.tileData?.repliedImageFile,
           isReply: true,
           getImageList: () =>
               VoceTileImageBubble.defaultGetImageList(repliedMsgM),

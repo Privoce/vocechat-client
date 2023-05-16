@@ -50,6 +50,8 @@ class ChatMsgM extends Equatable with M {
         return MsgStatus.readyToSend;
       case "sending":
         return MsgStatus.sending;
+      case "deleted":
+        return MsgStatus.deleted;
       default:
         return MsgStatus.success;
     }
@@ -309,11 +311,9 @@ class ChatMsgM extends Equatable with M {
     fromUid = old.fromUid;
     dmUid = old.dmUid;
     gid = old.dmUid;
-    // _edited = old._edited;
     statusStr = old.statusStr;
     createdAt = old.createdAt;
     detail = old.detail;
-    // _reactions = old._reactions;
     pin = old.pin;
   }
 
@@ -332,7 +332,7 @@ class ChatMsgM extends Equatable with M {
     }
     gid = chatMsg.target["gid"] ?? -1;
 
-    this.statusStr = status.name;
+    statusStr = status.name;
     createdAt = chatMsg.createdAt;
   }
 
@@ -356,19 +356,12 @@ class ChatMsgM extends Equatable with M {
     if (map.containsKey(F_gid)) {
       m.gid = map[F_gid];
     }
-    // if (map.containsKey(F_edited)) {
-    //   m._edited = map[F_edited];
-    // }
-
     if (map.containsKey(F_status)) {
       m.statusStr = map[F_status];
     }
     if (map.containsKey(F_detail)) {
       m.detail = map[F_detail];
     }
-    // if (map.containsKey(F_reactions)) {
-    //   m._reactions = map[F_reactions];
-    // }
     if (map.containsKey(F_pin)) {
       m.pin = map[F_pin];
     }
@@ -385,10 +378,8 @@ class ChatMsgM extends Equatable with M {
   static const F_fromUid = 'from_uid';
   static const F_dmUid = 'dm_uid';
   static const F_gid = 'gid';
-  // static const F_edited = 'edited';
   static const F_status = 'status';
   static const F_detail = 'detail';
-  // static const F_reactions = 'reactions';
   static const F_pin = 'pin';
   static const F_createdAt = 'created_at';
 
@@ -399,10 +390,8 @@ class ChatMsgM extends Equatable with M {
         ChatMsgM.F_fromUid: fromUid,
         ChatMsgM.F_dmUid: dmUid,
         ChatMsgM.F_gid: gid,
-        // ChatMsgM.F_edited: _edited,
         ChatMsgM.F_status: statusStr,
         ChatMsgM.F_detail: detail,
-        // ChatMsgM.F_reactions: _reactions,
         ChatMsgM.F_pin: pin,
         ChatMsgM.F_createdAt: createdAt,
       };
@@ -834,14 +823,16 @@ class ChatMsgDao extends Dao<ChatMsgM> {
 
   /// Set a [ChatMsgM] object with empty detail and [MsgStatus.deleted] status.
   ///
-  ///
-  /// The message should be removed/hidden from UI, but still stays in database,
-  /// with basic information like [ChatMsgM.mid] and [ChatMsgM.createdAt].
   /// Returns the [mid] of the deleted message.
   /// Returns -1 if the message could not be found.
   Future<int> deleteMsgByMid(int targetMid) async {
     final deleteCount = await db.delete(ChatMsgM.F_tableName,
         where: "${ChatMsgM.F_mid} = ?", whereArgs: [targetMid]);
+    // final updateCount = await db.update(ChatMsgM.F_tableName,
+    //     {ChatMsgM.F_detail: "", ChatMsgM.F_status: MsgStatus.deleted},
+    //     where: "${ChatMsgM.F_mid} = ?",
+    //     whereArgs: [targetMid],
+    //     conflictAlgorithm: ConflictAlgorithm.replace);
     App.logger.info("Msg deleted. Mid: $targetMid");
 
     if (deleteCount == 0) {

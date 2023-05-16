@@ -101,33 +101,7 @@ class ChatPageController {
   /// Includes first page of messages and the user info map.
   /// Should be called before the chat page is built, then pass into the chat page.
   Future<void> prepare() async {
-    PageData<ChatMsgM> pageData;
-    if (isChannel) {
-      pageData = await ChatMsgDao().paginateLastByGid(
-          _pageMeta..pageNumber += 1, '', groupInfoMNotifier!.value.gid,
-          withReactions: true);
-    } else if (isUser) {
-      pageData = await ChatMsgDao().paginateLastByDmUid(
-          _pageMeta..pageNumber += 1, '', userInfoMNotifier!.value.uid,
-          withReactions: true);
-    } else {
-      throw Exception('Neither channel nor user');
-    }
-
-    try {
-      final maxMid = pageData.records.last.mid;
-      updateReadIndex(maxMid);
-    } catch (e) {
-      App.logger.warning(e);
-    }
-
-    await filterAndDataInsertMsgs(pageData.records.reversed.toList());
-
-    // Need more tests to see if it works.
-    while (tileDataList.length < _pageMeta.pageSize && _pageMeta.hasNextPage) {
-      // recursive call prepare
-      await prepare();
-    }
+    await loadHistory();
   }
 
   Future<void> updateReadIndex(int mid) async {
@@ -161,7 +135,7 @@ class ChatPageController {
   ///
   /// Remove expired messages. For duplicated messages, substitude old with the
   /// new one. Can be only used in [prepare] due to message ordering.
-  Future<List<ChatMsgM>> filterAndDataInsertMsgs(List<ChatMsgM> msgList) async {
+  Future<List<ChatMsgM>> removeExpiredMsgs(List<ChatMsgM> msgList) async {
     final msgListCopy = List<ChatMsgM>.from(msgList);
 
     for (ChatMsgM chatMsgM in msgListCopy) {
@@ -169,20 +143,7 @@ class ChatPageController {
         // not null == expired == should be removed from list.
         msgList.remove(chatMsgM);
       } else {
-        // Valid
-        final tileData = await prepareTileData(chatMsgM);
-        if (_localMidSet.contains(tileData.chatMsgMNotifier.value.localMid)) {
-          // duplicated
-          final index = tileDataList.indexWhere((element) =>
-              element.chatMsgMNotifier.value.mid ==
-              tileData.chatMsgMNotifier.value.mid);
-          if (index >= 0) {
-            tileDataList[index] = tileData;
-          }
-        } else {
-          _localMidSet.add(tileData.chatMsgMNotifier.value.localMid);
-          tileDataList.add(tileData);
-        }
+        // Do nothing. Do massive insert after [loadHistory] finishes.
       }
     }
 
@@ -226,6 +187,46 @@ class ChatPageController {
   }
 
   Future<void> loadHistory() async {
+    final msgList = <ChatMsgM>[];
+
+    final insertIndex = tileDataList.length;
+
+    // Recursively load local messages first, then recursively load server
+    // messages, until [msgList.length] reaches [defaultPageSize].
+    await _recursivelyLoadHistory(msgList);
+
+    // TODO: recursivelyLoadServerHistory
+    // until [msgList.length] reaches [defaultPageSize], or there is no result
+    // returned from server.
+
+    try {
+      msgList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final maxMid = msgList.first.mid;
+      updateReadIndex(maxMid);
+    } catch (e) {
+      App.logger.warning(e);
+    }
+
+    for (var msg in msgList) {
+      final tileData = await prepareTileData(msg);
+      if (_localMidSet.contains(tileData.chatMsgMNotifier.value.localMid)) {
+        // duplicated
+        final index = tileDataList.indexWhere((element) =>
+            element.chatMsgMNotifier.value.mid ==
+            tileData.chatMsgMNotifier.value.mid);
+        if (index >= 0) {
+          tileDataList[index] = tileData;
+        }
+      } else {
+        _localMidSet.add(tileData.chatMsgMNotifier.value.localMid);
+        tileDataList.add(tileData);
+      }
+    }
+
+    listKey.currentState?.insertItem(insertIndex);
+  }
+
+  Future<void> _recursivelyLoadHistory(List<ChatMsgM> msgList) async {
     PageData<ChatMsgM> pageData;
     if (isChannel) {
       pageData = await ChatMsgDao().paginateLastByGid(
@@ -239,26 +240,12 @@ class ChatPageController {
       throw Exception('Neither channel nor user');
     }
 
-    // Must take note the index before [filterAndDataInsertMsgs] as this function
-    // will change the length of the list.
-    int insertIndex = tileDataList.length;
+    msgList.addAll(await removeExpiredMsgs(pageData.records.reversed.toList()));
 
-    // As it is a multi-message insert, [insert] function is not suitable.
-    List<ChatMsgM> validMsgList =
-        await filterAndDataInsertMsgs(pageData.records.reversed.toList());
-
-    for (int i = 0; i < validMsgList.length; i++) {
-      listKey.currentState
-          ?.insertItem(insertIndex + i, duration: Duration(milliseconds: 300));
+    if (msgList.length < _pageMeta.pageSize && _pageMeta.hasNextPage) {
+      _pageMeta.pageNumber -= 1;
+      await _recursivelyLoadHistory(msgList);
     }
-
-    // Need more tests to see if it works.
-    // while (validMsgList.length < _pageMeta.pageSize && _pageMeta.nextPage()) {
-    //   // recursive call prepare
-    //   validMsgList.addAll(await loadHistory());
-    // }
-
-    // listKey.currentState?.
   }
 
   // Future<List<ChatMsgM>> loadServerHistory() async {

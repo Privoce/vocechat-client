@@ -198,7 +198,6 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
   Widget build(BuildContext context) {
     if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
       // The constrains will remain the same as the original image.
-      print(width != null && height != null);
       return Container(
           constraints: const BoxConstraints(maxHeight: 140),
           child: (width != null && height != null)
