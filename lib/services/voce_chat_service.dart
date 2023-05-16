@@ -1427,7 +1427,11 @@ class VoceChatService {
   Future<void> cumulateMsg(ChatMsgM chatMsgM) async {
     if (afterReady) {
       await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
-        fireMsg(dbMsgM, afterReady);
+        await ReactionDao().getReactions(dbMsgM.mid).then((reactions) {
+          dbMsgM.reactionData = reactions;
+          fireMsg(dbMsgM, afterReady);
+        });
+
         await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, dbMsgM.mid);
       });
     } else {
@@ -1480,7 +1484,12 @@ class VoceChatService {
                 latestMsgM = await dao.getDmLatestMsgM(uid);
               }
               if (latestMsgM != null) {
-                fireMsg(latestMsgM, afterReady, snippetOnly: true);
+                await ReactionDao()
+                    .getReactions(latestMsgM.mid)
+                    .then((reactions) {
+                  latestMsgM!.reactionData = reactions;
+                  fireMsg(latestMsgM, afterReady, snippetOnly: true);
+                });
               }
             }
           });
@@ -1491,8 +1500,17 @@ class VoceChatService {
         final reactionM = ReactionM.fromChatMsg(chatMsg);
         if (reactionM != null) {
           if (afterReady) {
-            await ReactionDao().addOrReplace(reactionM).then((savedReactionM) {
-              fireReaction(savedReactionM, afterReady);
+            await ReactionDao()
+                .addOrReplace(reactionM)
+                .then((savedReactionM) async {
+              final targetMid = savedReactionM.targetMid;
+              final originalMsgM = await ChatMsgDao().getMsgByMid(targetMid);
+              final reactionData = await ReactionDao().getReactions(targetMid);
+
+              if (originalMsgM != null) {
+                originalMsgM.reactionData = reactionData;
+                fireMsg(originalMsgM, afterReady);
+              }
             });
           } else {
             reactionMap.addAll({reactionM.mid: reactionM});
@@ -1522,9 +1540,6 @@ class VoceChatService {
       chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
-      // await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
-      //   fireMsg(dbMsgM, afterReady);
-      // });
       cumulateMsg(chatMsgM);
     } catch (e) {
       App.logger.severe(e);

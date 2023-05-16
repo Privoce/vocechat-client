@@ -2,6 +2,7 @@
 
 import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
+import 'package:vocechat_client/api/models/msg/reaction_info.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/dao.dart';
 
@@ -222,22 +223,22 @@ class ReactionDao extends Dao<ReactionM> {
     ReactionM.meta;
   }
 
-  Future<ReactionData?> getReactionList(int mid) async {
+  Future<ReactionData?> getReactions(int mid) async {
     final reactions = await super
         .query(where: "${ReactionM.F_targetMid} = ?", whereArgs: [mid]);
     if (reactions.isEmpty) return null;
 
-    Set<SingleReaction> preliminaryReactionSet = {};
+    Set<ReactionInfo> preliminaryReactionSet = {};
     String? editedText;
     for (var e in reactions) {
       if (e.type == MsgReactionType.action) {
-        final singleReaction =
-            SingleReaction(emoji: e.actionEmoji, fromUid: e.fromUid);
+        final reactionInfo = ReactionInfo(
+            emoji: e.actionEmoji, fromUid: e.fromUid, createdAt: e.createdAt);
 
-        if (preliminaryReactionSet.contains(singleReaction)) {
-          preliminaryReactionSet.remove(singleReaction);
+        if (preliminaryReactionSet.contains(reactionInfo)) {
+          preliminaryReactionSet.remove(reactionInfo);
         } else {
-          preliminaryReactionSet.add(singleReaction);
+          preliminaryReactionSet.add(reactionInfo);
         }
       } else if (e.type == MsgReactionType.edit) {
         editedText = e.editedText;
@@ -263,13 +264,13 @@ class ReactionDao extends Dao<ReactionM> {
 
 // ignore: must_be_immutable
 class ReactionData extends Equatable {
-  Set<SingleReaction>? reactionSet = {};
+  Set<ReactionInfo>? reactionSet = {};
 
   String? editedText;
 
   Map<String, int> _reactionCountMap = {};
 
-  void addReaction(SingleReaction reaction) {
+  void addReaction(ReactionInfo reaction) {
     reactionSet ??= {};
     if (reactionSet!.contains(reaction)) {
       reactionSet!.remove(reaction);
@@ -305,14 +306,4 @@ class ReactionData extends Equatable {
 
   @override
   List<Object?> get props => [reactionSet, editedText];
-}
-
-class SingleReaction extends Equatable {
-  final String emoji;
-  final int fromUid;
-
-  const SingleReaction({required this.emoji, required this.fromUid});
-
-  @override
-  List<Object?> get props => [emoji, fromUid];
 }

@@ -11,7 +11,7 @@ class MsgActionsSheet extends StatelessWidget {
   // final Widget msgTile;
   final void Function(String reaction) onReaction;
   final List<MsgActionTile> actions;
-  final Set<ReactionInfo> reactions;
+  final Set<ReactionInfo>? existingReactions;
   final ChatMsgM chatMsgM;
 
   late final Set<String> _reactions = {};
@@ -25,11 +25,13 @@ class MsgActionsSheet extends StatelessWidget {
       // required this.msgTile,
       required this.onReaction,
       required this.actions,
-      required this.reactions,
+      required this.existingReactions,
       required this.chatMsgM}) {
-    for (var react in reactions) {
-      if (react.fromUid == App.app.userDb!.uid) {
-        _reactions.add(react.reaction);
+    if (existingReactions != null) {
+      for (var react in existingReactions!) {
+        if (react.fromUid == App.app.userDb!.uid) {
+          _reactions.add(react.emoji);
+        }
       }
     }
   }

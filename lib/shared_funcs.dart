@@ -106,28 +106,6 @@ class SharedFuncs {
         : '';
   }
 
-  static SendType getSendType(ChatMsgM chatMsgM) {
-    // TODO: reaction refactor
-    // if (chatMsgM.detailType == MsgDetailType.normal &&
-    //     (chatMsgM.detailContentType == MsgContentType.text ||
-    //         chatMsgM.detailContentType == MsgContentType.markdown) &&
-    //     !chatMsgM.edited) {
-    //   return SendType.normal;
-    // } else
-    if (chatMsgM.detailContentType == MsgContentType.file) {
-      return SendType.file;
-    } else if (chatMsgM.detailType == MsgDetailType.reply) {
-      return SendType.reply;
-    }
-    // TODO: reaction refactor
-    // else if (chatMsgM.detailType == MsgDetailType.normal &&
-    //     chatMsgM.detailContentType == MsgContentType.text &&
-    //     chatMsgM.edited) {
-    //   return SendType.edit;
-    // }
-    return SendType.normal;
-  }
-
   static Future<String> getAppVersion({bool withBuildNum = false}) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     String version = packageInfo.version;

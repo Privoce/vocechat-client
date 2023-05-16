@@ -3,14 +3,15 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoceTextBubble extends StatelessWidget {
   final ChatMsgM chatMsgM;
 
   late final String _content;
-  // TODO: reaction refactor
-  // late final bool _edited;
+
+  late final bool _edited;
   late final bool _hasMention;
   late final TextStyle _normalStyle;
   late final TextStyle _mentionStyle;
@@ -19,8 +20,7 @@ class VoceTextBubble extends StatelessWidget {
 
   VoceTextBubble({Key? key, required this.chatMsgM, this.maxLines})
       : super(key: key) {
-        // TODO: reaction refactor
-    // _edited = chatMsgM.edited;
+    _edited = chatMsgM.reactionData?.hasEditedText ?? false;
     _hasMention = chatMsgM.hasMention;
 
     switch (chatMsgM.detailType) {
@@ -84,14 +84,13 @@ class VoceTextBubble extends StatelessWidget {
             color: AppColors.coolGrey700,
             fontWeight: FontWeight.w400),
       ),
-      // TODO: reaction refactor
-      // if (_edited)
-      //   TextSpan(
-      //       text: " (${AppLocalizations.of(context)!.edited})",
-      //       style: TextStyle(
-      //           fontSize: 14,
-      //           color: AppColors.navLink,
-      //           fontWeight: FontWeight.w400))
+      if (_edited)
+        TextSpan(
+            text: " (${AppLocalizations.of(context)!.edited})",
+            style: TextStyle(
+                fontSize: 14,
+                color: AppColors.navLink,
+                fontWeight: FontWeight.w400))
     ]);
 
     return RichText(

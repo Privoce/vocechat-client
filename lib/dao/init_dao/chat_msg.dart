@@ -7,11 +7,11 @@ import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/msg/msg_reaction.dart';
 import 'package:vocechat_client/api/models/msg/msg_reply.dart';
-import 'package:vocechat_client/api/models/msg/reaction_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/reaction.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/task_queue.dart';
@@ -30,6 +30,9 @@ class ChatMsgM with M {
   String detail = ""; // only normal msg json.
   // String _reactions = ""; // ChatMsgReactions
   int pin = 0;
+
+  // Following not included in db
+  ReactionData? reactionData;
 
   set status(MsgStatus status) {
     statusStr = status.name;
@@ -966,13 +969,27 @@ class ChatMsgDao extends Dao<ChatMsgM> {
 
   Future<PageData<ChatMsgM>> paginateLastByGid(
       PageMeta pageMeta, String orderBy, int gid) async {
-    return await paginateLast(pageMeta, orderBy,
+    final msgs = await paginateLast(pageMeta, orderBy,
         where: '${ChatMsgM.F_gid} = ?', whereArgs: [gid]);
+
+    final reactionDao = ReactionDao();
+    for (var msg in msgs.records) {
+      msg.reactionData = await reactionDao.getReactions(msg.mid);
+    }
+
+    return msgs;
   }
 
   Future<PageData<ChatMsgM>> paginateLastByDmUid(
       PageMeta pageMeta, String orderBy, int dmUid) async {
-    return await paginateLast(pageMeta, orderBy,
+    final msgs = await paginateLast(pageMeta, orderBy,
         where: '${ChatMsgM.F_dmUid} = ?', whereArgs: [dmUid]);
+
+    final reactionDao = ReactionDao();
+    for (var msg in msgs.records) {
+      msg.reactionData = await reactionDao.getReactions(msg.mid);
+    }
+
+    return msgs;
   }
 }

@@ -2,35 +2,36 @@
 
 import 'dart:async';
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/message_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
+import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
+import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/voce_audio_service.dart';
 import 'package:vocechat_client/services/voce_send_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/services/file_handler.dart';
-import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
-import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
-import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
-import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
-import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/init_dao/group_info.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_bar.dart';
+import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
+import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
-import 'package:vocechat_client/globals.dart' as globals;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
+import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/channel_start.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 import 'package:vocechat_client/ui/widgets/voce_context_menu.dart';
@@ -816,28 +817,26 @@ class _VoceChatPageState extends State<VoceChatPage>
                             topLeft: Radius.circular(8),
                             topRight: Radius.circular(8))),
                     builder: (context) {
-                      // TODO: reaction refactor
-                      return Text("// TODO: reaction refactor");
-                      // return MsgActionsSheet(
-                      //     // msgTile: msgTile,
-                      //     reactions: tileData.chatMsgMNotifier.value.reactions,
-                      //     onReaction: (reaction) {
-                      //       VoceSendService()
-                      //           .sendReaction(
-                      //               tileData.chatMsgMNotifier.value, reaction)
-                      //           .then((succeed) {
-                      //         Navigator.pop(context);
-                      //         if (!succeed) {
-                      //           ScaffoldMessenger.of(context).showSnackBar(
-                      //               SnackBar(
-                      //                   content: Text(
-                      //                       AppLocalizations.of(context)!
-                      //                           .networkError)));
-                      //         }
-                      //       });
-                      //     },
-                      //     chatMsgM: tileData.chatMsgMNotifier.value,
-                      //     actions: _buildOldLongPressActions(tileData));
+                      return MsgActionsSheet(
+                          existingReactions: tileData
+                              .chatMsgMNotifier.value.reactionData?.reactionSet,
+                          onReaction: (reaction) {
+                            VoceSendService()
+                                .sendReaction(
+                                    tileData.chatMsgMNotifier.value, reaction)
+                                .then((succeed) {
+                              Navigator.pop(context);
+                              if (!succeed) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            AppLocalizations.of(context)!
+                                                .networkError)));
+                              }
+                            });
+                          },
+                          chatMsgM: tileData.chatMsgMNotifier.value,
+                          actions: _buildOldLongPressActions(tileData));
                     },
                   );
                 },

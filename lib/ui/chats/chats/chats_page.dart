@@ -18,8 +18,6 @@ import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 import 'package:vocechat_client/ui/chats/chats/voce_chat_tile.dart';
 
-// TODO: resume unread count sum later.
-
 class ChatsPage extends StatefulWidget {
   static const route = "/chats/chats";
 

@@ -730,14 +730,7 @@ class VoceSendService {
         // TODO: change reactions storage strategy later, need response data as
         // the reaction message id.
         if (response.statusCode == 200) {
-          // TODO: reaction refactor
-          // await ChatMsgDao()
-          //     .editMsgByMid(targetMid, content, MsgStatus.success)
-          //     .then((savedMsgM) {
-          //   if (savedMsgM != null) {
-          //     App.app.chatService.fireMsg(savedMsgM, true);
-          //   }
-          // });
+          // Do nothing, edits and reactions purly depend on SSE events.
         } else {
           App.logger.severe(response.statusCode);
           App.app.chatService.fireMsg(targetMsgM, true);
@@ -750,13 +743,12 @@ class VoceSendService {
   }
 
   Future<bool> sendReaction(ChatMsgM targetMsgM, String reaction) async {
-    final sendingMsgM = targetMsgM..status = MsgStatus.sending;
-    App.app.chatService.fireMsg(sendingMsgM, true);
+    App.app.chatService.fireMsg(targetMsgM..status = MsgStatus.sending, true);
     bool succeed = false;
 
     try {
       final messageApi = MessageApi();
-      await messageApi.react(sendingMsgM.mid, reaction).then((response) {
+      await messageApi.react(targetMsgM.mid, reaction).then((response) {
         if (response.statusCode == 200) {
           succeed = true;
         } else {}
