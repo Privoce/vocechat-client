@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/msg/msg_reaction.dart';
@@ -18,7 +19,8 @@ import 'package:vocechat_client/services/task_queue.dart';
 
 // enum MsgType {text, markdown, image, file}
 
-class ChatMsgM with M {
+// ignore: must_be_immutable
+class ChatMsgM extends Equatable with M {
   int mid = -1;
   String localMid = "";
   int fromUid = -1;
@@ -407,6 +409,20 @@ class ChatMsgM with M {
 
   static MMeta meta = MMeta.fromType(ChatMsgM, ChatMsgM.fromMap)
     ..tableName = F_tableName;
+
+  @override
+  List<Object?> get props => [
+        mid,
+        localMid,
+        fromUid,
+        dmUid,
+        gid,
+        statusStr,
+        detail,
+        pin,
+        createdAt,
+        reactionData
+      ];
 }
 
 class ChatMsgDao extends Dao<ChatMsgM> {

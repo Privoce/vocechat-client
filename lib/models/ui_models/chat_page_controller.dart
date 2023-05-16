@@ -280,9 +280,9 @@ class ChatPageController {
     // newly inserted message, if so, update the local reply message.
     for (final localTileData in tileDataList) {
       if (localTileData.chatMsgMNotifier.value.isReplyMsg &&
-          localTileData.repliedMsgMNotifier?.value.localMid ==
+          localTileData.repliedMsgMNotifier.value?.localMid ==
               tileData.chatMsgMNotifier.value.localMid) {
-        localTileData.repliedMsgMNotifier?.value =
+        localTileData.repliedMsgMNotifier.value =
             tileData.chatMsgMNotifier.value;
       }
     }
@@ -318,7 +318,6 @@ class ChatPageController {
             _buildRemovedItem(removedItem, context, animation));
   }
 
-  // TODO: check procedure not implemented yet.
   Future<void> checkAndUpdateTileData(
       int index, MsgTileData newTileData) async {
     tileDataList[index].chatMsgMNotifier.value =
@@ -374,8 +373,8 @@ class ChatPageController {
     // Check if the message deleted is also replied in another message
     for (final localTileData in tileDataList) {
       if (localTileData.chatMsgMNotifier.value.isReplyMsg &&
-          localTileData.repliedMsgMNotifier?.value.mid == targetMid) {
-        localTileData.repliedMsgMNotifier = null;
+          localTileData.repliedMsgMNotifier.value?.mid == targetMid) {
+        localTileData.repliedMsgMNotifier.value = null;
       }
     }
 
@@ -389,8 +388,8 @@ class ChatPageController {
   Future<void> onDeleteWithLocalMid(String localMid) async {
     for (final localTileData in tileDataList) {
       if (localTileData.chatMsgMNotifier.value.isReplyMsg &&
-          localTileData.repliedMsgMNotifier?.value.localMid == localMid) {
-        localTileData.repliedMsgMNotifier = null;
+          localTileData.repliedMsgMNotifier.value?.localMid == localMid) {
+        localTileData.repliedMsgMNotifier.value = null;
       }
     }
 

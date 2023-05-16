@@ -20,7 +20,7 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 class VoceReplyBubble extends StatefulWidget {
   final MsgTileData? tileData;
 
-  final ValueNotifier<ChatMsgM>? repliedMsgMNotifier;
+  final ValueNotifier<ChatMsgM?> repliedMsgMNotifier;
   final UserInfoM? repliedUser;
 
   final File? repliedImageFile;
@@ -59,92 +59,88 @@ class _VoceReplyBubbleState extends State<VoceReplyBubble> {
   }
 
   Widget _buildBubble() {
-    if (widget.repliedMsgMNotifier == null) {
-      return Text(AppLocalizations.of(context)!.repliedMessageDeleted,
-          style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: Color(0xFF344054)));
-    }
-
-    final userInfoM = widget.repliedUser ?? UserInfoM.deleted();
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            VoceUserAvatar.user(
-                userInfoM: userInfoM,
-                size: VoceAvatarSize.s18,
-                enableOnlineStatus: false),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(userInfoM.userInfo.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13,
-                      color: Color(0xFF344054))),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: VoceAvatarSize.s18 + 8),
-          child: _buildContentBubble(),
-        )
-      ],
-    );
+    return ValueListenableBuilder<ChatMsgM?>(
+        valueListenable: widget.repliedMsgMNotifier,
+        builder: (context, repliedMsgM, child) {
+          if (repliedMsgM == null) {
+            return Text(AppLocalizations.of(context)!.repliedMessageDeleted,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                    color: Color(0xFF344054)));
+          } else {
+            final userInfoM = widget.repliedUser ?? UserInfoM.deleted();
+            return Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    VoceUserAvatar.user(
+                        userInfoM: userInfoM,
+                        size: VoceAvatarSize.s18,
+                        enableOnlineStatus: false),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(userInfoM.userInfo.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                              color: Color(0xFF344054))),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: VoceAvatarSize.s18 + 8),
+                  child: _buildContentBubble(repliedMsgM),
+                )
+              ],
+            );
+          }
+        });
   }
 
-  Widget _buildContentBubble() {
-    return ValueListenableBuilder<ChatMsgM>(
-      valueListenable: widget.repliedMsgMNotifier!,
-      builder: (context, repliedMsgM, child) {
-        final key = ValueKey(repliedMsgM.localMid);
+  Widget _buildContentBubble(ChatMsgM repliedMsgM) {
+    final key = ValueKey(repliedMsgM.localMid);
+    print("repliedMsgM: ${repliedMsgM.msgNormal?.content}");
 
-        if (repliedMsgM.isTextMsg) {
-          return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
-        } else if (repliedMsgM.isMarkdownMsg) {
-          // Use text bubble to display markdown reply.
-          return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
-        } else if (repliedMsgM.isFileMsg) {
-          if (repliedMsgM.isImageMsg) {
-            return VoceTileImageBubble.data(
-              key: key,
-              imageFile: widget.tileData!.repliedImageFile!,
-              isReply: true,
-              getImageList: () =>
-                  VoceTileImageBubble.defaultGetImageList(repliedMsgM),
-            );
-          } else {
-            final msgNormal = repliedMsgM.msgNormal!;
-            final path = msgNormal.content;
-            final name = msgNormal.properties?["name"] ?? "";
-            final size = msgNormal.properties?["size"] ?? 0;
-            return VoceFileBubble.reply(
-                key: key,
-                filePath: path,
-                name: name,
-                size: size,
-                getLocalFile: () =>
-                    FileHandler.singleton.getLocalFile(repliedMsgM),
-                getFile: (onProgress) =>
-                    FileHandler.singleton.getFile(repliedMsgM, onProgress));
-          }
-        } else if (repliedMsgM.isAudioMsg) {
-          return VoceAudioBubble.data(
-              key: key,
-              audioInfo: widget.tileData!.repliedAudioInfo,
-              height: 24);
-        } else if (repliedMsgM.isArchiveMsg) {
-          return VoceArchiveBubble.tileData(
-              key: key, tileData: widget.tileData!);
-        }
-        return Text(AppLocalizations.of(context)!.unsupportedMessageType);
-      },
-    );
+    if (repliedMsgM.isTextMsg) {
+      return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
+    } else if (repliedMsgM.isMarkdownMsg) {
+      // Use text bubble to display markdown reply.
+      return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
+    } else if (repliedMsgM.isFileMsg) {
+      if (repliedMsgM.isImageMsg) {
+        return VoceTileImageBubble.data(
+          key: key,
+          imageFile: widget.tileData!.repliedImageFile!,
+          isReply: true,
+          getImageList: () =>
+              VoceTileImageBubble.defaultGetImageList(repliedMsgM),
+        );
+      } else {
+        final msgNormal = repliedMsgM.msgNormal!;
+        final path = msgNormal.content;
+        final name = msgNormal.properties?["name"] ?? "";
+        final size = msgNormal.properties?["size"] ?? 0;
+        return VoceFileBubble.reply(
+            key: key,
+            filePath: path,
+            name: name,
+            size: size,
+            getLocalFile: () => FileHandler.singleton.getLocalFile(repliedMsgM),
+            getFile: (onProgress) =>
+                FileHandler.singleton.getFile(repliedMsgM, onProgress));
+      }
+    } else if (repliedMsgM.isAudioMsg) {
+      return VoceAudioBubble.data(
+          key: key, audioInfo: widget.tileData!.repliedAudioInfo, height: 24);
+    } else if (repliedMsgM.isArchiveMsg) {
+      return VoceArchiveBubble.tileData(key: key, tileData: widget.tileData!);
+    }
+    return Text(AppLocalizations.of(context)!.unsupportedMessageType);
   }
 }

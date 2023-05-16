@@ -727,8 +727,6 @@ class VoceSendService {
     MessageApi api = MessageApi();
     try {
       await api.edit(targetMid, content).then((response) async {
-        // TODO: change reactions storage strategy later, need response data as
-        // the reaction message id.
         if (response.statusCode == 200) {
           // Do nothing, edits and reactions purly depend on SSE events.
         } else {

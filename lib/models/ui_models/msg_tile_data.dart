@@ -41,7 +41,7 @@ class MsgTileData {
 
   // Reply message
   // Reply message is a text or markdown message
-  ValueNotifier<ChatMsgM>? repliedMsgMNotifier;
+  ValueNotifier<ChatMsgM?> repliedMsgMNotifier = ValueNotifier(null);
   UserInfoM? repliedUserInfoM;
 
   // Pinned message, only for channels
@@ -119,9 +119,9 @@ class MsgTileData {
       // Replied message is a text/markdown/file/image/audio/archive
       // Reply message only contains text
       await setReplyGeneralData();
-      if (repliedMsgMNotifier == null) return;
+      if (repliedMsgMNotifier.value == null) return;
 
-      if (repliedMsgMNotifier!.value.isArchiveMsg) {
+      if (repliedMsgMNotifier.value!.isArchiveMsg) {
         await setRepliedArchive(serverFetch: false);
       }
     }
@@ -145,13 +145,13 @@ class MsgTileData {
       // Replied message is a text/markdown/file/image/audio/archive
       // Reply message only contains text
       await setReplyGeneralData();
-      if (repliedMsgMNotifier == null) return;
+      if (repliedMsgMNotifier.value == null) return;
 
-      if (repliedMsgMNotifier!.value.isImageMsg) {
+      if (repliedMsgMNotifier.value!.isImageMsg) {
         await setRepliedImage();
-      } else if (repliedMsgMNotifier!.value.isAudioMsg) {
+      } else if (repliedMsgMNotifier.value!.isAudioMsg) {
         await setRepliedAudio();
-      } else if (repliedMsgMNotifier!.value.isArchiveMsg) {
+      } else if (repliedMsgMNotifier.value!.isArchiveMsg) {
         await setRepliedArchive();
       }
     }
@@ -174,13 +174,13 @@ class MsgTileData {
     } else if (chatMsgMNotifier.value.isReplyMsg) {
       // Replied message is a text/markdown/file/image/audio/archive
       // Reply message only contains text
-      if (repliedMsgMNotifier == null) return false;
+      if (repliedMsgMNotifier.value == null) return false;
 
-      if (repliedMsgMNotifier!.value.isImageMsg) {
+      if (repliedMsgMNotifier.value!.isImageMsg) {
         return repliedImageFile == null;
-      } else if (repliedMsgMNotifier!.value.isAudioMsg) {
+      } else if (repliedMsgMNotifier.value!.isAudioMsg) {
         return repliedAudioInfo == null;
-      } else if (repliedMsgMNotifier!.value.isArchiveMsg) {
+      } else if (repliedMsgMNotifier.value!.isArchiveMsg) {
         return archive == null;
       }
     }
@@ -255,49 +255,49 @@ class MsgTileData {
 
     if (repliedMsgM == null) return;
 
-    repliedMsgMNotifier = ValueNotifier(repliedMsgM);
-    if (repliedMsgMNotifier == null) {
+    repliedMsgMNotifier.value = repliedMsgM;
+    if (repliedMsgMNotifier.value == null) {
       return;
     }
 
     repliedUserInfoM =
-        await UserInfoDao().getUserByUid(repliedMsgMNotifier!.value.fromUid);
+        await UserInfoDao().getUserByUid(repliedMsgMNotifier.value!.fromUid);
   }
 
   Future<void> setRepliedImage({bool serverFetch = true}) async {
     assert(chatMsgMNotifier.value.isReplyMsg &&
-        repliedMsgMNotifier!.value.isImageMsg);
+        repliedMsgMNotifier.value!.isImageMsg);
 
     // TODO: If an image message has been deleted, will the original image
     //  still be accessible through resource apis?
 
-    if (repliedMsgMNotifier == null) return;
+    if (repliedMsgMNotifier.value == null) return;
 
-    if (repliedMsgMNotifier!.value.isGifImageMsg) {
+    if (repliedMsgMNotifier.value!.isGifImageMsg) {
       if (serverFetch) {
         repliedImageFile = await FileHandler.singleton
-            .getImageNormal(repliedMsgMNotifier!.value);
+            .getImageNormal(repliedMsgMNotifier.value!);
       } else {
         repliedImageFile = await FileHandler.singleton
-            .getLocalImageNormal(repliedMsgMNotifier!.value);
+            .getLocalImageNormal(repliedMsgMNotifier.value!);
       }
     } else {
       if (serverFetch) {
         repliedImageFile = await FileHandler.singleton
-            .getImageThumb(repliedMsgMNotifier!.value);
+            .getImageThumb(repliedMsgMNotifier.value!);
       } else {
         repliedImageFile = await FileHandler.singleton
-            .getLocalImageThumb(repliedMsgMNotifier!.value);
+            .getLocalImageThumb(repliedMsgMNotifier.value!);
       }
     }
   }
 
   Future<void> setRepliedAudio({bool serverFetch = true}) async {
     assert(chatMsgMNotifier.value.isReplyMsg &&
-        repliedMsgMNotifier!.value.isAudioMsg);
+        repliedMsgMNotifier.value!.isAudioMsg);
 
     final repliedAudioFile = await AudioFileHandler()
-        .readAudioFile(repliedMsgMNotifier!.value, serverFetch: serverFetch);
+        .readAudioFile(repliedMsgMNotifier.value!, serverFetch: serverFetch);
 
     if (repliedAudioFile == null) return;
 
@@ -310,10 +310,10 @@ class MsgTileData {
 
   Future<void> setRepliedArchive({bool serverFetch = true}) async {
     assert(chatMsgMNotifier.value.isReplyMsg &&
-        repliedMsgMNotifier!.value.isArchiveMsg);
+        repliedMsgMNotifier.value!.isArchiveMsg);
 
     final archiveM = await ArchiveHandler()
-        .getArchive(repliedMsgMNotifier!.value, serverFetch: serverFetch);
+        .getArchive(repliedMsgMNotifier.value!, serverFetch: serverFetch);
     if (archiveM != null) {
       archive = archiveM.archive;
     }
