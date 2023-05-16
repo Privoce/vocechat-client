@@ -62,8 +62,8 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
     users = widget.archive?.users ?? [];
     msgs = widget.archive?.messages ?? [];
 
-    if (widget.tileData != null && widget.tileData!.needServerPrepare) {
-      widget.tileData!.serverPrepare().then((_) {
+    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
+      widget.tileData!.secondaryPrepare().then((_) {
         setState(() {
           widget.archive = widget.tileData!.archive;
           widget.archiveId =
@@ -80,7 +80,7 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.tileData != null && widget.tileData!.needServerPrepare) {
+    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
       if (afterServerPrepare) {
         // no server data
         return const EmptyDataPlaceholder();

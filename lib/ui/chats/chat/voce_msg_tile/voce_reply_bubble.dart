@@ -100,59 +100,51 @@ class _VoceReplyBubbleState extends State<VoceReplyBubble> {
   }
 
   Widget _buildContentBubble() {
-    if (widget.repliedMsgMNotifier == null || widget.repliedUser == null) {
-      return Text(AppLocalizations.of(context)!.repliedMessageDeleted,
-          style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-              color: Color(0xFF344054)));
-    } else {
-      return ValueListenableBuilder<ChatMsgM>(
-        valueListenable: widget.repliedMsgMNotifier!,
-        builder: (context, repliedMsgM, child) {
-          final key = ValueKey(repliedMsgM.localMid);
+    return ValueListenableBuilder<ChatMsgM>(
+      valueListenable: widget.repliedMsgMNotifier!,
+      builder: (context, repliedMsgM, child) {
+        final key = ValueKey(repliedMsgM.localMid);
 
-          if (repliedMsgM.isTextMsg) {
-            return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
-          } else if (repliedMsgM.isMarkdownMsg) {
-            // Use text bubble to display markdown reply.
-            return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
-          } else if (repliedMsgM.isFileMsg) {
-            if (repliedMsgM.isImageMsg) {
-              return VoceTileImageBubble.data(
+        if (repliedMsgM.isTextMsg) {
+          return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
+        } else if (repliedMsgM.isMarkdownMsg) {
+          // Use text bubble to display markdown reply.
+          return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
+        } else if (repliedMsgM.isFileMsg) {
+          if (repliedMsgM.isImageMsg) {
+            return VoceTileImageBubble.data(
+              key: key,
+              imageFile: widget.tileData!.repliedImageFile!,
+              isReply: true,
+              getImageList: () =>
+                  VoceTileImageBubble.defaultGetImageList(repliedMsgM),
+            );
+          } else {
+            final msgNormal = repliedMsgM.msgNormal!;
+            final path = msgNormal.content;
+            final name = msgNormal.properties?["name"] ?? "";
+            final size = msgNormal.properties?["size"] ?? 0;
+            return VoceFileBubble.reply(
                 key: key,
-                imageFile: widget.tileData!.repliedImageFile!,
-                isReply: true,
-                getImageList: () =>
-                    VoceTileImageBubble.defaultGetImageList(repliedMsgM),
-              );
-            } else {
-              final msgNormal = repliedMsgM.msgNormal!;
-              final path = msgNormal.content;
-              final name = msgNormal.properties?["name"] ?? "";
-              final size = msgNormal.properties?["size"] ?? 0;
-              return VoceFileBubble.reply(
-                  key: key,
-                  filePath: path,
-                  name: name,
-                  size: size,
-                  getLocalFile: () =>
-                      FileHandler.singleton.getLocalFile(repliedMsgM),
-                  getFile: (onProgress) =>
-                      FileHandler.singleton.getFile(repliedMsgM, onProgress));
-            }
-          } else if (repliedMsgM.isAudioMsg) {
-            return VoceAudioBubble.data(
-                key: key,
-                audioInfo: widget.tileData!.repliedAudioInfo,
-                height: 24);
-          } else if (repliedMsgM.isArchiveMsg) {
-            return VoceArchiveBubble.tileData(
-                key: key, tileData: widget.tileData!);
+                filePath: path,
+                name: name,
+                size: size,
+                getLocalFile: () =>
+                    FileHandler.singleton.getLocalFile(repliedMsgM),
+                getFile: (onProgress) =>
+                    FileHandler.singleton.getFile(repliedMsgM, onProgress));
           }
-          return Text(AppLocalizations.of(context)!.unsupportedMessageType);
-        },
-      );
-    }
+        } else if (repliedMsgM.isAudioMsg) {
+          return VoceAudioBubble.data(
+              key: key,
+              audioInfo: widget.tileData!.repliedAudioInfo,
+              height: 24);
+        } else if (repliedMsgM.isArchiveMsg) {
+          return VoceArchiveBubble.tileData(
+              key: key, tileData: widget.tileData!);
+        }
+        return Text(AppLocalizations.of(context)!.unsupportedMessageType);
+      },
+    );
   }
 }

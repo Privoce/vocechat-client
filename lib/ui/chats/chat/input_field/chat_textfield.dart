@@ -503,7 +503,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
                   case typeMarkdown:
                     return FutureBuilder<String>(
                         future: SharedFuncs.parseMention(
-                            json.decode(repliedMsgM.detail)["content"]),
+                            repliedMsgM.reactionData?.hasEditedText == true
+                                ? repliedMsgM.reactionData!.editedText!
+                                : json.decode(repliedMsgM.detail)["content"]),
                         builder: (context, snapshot) {
                           return _buildReplyWithLeading(
                               snapshot.data ?? "", name, null);
@@ -942,8 +944,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
     if (widget.reactionDataNotifier.value.reactionType == ReactionType.edit) {
       final targetMsg =
           widget.reactionDataNotifier.value.tileData?.chatMsgMNotifier.value;
+
       widget.mentionsKey.currentState?.controller?.text =
-          targetMsg?.msgNormal?.content ?? targetMsg?.msgReply?.content ?? "";
+          targetMsg?.reactionData?.hasEditedText == true
+              ? targetMsg!.reactionData!.editedText!
+              : targetMsg?.msgNormal?.content ??
+                  targetMsg?.msgReply?.content ??
+                  "";
     }
   }
 }

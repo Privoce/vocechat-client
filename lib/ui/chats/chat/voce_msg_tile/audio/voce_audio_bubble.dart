@@ -37,8 +37,8 @@ class _VoceAudioBubbleState extends State<VoceAudioBubble>
   initState() {
     super.initState();
 
-    if (widget.tileData != null && widget.tileData!.needServerPrepare) {
-      widget.tileData!.serverPrepare().then((value) {
+    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
+      widget.tileData!.secondaryPrepare().then((value) {
         setState(() {
           audioInfo = widget.tileData!.audioInfo;
         });

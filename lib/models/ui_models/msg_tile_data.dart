@@ -97,10 +97,10 @@ class MsgTileData {
 
   // Async secondary setters
 
-  /// Prepare the local data for the chat page.
+  /// Prepare only the essential data for the chat page.
   ///
   /// Only fetches local data.
-  Future<void> localPrepare() async {
+  Future<void> primaryPrepare() async {
     setGeneralData();
 
     if (isChannel && chatMsgMNotifier.value.pin > 0) {
@@ -111,12 +111,8 @@ class MsgTileData {
     }
 
     if (chatMsgMNotifier.value.isNormalMsg) {
-      // If is text/markdown/file, do nothing.
-      if (chatMsgMNotifier.value.isImageMsg) {
-        await setNormalImage(serverFetch: false);
-      } else if (chatMsgMNotifier.value.isAudioMsg) {
-        await setNormalAudio(serverFetch: false);
-      } else if (chatMsgMNotifier.value.isArchiveMsg) {
+      // If is text/markdown/file/image/audio, do nothing.
+      if (chatMsgMNotifier.value.isArchiveMsg) {
         await setNormalArchive(serverFetch: false);
       }
     } else if (chatMsgMNotifier.value.isReplyMsg) {
@@ -125,11 +121,7 @@ class MsgTileData {
       await setReplyGeneralData();
       if (repliedMsgMNotifier == null) return;
 
-      if (repliedMsgMNotifier!.value.isImageMsg) {
-        await setRepliedImage(serverFetch: false);
-      } else if (repliedMsgMNotifier!.value.isAudioMsg) {
-        await setRepliedAudio(serverFetch: false);
-      } else if (repliedMsgMNotifier!.value.isArchiveMsg) {
+      if (repliedMsgMNotifier!.value.isArchiveMsg) {
         await setRepliedArchive(serverFetch: false);
       }
     }
@@ -137,8 +129,9 @@ class MsgTileData {
 
   /// Prepare the local and server data for the chat page.
   ///
+  /// Fetches full data for messages.
   /// Fetches local data first, if no local data is found, it fetches server data.
-  Future<void> serverPrepare() async {
+  Future<void> secondaryPrepare() async {
     if (chatMsgMNotifier.value.isNormalMsg) {
       // If is text/markdown/file, do nothing.
       if (chatMsgMNotifier.value.isImageMsg) {
@@ -168,7 +161,7 @@ class MsgTileData {
   ///
   /// Judged by whether the local files is empty. If so, it means no local files
   /// are found, and the resources need to be downloaded from server.
-  bool get needServerPrepare {
+  bool get needSecondaryPrepare {
     if (chatMsgMNotifier.value.isNormalMsg) {
       // If is text/markdown/file, do nothing.
       if (chatMsgMNotifier.value.isImageMsg) {

@@ -205,7 +205,7 @@ class ChatPageController {
 
   /// Prepare the single [ChatMsgM] data.
   ///
-  /// It calls [MsgTileData.localPrepare] to prepare the [tileData] with local
+  /// It calls [MsgTileData.primaryPrepare] to prepare the [tileData] with local
   /// db data.
   Future<MsgTileData> prepareTileData(ChatMsgM chatMsgM) async {
     UserInfoM? userInfoM;
@@ -220,6 +220,7 @@ class ChatPageController {
     }
 
     final tileData = MsgTileData(chatMsgM: chatMsgM, userInfoM: userInfoM!);
+    await tileData.primaryPrepare();
 
     return tileData;
   }
@@ -324,7 +325,7 @@ class ChatPageController {
         newTileData.chatMsgMNotifier.value;
     tileDataList[index].userInfoM = newTileData.userInfoM;
 
-    await tileDataList[index].localPrepare();
+    await tileDataList[index].primaryPrepare();
   }
 
   Widget _buildRemovedItem(
