@@ -308,9 +308,17 @@ class GroupApi {
     return dio.get("/$gid/leave");
   }
 
-  Future<Response> getHistory(int gid, int beforeMid, {int limit = 20}) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
-    return dio.get("/$gid/history?before=$beforeMid&limit=$limit");
+  Future<Response> getHistory(int gid, int? beforeMid,
+      {int limit = 20, bool enableRetry = false}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: enableRetry);
+
+    String url = "/$gid/history?limit=$limit";
+
+    if (beforeMid != null) {
+      url += "&before=$beforeMid";
+    }
+
+    return dio.get(url);
   }
 
   Future<Response> getRegMagicLink(

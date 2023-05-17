@@ -226,7 +226,7 @@ class ChatMsgM extends Equatable with M {
     }
   }
 
-  bool get expires {
+  bool get expired {
     try {
       final expiresIn = json.decode(detail)["expires_in"];
       if (expiresIn != null && expiresIn != 0) {
@@ -235,6 +235,24 @@ class ChatMsgM extends Equatable with M {
       }
     } catch (e) {}
     return false;
+  }
+
+  Future<bool> get needDeleting async {
+    try {
+      bool deleted = false;
+
+      final reactions = await ReactionDao().getReactions(mid);
+      if (reactions?.isDeleted == true) {
+        deleted = true;
+      }
+
+      return deleted;
+    } catch (e) {}
+    return false;
+  }
+
+  Future<bool> get expiredOrNeedsDeleting async {
+    return expired || (await needDeleting);
   }
 
   /// text/plain, text/markdown, vocechat/file, vocechat/archive
@@ -505,17 +523,33 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     return 0;
   }
 
-  Future<int> getMinMidInChannel(int gid) async {
+  /// Get the minimum mid in a channel.
+  ///
+  /// Include mid of messages, and also mid of reactions.
+  Future<int?> getChannelMinMid(int gid) async {
     String sqlStr =
         'SELECT MIN(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid} = $gid';
-    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
-    if (records.isNotEmpty) {
-      final maxMid = records.first["MIN(${ChatMsgM.F_mid})"];
-      if (maxMid != null) {
-        return maxMid as int;
-      }
+    List<Map<String, Object?>> msgRecords = await db.rawQuery(sqlStr);
+
+    int minMid = double.maxFinite.toInt();
+    if (msgRecords.isNotEmpty &&
+        msgRecords.first["MIN(${ChatMsgM.F_mid})"] != null) {
+      minMid = min(minMid, msgRecords.first["MIN(${ChatMsgM.F_mid})"] as int);
     }
-    return -1;
+
+    sqlStr =
+        'SELECT MIN(${ReactionM.F_mid}) FROM ${ReactionM.F_tableName} WHERE ${ReactionM.F_targetGid} = $gid';
+    List<Map<String, Object?>> reactionRecords = await db.rawQuery(sqlStr);
+    if (reactionRecords.isNotEmpty &&
+        reactionRecords.first["MIN(${ReactionM.F_mid})"] != null) {
+      minMid =
+          min(minMid, reactionRecords.first["MIN(${ReactionM.F_mid})"] as int);
+    }
+
+    if (minMid < double.maxFinite.toInt() && minMid > 0) {
+      return minMid;
+    }
+    return null;
   }
 
   Future<ChatMsgM?> getMsgByMid(int mid, {bool withReactions = true}) async {
@@ -542,16 +576,13 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
 
     if (records.isNotEmpty) {
-      final msgList = records
-          .map((e) {
-            final msgM = ChatMsgM.fromMap(e);
-            if (!msgM.expires) {
-              return msgM;
-            }
-          })
-          .toList()
-          .whereType<ChatMsgM>()
-          .toList();
+      final msgList = <ChatMsgM>[];
+      for (final each in records) {
+        final msgM = ChatMsgM.fromMap(each);
+        if (!(await msgM.expiredOrNeedsDeleting)) {
+          msgList.add(msgM);
+        }
+      }
 
       if (withReactions) {
         final dao = ReactionDao();
@@ -579,16 +610,13 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
 
     if (records.isNotEmpty) {
-      final msgList = records
-          .map((e) {
-            final msgM = ChatMsgM.fromMap(e);
-            if (!msgM.expires) {
-              return msgM;
-            }
-          })
-          .toList()
-          .whereType<ChatMsgM>()
-          .toList();
+      final msgList = <ChatMsgM>[];
+      for (final each in records) {
+        final msgM = ChatMsgM.fromMap(each);
+        if (!(await msgM.expiredOrNeedsDeleting)) {
+          msgList.add(msgM);
+        }
+      }
 
       if (withReactions) {
         final dao = ReactionDao();

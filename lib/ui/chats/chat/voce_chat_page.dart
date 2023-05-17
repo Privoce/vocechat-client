@@ -745,15 +745,15 @@ class _VoceChatPageState extends State<VoceChatPage>
           initialItemCount: widget.controller.tileDataList.length + 1,
           itemBuilder: (context, index, animation) {
             if (index == widget.controller.tileDataList.length) {
-              if (widget.controller.reachesEnd) {
-                if (widget.controller.isChannel) {
-                  return ChannelStart(widget.groupInfoNotifier!);
-                } else {
-                  return const SizedBox.shrink();
-                }
+              if (widget.controller.isChannel) {
+                widget.controller.reachesEnd.then((value) {
+                  if (!value) {
+                    widget.controller.loadHistory();
+                  }
+                });
+                return ChannelStart(widget.groupInfoNotifier!);
               } else {
-                widget.controller.loadHistory();
-                return const CupertinoActivityIndicator();
+                return const SizedBox.shrink();
               }
             }
             final tileData = widget.controller.tileDataList[index];

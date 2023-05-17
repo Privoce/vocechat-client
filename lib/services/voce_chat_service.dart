@@ -532,33 +532,74 @@ class VoceChatService {
     }
   }
 
-  Future<void> handleServerHistory(Map<String, dynamic> chatJson) async {
-    ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
+  Future<List<ChatMsgM>> handleServerHistory(dynamic data) async {
+    Map<int, ChatMsgM> historyMsgMap = {};
+    Map<int, ReactionM> historyReactionMap = {};
 
-    App.logger.info(chatJson);
-
-    if (chatMsg.mid < 0) {
-      return;
-    }
+    final msgJsonList = data as List<dynamic>;
 
     try {
-      switch (chatMsg.detail["type"]) {
-        case chatMsgNormal:
-          await _handleMsgNormal(chatMsg);
-          break;
-        case chatMsgReaction:
-          await _handleMsgReaction(chatMsg);
-          break;
-        case chatMsgReply:
-          await _handleReply(chatMsg);
-          break;
-        default:
-          final errorMsg =
-              "MsgDetail format error. msg: ${chatJson.toString()}";
-          App.logger.severe(errorMsg);
+      for (final chatJson in msgJsonList) {
+        ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
+
+        if (chatMsg.mid < 0) {
+          continue;
+        }
+
+        String localMid;
+        if (chatMsg.fromUid == App.app.userDb!.uid) {
+          localMid = chatMsg.detail['properties']['cid'] ?? uuid();
+        } else {
+          localMid = uuid();
+        }
+
+        switch (chatMsg.detail["type"]) {
+          case chatMsgNormal:
+            ChatMsgM chatMsgM =
+                ChatMsgM.fromMsg(chatMsg, localMid, MsgStatus.success);
+            historyMsgMap.addAll({chatMsgM.mid: chatMsgM});
+
+            break;
+          case chatMsgReply:
+            ChatMsgM chatMsgM =
+                ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
+            historyMsgMap.addAll({chatMsgM.mid: chatMsgM});
+
+            break;
+          case chatMsgReaction:
+            final reactionM = ReactionM.fromChatMsg(chatMsg);
+            if (reactionM != null) {
+              historyReactionMap.addAll({reactionM.mid: reactionM});
+            }
+            break;
+          default:
+            break;
+        }
       }
+
+      final reactionDao = ReactionDao();
+      await ChatMsgDao()
+          .batchAdd(historyMsgMap.values.toList())
+          .then((succeed) {
+        if (!succeed) App.logger.severe("History message insert failed");
+      });
+      await reactionDao
+          .batchAdd(historyReactionMap.values.toList())
+          .then((succeed) {
+        if (!succeed) App.logger.severe("History reaction insert failed");
+      });
+
+      // Prepare a final message list.
+      final List<ChatMsgM> result = [];
+      for (var msg in historyMsgMap.values.toList()) {
+        msg.reactionData = await reactionDao.getReactions(msg.mid);
+        result.add(msg);
+      }
+
+      return result;
     } catch (e) {
       App.logger.severe(e);
+      return [];
     }
   }
 
@@ -717,7 +758,7 @@ class VoceChatService {
     // as it is not allowed to modify the [msgMap] during the iteration.
     final List<int> expiredMids = [];
     for (final msgM in msgMap.values) {
-      if (msgM.expires) {
+      if (msgM.expired) {
         expiredMids.add(msgM.mid);
       }
     }
@@ -1385,25 +1426,16 @@ class VoceChatService {
   }
 
   Future<void> _handleMsgNormal(ChatMsg chatMsg) async {
-    final detail = MsgNormal.fromJson(chatMsg.detail);
-    final isSelf = chatMsg.fromUid == App.app.userDb!.uid;
-
     String localMid;
-    if (isSelf) {
-      localMid = detail.properties?['cid'] ?? uuid();
+    if (chatMsg.fromUid == App.app.userDb!.uid) {
+      localMid = chatMsg.detail['properties']?['cid'] ?? uuid();
     } else {
       localMid = uuid();
     }
 
     try {
-      ChatMsg c = ChatMsg(
-          target: chatMsg.target,
-          mid: chatMsg.mid,
-          fromUid: chatMsg.fromUid,
-          createdAt: chatMsg.createdAt,
-          detail: detail.toJson());
-
-      ChatMsgM chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgStatus.success);
+      ChatMsgM chatMsgM =
+          ChatMsgM.fromMsg(chatMsg, localMid, MsgStatus.success);
       await cumulateMsg(chatMsgM);
     } catch (e) {
       App.logger.severe(e);
@@ -1523,7 +1555,6 @@ class VoceChatService {
     }
 
     try {
-      chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
       cumulateMsg(chatMsgM);

@@ -230,6 +230,7 @@ class ReactionDao extends Dao<ReactionM> {
 
     Set<ReactionInfo> preliminaryReactionSet = {};
     String? editedText;
+    bool deleted = false;
     for (var e in reactions) {
       if (e.type == MsgReactionType.action) {
         final reactionInfo = ReactionInfo(
@@ -243,16 +244,18 @@ class ReactionDao extends Dao<ReactionM> {
       } else if (e.type == MsgReactionType.edit) {
         editedText = e.editedText;
       } else if (e.type == MsgReactionType.delete) {
-        await removeReaction(mid);
+        deleted = true;
         return null;
       }
     }
 
-    if (preliminaryReactionSet.isEmpty && editedText == null) {
+    if (preliminaryReactionSet.isEmpty && editedText == null && !deleted) {
       return null;
     } else {
       return ReactionData(
-          reactionSet: preliminaryReactionSet, editedText: editedText);
+          reactionSet: preliminaryReactionSet,
+          editedText: editedText,
+          deleted: deleted);
     }
   }
 
@@ -267,6 +270,8 @@ class ReactionData extends Equatable {
   Set<ReactionInfo>? reactionSet = {};
 
   String? editedText;
+
+  bool deleted;
 
   Map<String, int> _reactionCountMap = {};
 
@@ -300,9 +305,10 @@ class ReactionData extends Equatable {
   Map<String, int> get reactionCountMap => _reactionCountMap;
   bool get hasReaction => reactionSet != null && reactionSet!.isNotEmpty;
   bool get hasEditedText => editedText != null && editedText!.isNotEmpty;
+  bool get isDeleted => deleted;
 
   /// A comprehensive data model of reactionMap and editedText
-  ReactionData({this.reactionSet, this.editedText});
+  ReactionData({this.reactionSet, this.editedText, this.deleted = false});
 
   @override
   List<Object?> get props => [reactionSet, editedText];
