@@ -138,7 +138,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: QrImage(
+            child: QrImageView(
               data: _invitationLink ?? "",
               // foregroundColor: Colors.blue.shade900,
             )),

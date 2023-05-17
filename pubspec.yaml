@@ -99,10 +99,10 @@ dependencies:
   #   path: /Users/shuotwang/Documents/flutter_forks/azlistview
 
 dependency_overrides:
-  photo_view:
-    git:
-      url: https://github.com/bluefireteam/photo_view
-      ref: master
+  # photo_view:
+  #   git:
+  #     url: https://github.com/bluefireteam/photo_view
+  #     ref: master
 
   
   azlistview:
