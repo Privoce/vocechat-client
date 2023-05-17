@@ -126,18 +126,22 @@ Future<void> initCurrentDb(String dbName) async {
           onUpgrade: (db, oldVersion, newVersion) async {
             if (oldVersion < newVersion && oldVersion < 6) {
               try {
-                await db.execute("ALTER TABLE group_info DROP COLUMN avatar");
-                await db.execute("ALTER TABLE user_info DROP COLUMN avatar");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN contact_status");
+                    "ALTER TABLE group_info DROP COLUMN IF EXISTS avatar");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN contact_created_at");
+                    "ALTER TABLE user_info DROP COLUMN IF EXISTS avatar");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN contact_updated_at");
-                await db.execute("DROP TABLE unmatched_reaction");
-                await db.execute("DROP INDEX index_target_mid");
-                await db.execute("ALTER TABLE chat_msg DROP COLUMN reactions");
-                await db.execute("ALTER TABLE chat_msg DROP COLUMN edited");
+                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_status");
+                await db.execute(
+                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_created_at");
+                await db.execute(
+                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_updated_at");
+                await db.execute("DROP TABLE IF EXISTS unmatched_reaction");
+                await db.execute("DROP INDEX IF EXISTS index_target_mid");
+                await db.execute(
+                    "ALTER TABLE chat_msg DROP COLUMN IF EXISTS reactions");
+                await db.execute(
+                    "ALTER TABLE chat_msg DROP COLUMN IF EXISTS edited");
                 await db.execute('''
 CREATE TABLE IF NOT EXISTS reactions (
   id TEXT PRIMARY KEY, 
