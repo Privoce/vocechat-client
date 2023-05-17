@@ -4,13 +4,11 @@
 
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show kMinFlingVelocity;
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
 
 // The scale of the child at the time that the CupertinoContextMenu opens.
 // This value was eyeballed from a physical device running iOS 13.1.2.
@@ -144,8 +142,7 @@ class VoceContextMenu extends StatefulWidget {
       'This feature was deprecated after v3.4.0-34.1.pre.',
     )
         this.previewBuilder = _defaultPreviewBuilder,
-  })  : assert(actions != null && actions.isNotEmpty),
-        assert(child != null),
+  })  : assert(actions.isNotEmpty),
         builder =
             ((BuildContext context, Animation<double> animation) => child),
         super(key: key);
@@ -162,7 +159,7 @@ class VoceContextMenu extends StatefulWidget {
     Key? key,
     required this.actions,
     required this.builder,
-  })  : assert(actions != null && actions.isNotEmpty),
+  })  : assert(actions.isNotEmpty),
         child = null,
         previewBuilder = null,
         super(key: key);
@@ -810,8 +807,7 @@ class _ContextMenuRoute<T> extends PopupRoute<T> {
     super.filter,
     required Rect previousChildRect,
     super.settings,
-  })  : assert(actions != null && actions.isNotEmpty),
-        assert(contextMenuLocation != null),
+  })  : assert(actions.isNotEmpty),
         _actions = actions,
         _builder = builder,
         _contextMenuLocation = contextMenuLocation,
@@ -1104,8 +1100,7 @@ class _ContextMenuRouteStatic extends StatefulWidget {
     this.onDismiss,
     required this.orientation,
     this.sheetGlobalKey,
-  })  : assert(contextMenuLocation != null),
-        assert(orientation != null);
+  });
 
   final List<Widget>? actions;
   final Widget child;
@@ -1437,9 +1432,7 @@ class _ContextMenuSheet extends StatelessWidget {
     required this.actions,
     required _ContextMenuLocation contextMenuLocation,
     required Orientation orientation,
-  })  : assert(actions != null && actions.isNotEmpty),
-        assert(contextMenuLocation != null),
-        assert(orientation != null),
+  })  : assert(actions.isNotEmpty),
         _contextMenuLocation = contextMenuLocation,
         _orientation = orientation;
 

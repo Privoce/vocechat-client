@@ -1,13 +1,7 @@
-import 'dart:io';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/dao/init_dao/group_info.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 
 class ChatTile extends StatefulWidget {
   final Widget? avatar;
@@ -23,8 +17,6 @@ class ChatTile extends StatefulWidget {
   final ValueNotifier<bool>? isPrivateChannel;
   final Function()? onTap;
 
-  late bool _hasDraft;
-
   ChatTile(
       {required this.name,
       required this.snippet,
@@ -37,8 +29,6 @@ class ChatTile extends StatefulWidget {
       required this.pinnedAt,
       this.isPrivateChannel,
       this.onTap}) {
-    _hasDraft = draft.value.isNotEmpty;
-
     if (avatar == null) {
       _avatar = ValueListenableBuilder<String>(
           valueListenable: name,

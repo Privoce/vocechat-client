@@ -1,7 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/mixins/orientation_mixins.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
 class VideoPage extends StatefulWidget {

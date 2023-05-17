@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:path/path.dart' as path;
 
 part 'archive_msg.g.dart';
 

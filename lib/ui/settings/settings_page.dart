@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
-
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
@@ -15,16 +15,13 @@ import 'package:vocechat_client/ui/settings/child_pages/language_setting_page.da
 // import 'package:vocechat_client/ui/settings/child_pages/reload_notification_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart';
-import 'package:vocechat_client/ui/settings/settings_bar.dart';
 import 'package:vocechat_client/ui/settings/child_pages/userinfo_setting_page.dart';
+import 'package:vocechat_client/ui/settings/settings_bar.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
-
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingPage extends StatefulWidget {
   static const route = "/settings";
@@ -331,6 +328,7 @@ class _SettingPageState extends State<SettingPage> {
       userInfoNotifier.value = userInfoM;
 
       // Add [notifyListeners()] to avoid no UI response on avatar changed.
+      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
       userInfoNotifier.notifyListeners();
     }
   }

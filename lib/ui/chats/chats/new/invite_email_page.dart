@@ -1,14 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/admin_smtp.dart';
-import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/extensions.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/widgets/app_textfield.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class InviteEmailPage extends StatefulWidget {
   @override

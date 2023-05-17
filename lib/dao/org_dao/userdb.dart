@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
@@ -267,7 +266,7 @@ class UserDbMDao extends OrgDao<UserDbM> {
       old.maxMid = max(old.maxMid, maxMid);
       old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
-      _logger.config("UserDb maxMid updated. maxMid :$maxMid");
+      _logger.config("UserDb maxMid updated. maxMid :${old.maxMid}");
     } else {
       throw Exception("No matching UserDb found");
     }

@@ -1,19 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
-
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/pinned_msg/pinned_msg_tile.dart';
 import 'package:vocechat_client/ui/widgets/empty_content_placeholder.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PinnedMsgPage extends StatelessWidget {
   final ValueNotifier<GroupInfoM> groupInfoMNotifier;

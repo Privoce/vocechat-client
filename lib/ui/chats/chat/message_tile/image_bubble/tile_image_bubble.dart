@@ -171,8 +171,8 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
       App.logger.severe(e);
     }
 
-    if (widget.tileData != null && widget.tileData!.needServerPrepare) {
-      widget.tileData!.serverPrepare().then((value) {
+    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
+      widget.tileData!.secondaryPrepare().then((value) {
         if (mounted) {
           setState(() {
             try {
@@ -196,9 +196,8 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.tileData != null && widget.tileData!.needServerPrepare) {
+    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
       // The constrains will remain the same as the original image.
-      print(width != null && height != null);
       return Container(
           constraints: const BoxConstraints(maxHeight: 140),
           child: (width != null && height != null)

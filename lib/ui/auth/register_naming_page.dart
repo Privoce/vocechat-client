@@ -1,24 +1,23 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:async/async.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/user/register_request.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/status_service.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
-import 'package:voce_widgets/voce_widgets.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+// ignore: must_be_immutable
 class RegisterNamingPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
   ChatServerM chatServer;

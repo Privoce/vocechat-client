@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive_user.dart';
@@ -12,10 +12,9 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/archive_page.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/empty_data_placeholder.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_archive_content_bubble.dart';
 
+// ignore: must_be_immutable
 class VoceArchiveBubble extends StatefulWidget {
   final MsgTileData? tileData;
 
@@ -63,8 +62,8 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
     users = widget.archive?.users ?? [];
     msgs = widget.archive?.messages ?? [];
 
-    if (widget.tileData != null && widget.tileData!.needServerPrepare) {
-      widget.tileData!.serverPrepare().then((_) {
+    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
+      widget.tileData!.secondaryPrepare().then((_) {
         setState(() {
           widget.archive = widget.tileData!.archive;
           widget.archiveId =
@@ -81,7 +80,7 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.tileData != null && widget.tileData!.needServerPrepare) {
+    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
       if (afterServerPrepare) {
         // no server data
         return const EmptyDataPlaceholder();

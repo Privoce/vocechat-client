@@ -2,7 +2,6 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:azlistview/azlistview.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
@@ -307,7 +306,7 @@ class UserInfoDao extends Dao<UserInfoM> {
       old._properties = json.encode(oldProperties);
       await super.update(old);
       App.logger.info(
-          "UserInfoM properties updated. uid:$uid, buryAfterReadSecond: $burnAfterReadSecond, enableMute: $enableMute, muteExpiresAt: $muteExpiresAt, readIndex: $readIndex, draft: $draft, pinnedAt: $pinnedAt");
+          "UserInfoM properties updated. uid:$uid, burnAfterReadSecond: $burnAfterReadSecond, enableMute: $enableMute, muteExpiresAt: $muteExpiresAt, readIndex: $readIndex, draft: $draft, pinnedAt: $pinnedAt");
     }
     return old;
   }

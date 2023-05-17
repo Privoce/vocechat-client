@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_consts.dart';
 
 class _QueuedFuture {
   final Completer completer;

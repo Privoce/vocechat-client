@@ -39,10 +39,8 @@ CREATE TABLE IF NOT EXISTS chat_msg (
   from_uid INTEGER NOT NULL,
   dm_uid INTEGER NOT NULL,
   gid INTEGER NOT NULL,
-  edited INTEGER NOT NULL,
   status TEXT NOT NULL,
   detail TEXT NOT NULL,
-  reactions TEXT NOT NULL,
   pin integer NOT NULL,
   created_at integer NOT NULL
 );
@@ -100,13 +98,16 @@ CREATE TABLE IF NOT EXISTS saved_file (
   created_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS unmatched_reaction (
-  id TEXT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS reactions (
+  id TEXT NOT NULL,
+  mid INTEGER PRIMARY KEY,  -- the id of the reaction message, instead of the target
   target_mid INTEGER NOT NULL,
-  reaction_list TEXT NOT NULL,
-  created_at INTEGER NOT NULL
+  target_gid INTEGER NOT NULL,
+  target_uid INTEGER NOT NULL,
+  from_uid INTEGER NOT NULL,
+  action_emoji TEXT NOT NULL, 
+  edited_text TEXT NOT NULL,
+  'type' TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY(target_mid) REFERENCES chat_msg(mid) ON DELETE CASCADE
 );
-
-CREATE UNIQUE INDEX IF NOT EXISTS index_target_mid ON unmatched_reaction(target_mid);
-
-

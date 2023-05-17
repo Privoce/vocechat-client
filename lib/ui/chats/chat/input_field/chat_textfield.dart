@@ -14,8 +14,6 @@ import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/main.dart';
-import 'package:vocechat_client/models/local_kits.dart';
-import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
@@ -414,12 +412,12 @@ class _ChatTextFieldState extends State<ChatTextField> {
       builder: (context, snapshot) {
         final List<ContextMenuButtonItem> buttonItems =
             state.contextMenuButtonItems;
-        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-          buttonItems.add(ContextMenuButtonItem(
-            type: ContextMenuButtonType.paste,
-            onPressed: () => _onPasteImage(),
-          ));
-        }
+        // if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+        //   buttonItems.add(ContextMenuButtonItem(
+        //     type: ContextMenuButtonType.paste,
+        //     onPressed: () => _onPasteImage(),
+        //   ));
+        // }
 
         return AdaptiveTextSelectionToolbar.buttonItems(
           anchors: state.contextMenuAnchors,
@@ -429,63 +427,66 @@ class _ChatTextFieldState extends State<ChatTextField> {
     );
   }
 
-  void _onPasteImage() async {
-    if (Platform.isIOS) {
-      try {
-        final image = await _getClipboardImage();
-        if (image != null) {
-          _pasteImage(image);
-        }
-      } catch (e) {
-        App.logger.severe(e);
-      }
-    }
-    final TextEditingValue value =
-        controller.value; // Snapshot the input before using `await`.
-    final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+  // void _onPasteImage() async {
+  //   if (Platform.isIOS) {
+  //     try {
+  //       final image = await _getClipboardImage();
+  //       if (image != null) {
+  //         _pasteImage(image);
+  //       }
+  //     } catch (e) {
+  //       App.logger.severe(e);
+  //     }
+  //   }
+  //   final TextEditingValue value =
+  //       controller.value; // Snapshot the input before using `await`.
+  //   final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
 
-    if (data != null) {
-      final updatedValue = TextEditingValue(
-          text: value.selection.textBefore(value.text) + (data.text ?? ""),
-          selection: TextSelection.collapsed(
-              offset: value.selection.start + (data.text?.length ?? 0)));
-      controller.value = updatedValue;
-    }
+  //   if (data != null) {
+  //     final updatedValue = TextEditingValue(
+  //         text: value.selection.textBefore(value.text) + (data.text ?? ""),
+  //         selection: TextSelection.collapsed(
+  //             offset: value.selection.start + (data.text?.length ?? 0)));
+  //     controller.value = updatedValue;
+  //   }
 
-    ContextMenuController.removeAny();
+  //   ContextMenuController.removeAny();
 
-    // delegate.bringIntoView(delegate.textEditingValue.selection.extent);
-    // delegate.hideToolbar();
-  }
+  //   // delegate.bringIntoView(delegate.textEditingValue.selection.extent);
+  //   // delegate.hideToolbar();
+  // }
 
-  void _pasteImage(Uint8List imageBytes) async {
-    final context = navigatorKey.currentContext;
-    if (context == null) return;
+  // void _pasteImage(Uint8List imageBytes) async {
+  //   final context = navigatorKey.currentContext;
+  //   if (context == null) return;
 
-    final imageWidget = Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Image.memory(imageBytes),
-    );
-    showAppAlert(
-        context: context,
-        title: AppLocalizations.of(context)!.appTextSelectionControlPasteImage,
-        contentWidget: imageWidget,
-        actions: [
-          AppAlertDialogAction(
-              text: AppLocalizations.of(context)!.cancel,
-              action: (() => Navigator.of(context).pop()))
-        ],
-        primaryAction: AppAlertDialogAction(
-            text: AppLocalizations.of(context)!.send,
-            action: () {
-              // return _send(path, type, uuid());
-              SendService.singleton.sendMessage(uuid(), "", SendType.file,
-                  blob: imageBytes,
-                  gid: widget.groupInfoMNotifier?.value.gid,
-                  uid: widget.userInfoMNotifier?.value.uid);
-              Navigator.of(context).pop();
-            }));
-  }
+  //   final imageWidget = Padding(
+  //     padding: const EdgeInsets.all(8.0),
+  //     child: Image.memory(imageBytes),
+  //   );
+  //   showAppAlert(
+  //       context: context,
+  //       title: AppLocalizations.of(context)!.appTextSelectionControlPasteImage,
+  //       contentWidget: imageWidget,
+  //       actions: [
+  //         AppAlertDialogAction(
+  //             text: AppLocalizations.of(context)!.cancel,
+  //             action: (() => Navigator.of(context).pop()))
+  //       ],
+  //       primaryAction: AppAlertDialogAction(
+  //           text: AppLocalizations.of(context)!.send,
+  //           action: () {
+  //             // return _send(path, type, uuid());
+  //             // SendService.singleton.sendMessage(uuid(), "", SendType.file,
+  //             //     blob: imageBytes,
+  //             //     gid: widget.groupInfoMNotifier?.value.gid,
+  //             //     uid: widget.userInfoMNotifier?.value.uid);
+  //             if (isChannel) {
+  //               VoceSendService().sendChannelFile(widget.groupInfoMNotifier!.value.gid, path)
+  //             }
+  //             Navigator.of(context).pop();
+  //           }));
+  // }
 
   Widget _buildReply(BuildContext context) {
     return ValueListenableBuilder<ChatFieldReactionData>(
@@ -502,7 +503,9 @@ class _ChatTextFieldState extends State<ChatTextField> {
                   case typeMarkdown:
                     return FutureBuilder<String>(
                         future: SharedFuncs.parseMention(
-                            json.decode(repliedMsgM.detail)["content"]),
+                            repliedMsgM.reactionData?.hasEditedText == true
+                                ? repliedMsgM.reactionData!.editedText!
+                                : json.decode(repliedMsgM.detail)["content"]),
                         builder: (context, snapshot) {
                           return _buildReplyWithLeading(
                               snapshot.data ?? "", name, null);
@@ -676,6 +679,8 @@ class _ChatTextFieldState extends State<ChatTextField> {
   }
 
   void _sendImage() async {
+    FocusScope.of(context).unfocus();
+
     // assets list
     List<AssetEntity> assets = <AssetEntity>[];
 
@@ -939,8 +944,13 @@ class _ChatTextFieldState extends State<ChatTextField> {
     if (widget.reactionDataNotifier.value.reactionType == ReactionType.edit) {
       final targetMsg =
           widget.reactionDataNotifier.value.tileData?.chatMsgMNotifier.value;
+
       widget.mentionsKey.currentState?.controller?.text =
-          targetMsg?.msgNormal?.content ?? targetMsg?.msgReply?.content ?? "";
+          targetMsg?.reactionData?.hasEditedText == true
+              ? targetMsg!.reactionData!.editedText!
+              : targetMsg?.msgNormal?.content ??
+                  targetMsg?.msgReply?.content ??
+                  "";
     }
   }
 }

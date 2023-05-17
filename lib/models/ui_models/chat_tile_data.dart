@@ -78,7 +78,8 @@ class ChatTileData {
 
     title.value = userInfo.name;
 
-    final latestMsgM = await ChatMsgDao().getDmLatestMsgM(userInfo.uid);
+    final latestMsgM =
+        await ChatMsgDao().getDmLatestMsgM(userInfo.uid, withReactions: true);
     snippet.value =
         latestMsgM != null ? (await _processSnippet(latestMsgM)) : "";
     draft.value = properties.draft;
@@ -124,7 +125,8 @@ class ChatTileData {
     title.value = groupInfo.name;
     isPrivateChannel.value = !groupInfo.isPublic;
 
-    final latestMsgM = await ChatMsgDao().getChannelLatestMsgM(groupInfo.gid);
+    final latestMsgM = await ChatMsgDao()
+        .getChannelLatestMsgM(groupInfo.gid, withReactions: true);
     if (latestMsgM != null) {
       snippet.value = await _processSnippet(latestMsgM);
     }
@@ -183,8 +185,11 @@ class ChatTileData {
       case MsgDetailType.normal:
         switch (chatMsgM.detailContentType) {
           case MsgContentType.text:
-            snippet =
-                chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? "";
+            snippet = chatMsgM.reactionData?.hasEditedText == true
+                ? chatMsgM.reactionData!.editedText!
+                : chatMsgM.msgNormal?.content ??
+                    chatMsgM.msgReply?.content ??
+                    "";
             break;
           case MsgContentType.markdown:
             snippet =

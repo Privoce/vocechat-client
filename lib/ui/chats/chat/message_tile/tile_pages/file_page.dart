@@ -1,32 +1,26 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:chewie/chewie.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/extensions.dart';
-import 'package:vocechat_client/mixins/orientation_mixins.dart';
+import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:path/path.dart' as path;
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/pdf_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/video_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum FilePageStatus { download, open, share, downloading }
 
 class FilePage extends StatefulWidget {
-
-
   /// This file name does not contain extension.
   final String fileName;
   final String extension;
@@ -36,8 +30,7 @@ class FilePage extends StatefulWidget {
   final ChatMsgM? chatMsgM;
 
   FilePage(
-      {
-      required this.fileName,
+      {required this.fileName,
       required this.extension,
       required this.size,
       required this.getLocalFile,

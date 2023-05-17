@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:async/async.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 
