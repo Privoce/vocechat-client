@@ -31,7 +31,6 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
   GlobalKey qrKey = GlobalKey();
 
-
   // default to be 48 hours.
   final expiredIn = 48;
 
@@ -133,7 +132,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: QrImage(
+            child: QrImageView(
               data: _invitationLink ?? "",
               // foregroundColor: Colors.blue.shade900,
             )),
@@ -217,8 +216,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
     return null;
   }
 
-  Future<void> _getServerImge() async {
-  }
+  Future<void> _getServerImge() async {}
 
   /// Temp function to replace server default domain for invitation link.
   /// Should be deleted after the issue resolves.

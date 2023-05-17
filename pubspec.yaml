@@ -58,7 +58,7 @@ dependencies:
   firebase_messaging: ^14.5.0
   firebase_core_platform_interface: ^4.5.2
   saver_gallery: ^2.0.1
-  connectivity_plus: ^3.0.3
+  connectivity_plus: 3.0.3
   flutter_svg: ^1.0.3
   flutter_markdown: ^0.6.13+1
   url_launcher: ^6.0.20
@@ -90,7 +90,7 @@ dependencies:
   audio_session: ^0.1.13
   provider: ^6.0.5
   audioplayers: ^3.0.1
-  scrollable_positioned_list: ^0.3.8
+  # scrollable_positioned_list: ^0.3.8
 
   # voce_image_viewer:
   #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/
@@ -100,12 +100,6 @@ dependencies:
   #   path: /Users/shuotwang/Documents/flutter_forks/azlistview
 
 dependency_overrides:
-  photo_view:
-    git:
-      url: https://github.com/bluefireteam/photo_view
-      ref: master
-
-  
   azlistview:
     git: 
       url: https://github.com/shuotwang/azlistview.git
