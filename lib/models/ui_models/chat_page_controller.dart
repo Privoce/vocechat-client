@@ -45,6 +45,7 @@ class ChatPageController {
   // UI variables
   ValueNotifier<bool> isLoadingNotifier = ValueNotifier(false);
   Set<VoidCallback> _scrollToBottomListeners = {};
+  ValueNotifier<bool> isLoadingHistory = ValueNotifier(false);
 
   // Instances of tools
   final ChatMsgDao _chatMsgDao = ChatMsgDao();
@@ -82,9 +83,6 @@ class ChatPageController {
   }
 
   int get count => tileDataList.length;
-
-  // Data status
-  bool isLoadingHistory = false;
 
   void handleSubscriptions() {
     App.app.chatService.subscribeMsg(onMessage);
@@ -126,7 +124,7 @@ class ChatPageController {
   /// Includes first page of messages and the user info map.
   /// Should be called before the chat page is built, then pass into the chat page.
   Future<void> prepare() async {
-    await loadHistory();
+    await loadHistory(enableServerHistory: false);
   }
 
   Future<void> updateReadIndex(int mid) async {
@@ -212,16 +210,15 @@ class ChatPageController {
     return tileData;
   }
 
-  Future<void> loadHistory() async {
-    print("loadHistory");
-    if (isLoadingHistory) return;
+  Future<void> loadHistory({bool enableServerHistory = true}) async {
+    if (isLoadingHistory.value) return;
 
-    isLoadingHistory = true;
+    App.logger.info("Loading server history");
+
+    isLoadingHistory.value = true;
 
     try {
       final msgList = <ChatMsgM>[];
-
-      final insertIndex = tileDataList.length;
 
       // Recursively load local messages first, then recursively load server
       // messages, until [msgList.length] reaches [defaultPageSize].
@@ -233,6 +230,7 @@ class ChatPageController {
       // won't be any message history before the user is created, thus there is
       // no DM history.
       if (isChannel &&
+          enableServerHistory &&
           msgList.length < defaultPageSize &&
           !_pageMeta.hasNextPage) {
         await _loadServerHistory(msgList);
@@ -261,12 +259,12 @@ class ChatPageController {
         }
       }
 
-      // listKey.currentState?.insertItem(insertIndex);
+      App.logger.info("History message loaded, length: ${msgList.length}");
     } catch (e) {
       App.logger.severe(e);
     }
 
-    isLoadingHistory = false;
+    isLoadingHistory.value = false;
   }
 
   Future<void> _recursivelyLoadHistory(List<ChatMsgM> msgList) async {

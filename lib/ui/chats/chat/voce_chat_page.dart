@@ -751,7 +751,8 @@ class _VoceChatPageState extends State<VoceChatPage>
                     widget.controller.loadHistory();
                   }
                 });
-                return ChannelStart(widget.groupInfoNotifier!);
+                return ChannelStart(widget.groupInfoNotifier!,
+                    widget.controller.isLoadingHistory);
               } else {
                 return const SizedBox.shrink();
               }
