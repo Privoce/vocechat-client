@@ -174,8 +174,8 @@ Future<void> initCurrentDb(String dbName) async {
                 await db.execute("ALTER TABLE chat_msg DROP COLUMN edited");
                 await db.execute('''
 CREATE TABLE IF NOT EXISTS reactions (
-  id TEXT PRIMARY KEY, 
-  mid INTEGER PRIMARY KEY,
+  id TEXT NOT NULL,
+  mid INTEGER PRIMARY KEY,  
   target_mid INTEGER NOT NULL,
   target_gid INTEGER NOT NULL,
   target_uid INTEGER NOT NULL,
