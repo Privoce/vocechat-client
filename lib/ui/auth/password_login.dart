@@ -181,8 +181,6 @@ class _PasswordLoginState extends State<PasswordLogin> {
     final pswd = pswdController.text;
     final chatServerM = widget.chatServer;
 
-    String errorMsg = "Login Failed";
-
     try {
       App.app.authService = AuthService(chatServerM: chatServerM);
 
@@ -195,7 +193,6 @@ class _PasswordLoginState extends State<PasswordLogin> {
       }
     } catch (e) {
       App.logger.severe(e);
-      errorMsg = e.toString();
     }
 
     App.logger.severe("Login Failed");

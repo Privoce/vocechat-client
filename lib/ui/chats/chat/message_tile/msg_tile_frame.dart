@@ -1,19 +1,13 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
-import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class MsgTileFrame extends StatelessWidget {

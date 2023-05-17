@@ -8,7 +8,6 @@ class DmInfoM with M {
   int dmUid = -1;
   String lastLocalMid = "";
   // ignore: prefer_final_fields
-  String _properties = "";
   int updatedAt = 0;
 
   // String get name {}

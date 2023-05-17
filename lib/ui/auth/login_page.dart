@@ -456,6 +456,7 @@ class _LoginPageState extends State<LoginPage> {
       _chatServerM = null;
       serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.error;
     }
+    return null;
   }
 
   void _onPasteInvitationLinkTapped(BuildContext context) async {

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -12,7 +12,6 @@ import 'package:vocechat_client/ui/chats/chat/message_tile/archive_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/msg_tile_frame.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/text_bubble.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ArchiveBubble extends StatelessWidget {
   final Archive? archive;

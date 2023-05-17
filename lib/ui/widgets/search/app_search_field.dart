@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/ui/widgets/search/app_search_page.dart';
 
 class AppSearchField extends StatelessWidget implements PreferredSizeWidget {
   final String? hintText;

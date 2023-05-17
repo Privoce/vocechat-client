@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
+// ignore: must_be_immutable
 class ChatTileSimplified extends StatefulWidget {
   final Widget? avatar;
   late final Widget _avatar;

@@ -1,58 +1,40 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/message_api.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
-import 'package:vocechat_client/api/lib/user_api.dart';
-import 'package:vocechat_client/api/models/user/contact_info.dart';
-import 'package:vocechat_client/globals.dart';
+import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
-import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
+import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/voce_audio_service.dart';
 import 'package:vocechat_client/services/voce_send_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/services/file_handler.dart';
-import 'package:vocechat_client/services/send_service.dart';
-import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_info_page.dart';
-import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
-import 'package:vocechat_client/ui/chats/chat/message_tile/message_tile.dart';
-import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
-import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
-import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
-import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/dao/init_dao/archive.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/init_dao/group_info.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/models/local_kits.dart';
-import 'package:vocechat_client/services/voce_chat_service.dart';
-import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_bar.dart';
+import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
+import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
-import 'package:vocechat_client/globals.dart' as globals;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
+import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/channel_start.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
 import 'package:vocechat_client/ui/widgets/voce_context_menu.dart';
-import 'package:vocechat_client/ui/widgets/voce_context_menu_action.dart';
 
 // ignore: must_be_immutable
 class VoceChatPage extends StatefulWidget {
@@ -93,7 +75,8 @@ class VoceChatPage extends StatefulWidget {
   State<VoceChatPage> createState() => _VoceChatPageState();
 }
 
-class _VoceChatPageState extends State<VoceChatPage> {
+class _VoceChatPageState extends State<VoceChatPage>
+    with SingleTickerProviderStateMixin {
   // actions
   final ValueNotifier<bool> selectEnabled = ValueNotifier(false);
 
@@ -112,6 +95,9 @@ class _VoceChatPageState extends State<VoceChatPage> {
 
   final ScrollController _scrollController = ScrollController();
 
+  /// The animation controller for the message tile.
+  late final AnimationController _aniController;
+
   void showBusyDialog() {
     _isBusy.value = true;
   }
@@ -129,6 +115,12 @@ class _VoceChatPageState extends State<VoceChatPage> {
     });
 
     widget.controller.addScrollToBottomListener(_scrollToBottom);
+
+    // Create the animation controller and set its duration
+    _aniController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500),
+    );
   }
 
   @override
@@ -140,6 +132,8 @@ class _VoceChatPageState extends State<VoceChatPage> {
   void dispose() {
     VoceAudioService().clear();
     widget.controller.removeScrollToBottomListener(_scrollToBottom);
+
+    _aniController.dispose();
 
     super.dispose();
   }
@@ -169,7 +163,6 @@ class _VoceChatPageState extends State<VoceChatPage> {
                 Expanded(
                     child: Column(
                   children: [
-                    if (enableContact) _buildContactStatusFloating(),
                     _buildVoceMsgList(),
                   ],
                 )),
@@ -679,7 +672,7 @@ class _VoceChatPageState extends State<VoceChatPage> {
   Future<bool> delete(ChatMsgM old) async {
     try {
       await MessageApi().delete(old.mid).then((response) async {
-        if (response.statusCode == 200 || (old.status == MsgSendStatus.fail)) {
+        if (response.statusCode == 200 || (old.status == MsgStatus.fail)) {
           // successfully deleted or failed to send.
 
           FileHandler.singleton.deleteWithChatMsgM(old);
@@ -752,15 +745,16 @@ class _VoceChatPageState extends State<VoceChatPage> {
           initialItemCount: widget.controller.tileDataList.length + 1,
           itemBuilder: (context, index, animation) {
             if (index == widget.controller.tileDataList.length) {
-              if (widget.controller.reachesEnd) {
-                if (widget.controller.isChannel) {
-                  return ChannelStart(widget.groupInfoNotifier!);
-                } else {
-                  return const SizedBox.shrink();
-                }
+              if (widget.controller.isChannel) {
+                widget.controller.reachesEnd.then((value) {
+                  if (!value) {
+                    widget.controller.loadHistory();
+                  }
+                });
+                return ChannelStart(widget.groupInfoNotifier!,
+                    widget.controller.isLoadingHistory);
               } else {
-                widget.controller.loadHistory();
-                return const CupertinoActivityIndicator();
+                return const SizedBox.shrink();
               }
             }
             final tileData = widget.controller.tileDataList[index];
@@ -771,30 +765,48 @@ class _VoceChatPageState extends State<VoceChatPage> {
             //       SingleChildScrollView(child: VoceMsgTile(tileData: tileData)),
             // );
             final key = ValueKey(tileData.chatMsgMNotifier.value.localMid);
+            final ani = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
+              parent: animation,
+              curve: Interval(
+                0.5,
+                1,
+                curve: Curves.easeInOut,
+              ),
+            ));
 
-            final msgTile = VoceMsgTile(
-              key: key,
-              tileData: tileData,
-              animation: animation,
-              enableSelection: selectEnabled,
-              onSelectChange: (tileData, selected) {
-                final chatMsgM = tileData.chatMsgMNotifier;
-                if (selected) {
-                  // UI is selected, need to also add it to the message map
-                  selectedMsgMap.addAll({chatMsgM.value.localMid: chatMsgM});
-                } else {
-                  selectedMsgMap.remove(chatMsgM.value.localMid);
-                }
+            final msgTile = GestureDetector(
+              // For debug only.
+              // onTap: () {
+              //   print(
+              //       "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
+              // },
+              child: SizeTransition(
+                key: key,
+                sizeFactor: ani,
+                child: VoceMsgTile(
+                  tileData: tileData,
+                  enableSelection: selectEnabled,
+                  onSelectChange: (tileData, selected) {
+                    final chatMsgM = tileData.chatMsgMNotifier;
+                    if (selected) {
+                      // UI is selected, need to also add it to the message map
+                      selectedMsgMap
+                          .addAll({chatMsgM.value.localMid: chatMsgM});
+                    } else {
+                      selectedMsgMap.remove(chatMsgM.value.localMid);
+                    }
 
-                selectedMsgCantMultipleArchive.value =
-                    selectedMsgMap.values.any(
-                  (element) {
-                    return element.value.isArchiveMsg ||
-                        element.value.isAudioMsg ||
-                        element.value.status != MsgSendStatus.success;
+                    selectedMsgCantMultipleArchive.value =
+                        selectedMsgMap.values.any(
+                      (element) {
+                        return element.value.isArchiveMsg ||
+                            element.value.isAudioMsg ||
+                            element.value.status != MsgStatus.success;
+                      },
+                    );
                   },
-                );
-              },
+                ),
+              ),
             );
 
             return GestureDetector(
@@ -808,8 +820,8 @@ class _VoceChatPageState extends State<VoceChatPage> {
                             topRight: Radius.circular(8))),
                     builder: (context) {
                       return MsgActionsSheet(
-                          // msgTile: msgTile,
-                          reactions: tileData.chatMsgMNotifier.value.reactions,
+                          existingReactions: tileData
+                              .chatMsgMNotifier.value.reactionData?.reactionSet,
                           onReaction: (reaction) {
                             VoceSendService()
                                 .sendReaction(
@@ -842,7 +854,7 @@ class _VoceChatPageState extends State<VoceChatPage> {
   /// It is an old version of [_buildPressDownActions]. To be replaced after
   /// the development and UI debug of [VoceContextMenu] finishes.
   List<MsgActionTile> _buildOldLongPressActions(MsgTileData tileData) {
-    final isSuccessSent = tileData.status.value == MsgSendStatus.success;
+    final isSuccessSent = tileData.status.value == MsgStatus.success;
     final isSelf = SharedFuncs.isSelf(tileData.userInfoM.uid);
     final isAdmin = tileData.userInfoM.userInfo.isAdmin;
     final isChannelOwner =

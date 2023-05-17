@@ -13,7 +13,9 @@ enum LoginType { password, magiclink }
 /// to development plan.
 enum SendType { normal, file, edit, reply, audio, cancel }
 
-enum MsgSendStatus { fail, success, sending, readyToSend }
+enum MsgReactionType { edit, action, delete, none }
+
+enum MsgStatus { fail, success, sending, readyToSend, deleted }
 
 enum LoadingStatus { loading, success, disconnected }
 

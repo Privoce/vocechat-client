@@ -32,7 +32,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoceMsgTile extends StatefulWidget {
   final MsgTileData tileData;
-  final Animation<double> animation;
+
   // Selection
   final ValueNotifier<bool>? enableSelection;
   final void Function(MsgTileData tileData, bool selected)? onSelectChange;
@@ -42,7 +42,6 @@ class VoceMsgTile extends StatefulWidget {
   VoceMsgTile({
     Key? key,
     required this.tileData,
-    required this.animation,
     this.enableSelection,
     this.onSelectChange,
   }) : super(key: key) {
@@ -91,33 +90,31 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    return SizeTransition(
-        sizeFactor: widget.animation,
-        child: ValueListenableBuilder<UserInfoM?>(
-            valueListenable: widget.tileData.pinnedByUserInfoM,
-            builder: (context, pinnedBy, _) {
-              final isPinned = pinnedBy != null;
-              return ValueListenableBuilder<bool>(
-                  valueListenable: _isAutoDelete,
-                  builder: (context, isAutoDelete, _) {
-                    return Container(
-                        decoration: BoxDecoration(
-                          color: _getMsgTileBgColor(
-                              isPinned: isPinned, isAutoDelete: isAutoDelete),
-                        ),
-                        constraints: BoxConstraints(
-                            minHeight: avatarSize, maxWidth: width),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (isPinned) _buildPinnedBy(pinnedBy),
-                            _buildTileWithSelectionIcon(),
-                          ],
-                        ));
-                  });
-            }));
+    return ValueListenableBuilder<UserInfoM?>(
+        valueListenable: widget.tileData.pinnedByUserInfoM,
+        builder: (context, pinnedBy, _) {
+          final isPinned = pinnedBy != null;
+          return ValueListenableBuilder<bool>(
+              valueListenable: _isAutoDelete,
+              builder: (context, isAutoDelete, _) {
+                return Container(
+                    decoration: BoxDecoration(
+                      color: _getMsgTileBgColor(
+                          isPinned: isPinned, isAutoDelete: isAutoDelete),
+                    ),
+                    constraints:
+                        BoxConstraints(minHeight: avatarSize, maxWidth: width),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (isPinned) _buildPinnedBy(pinnedBy),
+                        _buildTileWithSelectionIcon(),
+                      ],
+                    ));
+              });
+        });
   }
 
   Widget _buildPinnedBy(UserInfoM? pinnedBy) {
@@ -302,22 +299,22 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return ValueListenableBuilder<ChatMsgM>(
         valueListenable: widget.tileData.chatMsgMNotifier,
         builder: (context, chatMsgM, _) {
-          if (chatMsgM.reactions.isEmpty) {
+          if (!(chatMsgM.reactionData?.hasReaction ?? false)) {
             return const SizedBox();
           } else {
             var map = <String, ReactionItem>{}; // emoji: quantity
 
-            for (var element in chatMsgM.reactions) {
-              if (!map.containsKey(element.reaction)) {
-                map[element.reaction] = ReactionItem(frequency: 1);
+            for (var element in chatMsgM.reactionData!.reactionSet!.toList()) {
+              if (!map.containsKey(element.emoji)) {
+                map[element.emoji] = ReactionItem(frequency: 1);
               } else {
-                map.update(element.reaction, (value) {
+                map.update(element.emoji, (value) {
                   return ReactionItem(frequency: value.frequency + 1);
                 });
               }
 
               if (element.fromUid == App.app.userDb?.uid) {
-                map[element.reaction]?.isSelfReact = true;
+                map[element.emoji]?.isSelfReact = true;
               }
             }
 
@@ -413,11 +410,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
           return SizedBox(
             height: selectSize,
             width: selectSize,
-            child: ValueListenableBuilder<MsgSendStatus>(
+            child: ValueListenableBuilder<MsgStatus>(
               valueListenable: widget.tileData.status,
               builder: (context, status, child) {
                 switch (status) {
-                  case MsgSendStatus.sending:
+                  case MsgStatus.sending:
                     if (widget.tileData.chatMsgMNotifier.value
                         .shouldShowProgressWhenSending) {
                       final task = SendTaskQueue.singleton.getTask(
@@ -438,9 +435,9 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                     }
                     return const CupertinoActivityIndicator();
 
-                  case MsgSendStatus.success:
+                  case MsgStatus.success:
                     return const SizedBox.shrink();
-                  case MsgSendStatus.fail:
+                  case MsgStatus.fail:
 
                     // TODO: show retry button and its functions.
                     return const Icon(Icons.error_outline, color: Colors.red);

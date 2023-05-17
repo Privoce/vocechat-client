@@ -8,16 +8,9 @@ import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/pulse_widgets/pulse_settings_my_info_page.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
-import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/settings/child_pages/firebase_settings_page.dart';
-import 'package:vocechat_client/ui/settings/child_pages/language_setting_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart';
-import 'package:vocechat_client/ui/settings/settings_bar.dart';
-import 'package:vocechat_client/ui/settings/child_pages/userinfo_setting_page.dart';
-import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
@@ -308,6 +301,7 @@ class _PulseSettingsPageState extends State<PulseSettingsPage> {
       userInfoNotifier.value = userInfoM;
 
       // Add [notifyListeners()] to avoid no UI response on avatar changed.
+      // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
       userInfoNotifier.notifyListeners();
     }
   }

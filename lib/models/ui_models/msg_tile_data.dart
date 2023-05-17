@@ -22,7 +22,7 @@ class MsgTileData {
   int avatarUpdatedAt = 0;
   String name = "";
   int time = 0;
-  ValueNotifier<MsgSendStatus> status = ValueNotifier(MsgSendStatus.success);
+  ValueNotifier<MsgStatus> status = ValueNotifier(MsgStatus.success);
 
   /// Only for files (images and files)
   ValueNotifier<double> progress = ValueNotifier(0);
@@ -41,7 +41,7 @@ class MsgTileData {
 
   // Reply message
   // Reply message is a text or markdown message
-  ValueNotifier<ChatMsgM>? repliedMsgMNotifier;
+  ValueNotifier<ChatMsgM?> repliedMsgMNotifier = ValueNotifier(null);
   UserInfoM? repliedUserInfoM;
 
   // Pinned message, only for channels
@@ -70,11 +70,11 @@ class MsgTileData {
     chatMsgMNotifier.addListener(statusListener);
 
     // Still need the following for initial status.
-    MsgSendStatus status = chatMsgMNotifier.value.status;
-    if (status != MsgSendStatus.success) {
+    MsgStatus status = chatMsgMNotifier.value.status;
+    if (status != MsgStatus.success) {
       status = SendTaskQueue.singleton
               .isWaitingOrExecuting(chatMsgMNotifier.value.localMid)
-          ? MsgSendStatus.sending
+          ? MsgStatus.sending
           : status;
     }
 
@@ -97,11 +97,10 @@ class MsgTileData {
 
   // Async secondary setters
 
-  /// Prepare the local data for the chat page.
+  /// Prepare only the essential data for the chat page.
   ///
   /// Only fetches local data.
-  Future<void> localPrepare() async {
-    print("localPrepare");
+  Future<void> primaryPrepare() async {
     setGeneralData();
 
     if (isChannel && chatMsgMNotifier.value.pin > 0) {
@@ -112,25 +111,17 @@ class MsgTileData {
     }
 
     if (chatMsgMNotifier.value.isNormalMsg) {
-      // If is text/markdown/file, do nothing.
-      if (chatMsgMNotifier.value.isImageMsg) {
-        await setNormalImage(serverFetch: false);
-      } else if (chatMsgMNotifier.value.isAudioMsg) {
-        await setNormalAudio(serverFetch: false);
-      } else if (chatMsgMNotifier.value.isArchiveMsg) {
+      // If is text/markdown/file/image/audio, do nothing.
+      if (chatMsgMNotifier.value.isArchiveMsg) {
         await setNormalArchive(serverFetch: false);
       }
     } else if (chatMsgMNotifier.value.isReplyMsg) {
       // Replied message is a text/markdown/file/image/audio/archive
       // Reply message only contains text
       await setReplyGeneralData();
-      if (repliedMsgMNotifier == null) return;
+      if (repliedMsgMNotifier.value == null) return;
 
-      if (repliedMsgMNotifier!.value.isImageMsg) {
-        await setRepliedImage(serverFetch: false);
-      } else if (repliedMsgMNotifier!.value.isAudioMsg) {
-        await setRepliedAudio(serverFetch: false);
-      } else if (repliedMsgMNotifier!.value.isArchiveMsg) {
+      if (repliedMsgMNotifier.value!.isArchiveMsg) {
         await setRepliedArchive(serverFetch: false);
       }
     }
@@ -138,8 +129,9 @@ class MsgTileData {
 
   /// Prepare the local and server data for the chat page.
   ///
+  /// Fetches full data for messages.
   /// Fetches local data first, if no local data is found, it fetches server data.
-  Future<void> serverPrepare() async {
+  Future<void> secondaryPrepare() async {
     if (chatMsgMNotifier.value.isNormalMsg) {
       // If is text/markdown/file, do nothing.
       if (chatMsgMNotifier.value.isImageMsg) {
@@ -153,13 +145,13 @@ class MsgTileData {
       // Replied message is a text/markdown/file/image/audio/archive
       // Reply message only contains text
       await setReplyGeneralData();
-      if (repliedMsgMNotifier == null) return;
+      if (repliedMsgMNotifier.value == null) return;
 
-      if (repliedMsgMNotifier!.value.isImageMsg) {
+      if (repliedMsgMNotifier.value!.isImageMsg) {
         await setRepliedImage();
-      } else if (repliedMsgMNotifier!.value.isAudioMsg) {
+      } else if (repliedMsgMNotifier.value!.isAudioMsg) {
         await setRepliedAudio();
-      } else if (repliedMsgMNotifier!.value.isArchiveMsg) {
+      } else if (repliedMsgMNotifier.value!.isArchiveMsg) {
         await setRepliedArchive();
       }
     }
@@ -169,7 +161,7 @@ class MsgTileData {
   ///
   /// Judged by whether the local files is empty. If so, it means no local files
   /// are found, and the resources need to be downloaded from server.
-  bool get needServerPrepare {
+  bool get needSecondaryPrepare {
     if (chatMsgMNotifier.value.isNormalMsg) {
       // If is text/markdown/file, do nothing.
       if (chatMsgMNotifier.value.isImageMsg) {
@@ -182,13 +174,13 @@ class MsgTileData {
     } else if (chatMsgMNotifier.value.isReplyMsg) {
       // Replied message is a text/markdown/file/image/audio/archive
       // Reply message only contains text
-      if (repliedMsgMNotifier == null) return false;
+      if (repliedMsgMNotifier.value == null) return false;
 
-      if (repliedMsgMNotifier!.value.isImageMsg) {
+      if (repliedMsgMNotifier.value!.isImageMsg) {
         return repliedImageFile == null;
-      } else if (repliedMsgMNotifier!.value.isAudioMsg) {
+      } else if (repliedMsgMNotifier.value!.isAudioMsg) {
         return repliedAudioInfo == null;
-      } else if (repliedMsgMNotifier!.value.isArchiveMsg) {
+      } else if (repliedMsgMNotifier.value!.isArchiveMsg) {
         return archive == null;
       }
     }
@@ -263,49 +255,49 @@ class MsgTileData {
 
     if (repliedMsgM == null) return;
 
-    repliedMsgMNotifier = ValueNotifier(repliedMsgM);
-    if (repliedMsgMNotifier == null) {
+    repliedMsgMNotifier.value = repliedMsgM;
+    if (repliedMsgMNotifier.value == null) {
       return;
     }
 
     repliedUserInfoM =
-        await UserInfoDao().getUserByUid(repliedMsgMNotifier!.value.fromUid);
+        await UserInfoDao().getUserByUid(repliedMsgMNotifier.value!.fromUid);
   }
 
   Future<void> setRepliedImage({bool serverFetch = true}) async {
     assert(chatMsgMNotifier.value.isReplyMsg &&
-        repliedMsgMNotifier!.value.isImageMsg);
+        repliedMsgMNotifier.value!.isImageMsg);
 
     // TODO: If an image message has been deleted, will the original image
     //  still be accessible through resource apis?
 
-    if (repliedMsgMNotifier == null) return;
+    if (repliedMsgMNotifier.value == null) return;
 
-    if (repliedMsgMNotifier!.value.isGifImageMsg) {
+    if (repliedMsgMNotifier.value!.isGifImageMsg) {
       if (serverFetch) {
         repliedImageFile = await FileHandler.singleton
-            .getImageNormal(repliedMsgMNotifier!.value);
+            .getImageNormal(repliedMsgMNotifier.value!);
       } else {
         repliedImageFile = await FileHandler.singleton
-            .getLocalImageNormal(repliedMsgMNotifier!.value);
+            .getLocalImageNormal(repliedMsgMNotifier.value!);
       }
     } else {
       if (serverFetch) {
         repliedImageFile = await FileHandler.singleton
-            .getImageThumb(repliedMsgMNotifier!.value);
+            .getImageThumb(repliedMsgMNotifier.value!);
       } else {
         repliedImageFile = await FileHandler.singleton
-            .getLocalImageThumb(repliedMsgMNotifier!.value);
+            .getLocalImageThumb(repliedMsgMNotifier.value!);
       }
     }
   }
 
   Future<void> setRepliedAudio({bool serverFetch = true}) async {
     assert(chatMsgMNotifier.value.isReplyMsg &&
-        repliedMsgMNotifier!.value.isAudioMsg);
+        repliedMsgMNotifier.value!.isAudioMsg);
 
     final repliedAudioFile = await AudioFileHandler()
-        .readAudioFile(repliedMsgMNotifier!.value, serverFetch: serverFetch);
+        .readAudioFile(repliedMsgMNotifier.value!, serverFetch: serverFetch);
 
     if (repliedAudioFile == null) return;
 
@@ -318,10 +310,10 @@ class MsgTileData {
 
   Future<void> setRepliedArchive({bool serverFetch = true}) async {
     assert(chatMsgMNotifier.value.isReplyMsg &&
-        repliedMsgMNotifier!.value.isArchiveMsg);
+        repliedMsgMNotifier.value!.isArchiveMsg);
 
     final archiveM = await ArchiveHandler()
-        .getArchive(repliedMsgMNotifier!.value, serverFetch: serverFetch);
+        .getArchive(repliedMsgMNotifier.value!, serverFetch: serverFetch);
     if (archiveM != null) {
       archive = archiveM.archive;
     }

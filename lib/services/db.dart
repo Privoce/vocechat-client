@@ -101,7 +101,7 @@ Future<void> initCurrentDb(String dbName) async {
         .create(recursive: true); // App will terminate if create fails.
     db = await databaseFactory.openDatabase(path,
         options: OpenDatabaseOptions(
-          version: 5,
+          version: 6,
           onCreate: (db, version) async {
             // Multiple sql strings are not supported in Android, thus change to single
             // sql string and execute one after another.
@@ -126,8 +126,7 @@ Future<void> initCurrentDb(String dbName) async {
           onUpgrade: (db, oldVersion, newVersion) async {
             if (oldVersion < newVersion && oldVersion < 2) {
               try {
-                db.execute(
-                    "ALTER TABLE group_info DROP COLUMN IF EXISTS avatar");
+                db.execute("ALTER TABLE group_info DROP COLUMN avatar");
               } catch (e) {
                 App.logger.warning(e);
               }
@@ -135,8 +134,20 @@ Future<void> initCurrentDb(String dbName) async {
 
             if (oldVersion < newVersion && oldVersion < 3) {
               try {
-                db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS avatar");
+                db.execute("ALTER TABLE user_info DROP COLUMN avatar");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+
+            if (oldVersion < newVersion && oldVersion < 4) {
+              try {
+                await db.execute(
+                    "ALTER TABLE user_info ADD COLUMN contact_status TEXT NOT NULL DEFAULT ''");
+                await db.execute(
+                    "ALTER TABLE user_info ADD COLUMN contact_created_at INTEGER NOT NULL DEFAULT 0");
+                await db.execute(
+                    "ALTER TABLE user_info ADD COLUMN contact_updated_at INTEGER NOT NULL DEFAULT 0");
               } catch (e) {
                 App.logger.warning(e);
               }
@@ -145,11 +156,36 @@ Future<void> initCurrentDb(String dbName) async {
             if (oldVersion < newVersion && oldVersion < 5) {
               try {
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_status");
+                    "ALTER TABLE user_info DROP COLUMN contact_status");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_created_at");
+                    "ALTER TABLE user_info DROP COLUMN contact_created_at");
                 await db.execute(
-                    "ALTER TABLE user_info DROP COLUMN IF EXISTS contact_updated_at");
+                    "ALTER TABLE user_info DROP COLUMN contact_updated_at");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+
+            if (oldVersion < newVersion && oldVersion < 6) {
+              try {
+                await db.execute("DROP TABLE IF EXISTS unmatched_reaction");
+                await db.execute("DROP INDEX IF EXISTS index_target_mid");
+                await db.execute("ALTER TABLE chat_msg DROP COLUMN reactions");
+                await db.execute("ALTER TABLE chat_msg DROP COLUMN edited");
+                await db.execute('''
+CREATE TABLE IF NOT EXISTS reactions (
+  id TEXT NOT NULL,
+  mid INTEGER PRIMARY KEY,  
+  target_mid INTEGER NOT NULL,
+  target_gid INTEGER NOT NULL,
+  target_uid INTEGER NOT NULL,
+  from_uid INTEGER NOT NULL,
+  action_emoji TEXT NOT NULL, 
+  edited_text TEXT NOT NULL,
+  'type' TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  FOREIGN KEY(target_mid) REFERENCES chat_msg(mid) ON DELETE CASCADE
+)''');
               } catch (e) {
                 App.logger.warning(e);
               }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/services/voce_send_service.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -12,8 +13,6 @@ import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/models/local_kits.dart';
-import 'package:vocechat_client/services/send_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -260,15 +259,11 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
 
     try {
       for (final uid in uidList) {
-        SendService.singleton.sendMessage(
-            uuid(), widget.imageFile.path, SendType.file,
-            uid: uid);
+        VoceSendService().sendUserFile(uid, widget.imageFile.path);
       }
 
       for (final gid in gidList) {
-        SendService.singleton.sendMessage(
-            uuid(), widget.imageFile.path, SendType.file,
-            gid: gid);
+        VoceSendService().sendChannelFile(gid, widget.imageFile.path);
       }
     } catch (e) {
       App.logger.severe(e);
@@ -297,13 +292,12 @@ class _ImageShareSheetState extends State<ImageShareSheet> {
             AppAlertDialogAction(
               text: AppLocalizations.of(context)!.continueStr,
               action: () {
-                SendService.singleton.sendMessage(
-                  uuid(),
-                  imageFile.path,
-                  SendType.file,
-                  gid: gid,
-                  uid: uid,
-                );
+                if (gid != null && gid >= 0) {
+                  VoceSendService().sendChannelFile(gid, imageFile.path);
+                } else if (uid != null && uid >= 0) {
+                  VoceSendService().sendUserFile(uid, imageFile.path);
+                }
+
                 Navigator.of(context).pop();
               },
             )

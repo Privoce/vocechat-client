@@ -35,7 +35,7 @@ class SendTaskQueue {
 
       await Future.doWhile(() async {
         SendTask topTask = _sendTaskQueue.removeFirst();
-        topTask.status.value = MsgSendStatus.sending;
+        topTask.status.value = MsgStatus.sending;
         _sendTaskQueue.addFirst(topTask);
 
         try {
@@ -71,8 +71,7 @@ class SendTaskQueue {
 class SendTask {
   final String localMid;
   final Future<bool> Function() sendTask;
-  ValueNotifier<MsgSendStatus> status =
-      ValueNotifier(MsgSendStatus.readyToSend);
+  ValueNotifier<MsgStatus> status = ValueNotifier(MsgStatus.readyToSend);
   ValueNotifier<double>? progress = ValueNotifier(0);
 
   SendTask({required this.localMid, required this.sendTask});

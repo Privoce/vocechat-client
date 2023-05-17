@@ -1,23 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vocechat_client/api/lib/saved_api.dart';
 import 'package:vocechat_client/api/models/saved/saved_response.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/saved.dart';
 import 'package:vocechat_client/services/file_handler.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/saved_bubble.dart';
 import 'package:vocechat_client/ui/widgets/empty_content_placeholder.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SavedItemPage extends StatefulWidget {
   final int? gid;

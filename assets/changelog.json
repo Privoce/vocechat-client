@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.86", "build_num": 56},
+    "latest": {"version": "0.2.87", "build_num": 57},
     "logs":  [
+        {"time": 1684300834464, "version": "0.2.87", "build_num": 57, "updates": [
+            "- add: fetch history messages in channels before user is registered.",
+            "- fix: some database and performance fixes."
+        ]},
         {"time": 1683764399889, "version": "0.2.86", "build_num": 56, "updates": [
             "- fix: error in login process"
         ]},

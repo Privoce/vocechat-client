@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/models/group/group_create_request.dart';
@@ -10,12 +10,11 @@ import 'package:vocechat_client/api/models/group/group_create_response.dart';
 import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NewPrivateChannelSelectPage extends StatefulWidget {
   final List<UserInfoM> userList;

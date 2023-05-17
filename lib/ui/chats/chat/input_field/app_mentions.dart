@@ -1,13 +1,9 @@
 library flutter_mentions;
 
-import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_portal/flutter_portal.dart';
-import 'package:universal_html/js_util.dart';
-import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/voice_button.dart';
@@ -118,6 +114,7 @@ class AnnotationEditingController extends TextEditingController {
   }
 }
 
+// ignore: must_be_immutable
 class AppMentions extends StatefulWidget {
   AppMentions(
       {required this.mentions,

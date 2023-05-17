@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 
 class ListGroup extends StatelessWidget {
   final String? groupTitle;

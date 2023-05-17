@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
-import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
 import 'package:vocechat_client/api/models/token/credential.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
@@ -52,11 +51,11 @@ class AuthService {
   int retryIndex = 0;
 
   Timer? _fcmTimer;
-  int _fcmExpiresIn = 0;
 
   // Timer? _timer;
   static const threshold = 60; // Refresh tokens if remaining time < 60.
 
+  // ignore: unused_field
   int _expiredIn = 0;
 
   // void _setTimer(int expiredIn) {

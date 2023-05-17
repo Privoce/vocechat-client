@@ -2,12 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
-import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_members_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/owner_transfer_page.dart';
@@ -17,8 +16,6 @@ import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingMembersTile extends StatefulWidget {
   final ValueNotifier<GroupInfoM> groupInfoMNotifier;

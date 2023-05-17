@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,11 +10,11 @@ import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
-import 'package:vocechat_client/api/models/user/contact_info.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
+import 'package:vocechat_client/dao/init_dao/reaction.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
@@ -48,6 +47,8 @@ typedef GroupAware = Future<void> Function(
 
 typedef MsgAware = Future<void> Function(ChatMsgM chatMsgM, bool afterReady,
     {bool? snippetOnly});
+typedef ReactionAware = Future<void> Function(
+    ReactionM reaction, bool afterReady);
 
 typedef MidDeleteAware = Future<void> Function(int targetMid);
 typedef LocalmidDeleteAware = Future<void> Function(String localMid);
@@ -76,11 +77,10 @@ class VoceChatService {
   final Set<UsersAware> _userListeners = {};
   final Set<GroupAware> _groupListeners = {};
   final Set<MsgAware> _msgListeners = {};
+  final Set<ReactionAware> _reactionListeners = {};
   final Set<MidDeleteAware> _midDeleteListeners = {};
   final Set<LocalmidDeleteAware> _lmidDeleteListeners = {};
-
   final Set<VoidCallback> _refreshListeners = {};
-
   final Set<UserStatusAware> _userStatusListeners = {};
   final Set<OrgInfoAware> _orgInfoListeners = {};
 
@@ -92,8 +92,8 @@ class VoceChatService {
 
   final Map<int, ChatMsgM> dmInfoMap = {}; // {uid: createdAt}
 
-  /// Used to avoid duplicated messages.
-  final Set<int> midSet = {};
+  final Map<int, ChatMsgM> msgMap = {};
+  final Map<int, ReactionM> reactionMap = {};
 
   Future<void> initContacts() async {
     if (enableContact) {
@@ -217,6 +217,15 @@ class VoceChatService {
     _msgListeners.remove(msgAware);
   }
 
+  void subscribeReaction(ReactionAware reactionAware) {
+    unsubscribeReaction(reactionAware);
+    _reactionListeners.add(reactionAware);
+  }
+
+  void unsubscribeReaction(ReactionAware reactionAware) {
+    _reactionListeners.remove(reactionAware);
+  }
+
   void subscribeMidDelete(MidDeleteAware deleteAware) {
     unsubscribeMidDelete(deleteAware);
     _midDeleteListeners.add(deleteAware);
@@ -327,7 +336,17 @@ class VoceChatService {
     }
   }
 
-  void fireRefresh() {
+  void fireReaction(ReactionM reaction, bool afterReady) {
+    for (ReactionAware reactionAware in _reactionListeners) {
+      try {
+        reactionAware(reaction, afterReady);
+      } catch (e) {
+        App.logger.severe(e);
+      }
+    }
+  }
+
+  void fireReady() {
     for (VoidCallback refreshAware in _refreshListeners) {
       try {
         refreshAware();
@@ -486,23 +505,11 @@ class VoceChatService {
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
-    // Do filtering if SSE pushes duplicated messages.
-    // (Due to SSE reconnection error.)
     if (chatMsg.mid < 0) {
       return;
     }
 
-    final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.statusStr == MsgSendStatus.success.name) {
-      return;
-    }
-
-    if (midSet.contains(chatMsg.mid)) return;
-
-    midSet.add(chatMsg.mid);
-
     // Update max_mid in UserDB
-    await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, chatMsg.mid);
 
     try {
       switch (chatMsg.detail["type"]) {
@@ -525,40 +532,74 @@ class VoceChatService {
     }
   }
 
-  Future<void> handleHistoryChatMsg(Map<String, dynamic> chatJson) async {
-    ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
+  Future<List<ChatMsgM>> handleServerHistory(dynamic data) async {
+    Map<int, ChatMsgM> historyMsgMap = {};
+    Map<int, ReactionM> historyReactionMap = {};
 
-    App.logger.info(chatJson);
-
-    // Do filtering if SSE pushes duplicated messages.
-    // (Due to SSE reconnection error.)
-    if (chatMsg.mid < 0) {
-      return;
-    }
-
-    final msg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-    if (msg != null && msg.statusStr == MsgSendStatus.success.name) {
-      return;
-    }
+    final msgJsonList = data as List<dynamic>;
 
     try {
-      switch (chatMsg.detail["type"]) {
-        case chatMsgNormal:
-          await _handleMsgNormal(chatMsg);
-          break;
-        case chatMsgReaction:
-          await _handleMsgReaction(chatMsg);
-          break;
-        case chatMsgReply:
-          await _handleReply(chatMsg);
-          break;
-        default:
-          final errorMsg =
-              "MsgDetail format error. msg: ${chatJson.toString()}";
-          App.logger.severe(errorMsg);
+      for (final chatJson in msgJsonList) {
+        ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
+
+        if (chatMsg.mid < 0) {
+          continue;
+        }
+
+        String localMid;
+        if (chatMsg.fromUid == App.app.userDb!.uid) {
+          localMid = chatMsg.detail['properties']['cid'] ?? uuid();
+        } else {
+          localMid = uuid();
+        }
+
+        switch (chatMsg.detail["type"]) {
+          case chatMsgNormal:
+            ChatMsgM chatMsgM =
+                ChatMsgM.fromMsg(chatMsg, localMid, MsgStatus.success);
+            historyMsgMap.addAll({chatMsgM.mid: chatMsgM});
+
+            break;
+          case chatMsgReply:
+            ChatMsgM chatMsgM =
+                ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
+            historyMsgMap.addAll({chatMsgM.mid: chatMsgM});
+
+            break;
+          case chatMsgReaction:
+            final reactionM = ReactionM.fromChatMsg(chatMsg);
+            if (reactionM != null) {
+              historyReactionMap.addAll({reactionM.mid: reactionM});
+            }
+            break;
+          default:
+            break;
+        }
       }
+
+      final reactionDao = ReactionDao();
+      await ChatMsgDao()
+          .batchAdd(historyMsgMap.values.toList())
+          .then((succeed) {
+        if (!succeed) App.logger.severe("History message insert failed");
+      });
+      await reactionDao
+          .batchAdd(historyReactionMap.values.toList())
+          .then((succeed) {
+        if (!succeed) App.logger.severe("History reaction insert failed");
+      });
+
+      // Prepare a final message list.
+      final List<ChatMsgM> result = [];
+      for (var msg in historyMsgMap.values.toList()) {
+        msg.reactionData = await reactionDao.getReactions(msg.mid);
+        result.add(msg);
+      }
+
+      return result;
     } catch (e) {
       App.logger.severe(e);
+      return [];
     }
   }
 
@@ -594,8 +635,6 @@ class VoceChatService {
 
       final groupInfo = GroupInfo.fromJson(groupMap);
       GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
-
-      final oldGroupInfoM = await GroupInfoDao().getGroupByGid(groupInfoM.gid);
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
         fireChannel(value, EventActions.create);
@@ -688,11 +727,79 @@ class VoceChatService {
   }
 
   Future<void> _handleReady() async {
-    saveDmInfoMap();
+    App.logger.info("SseService: Ready");
+    deleteMemoryMsgs();
+
+    // [saveMaxMid] must be called before [saveReactions] and [saveChatMsgs],
+    // as the later functions will clear [msgMap] and [reactionMap].
+    await saveMaxMid();
+    await saveReactions();
+    await saveChatMsgs();
+    await saveDmInfoMap();
+
     afterReady = true;
 
     App.app.statusService?.fireSseLoading(SseStatus.successful);
-    fireRefresh();
+    fireReady();
+  }
+
+  void deleteMemoryMsgs() {
+    // Handle messages that have been deleted.
+    for (final reaction in reactionMap.values) {
+      final targetMid = reaction.targetMid;
+      if (reaction.type == MsgReactionType.delete &&
+          msgMap.containsKey(targetMid)) {
+        msgMap.remove(targetMid);
+      }
+    }
+
+    // Handle burn-after-read expired messages.
+    // Data to be deleted should be stored in a temporary list,
+    // as it is not allowed to modify the [msgMap] during the iteration.
+    final List<int> expiredMids = [];
+    for (final msgM in msgMap.values) {
+      if (msgM.expired) {
+        expiredMids.add(msgM.mid);
+      }
+    }
+    for (final mid in expiredMids) {
+      msgMap.remove(mid);
+    }
+  }
+
+  Future<void> saveMaxMid() async {
+    final maxMid = msgMap.values.fold<int>(0, (max, msg) {
+      if (msg.mid > max) {
+        return msg.mid;
+      }
+      return max;
+    });
+
+    final maxReactionMid = reactionMap.values.fold<int>(0, (max, reaction) {
+      if (reaction.mid > max) {
+        return reaction.mid;
+      }
+      return max;
+    });
+
+    final finalMaxMid = [maxMid, maxReactionMid].reduce(max);
+    await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, finalMaxMid);
+  }
+
+  Future<void> saveChatMsgs() async {
+    await ChatMsgDao().batchAdd(msgMap.values.toList()).then((succeed) {
+      if (succeed) {
+        msgMap.clear();
+      }
+    });
+  }
+
+  Future<void> saveReactions() async {
+    await ReactionDao().batchAdd(reactionMap.values.toList()).then((succeed) {
+      if (succeed) {
+        reactionMap.clear();
+      }
+    });
   }
 
   Future<void> _handleRelatedGroups(Map<String, dynamic> relatedGroups) async {
@@ -1269,7 +1376,7 @@ class VoceChatService {
           .updateUsersVersion(App.app.userDb!.id, version)
           .then((userDbM) => App.app.userDb = userDbM);
 
-      fireRefresh();
+      fireReady();
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1319,119 +1426,49 @@ class VoceChatService {
   }
 
   Future<void> _handleMsgNormal(ChatMsg chatMsg) async {
-    final detail = MsgNormal.fromJson(chatMsg.detail);
-    final isSelf = chatMsg.fromUid == App.app.userDb!.uid;
-
     String localMid;
-    if (isSelf) {
-      localMid = detail.properties?['cid'] ?? uuid();
+    if (chatMsg.fromUid == App.app.userDb!.uid) {
+      localMid = chatMsg.detail['properties']?['cid'] ?? uuid();
     } else {
       localMid = uuid();
     }
 
     try {
-      // TODO: handle data pre-download as soon as the messages are received
-      // (before UI renders, which is the current option) in a later version.
-      ChatMsg c = ChatMsg(
-          target: chatMsg.target,
-          mid: chatMsg.mid,
-          fromUid: chatMsg.fromUid,
-          createdAt: chatMsg.createdAt,
-          detail: detail.toJson());
-
-      ChatMsgM chatMsgM = ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
-        switch (detail.contentType) {
-          case typeText:
-          case typeMarkdown:
-          case typeFile:
-          case typeAudio:
-            fireMsg(dbMsgM, afterReady);
-            midSet.remove(dbMsgM.mid);
-            break;
-
-          case typeArchive:
-            getArchive(chatMsgM).then((_) {
-              fireMsg(dbMsgM, afterReady);
-              midSet.remove(dbMsgM.mid);
-            });
-            break;
-          default:
-            break;
-        }
-      });
-
-      // switch (detail.contentType) {
-      //   case typeText:
-      //   case typeMarkdown:
-      //   case typeFile:
-      //   case typeAudio:
-      //   case typeArchive:
-      //     ChatMsg c = ChatMsg(
-      //         target: chatMsg.target,
-      //         mid: chatMsg.mid,
-      //         fromUid: chatMsg.fromUid,
-      //         createdAt: chatMsg.createdAt,
-      //         detail: detail.toJson());
-      //     ChatMsgM chatMsgM =
-      //         ChatMsgM.fromMsg(c, localMid, MsgSendStatus.success);
-      //     await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
-      //       fireMsg(dbMsgM);
-      //       midSet.remove(dbMsgM.mid);
-      //     });
-
-      //     break;
-
-      //   default:
-      //     break;
-      // }
+      ChatMsgM chatMsgM =
+          ChatMsgM.fromMsg(chatMsg, localMid, MsgStatus.success);
+      await cumulateMsg(chatMsgM);
     } catch (e) {
       App.logger.severe(e);
     }
   }
 
+  Future<void> cumulateMsg(ChatMsgM chatMsgM) async {
+    if (afterReady) {
+      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
+        await ReactionDao().getReactions(dbMsgM.mid).then((reactions) {
+          dbMsgM.reactionData = reactions;
+          fireMsg(dbMsgM, afterReady);
+        });
+
+        await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, dbMsgM.mid);
+      });
+    } else {
+      msgMap.addAll({chatMsgM.mid: chatMsgM});
+    }
+  }
+
   Future<void> _handleMsgReaction(ChatMsg chatMsg) async {
     final msgReactionJson = chatMsg.detail;
-    final targetMid = msgReactionJson["mid"]!;
 
     assert(msgReactionJson["type"] == "reaction");
 
     try {
-      final detailJson = msgReactionJson["detail"] as Map<String, dynamic>;
+      if (msgReactionJson["detail"]["type"] == 'delete') {
+        final int? targetMid = chatMsg.detail["mid"];
 
-      switch (detailJson["type"]) {
-        case "edit":
-          final edit = detailJson["content"] as String;
+        if (targetMid == null) return;
 
-          await ChatMsgDao()
-              .editMsgByMid(targetMid, edit, MsgSendStatus.success)
-              .then((dbMsgM) {
-            if (dbMsgM != null) {
-              fireMsg(dbMsgM, afterReady);
-              midSet.remove(dbMsgM.mid);
-            }
-          });
-
-          break;
-        case "like":
-          final reaction = detailJson["action"] as String;
-
-          await ChatMsgDao()
-              .reactMsgByMid(targetMid, chatMsg.fromUid, reaction,
-                  DateTime.now().millisecondsSinceEpoch)
-              .then((dbMsgM) {
-            if (dbMsgM != null) {
-              fireMsg(dbMsgM, afterReady);
-              midSet.remove(dbMsgM.mid);
-            }
-          });
-
-          break;
-        case "delete":
-          final int? targetMid = chatMsg.detail["mid"];
-
-          if (targetMid == null) return;
-
+        if (afterReady) {
           ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
             if (mid < 0) return;
 
@@ -1465,14 +1502,38 @@ class VoceChatService {
                 latestMsgM = await dao.getDmLatestMsgM(uid);
               }
               if (latestMsgM != null) {
-                fireMsg(latestMsgM, afterReady, snippetOnly: true);
+                await ReactionDao()
+                    .getReactions(latestMsgM.mid)
+                    .then((reactions) {
+                  latestMsgM!.reactionData = reactions;
+                  fireMsg(latestMsgM, afterReady, snippetOnly: true);
+                });
               }
             }
           });
+        } else {
+          msgMap.remove(targetMid);
+        }
+      } else {
+        final reactionM = ReactionM.fromChatMsg(chatMsg);
+        if (reactionM != null) {
+          if (afterReady) {
+            await ReactionDao()
+                .addOrReplace(reactionM)
+                .then((savedReactionM) async {
+              final targetMid = savedReactionM.targetMid;
+              final originalMsgM = await ChatMsgDao().getMsgByMid(targetMid);
+              final reactionData = await ReactionDao().getReactions(targetMid);
 
-          break;
-
-        default:
+              if (originalMsgM != null) {
+                originalMsgM.reactionData = reactionData;
+                fireMsg(originalMsgM, afterReady);
+              }
+            });
+          } else {
+            reactionMap.addAll({reactionM.mid: reactionM});
+          }
+        }
       }
     } catch (e) {
       App.logger.severe(e);
@@ -1494,13 +1555,9 @@ class VoceChatService {
     }
 
     try {
-      chatMsg.createdAt = chatMsg.createdAt;
       ChatMsgM chatMsgM =
-          ChatMsgM.fromReply(chatMsg, localMid, MsgSendStatus.success);
-      await ChatMsgDao().addOrUpdate(chatMsgM).then((dbMsgM) async {
-        fireMsg(dbMsgM, afterReady);
-        midSet.remove(dbMsgM.mid);
-      });
+          ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
+      cumulateMsg(chatMsgM);
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1567,6 +1624,7 @@ class VoceChatService {
         .getThumb(chatMsgM.localMid)
         .catchError((e) {
       App.logger.severe(e);
+      return null;
     }).then((value) {
       if (value != null) {
         for (var item in value) {

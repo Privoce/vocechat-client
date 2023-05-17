@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
-import 'package:simple_logger/simple_logger.dart';
 
 class ArchiveM with M {
   String _archive = "";

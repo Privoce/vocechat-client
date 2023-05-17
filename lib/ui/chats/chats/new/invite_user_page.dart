@@ -5,20 +5,16 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:image/image.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/dao/org_dao/chat_server.dart';
-import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:voce_widgets/voce_widgets.dart';
-import 'package:path_provider/path_provider.dart' as path;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 
 enum LinkStatus { loading, ready, error }
 
@@ -34,8 +30,6 @@ class _InviteUserPageState extends State<InviteUserPage> {
       ValueNotifier(LinkStatus.loading);
 
   GlobalKey qrKey = GlobalKey();
-
-  Uint8List? _image;
 
   // default to be 48 hours.
   final expiredIn = 48;
@@ -138,7 +132,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
       children: [
         Padding(
             padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: QrImage(
+            child: QrImageView(
               data: _invitationLink ?? "",
               // foregroundColor: Colors.blue.shade900,
             )),
@@ -222,9 +216,7 @@ class _InviteUserPageState extends State<InviteUserPage> {
     return null;
   }
 
-  Future<void> _getServerImge() async {
-    _image = App.app.chatServerM.logo;
-  }
+  Future<void> _getServerImge() async {}
 
   /// Temp function to replace server default domain for invitation link.
   /// Should be deleted after the issue resolves.

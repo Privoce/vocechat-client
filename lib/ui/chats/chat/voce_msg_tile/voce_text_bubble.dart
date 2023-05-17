@@ -3,12 +3,14 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoceTextBubble extends StatelessWidget {
   final ChatMsgM chatMsgM;
 
   late final String _content;
+
   late final bool _edited;
   late final bool _hasMention;
   late final TextStyle _normalStyle;
@@ -18,18 +20,22 @@ class VoceTextBubble extends StatelessWidget {
 
   VoceTextBubble({Key? key, required this.chatMsgM, this.maxLines})
       : super(key: key) {
-    _edited = chatMsgM.edited;
+    _edited = chatMsgM.reactionData?.hasEditedText ?? false;
     _hasMention = chatMsgM.hasMention;
 
-    switch (chatMsgM.detailType) {
-      case MsgDetailType.normal:
-        _content = chatMsgM.msgNormal!.content;
-        break;
-      case MsgDetailType.reply:
-        _content = chatMsgM.msgReply!.content;
-        break;
-      default:
-        _content = chatMsgM.msgNormal!.content;
+    if (chatMsgM.reactionData?.hasEditedText == true) {
+      _content = chatMsgM.reactionData!.editedText!;
+    } else {
+      switch (chatMsgM.detailType) {
+        case MsgDetailType.normal:
+          _content = chatMsgM.msgNormal!.content;
+          break;
+        case MsgDetailType.reply:
+          _content = chatMsgM.msgReply!.content;
+          break;
+        default:
+          _content = chatMsgM.msgNormal!.content;
+      }
     }
 
     _normalStyle = TextStyle(

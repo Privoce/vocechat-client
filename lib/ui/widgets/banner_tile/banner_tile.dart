@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_text_styles.dart';
 
+// ignore: must_be_immutable
 class BannerTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool enableTap;

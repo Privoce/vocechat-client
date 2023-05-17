@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 
+// ignore: must_be_immutable
 class FullWidthButton extends StatelessWidget {
   final IconData? leadingIcon;
   final String title;
