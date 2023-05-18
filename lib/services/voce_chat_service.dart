@@ -325,8 +325,6 @@ class VoceChatService {
   /// *Reaction*.
   void fireMsg(ChatMsgM chatMsgM, bool afterReady,
       {bool? snippetOnly = false}) {
-    cumulateDmInfo(chatMsgM);
-
     for (MsgAware msgAware in _msgListeners) {
       try {
         msgAware(chatMsgM, afterReady, snippetOnly: snippetOnly);
@@ -789,6 +787,7 @@ class VoceChatService {
   Future<void> saveChatMsgs() async {
     await ChatMsgDao().batchAdd(msgMap.values.toList()).then((succeed) {
       if (succeed) {
+        App.logger.info("Chat messages saved. total: ${msgMap.length}");
         msgMap.clear();
       }
     });
@@ -797,9 +796,23 @@ class VoceChatService {
   Future<void> saveReactions() async {
     await ReactionDao().batchAdd(reactionMap.values.toList()).then((succeed) {
       if (succeed) {
+        App.logger.info("Reactions saved. total: ${reactionMap.length}");
         reactionMap.clear();
       }
     });
+  }
+
+  Future<void> saveDmInfoMap() async {
+    final dmInfoDao = DmInfoDao();
+
+    for (final each in dmInfoMap.values.toList()) {
+      if (each.dmUid < 0) continue;
+      final info = DmInfoM.item(each.dmUid, "", each.createdAt);
+      await dmInfoDao.addOrUpdate(info);
+    }
+
+    App.logger.info("DmInfos saved. total: ${dmInfoMap.length}");
+    dmInfoMap.clear();
   }
 
   Future<void> _handleRelatedGroups(Map<String, dynamic> relatedGroups) async {
@@ -1437,6 +1450,7 @@ class VoceChatService {
       ChatMsgM chatMsgM =
           ChatMsgM.fromMsg(chatMsg, localMid, MsgStatus.success);
       await cumulateMsg(chatMsgM);
+      await cumulateDmInfo(chatMsgM);
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1454,6 +1468,15 @@ class VoceChatService {
       });
     } else {
       msgMap.addAll({chatMsgM.mid: chatMsgM});
+    }
+  }
+
+  Future<void> cumulateDmInfo(ChatMsgM chatMsgM) async {
+    if (afterReady) {
+      final info = DmInfoM.item(chatMsgM.dmUid, "", chatMsgM.createdAt);
+      await DmInfoDao().addOrUpdate(info);
+    } else {
+      dmInfoMap.addAll({chatMsgM.dmUid: chatMsgM});
     }
   }
 
@@ -1558,6 +1581,7 @@ class VoceChatService {
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
       cumulateMsg(chatMsgM);
+      await cumulateDmInfo(chatMsgM);
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1783,19 +1807,5 @@ class VoceChatService {
   Future getOpenGraphicParse(url) async {
     final resourceApi = ResourceApi();
     return (await resourceApi.getOpenGraphicParse(url)).data;
-  }
-
-  void cumulateDmInfo(ChatMsgM chatMsgM) {
-    dmInfoMap.addAll({chatMsgM.dmUid: chatMsgM});
-  }
-
-  Future<void> saveDmInfoMap() async {
-    final dmInfoDao = DmInfoDao();
-
-    for (final each in dmInfoMap.values.toList()) {
-      if (each.dmUid < 0) continue;
-      final info = DmInfoM.item(each.dmUid, "", each.createdAt);
-      await dmInfoDao.addOrUpdate(info);
-    }
   }
 }

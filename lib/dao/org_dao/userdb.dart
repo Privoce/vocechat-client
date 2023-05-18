@@ -207,10 +207,6 @@ class UserDbMDao extends OrgDao<UserDbM> {
         whereArgs: [chatServerId, uid]);
     if (old != null) {
       old.info = jsonEncode(userInfo.toJson());
-      // if (avatarBytes != null) {
-      //   old.avatarBytes = avatarBytes;
-      // }
-      old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
     }
     return old;
@@ -264,7 +260,7 @@ class UserDbMDao extends OrgDao<UserDbM> {
     UserDbM? old = await get(id);
     if (old != null) {
       old.maxMid = max(old.maxMid, maxMid);
-      old.updatedAt = DateTime.now().millisecondsSinceEpoch;
+      // old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
       _logger.config("UserDb maxMid updated. maxMid :${old.maxMid}");
     } else {
@@ -278,7 +274,7 @@ class UserDbMDao extends OrgDao<UserDbM> {
     UserDbM? old = await get(id);
     if (old != null) {
       old.usersVersion = version;
-      old.updatedAt = DateTime.now().millisecondsSinceEpoch;
+      // old.updatedAt = DateTime.now().millisecondsSinceEpoch;
       await super.update(old);
       _logger.config("UserDb UsersVersion updated. Version:$version");
     } else {

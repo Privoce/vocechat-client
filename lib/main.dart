@@ -132,7 +132,12 @@ class VoceChatApp extends StatefulWidget {
 
 class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   late Widget _defaultHome;
-  late bool shouldRefresh;
+
+  /// Whether the app should fetch new tokens from server.
+  ///
+  /// When app lifecycle goes through [paused] and [detached], it is set to true.
+  /// When app lifecycle goes through [resumed], it is set back to false.
+  bool shouldRefresh = false;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   Locale? _locale;
@@ -141,12 +146,13 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   /// [_connect()] function to be called repeatly.
   bool _isConnecting = false;
 
+  bool _firstTimeRefreshSinceAppOpens = true;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _defaultHome = widget.defaultHome;
-    shouldRefresh = false;
 
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
@@ -172,31 +178,28 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        print('app resumed');
+        App.logger.info('App lifecycle: app resumed');
+
         onResume();
-        setState(() {
-          shouldRefresh = false;
-        });
+
+        shouldRefresh = false;
+
         break;
       case AppLifecycleState.paused:
-        print('app paused');
-        setState(() {
-          shouldRefresh = true;
-        });
+        App.logger.info('App lifecycle: app paused');
+
+        shouldRefresh = true;
 
         break;
       case AppLifecycleState.inactive:
-        print('app inactive');
-        // setState(() {
-        //   shouldRefresh = false;
-        // });
+        App.logger.info('App lifecycle: app inactive');
         break;
       case AppLifecycleState.detached:
       default:
-        print('app detached');
-        setState(() {
-          shouldRefresh = true;
-        });
+        App.logger.info('App lifecycle: app detached');
+
+        shouldRefresh = true;
+
         break;
     }
   }
@@ -515,9 +518,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   void onPaused() {}
 
-  void onInactive() {
-    // Sse.sse.close();
-  }
+  void onInactive() {}
 
   Future<void> _updateConnectionStatus(ConnectivityResult result) async {
     App.logger.info("Connectivity: $result");
@@ -538,7 +539,9 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
       if (userDb != null) {
         if (App.app.authService != null) {
-          if (await SharedFuncs.renewAuthToken()) {
+          if (await SharedFuncs.renewAuthToken(
+              forceRefresh: _firstTimeRefreshSinceAppOpens)) {
+            _firstTimeRefreshSinceAppOpens = false;
             App.app.chatService.initSse();
           } else {
             Sse.sse.close();

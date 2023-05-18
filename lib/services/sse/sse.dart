@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:universal_html/html.dart';
 import 'package:vocechat_client/app.dart';
@@ -23,11 +24,6 @@ class Sse {
   bool isConnecting = false;
 
   Timer? _reconnectTimer;
-
-  /// shows whether sse has received 'ready' message from server.
-  bool _afterReady = false;
-
-  bool get afterReady => _afterReady;
 
   void connect() async {
     if (isConnecting) return;
@@ -77,7 +73,6 @@ class Sse {
   }
 
   void subscribeSseEvent(SseEventAware aware) {
-    // unsubscribeSseEvent(aware);
     unsubscribeAllSseEvents();
     sseEventListeners.add(aware);
   }
@@ -121,7 +116,7 @@ class Sse {
 
   void handleError(Event event) async {
     _reconnectTimer = Timer(Duration(seconds: reconnectSec), () async {
-      if (await SharedFuncs.renewAuthToken()) {
+      if (await SharedFuncs.renewAuthToken(forceRefresh: true)) {
         connect();
       }
 
@@ -135,20 +130,6 @@ class Sse {
   void cancelReconnectionDelay() {
     _reconnectTimer?.cancel();
   }
-
-  // void _setAfterReady() {
-  //   _afterReady = true;
-  // }
-
-  // void _resetAfterReady() {
-  //   _afterReady = false;
-  // }
-
-  // void _monitorReadyEvent(dynamic event) {
-  //   final map = json.decode(event);
-  //   final type = map["type"];
-  //   if (type == sseReady) _setAfterReady();
-  // }
 
   bool isClosed() {
     if (eventSource == null) {
