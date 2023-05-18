@@ -178,13 +178,30 @@ class SharedFuncs {
   // }
 
   /// Renew access token and refresh token, and do related data storage.
-  static Future<bool> renewAuthToken() async {
+  static Future<bool> renewAuthToken({bool forceRefresh = false}) async {
     App.app.statusService?.fireTokenLoading(TokenStatus.connecting);
     try {
       if (App.app.userDb == null) {
         App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
         return false;
       }
+
+      // Check whether old token expires:
+      if (!forceRefresh) {
+        final oldTokenExpiresAt =
+            App.app.userDb!.updatedAt + App.app.userDb!.expiredIn * 1000;
+        final now = DateTime.now().millisecondsSinceEpoch;
+
+        // If token is still valid (need to update 60s before it actually expires),
+        // return true.
+        if (now < oldTokenExpiresAt - 60000) {
+          App.app.statusService?.fireTokenLoading(TokenStatus.successful);
+          App.logger
+              .config("Token is still valid. ExpiresAt: $oldTokenExpiresAt");
+          return true;
+        }
+      }
+
       final req = TokenRenewRequest(
           App.app.userDb!.token, App.app.userDb!.refreshToken);
 
