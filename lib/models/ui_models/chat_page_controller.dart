@@ -341,7 +341,6 @@ class ChatPageController {
       _localMidSet.add(tileData.chatMsgMNotifier.value.localMid);
       tileDataList.insert(index, tileData);
       listKey.currentState?.insertItem(index);
-      updateReadIndex(tileData.chatMsgMNotifier.value.mid);
 
       if (scroll) {
         notifyScrollToBottomListeners();
@@ -393,6 +392,8 @@ class ChatPageController {
       taskQueue.add(() async {
         insert(findInsertIndex(chatMsgM), tileData);
       });
+
+      updateReadIndex(chatMsgM.mid);
     }
   }
 
