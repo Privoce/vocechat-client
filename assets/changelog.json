@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.87", "build_num": 57},
+    "latest": {"version": "0.2.88", "build_num": 58},
     "logs":  [
+        {"time": 1684390702590, "version": "0.2.88", "build_num": 58, "updates": [
+            "- fix: preliminary network fixes.",
+            "- fix: direct messages might not show up after initial data loading."
+        ]},
         {"time": 1684300834464, "version": "0.2.87", "build_num": 57, "updates": [
             "- add: fetch history messages in channels before user is registered.",
             "- fix: some database and performance fixes."
