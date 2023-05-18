@@ -230,8 +230,9 @@ class SharedFuncs {
       App.logger.severe("Renew Token Failed, Status code: ${res.statusCode}");
     } catch (e) {
       App.logger.severe(e);
+      App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
     }
-    App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
+
     return false;
   }
 

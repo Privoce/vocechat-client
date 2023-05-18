@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:universal_html/html.dart';
 import 'package:vocechat_client/app.dart';
@@ -115,7 +116,7 @@ class Sse {
 
   void handleError(Event event) async {
     _reconnectTimer = Timer(Duration(seconds: reconnectSec), () async {
-      if (await SharedFuncs.renewAuthToken()) {
+      if (await SharedFuncs.renewAuthToken(forceRefresh: true)) {
         connect();
       }
 

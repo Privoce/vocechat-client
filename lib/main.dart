@@ -146,6 +146,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   /// [_connect()] function to be called repeatly.
   bool _isConnecting = false;
 
+  bool _firstTimeRefreshSinceAppOpens = true;
+
   @override
   void initState() {
     super.initState();
@@ -537,7 +539,9 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
       final userDb = await UserDbMDao.dao.getUserDbById(status.userDbId);
       if (userDb != null) {
         if (App.app.authService != null) {
-          if (await SharedFuncs.renewAuthToken()) {
+          if (await SharedFuncs.renewAuthToken(
+              forceRefresh: _firstTimeRefreshSinceAppOpens)) {
+            _firstTimeRefreshSinceAppOpens = false;
             App.app.chatService.initSse();
           } else {
             Sse.sse.close();
