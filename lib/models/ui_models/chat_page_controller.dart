@@ -240,7 +240,7 @@ class ChatPageController {
 
       if (msgList.isNotEmpty) {
         final maxMid = msgList.first.mid;
-        updateReadIndex(maxMid);
+        await updateReadIndex(maxMid);
       }
 
       for (var msg in msgList) {
@@ -393,7 +393,7 @@ class ChatPageController {
         insert(findInsertIndex(chatMsgM), tileData);
       });
 
-      updateReadIndex(chatMsgM.mid);
+      await updateReadIndex(chatMsgM.mid);
     }
   }
 
