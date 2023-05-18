@@ -439,7 +439,8 @@ class _ServerPageState extends State<ServerPage> {
 
       final avatarBytes = await (await UserAvatarHander().readOrFetch(
               UserInfoM.fromUserInfo(userDb.userInfo, ""),
-              dbName: userDb.dbName))
+              dbName: userDb.dbName,
+              enableServerFetch: false))
           ?.readAsBytes();
 
       if (chatServer == null) {
