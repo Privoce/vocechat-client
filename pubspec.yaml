@@ -42,11 +42,11 @@ dependencies:
   flutter_slidable: ^2.0.0
   sqflite: ^2.0.1
   simple_logger: ^1.9.0
+  logging: ^1.1.1
   image: ^3.1.0
   uuid: ^3.0.5
   equatable: ^2.0.3
-  convert: ^3.0.1
-  # crypto: ^3.0.1
+  convert: ^3.0.1 
   intl: any
   json_annotation: ^4.4.0
   dio: ^4.0.6
@@ -90,14 +90,6 @@ dependencies:
   audio_session: ^0.1.13
   provider: ^6.0.5
   audioplayers: ^3.0.1
-  # scrollable_positioned_list: ^0.3.8
-
-  # voce_image_viewer:
-  #   path: /Users/shuotwang/Documents/privoce/projects/voce_image_viewer/
-  
-  # for debug use.
-  # azlistview: 
-  #   path: /Users/shuotwang/Documents/flutter_forks/azlistview
 
 dependency_overrides:
   azlistview:
