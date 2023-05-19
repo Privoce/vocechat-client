@@ -610,6 +610,7 @@ class VoceSendService {
     } catch (e) {
       App.logger.severe(e);
       App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
+
       return false;
     }
 
@@ -634,6 +635,7 @@ class VoceSendService {
       if (res.statusCode == 200 && res.data != null) {
         final mid = res.data!;
         chatMsgM.mid = mid;
+        chatMsgM.status = MsgStatus.success;
         await ChatMsgDao().add(chatMsgM).then((chatMsgM) async {
           App.app.chatService
               .fireMsg(chatMsgM..status = MsgStatus.success, true);
@@ -705,6 +707,7 @@ class VoceSendService {
       if (res.statusCode == 200 && res.data != null) {
         final mid = res.data!;
         chatMsgM.mid = mid;
+        chatMsgM.status = MsgStatus.success;
         await ChatMsgDao().add(chatMsgM).then((chatMsgM) async {
           App.app.chatService
               .fireMsg(chatMsgM..status = MsgStatus.success, true);

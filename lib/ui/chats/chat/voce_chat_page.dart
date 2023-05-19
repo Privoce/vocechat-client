@@ -783,10 +783,10 @@ class _VoceChatPageState extends State<VoceChatPage>
 
             final msgTile = GestureDetector(
               // For debug only.
-              // onTap: () {
-              //   print(
-              //       "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
-              // },
+              onTap: () {
+                print(
+                    "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
+              },
               child: SizeTransition(
                 key: key,
                 sizeFactor: ani,

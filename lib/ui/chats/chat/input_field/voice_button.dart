@@ -252,17 +252,16 @@ class _VoiceButtonState extends State<VoiceButton> {
   void _stopsRecording() async {
     final path = await record.stop();
     _timer?.cancel();
-    recordDuration.value = 0;
 
-    if (_previousVoiceButtonType == VoiceButtonType.cancelling) {
+    if (_previousVoiceButtonType == VoiceButtonType.cancelling ||
+        (_previousVoiceButtonType == VoiceButtonType.recording &&
+            recordDuration.value < 1)) {
       if (_audioFilePathInfo != null) {
         await AudioFileHandler().delete(_audioFilePathInfo!.fileName,
             chatId: _audioFilePathInfo!.chatId);
       }
       return;
     } else if (_previousVoiceButtonType == VoiceButtonType.recording) {
-      // send voice message
-
       final audioFile = File(path ?? "");
       if (await audioFile.exists() && _audioFilePathInfo != null) {
         final localMid = _audioFilePathInfo!.uuid;
@@ -273,6 +272,7 @@ class _VoiceButtonState extends State<VoiceButton> {
         }
       }
     }
+    recordDuration.value = 0;
   }
 
   Future<AudioFilePathInfo> _generateAudioPathInfo() async {
