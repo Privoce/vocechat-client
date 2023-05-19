@@ -596,6 +596,7 @@ class VoceSendService {
       fileId = (await resourceApi.prepareFile(prepareReq)).data!;
     } catch (e) {
       App.logger.severe(e);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       return false;
     }
 
@@ -687,6 +688,7 @@ class VoceSendService {
       uploadRes = (await fileUploader.upload(contentType))!.data!;
     } catch (e) {
       App.logger.severe(e);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       return false;
     }
 
