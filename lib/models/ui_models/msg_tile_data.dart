@@ -71,6 +71,7 @@ class MsgTileData {
 
     // Still need the following for initial status.
     MsgStatus status = chatMsgMNotifier.value.status;
+
     if (status != MsgStatus.success) {
       status = SendTaskQueue.singleton
               .isWaitingOrExecuting(chatMsgMNotifier.value.localMid)

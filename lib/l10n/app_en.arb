@@ -1,7 +1,7 @@
 {   
     "serverPageWelcomeFirstLine":"Welcome to",
     "serverPageWelcomeSecondLine":"VoceChat.",
-    "serverPageHostServer": "Host Server Url",
+    "serverPageHostServer": "Host Server URL",
     "serverPageHistory": "History",
     
     "registerNamingPageWhatsYourName":"What's your name",
@@ -11,7 +11,7 @@
     "registerNamingPageSignUpFailedContent":"Something wrong happened. Please try again later or contact server owner for help.",
 
     "chatServerHelperServerConnectionError": "Server Connection Error",
-    "chatServerHelperServerConnectionErrorContent": "VoceChat can't retrieve server info. You may check url format, such as 'https' and 'http', or port number, or contact server owner for help.",
+    "chatServerHelperServerConnectionErrorContent": "VoceChat can't retrieve server info. You may check URL format, such as 'https' and 'http', or port number, or contact server owner for help.",
     "chatServerHelperServerNotInitialized": "Server Not Initialized",
     "chatServerHelperServerNotInitializedContent": "Please use web client for initialization.",
 
@@ -82,7 +82,7 @@
     "clearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
     "continueStr": "Continue",
     "copy":"Copy",
-    "copyUrl":"Copy Url",
+    "copyUrl":"Copy URL",
 
     "day":"day",
     "days":"days",
@@ -97,10 +97,12 @@
     "description":"Description",
     "done": "Done",
     "download": "Download",
+
     "edit": "Edit",
     "edited":"edited",
     "email": "Email",
     "emailConflictError":"Email conflicts with an existing account.",
+    "error":"Error",
     
     "female":"Female",
     "fetchingServerInfo":"Fetching Server Info",
@@ -190,6 +192,7 @@
     "replyingTo":"Replying to",
     "retry":"Retry",
     "resend":"Resend",
+    "resendNotSupported":"Resending this type of message is not supported.",
     "resetFcmToken":"Reset Push Notification",
     "resetFcmTokenFooter":"You may re-register Firebase device token for Push Notifications, if a push notification error occurred during login process. Please check your network condition, as it needs to connect Google service.",
 

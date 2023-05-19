@@ -1,7 +1,7 @@
 {   
     "serverPageWelcomeFirstLine":"欢迎使用",
     "serverPageWelcomeSecondLine":"VoceChat.",
-    "serverPageHostServer": "服务器 Url",
+    "serverPageHostServer": "服务器 URL",
     "serverPageHistory": "历史",
 
     "registerNamingPageWhatsYourName":"您的用户名",
@@ -82,7 +82,7 @@
     "channel":"频道",
     "confirmPassword": "确认密码",
     "copy":"复制",
-    "copyUrl":"拷贝 Url",
+    "copyUrl":"拷贝 URL",
     "clearLocalData": "清空本地数据",
     "clearLocalDataContent": "VoceChat 将会终止运行。所有本地数据都会被移除。",
     "continueStr": "继续",
@@ -100,10 +100,12 @@
     "description":"描述",
     "done": "完成",
     "download":"下载",
+
     "edit": "编辑",
     "edited":"已编辑",
     "email": "邮箱",
     "emailConflictError":"电子邮件地址和现有账户冲突。",
+    "error":"错误",
 
     "female":"女",
     "fetchingServerInfo":"正在获取服务器信息",
@@ -193,6 +195,7 @@
     "replyingTo":"回复给",
     "retry":"重试",
     "resend":"重发",
+    "resendNotSupported":"此类型消息不支持重发。",
     "resetFcmToken":"重设通知",
     "resetFcmTokenFooter":"如果登录过程中出现通知错误提示，您可以在这里尝试重新向服务端注册设备信息。此过程需要连接谷歌服务，请确认您的网络状况。",
 
