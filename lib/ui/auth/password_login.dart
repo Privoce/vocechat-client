@@ -63,7 +63,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       rememberMe = true;
     }
 
-    enableLogin.value = isEmailValid && isPswdValid;
+    enableLogin.value = isEmailValid && isPswdValid && widget.enable;
   }
 
   @override
