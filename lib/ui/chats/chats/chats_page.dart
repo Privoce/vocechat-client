@@ -182,16 +182,16 @@ class _ChatsPageState extends State<ChatsPage>
       final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
       if (chatId != null) {
         chatTileMap.remove(chatId);
+        setState(() {});
       }
-    } else if (action == EventActions.create) {
+    } else if (action == EventActions.update) {
       final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
       if (chatId != null && !chatTileMap.containsKey(chatId)) {
         final tileData = await ChatTileData.fromChannel(groupInfoM);
         chatTileMap.addAll({chatId: tileData});
+        setState(() {});
       }
     }
-
-    setState(() {});
   }
 
   void clearChats() {
