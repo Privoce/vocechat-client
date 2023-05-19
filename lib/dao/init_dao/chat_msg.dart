@@ -287,6 +287,7 @@ class ChatMsgM extends Equatable with M {
   ChatMsgM();
 
   ChatMsgM.item(
+      String id,
       this.mid,
       this.localMid,
       this.fromUid,
@@ -294,14 +295,16 @@ class ChatMsgM extends Equatable with M {
       this.gid,
       // this._edited,
       this.statusStr,
-      createdAt,
+      int createdAt,
       this.detail,
       // this._reactions,
       this.pin) {
+    super.id = id;
     super.createdAt = createdAt;
   }
 
   ChatMsgM.fromMsg(ChatMsg chatMsg, this.localMid, MsgStatus status) {
+    id = chatMsg.mid.toString();
     mid = chatMsg.mid;
     fromUid = chatMsg.fromUid;
 
@@ -324,6 +327,7 @@ class ChatMsgM extends Equatable with M {
   }
 
   ChatMsgM.fromOld(ChatMsgM old) {
+    id = old.id;
     mid = old.mid;
     localMid = old.localMid;
     fromUid = old.fromUid;
@@ -336,6 +340,7 @@ class ChatMsgM extends Equatable with M {
   }
 
   ChatMsgM.fromReply(ChatMsg chatMsg, this.localMid, MsgStatus status) {
+    id = chatMsg.mid.toString();
     mid = chatMsg.mid;
     fromUid = chatMsg.fromUid;
     detail = json.encode(chatMsg.detail);
@@ -391,6 +396,7 @@ class ChatMsgM extends Equatable with M {
   }
 
   static const F_tableName = 'chat_msg';
+  static const F_id = 'id';
   static const F_mid = 'mid';
   static const F_localMid = 'local_mid';
   static const F_fromUid = 'from_uid';
@@ -403,6 +409,7 @@ class ChatMsgM extends Equatable with M {
 
   @override
   Map<String, Object> get values => {
+        ChatMsgM.F_id: id,
         ChatMsgM.F_mid: mid,
         ChatMsgM.F_localMid: localMid,
         ChatMsgM.F_fromUid: fromUid,

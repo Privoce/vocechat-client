@@ -752,12 +752,12 @@ class _VoceChatPageState extends State<VoceChatPage>
           initialItemCount: widget.controller.tileDataList.length + 1,
           itemBuilder: (context, index, animation) {
             if (index == widget.controller.tileDataList.length) {
+              widget.controller.reachesEnd.then((reachesEnd) {
+                if (!reachesEnd) {
+                  widget.controller.loadHistory();
+                }
+              });
               if (widget.controller.isChannel) {
-                widget.controller.reachesEnd.then((value) {
-                  if (!value) {
-                    widget.controller.loadHistory();
-                  }
-                });
                 return ChannelStart(widget.groupInfoNotifier!,
                     widget.controller.isLoadingHistory);
               } else {
@@ -783,10 +783,10 @@ class _VoceChatPageState extends State<VoceChatPage>
 
             final msgTile = GestureDetector(
               // For debug only.
-              onTap: () {
-                print(
-                    "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
-              },
+              // onTap: () {
+              //   print(
+              //       "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
+              // },
               child: SizeTransition(
                 key: key,
                 sizeFactor: ani,
