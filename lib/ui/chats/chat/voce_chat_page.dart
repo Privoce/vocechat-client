@@ -785,15 +785,20 @@ class _VoceChatPageState extends State<VoceChatPage>
             final msgTile = GestureDetector(
               // For debug only.
               onTap: () {
-                showAppAlert(context: context, title: "record", actions: [
-                  AppAlertDialogAction(
-                      text: "copy",
-                      action: () => Clipboard.setData(ClipboardData(
-                          text: tileData.chatMsgMNotifier.value.values
-                              .toString())))
-                ]);
-                print(
-                    "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
+                showAppAlert(
+                    context: context,
+                    title: "record",
+                    content: tileData.chatMsgMNotifier.value.values.toString(),
+                    actions: [
+                      AppAlertDialogAction(
+                          text: "copy",
+                          action: () {
+                            Clipboard.setData(ClipboardData(
+                                text: tileData.chatMsgMNotifier.value.values
+                                    .toString()));
+                            Navigator.pop(context);
+                          })
+                    ]);
               },
               child: SizeTransition(
                 key: key,

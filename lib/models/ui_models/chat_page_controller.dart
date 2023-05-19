@@ -11,6 +11,8 @@ import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
+import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class ChatPageController {
   // What do we need?
@@ -35,6 +37,7 @@ class ChatPageController {
 
   // Message data
   final Set<String> _localMidSet = {};
+  final Map<int, Widget> _avatarMap = {};
   List<MsgTileData> tileDataList = [];
   final Map<int, UserInfoM> _userInfoMap = {};
 
@@ -204,7 +207,19 @@ class ChatPageController {
       _userInfoMap.addAll({senderUid: userInfoM});
     }
 
-    final tileData = MsgTileData(chatMsgM: chatMsgM, userInfoM: userInfoM!);
+    Widget avatarWidget;
+    if (_avatarMap.containsKey(userInfoM!.uid)) {
+      avatarWidget = _avatarMap[userInfoM.uid]!;
+    } else {
+      avatarWidget = VoceUserAvatar.user(
+          userInfoM: userInfoM,
+          size: VoceAvatarSize.s40,
+          enableOnlineStatus: false);
+      _avatarMap.addAll({userInfoM.uid: avatarWidget});
+    }
+
+    final tileData = MsgTileData(
+        chatMsgM: chatMsgM, userInfoM: userInfoM, avatarWidget: avatarWidget);
     await tileData.primaryPrepare();
 
     return tileData;

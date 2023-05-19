@@ -231,11 +231,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                         userInfoM: widget.tileData.userInfoM);
                   }));
                 },
-          child: VoceUserAvatar.user(
-              key: ValueKey(widget.tileData.userInfoM.userInfo.uid),
-              userInfoM: widget.tileData.userInfoM,
-              size: avatarSize,
-              enableOnlineStatus: false),
+          child: widget.tileData.avatarWidget,
         ));
   }
 

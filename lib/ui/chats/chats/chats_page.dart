@@ -48,6 +48,7 @@ class _ChatsPageState extends State<ChatsPage>
     calUnreadCountSum();
 
     App.app.chatService.subscribeMsg(_onMessage);
+    App.app.chatService.subscribeGroups(_onChannel);
     App.app.chatService.subscribeRefresh(_onRefresh);
 
     eventBus.on<UserChangeEvent>().listen((event) {
@@ -58,6 +59,7 @@ class _ChatsPageState extends State<ChatsPage>
       calUnreadCountSum();
 
       App.app.chatService.subscribeMsg(_onMessage);
+      App.app.chatService.subscribeGroups(_onChannel);
       App.app.chatService.subscribeRefresh(_onRefresh);
     });
   }
@@ -65,6 +67,7 @@ class _ChatsPageState extends State<ChatsPage>
   @override
   void dispose() {
     App.app.chatService.unsubscribeMsg(_onMessage);
+    App.app.chatService.unsubscribeGroups(_onChannel);
     App.app.chatService.unsubscribeRefresh(_onRefresh);
     super.dispose();
   }
@@ -172,6 +175,23 @@ class _ChatsPageState extends State<ChatsPage>
 
   void _onRefresh() {
     prepareChats();
+  }
+
+  Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
+    if (action == EventActions.delete) {
+      final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
+      if (chatId != null) {
+        chatTileMap.remove(chatId);
+      }
+    } else if (action == EventActions.create) {
+      final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
+      if (chatId != null && !chatTileMap.containsKey(chatId)) {
+        final tileData = await ChatTileData.fromChannel(groupInfoM);
+        chatTileMap.addAll({chatId: tileData});
+      }
+    }
+
+    setState(() {});
   }
 
   void clearChats() {
