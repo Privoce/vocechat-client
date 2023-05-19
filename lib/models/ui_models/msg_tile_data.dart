@@ -226,6 +226,7 @@ class MsgTileData {
     player.setReleaseMode(ReleaseMode.stop);
 
     final duration = await player.getDuration();
+
     audioInfo = AudioInfo(player, duration?.inMilliseconds ?? 0);
   }
 

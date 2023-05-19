@@ -4,6 +4,7 @@ import 'package:vocechat_client/services/voce_audio_service.dart';
 
 class VoceProgressBar extends StatefulWidget {
   final int duration;
+
   final AudioPlayer player;
   final AlignmentGeometry textAlignment;
   final double height;
@@ -22,7 +23,7 @@ class VoceProgressBar extends StatefulWidget {
 
 class _VoceProgressBarState extends State<VoceProgressBar>
     with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
+  // late AnimationController _animationController;
 
   double _progress = 0.0;
   bool _isPlaying = false;
@@ -36,37 +37,20 @@ class _VoceProgressBarState extends State<VoceProgressBar>
         setState(() {
           if (event == PlayerState.playing) {
             _isPlaying = true;
-            _animationController.forward();
           } else {
             _isPlaying = false;
-            _animationController.stop();
           }
         });
       }
     });
 
-    _animationController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: widget.duration),
-    )..addListener(() {
-        if (mounted) {
-          setState(() {
-            _progress = _animationController.value;
-
-            if (_progress > 0.97) {
-              _isPlaying = false;
-            }
-          });
-        }
-      });
-  }
-
-  @override
-  void dispose() {
-    widget.player.pause();
-    _animationController.dispose();
-
-    super.dispose();
+    widget.player.onPositionChanged.listen((event) {
+      if (mounted) {
+        setState(() {
+          _progress = event.inMilliseconds / widget.duration;
+        });
+      }
+    });
   }
 
   @override
@@ -83,10 +67,8 @@ class _VoceProgressBarState extends State<VoceProgressBar>
           if (_progress > 0.97) {
             _progress = 0;
           }
-          _animationController.forward(from: _progress);
           VoceAudioService().play(widget.player);
         } else {
-          _animationController.stop();
           VoceAudioService().stop();
         }
       },
@@ -98,20 +80,19 @@ class _VoceProgressBarState extends State<VoceProgressBar>
       //   //   _isPlaying = false;
       //   // });
       // },
-      // onHorizontalDragUpdate: (DragUpdateDetails details) {
-      //   print('onHorizontalDragUpdate');
-      //   _animationController.stop();
-      //   setState(() {
-      //     final p = (details.localPosition.dx / context.size!.width);
-      //     if (p < 0) {
-      //       _progress = 0;
-      //     } else if (p > 1) {
-      //       _progress = 1;
-      //     } else {
-      //       _progress = p;
-      //     }
-      //   });
-      // },
+      onHorizontalDragUpdate: (DragUpdateDetails details) {
+        print('onHorizontalDragUpdate');
+
+        double p = (details.localPosition.dx / context.size!.width);
+        if (p < 0) {
+          p = 0;
+        } else if (p > 1) {
+          p = 1;
+        }
+        final duration = Duration(milliseconds: (p * widget.duration).floor());
+
+        widget.player.seek(duration);
+      },
       // onHorizontalDragEnd: (DragEndDetails details) {
       //   print('onHorizontalDragEnd');
       //   int progressInMillisecs = (_progress * widget.duration).floor();

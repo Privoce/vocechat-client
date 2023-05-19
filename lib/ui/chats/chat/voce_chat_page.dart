@@ -23,6 +23,7 @@ import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/voce_audio_service.dart';
 import 'package:vocechat_client/services/voce_send_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_bar.dart';
@@ -783,10 +784,17 @@ class _VoceChatPageState extends State<VoceChatPage>
 
             final msgTile = GestureDetector(
               // For debug only.
-              // onTap: () {
-              //   print(
-              //       "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
-              // },
+              onTap: () {
+                showAppAlert(context: context, title: "record", actions: [
+                  AppAlertDialogAction(
+                      text: "copy",
+                      action: () => Clipboard.setData(ClipboardData(
+                          text: tileData.chatMsgMNotifier.value.values
+                              .toString())))
+                ]);
+                print(
+                    "chatMsgM: ${tileData.chatMsgMNotifier.value.values}, repliedMsg:${tileData.repliedMsgMNotifier.value?.reactionData}, reactions: ${tileData.chatMsgMNotifier.value.reactionData?.editedText}");
+              },
               child: SizeTransition(
                 key: key,
                 sizeFactor: ani,
