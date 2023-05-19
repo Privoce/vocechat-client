@@ -194,6 +194,8 @@ class _ChatsPageState extends State<ChatsPage>
       ChatPageController controller =
           ChatPageController.channel(groupInfoMNotifier: tileData.groupInfoM!);
       controller.prepare().then((value) {
+        final unreadCount = tileData.unreadCount.value;
+        unreadCountSum.value -= unreadCount;
         Navigator.push(
             context,
             MaterialPageRoute<String?>(
@@ -210,6 +212,8 @@ class _ChatsPageState extends State<ChatsPage>
       ChatPageController controller =
           ChatPageController.user(userInfoMNotifier: tileData.userInfoM!);
       controller.prepare().then((value) {
+        final unreadCount = tileData.unreadCount.value;
+        unreadCountSum.value -= unreadCount;
         Navigator.push(
             context,
             MaterialPageRoute<String?>(

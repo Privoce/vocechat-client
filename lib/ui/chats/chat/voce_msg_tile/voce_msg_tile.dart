@@ -15,6 +15,7 @@ import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
 import 'package:vocechat_client/services/voce_send_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/tile_image_bubble.dart';
@@ -424,10 +425,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                         return ValueListenableBuilder<double>(
                             valueListenable: task.progress!,
                             builder: (context, p, _) {
+                              final progress = p < 0.1 ? 0.1 : p;
                               return Padding(
                                 padding: const EdgeInsets.all(4.0),
                                 child: CircularProgressIndicator(
-                                  value: p,
+                                  value: progress,
                                 ),
                               );
                             });
@@ -438,9 +440,32 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                   case MsgStatus.success:
                     return const SizedBox.shrink();
                   case MsgStatus.fail:
+                    return CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          showAppAlert(
+                              context: context,
+                              title: AppLocalizations.of(context)!
+                                  .chatPageResendWarning,
+                              content: AppLocalizations.of(context)!
+                                  .chatPageResendWarningContent,
+                              actions: [
+                                AppAlertDialogAction(
+                                  text: AppLocalizations.of(context)!.cancel,
+                                  action: () => Navigator.of(context).pop(),
+                                ),
+                                AppAlertDialogAction(
+                                  text: AppLocalizations.of(context)!.resend,
+                                  action: () {
+                                    Navigator.of(context).pop();
+                                    _resend();
+                                  },
+                                ),
+                              ]);
+                        },
+                        child:
+                            const Icon(Icons.error_outline, color: Colors.red));
 
-                    // TODO: show retry button and its functions.
-                    return const Icon(Icons.error_outline, color: Colors.red);
                   default:
                     return const SizedBox.shrink();
                 }
@@ -556,6 +581,143 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
       }
     }
     return -1;
+  }
+
+  void _resend() async {
+    final chatMsgM = widget.tileData.chatMsgMNotifier.value;
+    if (chatMsgM.status != MsgStatus.fail) {
+      return;
+    }
+
+    if (chatMsgM.isGroupMsg) {
+      if (chatMsgM.detailContentType == MsgContentType.text) {
+        if (chatMsgM.isReplyMsg) {
+          final content = chatMsgM.msgReply!.content;
+          final targetMid = chatMsgM.msgReply!.mid;
+          VoceSendService().sendChannelReply(chatMsgM.gid, targetMid, content,
+              resendLocalMid: chatMsgM.localMid);
+        } else {
+          final content =
+              chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? '';
+          VoceSendService().sendChannelText(chatMsgM.gid, content,
+              resendLocalMid: chatMsgM.localMid);
+        }
+      } else if (chatMsgM.detailContentType == MsgContentType.file) {
+        await FileHandler.singleton.getLocalFile(chatMsgM).then((file) {
+          if (file == null) {
+            showAppAlert(
+                context: context,
+                title:
+                    AppLocalizations.of(context)!.chatPageCantFindFileWarning,
+                content: AppLocalizations.of(context)!
+                    .chatPageCantFindFileWarningContent,
+                actions: [
+                  AppAlertDialogAction(
+                      text: AppLocalizations.of(context)!.ok,
+                      action: () => Navigator.of(context).pop())
+                ]);
+          } else {
+            VoceSendService().sendChannelFile(chatMsgM.gid, file.path,
+                resendLocalMid: chatMsgM.localMid);
+          }
+        });
+      } else if (chatMsgM.detailContentType == MsgContentType.audio) {
+        await AudioFileHandler()
+            .readAudioFile(chatMsgM, serverFetch: false)
+            .then((file) {
+          if (file == null) {
+            showAppAlert(
+                context: context,
+                title:
+                    AppLocalizations.of(context)!.chatPageCantFindFileWarning,
+                content: AppLocalizations.of(context)!
+                    .chatPageCantFindFileWarningContent,
+                actions: [
+                  AppAlertDialogAction(
+                      text: AppLocalizations.of(context)!.ok,
+                      action: () => Navigator.of(context).pop())
+                ]);
+          } else {
+            VoceSendService()
+                .sendChannelAudio(chatMsgM.gid, chatMsgM.localMid, file);
+          }
+        });
+      } else if (chatMsgM.detailContentType == MsgContentType.archive) {
+        showAppAlert(
+            context: context,
+            title: AppLocalizations.of(context)!.error,
+            content: AppLocalizations.of(context)!.resendNotSupported,
+            actions: [
+              AppAlertDialogAction(
+                  text: AppLocalizations.of(context)!.ok,
+                  action: () => Navigator.of(context).pop())
+            ]);
+      }
+    } else {
+      if (chatMsgM.detailContentType == MsgContentType.text) {
+        if (chatMsgM.isReplyMsg) {
+          final content = chatMsgM.msgReply!.content;
+          final targetMid = chatMsgM.msgReply!.mid;
+          VoceSendService().sendUserReply(chatMsgM.dmUid, targetMid, content,
+              resendLocalMid: chatMsgM.localMid);
+        } else {
+          final content =
+              chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? '';
+          VoceSendService().sendUserText(chatMsgM.dmUid, content,
+              resendLocalMid: chatMsgM.localMid);
+        }
+      } else if (chatMsgM.detailContentType == MsgContentType.file) {
+        await FileHandler.singleton.getLocalFile(chatMsgM).then((file) {
+          if (file == null) {
+            showAppAlert(
+                context: context,
+                title:
+                    AppLocalizations.of(context)!.chatPageCantFindFileWarning,
+                content: AppLocalizations.of(context)!
+                    .chatPageCantFindFileWarningContent,
+                actions: [
+                  AppAlertDialogAction(
+                      text: AppLocalizations.of(context)!.ok,
+                      action: () => Navigator.of(context).pop())
+                ]);
+          } else {
+            VoceSendService().sendUserFile(chatMsgM.dmUid, file.path,
+                resendLocalMid: chatMsgM.localMid);
+          }
+        });
+      } else if (chatMsgM.detailContentType == MsgContentType.audio) {
+        await AudioFileHandler()
+            .readAudioFile(chatMsgM, serverFetch: false)
+            .then((file) {
+          if (file == null) {
+            showAppAlert(
+                context: context,
+                title:
+                    AppLocalizations.of(context)!.chatPageCantFindFileWarning,
+                content: AppLocalizations.of(context)!
+                    .chatPageCantFindFileWarningContent,
+                actions: [
+                  AppAlertDialogAction(
+                      text: AppLocalizations.of(context)!.ok,
+                      action: () => Navigator.of(context).pop())
+                ]);
+          } else {
+            VoceSendService()
+                .sendUserAudio(chatMsgM.dmUid, chatMsgM.localMid, file);
+          }
+        });
+      } else if (chatMsgM.detailContentType == MsgContentType.archive) {
+        showAppAlert(
+            context: context,
+            title: AppLocalizations.of(context)!.error,
+            content: AppLocalizations.of(context)!.resendNotSupported,
+            actions: [
+              AppAlertDialogAction(
+                  text: AppLocalizations.of(context)!.ok,
+                  action: () => Navigator.of(context).pop())
+            ]);
+      }
+    }
   }
 
   void initAutoDeleteTimer() {

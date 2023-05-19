@@ -503,11 +503,10 @@ class VoceChatService {
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
-    if (chatMsg.mid < 0) {
+    if (chatMsg.mid > -1 &&
+        (await ChatMsgDao().getMsgByMid(chatMsg.mid) != null)) {
       return;
     }
-
-    // Update max_mid in UserDB
 
     try {
       switch (chatMsg.detail["type"]) {

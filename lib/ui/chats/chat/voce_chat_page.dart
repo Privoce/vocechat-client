@@ -85,11 +85,18 @@ class _VoceChatPageState extends State<VoceChatPage>
   /// The key is the [localMid].
   final Map<String, ValueNotifier<ChatMsgM>> selectedMsgMap = {};
 
+  /// Indicated whether the selected messages contain at least one
+  /// message that is an archive/failed/audio message.
   final ValueNotifier<bool> selectedMsgCantMultipleArchive =
       ValueNotifier(false);
 
+  /// Indiated whether there is a busy task.
+  ///
+  /// Usually related to contacts.
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
+  /// Save and notify listeners of the reactions that need to be sent to
+  /// the text field.
   final ValueNotifier<ChatFieldReactionData> _reactionDataNotifier =
       ValueNotifier(ChatFieldReactionData(reactionType: ReactionType.normal));
 
@@ -672,7 +679,7 @@ class _VoceChatPageState extends State<VoceChatPage>
   Future<bool> delete(ChatMsgM old) async {
     try {
       await MessageApi().delete(old.mid).then((response) async {
-        if (response.statusCode == 200 || (old.status == MsgStatus.fail)) {
+        if (response.statusCode == 200 || (old.status != MsgStatus.success)) {
           // successfully deleted or failed to send.
 
           FileHandler.singleton.deleteWithChatMsgM(old);
@@ -745,12 +752,12 @@ class _VoceChatPageState extends State<VoceChatPage>
           initialItemCount: widget.controller.tileDataList.length + 1,
           itemBuilder: (context, index, animation) {
             if (index == widget.controller.tileDataList.length) {
+              widget.controller.reachesEnd.then((reachesEnd) {
+                if (!reachesEnd) {
+                  widget.controller.loadHistory();
+                }
+              });
               if (widget.controller.isChannel) {
-                widget.controller.reachesEnd.then((value) {
-                  if (!value) {
-                    widget.controller.loadHistory();
-                  }
-                });
                 return ChannelStart(widget.groupInfoNotifier!,
                     widget.controller.isLoadingHistory);
               } else {

@@ -134,6 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                     switch (status) {
                       case _ServerInfoFetchingStatus.done:
                         return PasswordLogin(
+                            key: UniqueKey(),
                             chatServer: _chatServerM!,
                             email: widget.email,
                             password: widget.password,
@@ -153,6 +154,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       default:
                         return PasswordLogin(
+                            key: UniqueKey(),
                             chatServer: ChatServerM(),
                             email: widget.email,
                             password: widget.password,
