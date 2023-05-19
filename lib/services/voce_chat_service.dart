@@ -503,9 +503,11 @@ class VoceChatService {
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
-    if (chatMsg.mid > -1 &&
-        (await ChatMsgDao().getMsgByMid(chatMsg.mid) != null)) {
-      return;
+    if (chatMsg.mid > -1) {
+      final localMsg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
+      if (localMsg != null && localMsg.status == MsgStatus.fail) {
+        return;
+      }
     }
 
     try {

@@ -794,6 +794,9 @@ class VoceSendService {
   }
 
   Future<int> _getFakeMid() async {
-    return -1;
+    // return -1;
+    final maxMid = await ChatMsgDao().getMaxMid();
+    final awaitingTaskCount = SendTaskQueue.singleton.length;
+    return maxMid + awaitingTaskCount + 1;
   }
 }

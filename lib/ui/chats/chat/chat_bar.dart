@@ -71,7 +71,6 @@ class _ChatBarState extends State<ChatBar> {
                       child: ValueListenableBuilder<int>(
                           valueListenable: widget.unreadCount!,
                           builder: (context, unreadCount, _) {
-                            print("unreadCount: $unreadCount");
                             if (unreadCount < 1) {
                               return SizedBox.shrink();
                             }
