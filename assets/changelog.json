@@ -1,7 +1,7 @@
 {   
-    "latest": {"version": "0.2.89", "build_num": 59},
+    "latest": {"version": "0.2.90", "build_num": 60},
     "logs":  [
-        {"time": 1684548451664, "version": "0.2.89", "build_num": 59, "updates": [
+        {"time": 1684548451664, "version": "0.2.90", "build_num": 60, "updates": [
             "- fix: messages might be duplicated.",
             "- fix: history message fetch issue in DMs.",
             "- fix: resend feature for unsuccessful messages in chats.",
