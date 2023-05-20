@@ -841,7 +841,9 @@ class VoceChatService {
           await GroupInfoDao().deleteGroupByGid(localGid);
 
           final groupInfoM = GroupInfoM()..gid = localGid;
-          fireChannel(groupInfoM, EventActions.delete);
+          if (afterReady) {
+            fireChannel(groupInfoM, EventActions.delete);
+          }
         }
       }
 
@@ -858,7 +860,9 @@ class VoceChatService {
 
         if (oldGroupInfoM != groupInfoM) {
           await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-            fireChannel(groupInfoM, EventActions.create);
+            if (afterReady) {
+              fireChannel(groupInfoM, EventActions.create);
+            }
           });
         }
       }

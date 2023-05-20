@@ -85,11 +85,14 @@ dependencies:
   qr_flutter: ^4.0.0
   mobile_scanner: ^3.0.0
   async: ^2.9.0
-  shared_preferences: ^2.0.17
+  shared_preferences: ^2.1.1
   record: ^4.4.4
   audio_session: ^0.1.13
   provider: ^6.0.5
   audioplayers: ^3.0.1
+  device_info_plus: 8.2.2
+  android_id: ^0.3.3
+  
 
 dependency_overrides:
   azlistview:
