@@ -222,7 +222,17 @@ class _ChatsPageState extends State<ChatsPage>
                 builder: (context) => VoceChatPage.channel(
                     mentionsKey: mentionsKey,
                     controller: controller))).then((value) async {
-          // await tileData.setChannel();
+          final draft = mentionsKey.currentState?.controller?.text.trim();
+
+          await GroupInfoDao()
+              .updateProperties(tileData.groupInfoM!.value.gid, draft: draft)
+              .then((updatedGroupInfoM) {
+            if (updatedGroupInfoM != null) {
+              App.app.chatService
+                  .fireChannel(updatedGroupInfoM, EventActions.update);
+            }
+          });
+
           calUnreadCountSum();
           controller.dispose();
         });
@@ -240,7 +250,17 @@ class _ChatsPageState extends State<ChatsPage>
                 builder: (context) => VoceChatPage.user(
                     mentionsKey: mentionsKey,
                     controller: controller))).then((value) async {
-          // await tileData.setUser();
+          final draft = mentionsKey.currentState?.controller?.text.trim();
+
+          await UserInfoDao()
+              .updateProperties(tileData.userInfoM!.value.uid, draft: draft)
+              .then((updatedUserInfoM) {
+            if (updatedUserInfoM != null) {
+              App.app.chatService
+                  .fireUser(updatedUserInfoM, EventActions.update);
+            }
+          });
+
           calUnreadCountSum();
           controller.dispose();
         });
