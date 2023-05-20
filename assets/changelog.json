@@ -6,7 +6,7 @@
             "- fix: history message fetch issue in DMs.",
             "- fix: resend feature for unsuccessful messages in chats.",
             "- add: save draft for chats.",
-            "- refactor: performace improvements."
+            "- refactor: performance improvements."
         ]},
         {"time": 1684390702590, "version": "0.2.88", "build_num": 58, "updates": [
             "- fix: preliminary network fixes.",

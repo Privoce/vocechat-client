@@ -177,10 +177,10 @@ class SharedFuncs {
       if (info == null || info.isEmpty) {
         info = await _setDeviceId();
       }
-      device = "Android$info";
+      device = "Android:$info";
     } else {
       String info = await _setDeviceId();
-      device = "Mobile: $info";
+      device = "Mobile:$info";
     }
 
     App.logger.info("Device Info: $device");
