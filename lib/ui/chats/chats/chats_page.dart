@@ -49,6 +49,7 @@ class _ChatsPageState extends State<ChatsPage>
 
     App.app.chatService.subscribeMsg(_onMessage);
     App.app.chatService.subscribeGroups(_onChannel);
+    App.app.chatService.subscribeUsers(_onUser);
     App.app.chatService.subscribeRefresh(_onRefresh);
 
     eventBus.on<UserChangeEvent>().listen((event) {
@@ -60,6 +61,7 @@ class _ChatsPageState extends State<ChatsPage>
 
       App.app.chatService.subscribeMsg(_onMessage);
       App.app.chatService.subscribeGroups(_onChannel);
+      App.app.chatService.subscribeUsers(_onUser);
       App.app.chatService.subscribeRefresh(_onRefresh);
     });
   }
@@ -68,6 +70,7 @@ class _ChatsPageState extends State<ChatsPage>
   void dispose() {
     App.app.chatService.unsubscribeMsg(_onMessage);
     App.app.chatService.unsubscribeGroups(_onChannel);
+    App.app.chatService.unsubscribeUsers(_onUser);
     App.app.chatService.unsubscribeRefresh(_onRefresh);
     super.dispose();
   }
@@ -178,20 +181,55 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
-    if (action == EventActions.delete) {
-      final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
-      if (chatId != null) {
-        chatTileMap.remove(chatId);
-        setState(() {});
-      }
-    } else if (action == EventActions.update) {
-      final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
-      if (chatId != null && !chatTileMap.containsKey(chatId)) {
-        final tileData = await ChatTileData.fromChannel(groupInfoM);
-        chatTileMap.addAll({chatId: tileData});
-        setState(() {});
-      }
+    final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
+
+    switch (action) {
+      case EventActions.create:
+      case EventActions.update:
+        if (chatId != null) {
+          if (!chatTileMap.containsKey(chatId)) {
+            final tileData = await ChatTileData.fromChannel(groupInfoM);
+            chatTileMap.addAll({chatId: tileData});
+          } else {
+            await chatTileMap[chatId]?.setChannel(groupInfoM: groupInfoM);
+          }
+        }
+        break;
+      case EventActions.delete:
+        if (chatId != null) {
+          chatTileMap.remove(chatId);
+        }
+        break;
+      default:
     }
+
+    calUnreadCountSum();
+  }
+
+  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+    final chatId = SharedFuncs.getChatId(uid: userInfoM.uid);
+
+    switch (action) {
+      case EventActions.create:
+      case EventActions.update:
+        if (chatId != null) {
+          if (!chatTileMap.containsKey(chatId)) {
+            final tileData = await ChatTileData.fromUser(userInfoM);
+            chatTileMap.addAll({chatId: tileData});
+          } else {
+            await chatTileMap[chatId]?.setUser(userInfoM: userInfoM);
+          }
+        }
+        break;
+      case EventActions.delete:
+        if (chatId != null) {
+          chatTileMap.remove(chatId);
+        }
+        break;
+      default:
+    }
+
+    calUnreadCountSum();
   }
 
   void clearChats() {
@@ -224,13 +262,10 @@ class _ChatsPageState extends State<ChatsPage>
                     controller: controller))).then((value) async {
           final draft = mentionsKey.currentState?.controller?.text.trim();
 
-          await GroupInfoDao()
+          GroupInfoDao()
               .updateProperties(tileData.groupInfoM!.value.gid, draft: draft)
               .then((updatedGroupInfoM) {
-            if (updatedGroupInfoM != null) {
-              App.app.chatService
-                  .fireChannel(updatedGroupInfoM, EventActions.update);
-            }
+            tileData.draft.value = draft ?? "";
           });
 
           calUnreadCountSum();
@@ -255,10 +290,7 @@ class _ChatsPageState extends State<ChatsPage>
           await UserInfoDao()
               .updateProperties(tileData.userInfoM!.value.uid, draft: draft)
               .then((updatedUserInfoM) {
-            if (updatedUserInfoM != null) {
-              App.app.chatService
-                  .fireUser(updatedUserInfoM, EventActions.update);
-            }
+            tileData.draft.value = draft ?? "";
           });
 
           calUnreadCountSum();

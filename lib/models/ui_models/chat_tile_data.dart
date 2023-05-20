@@ -52,7 +52,7 @@ class ChatTileData {
       this.userInfoM = ValueNotifier(userInfoM);
     }
 
-    App.app.chatService.subscribeUsers(onUser);
+    // App.app.chatService.subscribeUsers(onUser);
   }
 
   ChatTileData.channel({required GroupInfoM groupInfoM}) : userInfoM = null {
@@ -62,7 +62,7 @@ class ChatTileData {
       this.groupInfoM = ValueNotifier(groupInfoM);
     }
 
-    App.app.chatService.subscribeGroups(onChannel);
+    // App.app.chatService.subscribeGroups(onChannel);
   }
 
   bool get isUser => userInfoM != null;
@@ -323,43 +323,43 @@ class ChatTileData {
     this.draft.value = draft;
   }
 
-  Future<void> onUser(UserInfoM userInfoM, EventActions action) async {
-    if (userInfoM.uid != this.userInfoM?.value.uid) {
-      return;
-    }
+  // Future<void> onUser(UserInfoM userInfoM, EventActions action) async {
+  //   if (userInfoM.uid != this.userInfoM?.value.uid) {
+  //     return;
+  //   }
 
-    switch (action) {
-      case EventActions.create:
-      case EventActions.update:
-        await setUser(userInfoM: userInfoM);
-        break;
-      case EventActions.delete:
-        if (this.userInfoM!.value.uid == userInfoM.uid) {
-          this.userInfoM = null;
-        }
-        break;
-      default:
-        break;
-    }
-  }
+  //   switch (action) {
+  //     case EventActions.create:
+  //     case EventActions.update:
+  //       await setUser(userInfoM: userInfoM);
+  //       break;
+  //     case EventActions.delete:
+  //       if (this.userInfoM!.value.uid == userInfoM.uid) {
+  //         this.userInfoM = null;
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }
 
-  Future<void> onChannel(GroupInfoM groupInfoM, EventActions action) async {
-    if (groupInfoM.gid != this.groupInfoM?.value.gid) {
-      return;
-    }
+  // Future<void> onChannel(GroupInfoM groupInfoM, EventActions action) async {
+  //   if (groupInfoM.gid != this.groupInfoM?.value.gid) {
+  //     return;
+  //   }
 
-    switch (action) {
-      case EventActions.create:
-      case EventActions.update:
-        await setChannel(groupInfoM: groupInfoM);
-        break;
-      case EventActions.delete:
-        if (this.groupInfoM!.value.gid == groupInfoM.gid) {
-          this.groupInfoM = null;
-        }
-        break;
-      default:
-        break;
-    }
-  }
+  //   switch (action) {
+  //     case EventActions.create:
+  //     case EventActions.update:
+  //       await setChannel(groupInfoM: groupInfoM);
+  //       break;
+  //     case EventActions.delete:
+  //       if (this.groupInfoM!.value.gid == groupInfoM.gid) {
+  //         this.groupInfoM = null;
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // }
 }
