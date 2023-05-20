@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:android_id/android_id.dart';
 import 'package:async/async.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,7 +19,10 @@ import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/token/token_login_request.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/helpers/shared_preference_helper.dart';
+import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
@@ -182,20 +187,12 @@ class AuthService {
           ]);
     }
 
-    String device;
-
-    if (Platform.isIOS) {
-      device = "iOS";
-    } else if (Platform.isAndroid) {
-      device = "Android";
-    } else {
-      device = "Others";
-    }
-
     final credential = Credential(email, pswd, "password");
 
     final req = TokenLoginRequest(
-        device: device, credential: credential, deviceToken: deviceToken);
+        device: await SharedFuncs.prepareDeviceInfo(),
+        credential: credential,
+        deviceToken: deviceToken);
     // final req = TokenLoginRequest(device: device, credential: credential);
     return req;
   }
@@ -400,8 +397,8 @@ class AuthService {
         await closeUserDb();
       }
 
-      final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
-      final res = await tokenApi.getLogout();
+      final tokenApi = TokenApi();
+      final res = await tokenApi.getLogout(curUserDb.token);
 
       if (res.statusCode == 200) {
         return true;

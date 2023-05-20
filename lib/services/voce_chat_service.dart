@@ -503,11 +503,12 @@ class VoceChatService {
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
-    if (chatMsg.mid < 0) {
-      return;
+    if (chatMsg.mid > -1) {
+      final localMsg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
+      if (localMsg != null && localMsg.status == MsgStatus.fail) {
+        return;
+      }
     }
-
-    // Update max_mid in UserDB
 
     try {
       switch (chatMsg.detail["type"]) {
@@ -840,7 +841,9 @@ class VoceChatService {
           await GroupInfoDao().deleteGroupByGid(localGid);
 
           final groupInfoM = GroupInfoM()..gid = localGid;
-          fireChannel(groupInfoM, EventActions.delete);
+          if (afterReady) {
+            fireChannel(groupInfoM, EventActions.delete);
+          }
         }
       }
 
@@ -857,7 +860,9 @@ class VoceChatService {
 
         if (oldGroupInfoM != groupInfoM) {
           await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-            fireChannel(groupInfoM, EventActions.create);
+            if (afterReady) {
+              fireChannel(groupInfoM, EventActions.create);
+            }
           });
         }
       }

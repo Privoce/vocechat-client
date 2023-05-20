@@ -48,6 +48,8 @@ class _ChatsPageState extends State<ChatsPage>
     calUnreadCountSum();
 
     App.app.chatService.subscribeMsg(_onMessage);
+    App.app.chatService.subscribeGroups(_onChannel);
+    App.app.chatService.subscribeUsers(_onUser);
     App.app.chatService.subscribeRefresh(_onRefresh);
 
     eventBus.on<UserChangeEvent>().listen((event) {
@@ -58,6 +60,8 @@ class _ChatsPageState extends State<ChatsPage>
       calUnreadCountSum();
 
       App.app.chatService.subscribeMsg(_onMessage);
+      App.app.chatService.subscribeGroups(_onChannel);
+      App.app.chatService.subscribeUsers(_onUser);
       App.app.chatService.subscribeRefresh(_onRefresh);
     });
   }
@@ -65,6 +69,8 @@ class _ChatsPageState extends State<ChatsPage>
   @override
   void dispose() {
     App.app.chatService.unsubscribeMsg(_onMessage);
+    App.app.chatService.unsubscribeGroups(_onChannel);
+    App.app.chatService.unsubscribeUsers(_onUser);
     App.app.chatService.unsubscribeRefresh(_onRefresh);
     super.dispose();
   }
@@ -174,6 +180,58 @@ class _ChatsPageState extends State<ChatsPage>
     prepareChats();
   }
 
+  Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
+    final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
+
+    switch (action) {
+      case EventActions.create:
+      case EventActions.update:
+        if (chatId != null) {
+          if (!chatTileMap.containsKey(chatId)) {
+            final tileData = await ChatTileData.fromChannel(groupInfoM);
+            chatTileMap.addAll({chatId: tileData});
+          } else {
+            await chatTileMap[chatId]?.setChannel(groupInfoM: groupInfoM);
+          }
+        }
+        break;
+      case EventActions.delete:
+        if (chatId != null) {
+          chatTileMap.remove(chatId);
+        }
+        break;
+      default:
+    }
+
+    calUnreadCountSum();
+  }
+
+  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+    final chatId = SharedFuncs.getChatId(uid: userInfoM.uid);
+
+    switch (action) {
+      case EventActions.create:
+      case EventActions.update:
+        if (chatId != null) {
+          if (!chatTileMap.containsKey(chatId)) {
+            final tileData = await ChatTileData.fromUser(userInfoM);
+            chatTileMap.addAll({chatId: tileData});
+          } else {
+            await chatTileMap[chatId]?.setUser(userInfoM: userInfoM);
+          }
+        }
+        break;
+      case EventActions.delete:
+        if (chatId != null) {
+          chatTileMap.remove(chatId);
+        }
+        break;
+      default:
+    }
+
+    calUnreadCountSum();
+  }
+
   void clearChats() {
     chatTileMap.clear();
   }
@@ -194,13 +252,22 @@ class _ChatsPageState extends State<ChatsPage>
       ChatPageController controller =
           ChatPageController.channel(groupInfoMNotifier: tileData.groupInfoM!);
       controller.prepare().then((value) {
+        final unreadCount = tileData.unreadCount.value;
+        unreadCountSum.value -= unreadCount;
         Navigator.push(
             context,
             MaterialPageRoute<String?>(
                 builder: (context) => VoceChatPage.channel(
                     mentionsKey: mentionsKey,
                     controller: controller))).then((value) async {
-          // await tileData.setChannel();
+          final draft = mentionsKey.currentState?.controller?.text.trim();
+
+          GroupInfoDao()
+              .updateProperties(tileData.groupInfoM!.value.gid, draft: draft)
+              .then((updatedGroupInfoM) {
+            tileData.draft.value = draft ?? "";
+          });
+
           calUnreadCountSum();
           controller.dispose();
         });
@@ -210,13 +277,22 @@ class _ChatsPageState extends State<ChatsPage>
       ChatPageController controller =
           ChatPageController.user(userInfoMNotifier: tileData.userInfoM!);
       controller.prepare().then((value) {
+        final unreadCount = tileData.unreadCount.value;
+        unreadCountSum.value -= unreadCount;
         Navigator.push(
             context,
             MaterialPageRoute<String?>(
                 builder: (context) => VoceChatPage.user(
                     mentionsKey: mentionsKey,
                     controller: controller))).then((value) async {
-          // await tileData.setUser();
+          final draft = mentionsKey.currentState?.controller?.text.trim();
+
+          await UserInfoDao()
+              .updateProperties(tileData.userInfoM!.value.uid, draft: draft)
+              .then((updatedUserInfoM) {
+            tileData.draft.value = draft ?? "";
+          });
+
           calUnreadCountSum();
           controller.dispose();
         });

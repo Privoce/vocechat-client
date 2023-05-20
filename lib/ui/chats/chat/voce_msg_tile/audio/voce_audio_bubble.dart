@@ -52,14 +52,12 @@ class _VoceAudioBubbleState extends State<VoceAudioBubble>
   Widget build(BuildContext context) {
     if (audioInfo != null) {
       return FractionallySizedBox(
-        widthFactor: calAudioBubbleWidthFactor(audioInfo!.duration),
-        child: VoceProgressBar(
-          player: audioInfo!.player,
-          duration: audioInfo!.duration,
-          textAlignment: getTextAlignment(),
-          height: widget.height ?? 36,
-        ),
-      );
+          widthFactor: calAudioBubbleWidthFactor(audioInfo!.duration),
+          child: VoceProgressBar(
+              player: audioInfo!.player,
+              duration: audioInfo!.duration,
+              textAlignment: getTextAlignment(),
+              height: widget.height ?? 36));
     } else {
       return const EmptyDataPlaceholder();
     }

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:android_id/android_id.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -15,11 +17,14 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+
+import 'models/local_kits.dart';
 
 class SharedFuncs {
   /// Clear all local data
@@ -158,6 +163,31 @@ class SharedFuncs {
     return text;
   }
 
+  static Future<String> prepareDeviceInfo() async {
+    String device;
+
+    if (Platform.isIOS) {
+      String? info = (await DeviceInfoPlugin().iosInfo).identifierForVendor;
+      if (info == null || info.isEmpty) {
+        info = await _setDeviceId();
+      }
+      device = "iOS:$info";
+    } else if (Platform.isAndroid) {
+      String? info = (await AndroidId().getId());
+      if (info == null || info.isEmpty) {
+        info = await _setDeviceId();
+      }
+      device = "Android:$info";
+    } else {
+      String info = await _setDeviceId();
+      device = "Mobile:$info";
+    }
+
+    App.logger.info("Device Info: $device");
+
+    return device;
+  }
+
   /// Read assets/custom_configs.yaml and put it into [App] object.
   // static Future<void> readCustomConfigs() async {
   //   final data = await rootBundle.loadString('assets/custom_configs.yaml');
@@ -248,6 +278,17 @@ class SharedFuncs {
         .updateAuth(status.userDbId, token, refreshToken, expiredIn);
     App.app.userDb = newUserDbM;
     App.app.statusService?.fireTokenLoading(TokenStatus.successful);
+  }
+
+  static Future<String> _setDeviceId() async {
+    final deviceId = await SharedPreferenceHelper.getString("device_id");
+    if (deviceId == null || deviceId.isEmpty) {
+      final deviceId = uuid();
+      await SharedPreferenceHelper.setString("device_id", deviceId);
+      return deviceId;
+    } else {
+      return deviceId;
+    }
   }
 
   /// Translate the number of seconds to minutes (hours or days).

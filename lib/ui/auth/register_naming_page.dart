@@ -13,6 +13,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/status_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
@@ -236,7 +237,6 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
 
     try {
       String deviceToken = await _getFirebaseDeviceToken();
-      String device;
 
       if (deviceToken.isEmpty) {
         await showAppAlert(
@@ -252,15 +252,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
             ]);
       }
 
-      if (Platform.isIOS) {
-        device = "iOS";
-      } else if (Platform.isAndroid) {
-        device = "Android";
-      } else {
-        device = "Others";
-      }
-
-      widget.req.device = device;
+      widget.req.device = await SharedFuncs.prepareDeviceInfo();
       widget.req.deviceToken = deviceToken;
 
       App.app.statusService = StatusService();

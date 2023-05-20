@@ -22,6 +22,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_uploader.dart';
@@ -29,6 +30,7 @@ import 'package:vocechat_client/services/send_task_queue/send_task_queue.dart';
 
 import 'package:path/path.dart' as p;
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 
 class VoceSendService {
   static final VoceSendService _voceSendService = VoceSendService._internal();
@@ -39,9 +41,10 @@ class VoceSendService {
 
   VoceSendService._internal();
 
-  Future<void> sendUserText(int uid, String content) async {
+  Future<void> sendUserText(int uid, String content,
+      {String? resendLocalMid}) async {
     final fakeMid = await _getFakeMid();
-    final localMid = uuid();
+    final localMid = resendLocalMid ?? uuid();
     final expiresIn =
         (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
 
@@ -60,17 +63,18 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
 
       await UserApi().sendTextMsg(uid, content, localMid).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
-            await chatMsgDao.update(savedMsgM).then((value) {
-              App.app.chatService.fireMsg(savedMsgM, true);
+            chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
+            await chatMsgDao.update(chatMsgM).then((value) {
+              App.app.chatService.fireMsg(chatMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
@@ -90,13 +94,10 @@ class VoceSendService {
     });
   }
 
-  Future<void> sendUserReply(
-    int uid,
-    int targetMid,
-    String content,
-  ) async {
+  Future<void> sendUserReply(int uid, int targetMid, String content,
+      {String? resendLocalMid}) async {
     final fakeMid = await _getFakeMid();
-    final localMid = uuid();
+    final localMid = resendLocalMid ?? uuid();
     final expiresIn =
         (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
 
@@ -116,17 +117,18 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromReply(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
 
       await MessageApi().reply(targetMid, content, detail.properties).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
-            await chatMsgDao.update(savedMsgM).then((value) {
-              App.app.chatService.fireMsg(savedMsgM, true);
+            chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
+            await chatMsgDao.update(chatMsgM).then((value) {
+              App.app.chatService.fireMsg(chatMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
@@ -147,8 +149,9 @@ class VoceSendService {
   }
 
   Future<void> sendUserFile(int uid, String path,
-      {void Function(double progress)? progress}) async {
-    final localMid = uuid();
+      {void Function(double progress)? progress,
+      String? resendLocalMid}) async {
+    final localMid = resendLocalMid ?? uuid();
     final fakeMid = await _getFakeMid();
     final expiresIn =
         (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
@@ -216,8 +219,9 @@ class VoceSendService {
         detail: detail.toJson());
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -272,8 +276,10 @@ class VoceSendService {
         detail: detail.toJson());
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -288,10 +294,8 @@ class VoceSendService {
     SendTaskQueue.singleton.addTask(task);
   }
 
-  Future<void> sendChannelText(
-    int gid,
-    String content,
-  ) async {
+  Future<void> sendChannelText(int gid, String content,
+      {String? resendLocalMid}) async {
     final expiresIn = (await GroupInfoDao().getGroupByGid(gid))
         ?.properties
         .burnAfterReadSecond;
@@ -308,7 +312,7 @@ class VoceSendService {
     }
 
     final fakeMid = await _getFakeMid();
-    final localMid = uuid();
+    final localMid = resendLocalMid ?? uuid();
 
     final chatMsgDao = ChatMsgDao();
 
@@ -325,17 +329,18 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
 
       await GroupApi().sendTextMsg(gid, content, detail.properties).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
-            await chatMsgDao.update(savedMsgM).then((value) {
-              App.app.chatService.fireMsg(savedMsgM, true);
+            chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
+            await chatMsgDao.update(chatMsgM).then((value) {
+              App.app.chatService.fireMsg(chatMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
@@ -355,11 +360,8 @@ class VoceSendService {
     });
   }
 
-  Future<void> sendChannelReply(
-    int gid,
-    int targetMid,
-    String content,
-  ) async {
+  Future<void> sendChannelReply(int gid, int targetMid, String content,
+      {String? resendLocalMid}) async {
     final expiresIn = (await GroupInfoDao().getGroupByGid(gid))
         ?.properties
         .burnAfterReadSecond;
@@ -377,7 +379,7 @@ class VoceSendService {
     }
 
     final fakeMid = await _getFakeMid();
-    final localMid = uuid();
+    final localMid = resendLocalMid ?? uuid();
 
     final chatMsgDao = ChatMsgDao();
 
@@ -395,17 +397,18 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromReply(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
 
       await MessageApi().reply(targetMid, content, detail.properties).then(
         (response) async {
           if (response.statusCode == 200) {
             final mid = response.data!;
             message.mid = mid;
-            savedMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
-            await chatMsgDao.update(savedMsgM).then((value) {
-              App.app.chatService.fireMsg(savedMsgM, true);
+            chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.success);
+            await chatMsgDao.update(chatMsgM).then((value) {
+              App.app.chatService.fireMsg(chatMsgM, true);
             }).onError((error, stackTrace) {
               App.logger.severe(error);
               App.app.chatService
@@ -426,8 +429,9 @@ class VoceSendService {
   }
 
   Future<void> sendChannelFile(int gid, String path,
-      {void Function(double progress)? progress}) async {
-    final localMid = uuid();
+      {void Function(double progress)? progress,
+      String? resendLocalMid}) async {
+    final localMid = resendLocalMid ?? uuid();
     final fakeMid = await _getFakeMid();
     final expiresIn = (await GroupInfoDao().getGroupByGid(gid))
         ?.properties
@@ -497,8 +501,9 @@ class VoceSendService {
         detail: detail.toJson());
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -554,8 +559,9 @@ class VoceSendService {
         detail: detail.toJson());
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
-    await chatMsgDao.add(chatMsgM).then((savedMsgM) async {
-      App.app.chatService.fireMsg(savedMsgM..status = MsgStatus.sending, true);
+    await chatMsgDao.add(chatMsgM).then((_) async {
+      final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
+      App.app.chatService.fireMsg(toBeFired, true);
     });
 
     ValueNotifier<double> progress0 = ValueNotifier(0);
@@ -590,6 +596,7 @@ class VoceSendService {
       fileId = (await resourceApi.prepareFile(prepareReq)).data!;
     } catch (e) {
       App.logger.severe(e);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       return false;
     }
 
@@ -603,6 +610,8 @@ class VoceSendService {
       uploadRes = (await fileUploader.upload(contentType))!.data!;
     } catch (e) {
       App.logger.severe(e);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
+
       return false;
     }
 
@@ -627,9 +636,10 @@ class VoceSendService {
       if (res.statusCode == 200 && res.data != null) {
         final mid = res.data!;
         chatMsgM.mid = mid;
-        await ChatMsgDao().add(chatMsgM).then((savedMsgM) async {
+        chatMsgM.status = MsgStatus.success;
+        await ChatMsgDao().add(chatMsgM).then((chatMsgM) async {
           App.app.chatService
-              .fireMsg(savedMsgM..status = MsgStatus.success, true);
+              .fireMsg(chatMsgM..status = MsgStatus.success, true);
         });
         return true;
       } else {
@@ -664,6 +674,7 @@ class VoceSendService {
       fileId = (await resourceApi.prepareFile(prepareReq)).data!;
     } catch (e) {
       App.logger.severe(e);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       return false;
     }
 
@@ -677,6 +688,7 @@ class VoceSendService {
       uploadRes = (await fileUploader.upload(contentType))!.data!;
     } catch (e) {
       App.logger.severe(e);
+      App.app.chatService.fireMsg(chatMsgM..status = MsgStatus.fail, true);
       return false;
     }
 
@@ -697,9 +709,10 @@ class VoceSendService {
       if (res.statusCode == 200 && res.data != null) {
         final mid = res.data!;
         chatMsgM.mid = mid;
-        await ChatMsgDao().add(chatMsgM).then((savedMsgM) async {
+        chatMsgM.status = MsgStatus.success;
+        await ChatMsgDao().add(chatMsgM).then((chatMsgM) async {
           App.app.chatService
-              .fireMsg(savedMsgM..status = MsgStatus.success, true);
+              .fireMsg(chatMsgM..status = MsgStatus.success, true);
         });
         return true;
       } else {
@@ -766,7 +779,22 @@ class VoceSendService {
     }
   }
 
+  Future<void> resend(ChatMsgM chatMsgM) async {
+    if (chatMsgM.isGroupMsg) {
+      if (chatMsgM.detailContentType == MsgContentType.text) {
+        final content =
+            chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? '';
+        await sendChannelText(chatMsgM.gid, content,
+            resendLocalMid: chatMsgM.localMid);
+      } else if (chatMsgM.detailContentType == MsgContentType.file) {
+        final file = await FileHandler.singleton.getLocalFile(chatMsgM);
+        await sendChannelFile(chatMsgM.gid, file?.path ?? "");
+      }
+    } else {}
+  }
+
   Future<int> _getFakeMid() async {
+    // return -1;
     final maxMid = await ChatMsgDao().getMaxMid();
     final awaitingTaskCount = SendTaskQueue.singleton.length;
     return maxMid + awaitingTaskCount + 1;

@@ -19,7 +19,8 @@ class MsgTileData {
   UserInfoM userInfoM;
 
   // Tile frame data
-  int avatarUpdatedAt = 0;
+  // int avatarUpdatedAt = 0;
+  Widget avatarWidget;
   String name = "";
   int time = 0;
   ValueNotifier<MsgStatus> status = ValueNotifier(MsgStatus.success);
@@ -55,7 +56,10 @@ class MsgTileData {
   AudioInfo? repliedAudioInfo;
 
   // Constructors
-  MsgTileData({required ChatMsgM chatMsgM, required this.userInfoM}) {
+  MsgTileData(
+      {required ChatMsgM chatMsgM,
+      required this.userInfoM,
+      required this.avatarWidget}) {
     chatMsgMNotifier = ValueNotifier(chatMsgM);
     setGeneralData();
   }
@@ -63,7 +67,6 @@ class MsgTileData {
   void setGeneralData() {
     final chatMsgM = chatMsgMNotifier.value;
 
-    avatarUpdatedAt = userInfoM.userInfo.avatarUpdatedAt;
     name = userInfoM.userInfo.name;
     time = chatMsgM.createdAt;
 
@@ -71,6 +74,7 @@ class MsgTileData {
 
     // Still need the following for initial status.
     MsgStatus status = chatMsgMNotifier.value.status;
+
     if (status != MsgStatus.success) {
       status = SendTaskQueue.singleton
               .isWaitingOrExecuting(chatMsgMNotifier.value.localMid)
@@ -225,6 +229,7 @@ class MsgTileData {
     player.setReleaseMode(ReleaseMode.stop);
 
     final duration = await player.getDuration();
+
     audioInfo = AudioInfo(player, duration?.inMilliseconds ?? 0);
   }
 

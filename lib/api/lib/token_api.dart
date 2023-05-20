@@ -81,8 +81,14 @@ class TokenApi {
     return dio.put("/device_token", data: {"device_token": deviceToken});
   }
 
-  Future<Response> getLogout() async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> getLogout(String token) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
+
+    dio.options.headers["x-api-key"] = token;
+    dio.options.validateStatus = (status) {
+      return [200, 401, 404].contains(status);
+    };
+
     return await dio.get("/logout");
   }
 }
