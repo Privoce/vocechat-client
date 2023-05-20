@@ -1,10 +1,12 @@
 {   
     "latest": {"version": "0.2.89", "build_num": 59},
     "logs":  [
-        {"time": 1684473904142, "version": "0.2.89", "build_num": 59, "updates": [
+        {"time": 1684548451664, "version": "0.2.89", "build_num": 59, "updates": [
             "- fix: messages might be duplicated.",
             "- fix: history message fetch issue in DMs.",
-            "- fix: resend feature for unsuccessful messages in chats."
+            "- fix: resend feature for unsuccessful messages in chats.",
+            "- add: save draft for chats.",
+            "- refactor: performace improvements."
         ]},
         {"time": 1684390702590, "version": "0.2.88", "build_num": 58, "updates": [
             "- fix: preliminary network fixes.",
