@@ -962,15 +962,17 @@ class VoceChatService {
             }
             break;
           case "delete":
-            UserInfo userInfo = UserInfo.fromJson(userMap);
-            UserInfoM m = UserInfoM.fromUserInfo(userInfo, "");
+            final uid = userMap["uid"] as int?;
+            if (uid != null) {
+              UserInfoM userDeleted = UserInfoM()..uid = uid;
 
-            await UserInfoDao()
-                .removeByUid(m.uid)
-                .then((value) => fireUser(m, EventActions.delete));
+              await UserInfoDao()
+                  .removeByUid(uid)
+                  .then((value) => fireUser(userDeleted, EventActions.delete));
 
-            if (m.uid == App.app.userDb?.uid) {
-              await App.app.authService?.selfDelete();
+              if (uid == App.app.userDb?.uid) {
+                await App.app.authService?.selfDelete();
+              }
             }
 
             break;
