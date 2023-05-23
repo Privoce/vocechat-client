@@ -72,7 +72,7 @@ class AdminSystemApi {
 
   Future<Response<AdminSystemCommonInfo>> getCommonInfo() async {
     final dio = DioUtil(baseUrl: _baseUrl);
-    final res = await dio.get("/cpmmon");
+    final res = await dio.get("/common");
 
     var newRes = Response<AdminSystemCommonInfo>(
         headers: res.headers,

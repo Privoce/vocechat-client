@@ -5,6 +5,7 @@ import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
@@ -74,39 +75,8 @@ class ChatServerHelper {
     }
 
     try {
-      final adminSystemApi = AdminSystemApi(serverUrl: chatServerM.fullUrl);
-
-      final orgInfoRes = await adminSystemApi.getOrgInfo();
-      if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
-        App.logger.info(orgInfoRes.data!.toJson().toString());
-        final orgInfo = orgInfoRes.data!;
-        chatServerM.properties = ChatServerProperties(
-            serverName: orgInfo.name, description: orgInfo.description ?? "");
-
-        final resourceApi = ResourceApi(serverUrl: chatServerM.fullUrl);
-        final logoRes = await resourceApi.getOrgLogo();
-        if (logoRes.statusCode == 200 && logoRes.data != null) {
-          chatServerM.logo = logoRes.data!;
-        }
-
-        final AdminLoginApi adminLoginApi =
-            AdminLoginApi(serverUrl: chatServerM.fullUrl);
-        final adminLoginRes = await adminLoginApi.getConfig();
-        if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
-          chatServerM.properties = ChatServerProperties(
-              serverName: orgInfo.name,
-              description: orgInfo.description ?? "",
-              config: adminLoginRes.data);
-        }
-
-        chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
-        await ChatServerDao.dao.addOrUpdate(chatServerM);
-      } else {
-        if (showAlert && context != null) {
-          await _showConnectionError(context);
-        }
-        return null;
-      }
+      chatServerM =
+          (await SharedFuncs.updateServerInfo(chatServerM)) ?? chatServerM;
     } catch (e) {
       App.logger.severe(e);
       if (showAlert && context != null) {

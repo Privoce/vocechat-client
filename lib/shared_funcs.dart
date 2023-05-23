@@ -6,6 +6,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
@@ -335,29 +336,51 @@ class SharedFuncs {
 
   /// Get or update server information, including server name, description and
   /// logo image.
-  static Future<bool> updateServerInfo() async {
+  static Future<ChatServerM?> updateServerInfo(ChatServerM chatServerM,
+      {bool enableFire = false}) async {
     try {
       final orgInfoRes = await AdminSystemApi().getOrgInfo();
       if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
         final orgInfo = orgInfoRes.data!;
-        App.app.chatServerM.properties = ChatServerProperties(
+        chatServerM.properties = ChatServerProperties(
             serverName: orgInfo.name, description: orgInfo.description ?? "");
 
         final logoRes = await ResourceApi().getOrgLogo();
         if (logoRes.statusCode == 200 && logoRes.data != null) {
-          App.app.chatServerM.logo = logoRes.data!;
+          chatServerM.logo = logoRes.data!;
         }
 
-        App.app.chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
-        await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
+        final adminLoginRes = await AdminLoginApi().getConfig();
+        if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
+          chatServerM.properties = ChatServerProperties(
+              serverName: orgInfo.name,
+              description: orgInfo.description ?? "",
+              config: adminLoginRes.data);
+        }
 
-        App.app.chatService.fireOrgInfo(App.app.chatServerM);
+        final adminSysCommonInfo = await AdminSystemApi().getCommonInfo();
+        if (adminSysCommonInfo.statusCode == 200 &&
+            adminSysCommonInfo.data != null) {
+          final commonInfo = adminSysCommonInfo.data!;
+          chatServerM.properties = ChatServerProperties(
+              serverName: orgInfo.name,
+              description: orgInfo.description ?? "",
+              config: adminLoginRes.data,
+              commonInfo: commonInfo);
+        }
 
-        return true;
+        chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
+        await ChatServerDao.dao.addOrUpdate(chatServerM);
+
+        if (enableFire) {
+          App.app.chatService.fireOrgInfo(chatServerM);
+        }
+
+        return chatServerM;
       }
     } catch (e) {
       App.logger.severe(e);
     }
-    return false;
+    return null;
   }
 }

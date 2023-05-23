@@ -101,7 +101,7 @@ Future<void> initCurrentDb(String dbName) async {
         .create(recursive: true); // App will terminate if create fails.
     db = await databaseFactory.openDatabase(path,
         options: OpenDatabaseOptions(
-          version: 7,
+          version: 6,
           onCreate: (db, version) async {
             // Multiple sql strings are not supported in Android, thus change to single
             // sql string and execute one after another.
@@ -186,20 +186,6 @@ CREATE TABLE IF NOT EXISTS reactions (
   created_at INTEGER NOT NULL,
   FOREIGN KEY(target_mid) REFERENCES chat_msg(mid) ON DELETE CASCADE
 )''');
-              } catch (e) {
-                App.logger.warning(e);
-              }
-            }
-
-            if (oldVersion < newVersion && oldVersion < 7) {
-              try {
-                await db.execute('''
-                    CREATE TABLE IF NOT EXISTS system_common_info (
-  id TEXT PRIMARY KEY,
-  value TEXT NOT NULL,
-  created_at INTEGER NOT NULL
-)
-                    ''');
               } catch (e) {
                 App.logger.warning(e);
               }

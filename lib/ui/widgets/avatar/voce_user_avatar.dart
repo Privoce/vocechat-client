@@ -124,11 +124,16 @@ class VoceUserAvatar extends StatefulWidget {
 
 class _VoceUserAvatarState extends State<VoceUserAvatar> {
   File? imageFile;
+  bool enableOnlineStatus = true;
 
   @override
   void initState() {
     super.initState();
     App.app.chatService.subscribeUsers(_onUserChanged);
+
+    enableOnlineStatus = widget.enableOnlineStatus &&
+        (App.app.chatServerM.properties.commonInfo?.showUserOnlineStatus ==
+            true);
 
     _getImageFile();
   }
@@ -169,7 +174,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
       }
 
       // Add online status
-      if (widget.enableOnlineStatus && widget.uid != null) {
+      if (enableOnlineStatus && widget.uid != null) {
         final onlineStatus = SharedFuncs.isSelf(widget.uid)
             ? ValueNotifier(true)
             : App.app.onlineStatusMap[widget.uid] ?? ValueNotifier(false);

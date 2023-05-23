@@ -111,9 +111,3 @@ CREATE TABLE IF NOT EXISTS reactions (
   created_at INTEGER NOT NULL,
   FOREIGN KEY(target_mid) REFERENCES chat_msg(mid) ON DELETE CASCADE
 );
-
-CREATE TABLE IF NOT EXISTS system_common_info (
-  id TEXT PRIMARY KEY,
-  value TEXT NOT NULL,
-  created_at INTEGER NOT NULL
-);

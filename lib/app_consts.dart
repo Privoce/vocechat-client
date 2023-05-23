@@ -25,6 +25,9 @@ enum TokenStatus { init, connecting, successful, unauthorized, disconnected }
 
 enum ButtonStatus { normal, inProgress, success, error }
 
+// ignore: constant_identifier_names
+enum ChatLayoutMode { Left, SelfRight }
+
 typedef LoadingAware = Future<void> Function(LoadingStatus status);
 typedef SseAware = Future<void> Function(SseStatus status);
 typedef TokenAware = Future<void> Function(TokenStatus status);

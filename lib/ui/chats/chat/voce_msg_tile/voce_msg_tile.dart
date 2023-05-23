@@ -46,11 +46,7 @@ class VoceMsgTile extends StatefulWidget {
     this.enableSelection,
     this.onSelectChange,
   }) : super(key: key) {
-    if (enableSelfMsgTile) {
-      isSelf = SharedFuncs.isSelf(tileData.userInfoM.userInfo.uid);
-    } else {
-      isSelf = false;
-    }
+    isSelf = SharedFuncs.isSelf(tileData.userInfoM.userInfo.uid);
   }
 
   @override
@@ -71,6 +67,8 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   /// Selection icon size, also used for status icon size.
   final double selectSize = 36;
 
+  bool selfRightLayout = false;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +76,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
     initAutoDeleteTimer();
     widget.tileData.chatMsgMNotifier.addListener(_onChatMsgMChange);
+
+    selfRightLayout =
+        (App.app.chatServerM.properties.commonInfo?.chatLayoutMode ==
+                ChatLayoutMode.SelfRight.name &&
+            widget.isSelf);
   }
 
   @override
@@ -189,7 +192,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   }
 
   Widget _buildContentTile(BuildContext context) {
-    if (widget.isSelf) {
+    if (selfRightLayout) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +242,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return Flexible(
       child: Column(
         crossAxisAlignment:
-            widget.isSelf ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            selfRightLayout ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           _buildTitle(context),
           const SizedBox(height: 8),
@@ -271,19 +274,19 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
     return Row(
         mainAxisAlignment:
-            widget.isSelf ? MainAxisAlignment.end : MainAxisAlignment.start,
+            selfRightLayout ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           RichText(
               text: TextSpan(
                   children:
-                      widget.isSelf ? spanList.reversed.toList() : spanList)),
+                      selfRightLayout ? spanList.reversed.toList() : spanList)),
         ]);
   }
 
   Widget _buildContent(BuildContext context) {
     return Column(
       crossAxisAlignment:
-          widget.isSelf ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          selfRightLayout ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
         if (widget.tileData.chatMsgMNotifier.value.isReplyMsg)
           _buildReplyBubble(),
@@ -389,7 +392,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
             }
           } else if (chatMsgM.isAudioMsg) {
             return VoceAudioBubble.tileData(
-                tileData: widget.tileData, isSelf: widget.isSelf);
+                tileData: widget.tileData, isSelf: selfRightLayout);
           } else if (chatMsgM.isArchiveMsg) {
             return VoceArchiveBubble.tileData(tileData: widget.tileData);
           }
