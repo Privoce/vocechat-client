@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.90", "build_num": 60},
+    "latest": {"version": "0.2.91", "build_num": 61},
     "logs":  [
+        {"time": 1684871945838, "version": "0.2.91", "build_num": 61, "updates": [
+            "- fix: login keyboard focus issues."
+        ]},
         {"time": 1684548451664, "version": "0.2.90", "build_num": 60, "updates": [
             "- fix: messages might be duplicated.",
             "- fix: history message fetch issue in DMs.",

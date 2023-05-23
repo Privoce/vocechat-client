@@ -73,6 +73,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       SizedBox(height: 4),
       VoceTextField.filled(
         emailController,
+        autofocus: true,
         enabled: widget.enable ? !widget.isRelogin : false,
         title: Text(
           AppLocalizations.of(context)!.loginPageEmail,
@@ -110,6 +111,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
       SizedBox(height: 4),
       VoceTextField.filled(
         pswdController,
+        autofocus: true,
         enabled: widget.enable,
         title: Text(
           AppLocalizations.of(context)!.password,
