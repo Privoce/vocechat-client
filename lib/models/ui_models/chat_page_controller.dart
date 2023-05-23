@@ -385,8 +385,7 @@ class ChatPageController {
 
   Widget _buildRemovedItem(
       MsgTileData item, BuildContext context, Animation<double> animation) {
-    return SizeTransition(
-        sizeFactor: animation, child: VoceMsgTile(tileData: item));
+    return VoceMsgTile(tileData: item, sizeFactor: animation);
   }
 
   // -- Subscriptions

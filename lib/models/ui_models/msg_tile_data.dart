@@ -17,6 +17,7 @@ class MsgTileData {
   // General Data
   late ValueNotifier<ChatMsgM> chatMsgMNotifier;
   UserInfoM userInfoM;
+  final ValueKey key;
 
   // Tile frame data
   // int avatarUpdatedAt = 0;
@@ -59,7 +60,8 @@ class MsgTileData {
   MsgTileData(
       {required ChatMsgM chatMsgM,
       required this.userInfoM,
-      required this.avatarWidget}) {
+      required this.avatarWidget})
+      : key = ValueKey(chatMsgM.localMid) {
     chatMsgMNotifier = ValueNotifier(chatMsgM);
     setGeneralData();
   }

@@ -33,20 +33,25 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoceMsgTile extends StatefulWidget {
   final MsgTileData tileData;
+  final Animation<double> sizeFactor;
 
   // Selection
   final ValueNotifier<bool>? enableSelection;
   final void Function(MsgTileData tileData, bool selected)? onSelectChange;
 
-  late final bool isSelf;
+  // late final bool isSelf;
+  late final bool selfRightLayout;
 
   VoceMsgTile({
     Key? key,
     required this.tileData,
+    required this.sizeFactor,
     this.enableSelection,
     this.onSelectChange,
   }) : super(key: key) {
-    isSelf = SharedFuncs.isSelf(tileData.userInfoM.userInfo.uid);
+    selfRightLayout = SharedFuncs.isSelf(tileData.userInfoM.userInfo.uid) &&
+        App.app.chatServerM.properties.commonInfo?.chatLayoutMode ==
+            ChatLayoutMode.SelfRight.name;
   }
 
   @override
@@ -67,8 +72,6 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   /// Selection icon size, also used for status icon size.
   final double selectSize = 36;
 
-  bool selfRightLayout = false;
-
   @override
   void initState() {
     super.initState();
@@ -76,11 +79,6 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
     initAutoDeleteTimer();
     widget.tileData.chatMsgMNotifier.addListener(_onChatMsgMChange);
-
-    selfRightLayout =
-        (App.app.chatServerM.properties.commonInfo?.chatLayoutMode ==
-                ChatLayoutMode.SelfRight.name &&
-            widget.isSelf);
   }
 
   @override
@@ -94,31 +92,34 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
 
-    return ValueListenableBuilder<UserInfoM?>(
-        valueListenable: widget.tileData.pinnedByUserInfoM,
-        builder: (context, pinnedBy, _) {
-          final isPinned = pinnedBy != null;
-          return ValueListenableBuilder<bool>(
-              valueListenable: _isAutoDelete,
-              builder: (context, isAutoDelete, _) {
-                return Container(
-                    decoration: BoxDecoration(
-                      color: _getMsgTileBgColor(
-                          isPinned: isPinned, isAutoDelete: isAutoDelete),
-                    ),
-                    constraints:
-                        BoxConstraints(minHeight: avatarSize, maxWidth: width),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (isPinned) _buildPinnedBy(pinnedBy),
-                        _buildTileWithSelectionIcon(),
-                      ],
-                    ));
-              });
-        });
+    return SizeTransition(
+      sizeFactor: widget.sizeFactor,
+      child: ValueListenableBuilder<UserInfoM?>(
+          valueListenable: widget.tileData.pinnedByUserInfoM,
+          builder: (context, pinnedBy, _) {
+            final isPinned = pinnedBy != null;
+            return ValueListenableBuilder<bool>(
+                valueListenable: _isAutoDelete,
+                builder: (context, isAutoDelete, _) {
+                  return Container(
+                      decoration: BoxDecoration(
+                        color: _getMsgTileBgColor(
+                            isPinned: isPinned, isAutoDelete: isAutoDelete),
+                      ),
+                      constraints: BoxConstraints(
+                          minHeight: avatarSize, maxWidth: width),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isPinned) _buildPinnedBy(pinnedBy),
+                          _buildTileWithSelectionIcon(),
+                        ],
+                      ));
+                });
+          }),
+    );
   }
 
   Widget _buildPinnedBy(UserInfoM? pinnedBy) {
@@ -192,7 +193,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   }
 
   Widget _buildContentTile(BuildContext context) {
-    if (selfRightLayout) {
+    if (widget.selfRightLayout) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,8 +242,9 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   Widget _buildMidCol(BuildContext context) {
     return Flexible(
       child: Column(
-        crossAxisAlignment:
-            selfRightLayout ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: widget.selfRightLayout
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           _buildTitle(context),
           const SizedBox(height: 8),
@@ -273,20 +275,23 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     ];
 
     return Row(
-        mainAxisAlignment:
-            selfRightLayout ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: widget.selfRightLayout
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [
           RichText(
               text: TextSpan(
-                  children:
-                      selfRightLayout ? spanList.reversed.toList() : spanList)),
+                  children: widget.selfRightLayout
+                      ? spanList.reversed.toList()
+                      : spanList)),
         ]);
   }
 
   Widget _buildContent(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          selfRightLayout ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: widget.selfRightLayout
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         if (widget.tileData.chatMsgMNotifier.value.isReplyMsg)
           _buildReplyBubble(),
@@ -392,7 +397,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
             }
           } else if (chatMsgM.isAudioMsg) {
             return VoceAudioBubble.tileData(
-                tileData: widget.tileData, isSelf: selfRightLayout);
+                tileData: widget.tileData, isSelf: widget.selfRightLayout);
           } else if (chatMsgM.isArchiveMsg) {
             return VoceArchiveBubble.tileData(tileData: widget.tileData);
           }

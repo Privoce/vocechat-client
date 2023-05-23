@@ -772,7 +772,7 @@ class _VoceChatPageState extends State<VoceChatPage>
             //   child:
             //       SingleChildScrollView(child: VoceMsgTile(tileData: tileData)),
             // );
-            final key = ValueKey(tileData.chatMsgMNotifier.value.localMid);
+
             final ani = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
               parent: animation,
               curve: Interval(
@@ -782,54 +782,32 @@ class _VoceChatPageState extends State<VoceChatPage>
               ),
             ));
 
-            final msgTile = GestureDetector(
-              // For debug only.
-              // onTap: () {
-              //   showAppAlert(
-              //       context: context,
-              //       title: "record",
-              //       content: tileData.chatMsgMNotifier.value.values.toString(),
-              //       actions: [
-              //         AppAlertDialogAction(
-              //             text: "copy",
-              //             action: () {
-              //               Clipboard.setData(ClipboardData(
-              //                   text: tileData.chatMsgMNotifier.value.values
-              //                       .toString()));
-              //               Navigator.pop(context);
-              //             })
-              //       ]);
-              // },
-              child: SizeTransition(
-                key: key,
-                sizeFactor: ani,
-                child: VoceMsgTile(
-                  tileData: tileData,
-                  enableSelection: selectEnabled,
-                  onSelectChange: (tileData, selected) {
-                    final chatMsgM = tileData.chatMsgMNotifier;
-                    if (selected) {
-                      // UI is selected, need to also add it to the message map
-                      selectedMsgMap
-                          .addAll({chatMsgM.value.localMid: chatMsgM});
-                    } else {
-                      selectedMsgMap.remove(chatMsgM.value.localMid);
-                    }
+            final msgTile = VoceMsgTile(
+              tileData: tileData,
+              sizeFactor: ani,
+              enableSelection: selectEnabled,
+              onSelectChange: (tileData, selected) {
+                final chatMsgM = tileData.chatMsgMNotifier;
+                if (selected) {
+                  // UI is selected, need to also add it to the message map
+                  selectedMsgMap.addAll({chatMsgM.value.localMid: chatMsgM});
+                } else {
+                  selectedMsgMap.remove(chatMsgM.value.localMid);
+                }
 
-                    selectedMsgCantMultipleArchive.value =
-                        selectedMsgMap.values.any(
-                      (element) {
-                        return element.value.isArchiveMsg ||
-                            element.value.isAudioMsg ||
-                            element.value.status != MsgStatus.success;
-                      },
-                    );
+                selectedMsgCantMultipleArchive.value =
+                    selectedMsgMap.values.any(
+                  (element) {
+                    return element.value.isArchiveMsg ||
+                        element.value.isAudioMsg ||
+                        element.value.status != MsgStatus.success;
                   },
-                ),
-              ),
+                );
+              },
             );
 
             return GestureDetector(
+                key: msgTile.key,
                 onLongPress: () {
                   showModalBottomSheet(
                     context: context,
