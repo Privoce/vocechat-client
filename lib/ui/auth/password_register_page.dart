@@ -150,6 +150,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
       children: [
         VoceTextField.filled(
           _emailController,
+          autofocus: true,
           title: Text(AppLocalizations.of(context)!.email),
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
@@ -186,6 +187,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
 
         VoceTextField.filled(
           _pswdController,
+          autofocus: true,
           title: Text(AppLocalizations.of(context)!.password),
           obscureText: true,
           keyboardType: TextInputType.visiblePassword,
@@ -224,6 +226,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
 
         VoceTextField.filled(
           _confirmPswdController,
+          autofocus: true,
           title: Text(AppLocalizations.of(context)!.confirmPassword),
           obscureText: true,
           keyboardType: TextInputType.visiblePassword,

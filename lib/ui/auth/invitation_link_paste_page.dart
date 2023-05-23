@@ -89,6 +89,7 @@ class InvitationLinkPastePage extends StatelessWidget {
                 Flexible(
                     child: VoceTextField(
                   _controller,
+                  autofocus: true,
                   height: height,
                   onChanged: (_) {
                     final text = _controller.text;
