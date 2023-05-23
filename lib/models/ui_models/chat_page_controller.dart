@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
@@ -8,6 +10,7 @@ import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
+import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
@@ -37,7 +40,7 @@ class ChatPageController {
 
   // Message data
   final Set<String> _localMidSet = {};
-  final Map<int, Widget> _avatarMap = {};
+  final Map<int, File> _avatarMap = {};
   List<MsgTileData> tileDataList = [];
   final Map<int, UserInfoM> _userInfoMap = {};
 
@@ -89,12 +92,14 @@ class ChatPageController {
 
   void handleSubscriptions() {
     App.app.chatService.subscribeMsg(onMessage);
+    App.app.chatService.subscribeUsers(onUser);
     App.app.chatService.subscribeMidDelete(onDeleteWithMid);
     App.app.chatService.subscribeLmidDelete(onDeleteWithLocalMid);
   }
 
   void handleUnsubscriptions() {
     App.app.chatService.unsubscribeMsg(onMessage);
+    App.app.chatService.unsubscribeUsers(onUser);
     App.app.chatService.unsubscribeMidDelete(onDeleteWithMid);
     App.app.chatService.unsubscribeLmidDelete(onDeleteWithLocalMid);
   }
@@ -106,6 +111,7 @@ class ChatPageController {
     tileDataList.clear();
     _localMidSet.clear();
     _userInfoMap.clear();
+    _avatarMap.clear();
   }
 
   void notifyScrollToBottomListeners() {
@@ -207,19 +213,20 @@ class ChatPageController {
       _userInfoMap.addAll({senderUid: userInfoM});
     }
 
-    Widget avatarWidget;
+    File? avatarFile;
     if (_avatarMap.containsKey(userInfoM!.uid)) {
-      avatarWidget = _avatarMap[userInfoM.uid]!;
+      avatarFile = _avatarMap[userInfoM.uid];
     } else {
-      avatarWidget = VoceUserAvatar.user(
-          userInfoM: userInfoM,
-          size: VoceAvatarSize.s40,
-          enableOnlineStatus: false);
-      _avatarMap.addAll({userInfoM.uid: avatarWidget});
+      bool enableServerFetch = userInfoM.userInfo.avatarUpdatedAt > 0;
+      avatarFile = await UserAvatarHander()
+          .readOrFetch(userInfoM, enableServerFetch: enableServerFetch);
+      if (avatarFile != null) {
+        _avatarMap.addAll({userInfoM.uid: avatarFile});
+      }
     }
 
     final tileData = MsgTileData(
-        chatMsgM: chatMsgM, userInfoM: userInfoM, avatarWidget: avatarWidget);
+        chatMsgM: chatMsgM, userInfoM: userInfoM, avatarFile: avatarFile);
     await tileData.primaryPrepare();
 
     return tileData;
@@ -408,6 +415,35 @@ class ChatPageController {
       });
 
       await updateReadIndex(chatMsgM.mid);
+    }
+  }
+
+  Future<void> onUser(UserInfoM userInfoM, EventActions action) async {
+    switch (action) {
+      case EventActions.create:
+      case EventActions.update:
+        _userInfoMap.addAll({userInfoM.uid: userInfoM});
+        for (var each in tileDataList) {
+          if (each.chatMsgMNotifier.value.fromUid == userInfoM.uid) {
+            if (each.userInfoM.userInfo.avatarUpdatedAt <
+                userInfoM.userInfo.avatarUpdatedAt) {
+              each.avatarFile = await UserAvatarHander().readOrFetch(userInfoM);
+              _avatarMap.addAll({userInfoM.uid: each.avatarFile!});
+            }
+            each.userInfoM = userInfoM;
+          }
+        }
+        break;
+      case EventActions.delete:
+        _userInfoMap.remove(userInfoM.uid);
+        for (var each in tileDataList) {
+          if (each.chatMsgMNotifier.value.fromUid == userInfoM.uid) {
+            each.userInfoM = UserInfoM.deleted();
+            _avatarMap.remove(userInfoM.uid);
+          }
+        }
+        break;
+      default:
     }
   }
 

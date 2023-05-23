@@ -75,6 +75,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   @override
   void initState() {
     super.initState();
+
     _isAutoDelete.value = widget.tileData.isAutoDelete;
 
     initAutoDeleteTimer();
@@ -225,18 +226,21 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
         width: avatarSize,
         height: avatarSize,
         child: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: widget.tileData.userInfoM.deleted
-              ? null
-              : () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) {
-                    return ContactDetailPage(
-                        userInfoM: widget.tileData.userInfoM);
-                  }));
-                },
-          child: widget.tileData.avatarWidget,
-        ));
+            padding: EdgeInsets.zero,
+            onPressed: widget.tileData.userInfoM.deleted
+                ? null
+                : () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return ContactDetailPage(
+                          userInfoM: widget.tileData.userInfoM);
+                    }));
+                  },
+            child: VoceUserAvatar.file(
+                name: widget.tileData.name,
+                uid: widget.tileData.userInfoM.uid,
+                file: widget.tileData.avatarFile,
+                size: VoceAvatarSize.s40)));
   }
 
   Widget _buildMidCol(BuildContext context) {

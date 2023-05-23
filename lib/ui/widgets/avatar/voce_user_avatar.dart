@@ -56,7 +56,7 @@ class VoceUserAvatar extends StatefulWidget {
       {Key? key,
       required String this.name,
       required int this.uid,
-      required File this.file,
+      required this.file,
       required this.size,
       this.isCircle = useCircleAvatar,
       this.enableOnlineStatus = true,
@@ -65,7 +65,7 @@ class VoceUserAvatar extends StatefulWidget {
       : avatarBytes = null,
         enableServerRetry = false,
         userInfoM = null,
-        _deleted = false,
+        _deleted = uid <= 0,
         super(key: key);
 
   VoceUserAvatar.user(

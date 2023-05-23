@@ -21,7 +21,7 @@ class MsgTileData {
 
   // Tile frame data
   // int avatarUpdatedAt = 0;
-  Widget avatarWidget;
+  File? avatarFile;
   String name = "";
   int time = 0;
   ValueNotifier<MsgStatus> status = ValueNotifier(MsgStatus.success);
@@ -58,9 +58,7 @@ class MsgTileData {
 
   // Constructors
   MsgTileData(
-      {required ChatMsgM chatMsgM,
-      required this.userInfoM,
-      required this.avatarWidget})
+      {required ChatMsgM chatMsgM, required this.userInfoM, this.avatarFile})
       : key = ValueKey(chatMsgM.localMid) {
     chatMsgMNotifier = ValueNotifier(chatMsgM);
     setGeneralData();
