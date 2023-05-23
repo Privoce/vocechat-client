@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
+import 'package:vocechat_client/api/models/admin/system/sys_common_info.dart';
 import 'package:vocechat_client/api/models/admin/system/sys_org_info.dart';
 import 'package:vocechat_client/app.dart';
 
@@ -64,6 +65,26 @@ class AdminSystemApi {
 
     if (res.statusCode == 200 && res.data != null) {
       final data = AdminSystemOrgInfo.fromJson(res.data!);
+      newRes.data = data;
+    }
+    return newRes;
+  }
+
+  Future<Response<AdminSystemCommonInfo>> getCommonInfo() async {
+    final dio = DioUtil(baseUrl: _baseUrl);
+    final res = await dio.get("/cpmmon");
+
+    var newRes = Response<AdminSystemCommonInfo>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final data = AdminSystemCommonInfo.fromJson(res.data!);
       newRes.data = data;
     }
     return newRes;
