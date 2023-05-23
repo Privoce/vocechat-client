@@ -189,6 +189,8 @@
     "releaseToSend":"松开发送",
     "removeContact":"移除联系人",
     "removeContactWarning":"联系人将从列表中被移除，但您仍然可以聊天。所有消息和数据都将保留。",
+    "removeFromServer":"从服务器移除",
+    "removeFromServerWarning":"用户将从服务器中被移除。",
     "rememberMe": "记住我",
     "reply": "回复",
     "repliedMessageDeleted":"被回复的消息已被删除。",

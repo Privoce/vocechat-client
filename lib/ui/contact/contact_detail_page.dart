@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/api/lib/admin_user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
@@ -113,11 +115,26 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               onTap: () {
                 onTapDm(userInfoM, context);
               }),
+          if (isAdmin())
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: AppBannerButton(
+                  title: AppLocalizations.of(context)!.removeFromServer,
+                  textColor: Colors.red,
+                  onTap: () {
+                    onTapRemoveUserFromServer(userInfoM, context);
+                  }),
+            ),
+
           // if (enableContact) _buildBlockBtn(context),
           // if (enableContact) _buildRemoveBtn(context)
         ],
       ),
     );
+  }
+
+  bool isAdmin() {
+    return App.app.userDb?.userInfo.isAdmin == true;
   }
 
   // Widget _buildBlockBtn(BuildContext context) {
@@ -201,6 +218,51 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
                   controller: controller))).then((value) async {
         controller.dispose();
       });
+    });
+  }
+
+  void onTapRemoveUserFromServer(
+      UserInfoM userInfoM, BuildContext context) async {
+    await showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.removeFromServer,
+        content: AppLocalizations.of(context)!.removeFromServerWarning,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.cancel,
+              action: () {
+                Navigator.pop(context);
+              }),
+        ],
+        primaryAction: AppAlertDialogAction(
+            text: AppLocalizations.of(context)!.continueStr,
+            isDangerAction: true,
+            action: () async {
+              Navigator.pop(context);
+              removeContactFromServer(userInfoM);
+            }));
+  }
+
+  void removeContactFromServer(UserInfoM userInfoM) async {
+    showBusyDialog();
+
+    await AdminUserApi().deleteUser(userInfoM.uid).then((res) async {
+      if (res.statusCode == 200) {
+        await UserInfoDao().removeByUid(userInfoM.uid).then((_) {
+          App.app.chatService.fireUser(userInfoM, EventActions.delete);
+          dismissBusyDialog();
+          Navigator.pop(context);
+        });
+      } else {
+        dismissBusyDialog();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppLocalizations.of(context)!.networkError)));
+      }
+    }).onError((error, stackTrace) {
+      App.logger.severe(error);
+      dismissBusyDialog();
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
     });
   }
 

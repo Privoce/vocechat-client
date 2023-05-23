@@ -187,6 +187,8 @@
     "rememberMe": "Remember me",
     "removeContact":"Remove Contact",
     "removeContactWarning":"The contact will be removed from Contact List but you can still chat. All messages and data will be preserved.",
+    "removeFromServer":"Remove from server",
+    "removeFromServerWarning":"The user will be removed from the server.",
     "reply": "Reply",
     "repliedMessageDeleted":"The replied message has been deleted.",
     "replyingTo":"Replying to",
