@@ -526,7 +526,7 @@ class _ServerPageState extends State<ServerPage> {
     // final chatServerM = await ChatServerHelper().prepareChatServerM(url);
     // if (chatServerM == null) return false;
 
-    _urlFocusNode.requestFocus();
+    // _urlFocusNode.requestFocus();
 
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => LoginPage(baseUrl: url)));

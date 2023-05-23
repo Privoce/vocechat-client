@@ -339,18 +339,20 @@ class SharedFuncs {
   static Future<ChatServerM?> updateServerInfo(ChatServerM chatServerM,
       {bool enableFire = false}) async {
     try {
-      final orgInfoRes = await AdminSystemApi().getOrgInfo();
+      final fullUrl = chatServerM.fullUrl;
+      final orgInfoRes = await AdminSystemApi(serverUrl: fullUrl).getOrgInfo();
       if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
         final orgInfo = orgInfoRes.data!;
         chatServerM.properties = ChatServerProperties(
             serverName: orgInfo.name, description: orgInfo.description ?? "");
 
-        final logoRes = await ResourceApi().getOrgLogo();
+        final logoRes = await ResourceApi(serverUrl: fullUrl).getOrgLogo();
         if (logoRes.statusCode == 200 && logoRes.data != null) {
           chatServerM.logo = logoRes.data!;
         }
 
-        final adminLoginRes = await AdminLoginApi().getConfig();
+        final adminLoginRes =
+            await AdminLoginApi(serverUrl: fullUrl).getConfig();
         if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
           chatServerM.properties = ChatServerProperties(
               serverName: orgInfo.name,
@@ -358,7 +360,8 @@ class SharedFuncs {
               config: adminLoginRes.data);
         }
 
-        final adminSysCommonInfo = await AdminSystemApi().getCommonInfo();
+        final adminSysCommonInfo =
+            await AdminSystemApi(serverUrl: fullUrl).getCommonInfo();
         if (adminSysCommonInfo.statusCode == 200 &&
             adminSysCommonInfo.data != null) {
           final commonInfo = adminSysCommonInfo.data!;
