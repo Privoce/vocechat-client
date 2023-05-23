@@ -148,7 +148,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Widget build(BuildContext context) {
     if (widget._deleted) {
       return VoceAvatar.icon(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           icon: CupertinoIcons.person,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -157,7 +157,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
       Widget rawAvatar;
       if (widget.file != null) {
         rawAvatar = VoceAvatar.file(
-            key: UniqueKey(),
+            // key: UniqueKey(),
             file: widget.file!,
             size: widget.size,
             isCircle: widget.isCircle);
@@ -165,7 +165,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
           widget.userInfoM!.userInfo.avatarUpdatedAt != 0 &&
           imageFile != null) {
         rawAvatar = VoceAvatar.file(
-            key: UniqueKey(),
+            // key: UniqueKey(),
             file: imageFile!,
             size: widget.size,
             isCircle: widget.isCircle);
@@ -224,13 +224,13 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Widget _buildNonFileAvatar() {
     if (widget.avatarBytes != null && widget.avatarBytes!.isNotEmpty) {
       return VoceAvatar.bytes(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           avatarBytes: widget.avatarBytes!,
           size: widget.size,
           isCircle: widget.isCircle);
     } else if (widget.name != null && widget.name!.isNotEmpty) {
       return VoceAvatar.name(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           name: widget.name!,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -238,7 +238,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
           backgroundColor: widget.backgroundColor);
     } else {
       return VoceAvatar.icon(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           icon: AppIcons.contact,
           size: widget.size,
           isCircle: widget.isCircle,

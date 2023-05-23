@@ -136,7 +136,10 @@ class _ChatsPageState extends State<ChatsPage>
     return ListView.separated(
       itemCount: chatTileList.length,
       itemBuilder: (context, index) {
-        return VoceChatTile(tileData: chatTileList[index], onTap: onTap);
+        return VoceChatTile(
+            key: ObjectKey(chatTileList[index]),
+            tileData: chatTileList[index],
+            onTap: onTap);
       },
       separatorBuilder: (context, index) {
         return const Divider(indent: 80);
