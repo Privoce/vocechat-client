@@ -221,6 +221,7 @@ class _ServerPageState extends State<ServerPage> {
                     Expanded(
                       child: VoceTextField(
                         _urlController,
+                        autofocus: true,
                         focusNode: _urlFocusNode,
                         height: 40,
                         borderRadius: _outerRadius,

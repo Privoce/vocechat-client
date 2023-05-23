@@ -174,6 +174,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         SizedBox(height: 16),
         VoceTextField.filled(
           nameController,
+          autofocus: true,
           keyboardType: TextInputType.emailAddress,
           textInputAction: TextInputAction.next,
           scrollPadding: EdgeInsets.only(bottom: 100),
