@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
@@ -17,7 +18,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class AppQrScanPage extends StatelessWidget {
   MobileScannerController cameraController = MobileScannerController();
 
-  AppQrScanPage({super.key});
+  void Function(String link)? onQrCodeDetected;
+
+  AppQrScanPage({super.key, this.onQrCodeDetected});
 
   @override
   Widget build(BuildContext context) {
@@ -69,30 +72,38 @@ class AppQrScanPage extends StatelessWidget {
   }
 
   void _onQrCodeDetected(String link, BuildContext context) async {
-    showLoaderDialog(context);
-    await _validateLink(link).then((valid) {
-      if (valid) {
-        App.logger.info("success, $link");
-      } else {
-        // Dismiss loading dialog.
-        Navigator.pop(context);
+    // await SharedFuncs.handleQRCodeLinks(link).then((serverUrl) {
+    //   if (serverUrl != null) {
+    //     Navigator.pop(context, serverUrl);
+    //   }
+    // });
+    onQrCodeDetected?.call(link);
+    Navigator.pop(context);
 
-        showAppAlert(
-            context: context,
-            title:
-                AppLocalizations.of(context)!.appQrCodeScanPageInvalidCodeTitle,
-            content: AppLocalizations.of(context)!
-                .appQrCodeScanPageInvalidCodeContent,
-            actions: [
-              AppAlertDialogAction(
-                  text: AppLocalizations.of(context)!.ok,
-                  action: () => Navigator.of(context).pop())
-            ]);
+    // showLoaderDialog(context);
+    // await _validateLink(link).then((valid) {
+    //   if (valid) {
+    //     App.logger.info("success, $link");
+    //   } else {
+    //     // Dismiss loading dialog.
+    //     Navigator.pop(context);
 
-        // Pop scan page.
-        Navigator.pop(context);
-      }
-    });
+    //     showAppAlert(
+    //         context: context,
+    //         title:
+    //             AppLocalizations.of(context)!.appQrCodeScanPageInvalidCodeTitle,
+    //         content: AppLocalizations.of(context)!
+    //             .appQrCodeScanPageInvalidCodeContent,
+    //         actions: [
+    //           AppAlertDialogAction(
+    //               text: AppLocalizations.of(context)!.ok,
+    //               action: () => Navigator.of(context).pop())
+    //         ]);
+
+    //     // Pop scan page.
+    //     Navigator.pop(context);
+    //   }
+    // });
   }
 
   Future<bool> _validateLink(String link) async {

@@ -357,6 +357,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   void _handleIncomingUniLink() async {
     uriLinkStream.listen((Uri? uri) async {
+      print(uri);
       if (uri == null) return;
       _parseLink(uri);
     });
@@ -385,17 +386,20 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
     try {
-      final magicLinkHost = uri.queryParameters["magic_link"];
-      final magicToken = uri.queryParameters["magic_token"];
+      final magicLink = uri.queryParameters["magic_link"];
+      print("magicLinkHost: $magicLink");
 
-      if (magicLinkHost == null || magicLinkHost.isEmpty) return null;
-      final invLinkUri = Uri.parse(magicLinkHost);
+      if (magicLink == null || magicLink.isEmpty) return null;
+      final magicLinkUri = Uri.parse(magicLink);
+      final magicToken = magicLinkUri.queryParameters["magic_token"];
 
-      String serverUrl = invLinkUri.scheme +
+      print("invLinkUri: $magicLinkUri");
+
+      String serverUrl = magicLinkUri.scheme +
           '://' +
-          invLinkUri.host +
+          magicLinkUri.host +
           ":" +
-          invLinkUri.port.toString();
+          magicLinkUri.port.toString();
 
       if (serverUrl == "https://privoce.voce.chat" ||
           serverUrl == "https://privoce.voce.chat:443") {
@@ -420,12 +424,15 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _handleJoinLink(Uri uri) async {
+    print("handleJoinLink");
     final data = await _prepareInvitationLinkData(uri);
     final context = navigatorKey.currentContext;
+    print("data: $data, context: $context");
     if (data == null || context == null) return;
     try {
       final chatServer = await ChatServerHelper()
           .prepareChatServerM(data.serverUrl, showAlert: false);
+      print("chatServer: $chatServer");
       if (chatServer == null) return;
 
       final route = PageRouteBuilder(
@@ -446,6 +453,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           );
         },
       );
+
+      print("before push");
 
       Navigator.push(context, route);
     } catch (e) {

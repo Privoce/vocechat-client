@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -242,9 +243,22 @@ class _ServerPageState extends State<ServerPage> {
                             color: Colors.blue, size: 30),
                         onPressed: () {
                           final route = PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                    AppQrScanPage(),
+                            pageBuilder: (context, animation,
+                                    secondaryAnimation) =>
+                                AppQrScanPage(onQrCodeDetected: (link) async {
+                              final uri = Uri.parse(link);
+
+                              if (uri.host == "voce.chat") {
+                                if (uri.path == "/login") {
+                                  _urlController.text =
+                                      uri.queryParameters["s"] ?? "";
+                                }
+                              } else {
+                                if (!await launchUrl(uri)) {
+                                  throw Exception('Could not launch $uri');
+                                }
+                              }
+                            }),
                             transitionsBuilder: (context, animation,
                                 secondaryAnimation, child) {
                               const begin = Offset(0.0, 1.0);

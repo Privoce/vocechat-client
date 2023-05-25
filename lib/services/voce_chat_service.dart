@@ -920,72 +920,71 @@ class VoceChatService {
   Future<void> _handleUsersLog(Map<String, dynamic> usersLog) async {
     assert(usersLog.containsKey("type") && usersLog["type"] == sseUsersLog);
 
-    // try {
-    final List<dynamic> usersMap = usersLog["logs"];
-    if (usersMap.isNotEmpty) {
-      for (var userMap in usersMap) {
-        String action = userMap["action"];
+    try {
+      final List<dynamic> usersMap = usersLog["logs"];
+      if (usersMap.isNotEmpty) {
+        for (var userMap in usersMap) {
+          String action = userMap["action"];
 
-        switch (action) {
-          case "create":
-            UserInfo userInfo = UserInfo.fromJson(userMap);
-            UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
+          switch (action) {
+            case "create":
+              UserInfo userInfo = UserInfo.fromJson(userMap);
+              UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
 
-            final oldUserInfoM =
-                await UserInfoDao().getUserByUid(userInfoM.uid);
+              final oldUserInfoM =
+                  await UserInfoDao().getUserByUid(userInfoM.uid);
 
-            if (oldUserInfoM != userInfoM) {
-              await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
-                fireUser(value, EventActions.create);
-              });
-            }
-
-            await UserDbMDao.dao.updateUserInfo(userInfo);
-
-            break;
-          case "update":
-            UserInfoUpdate update = UserInfoUpdate.fromJson(userMap);
-            final old = await UserInfoDao().getUserByUid(update.uid);
-            if (old != null) {
-              final oldInfo = UserInfo.fromJson(json.decode(old.info));
-              final newInfo = UserInfo.getUpdated(oldInfo, update);
-              final newUserInfoM =
-                  UserInfoM.fromUserInfo(newInfo, old.propertiesStr);
-
-              if (old != newUserInfoM) {
-                await UserInfoDao()
-                    .addOrUpdate(newUserInfoM)
-                    .then((value) async {
-                  fireUser(value, EventActions.update);
+              if (oldUserInfoM != userInfoM) {
+                await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
+                  fireUser(value, EventActions.create);
                 });
               }
-            }
-            break;
-          case "delete":
-            final uid = userMap["uid"] as int?;
-            if (uid != null) {
-              UserInfoM userDeleted = UserInfoM()..uid = uid;
 
-              await UserInfoDao()
-                  .removeByUid(uid)
-                  .then((value) => fireUser(userDeleted, EventActions.delete));
+              await UserDbMDao.dao.updateUserInfo(userInfo);
 
-              if (uid == App.app.userDb?.uid) {
-                await App.app.authService?.selfDelete();
+              break;
+            case "update":
+              UserInfoUpdate update = UserInfoUpdate.fromJson(userMap);
+              final old = await UserInfoDao().getUserByUid(update.uid);
+              if (old != null) {
+                final oldInfo = UserInfo.fromJson(json.decode(old.info));
+                final newInfo = UserInfo.getUpdated(oldInfo, update);
+                final newUserInfoM =
+                    UserInfoM.fromUserInfo(newInfo, old.propertiesStr);
+
+                if (old != newUserInfoM) {
+                  await UserInfoDao()
+                      .addOrUpdate(newUserInfoM)
+                      .then((value) async {
+                    fireUser(value, EventActions.update);
+                  });
+                }
               }
-            }
+              break;
+            case "delete":
+              final uid = userMap["uid"] as int?;
+              if (uid != null) {
+                UserInfoM userDeleted = UserInfoM()..uid = uid;
 
-            break;
-          default:
+                await UserInfoDao().removeByUid(uid).then(
+                    (value) => fireUser(userDeleted, EventActions.delete));
+
+                if (uid == App.app.userDb?.uid) {
+                  await App.app.authService?.selfDelete();
+                }
+              }
+
+              break;
+            default:
+          }
+          int version = userMap["log_id"];
+
+          await UserDbMDao.dao.updateUsersVersion(App.app.userDb!.id, version);
         }
-        int version = userMap["log_id"];
-
-        await UserDbMDao.dao.updateUsersVersion(App.app.userDb!.id, version);
       }
+    } catch (e) {
+      App.logger.severe(e);
     }
-    // } catch (e) {
-    //   App.logger.severe(e);
-    // }
   }
 
   Future<void> _handleUserSettings(Map<String, dynamic> map) async {

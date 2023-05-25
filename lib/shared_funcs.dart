@@ -6,6 +6,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
@@ -120,6 +121,21 @@ class SharedFuncs {
     } else {
       return version;
     }
+  }
+
+  static Future<String?> handleQRCodeLinks(String link) async {
+    // final uri = Uri.parse(link);
+
+    // if (uri.host == "voce.chat") {
+    //   if (uri.path == "/login") {
+    //     return uri.queryParameters["s"];
+    //   }
+    // } else {
+    //   if (!await launchUrl(uri)) {
+    //     throw Exception('Could not launch $uri');
+    //   }
+    // }
+    // return null;
   }
 
   static bool hasPreSetServerUrl() {
