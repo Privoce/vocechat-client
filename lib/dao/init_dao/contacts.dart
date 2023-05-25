@@ -1,8 +1,5 @@
 // ignore_for_file: constant_identifier_names
 
-import 'dart:convert';
-
-import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
 
@@ -11,7 +8,6 @@ enum ContactStatus { added, blocked }
 class ContactM with M {
   int uid = -1;
   String status = ContactStatus.blocked.toString();
-  int createdAt = 0;
   int updatedAt = 0;
 
   ContactM();
