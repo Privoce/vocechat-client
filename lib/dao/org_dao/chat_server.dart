@@ -163,7 +163,8 @@ class ChatServerDao extends OrgDao<ChatServerM> {
     } else {
       await super.add(m);
     }
-    App.logger.info("ChatServerM saved. Id: ${m.id}");
+    App.logger.info(
+        "ChatServerM saved. Id: ${m.id}, common info: ${m.properties.commonInfo?.toJson()}");
     return m;
   }
 

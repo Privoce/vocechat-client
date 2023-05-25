@@ -25,7 +25,12 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   String _properties = "";
 
   // Following properties in [contacts] table.
-  String contactStatus = ContactStatus.blocked.toString();
+  String contactStatusStr = ContactStatus.none.name;
+  ContactStatus get contactStatus {
+    return ContactStatus.values.firstWhere((e) => e.name == contactStatusStr,
+        orElse: () => ContactStatus.none);
+  }
+
   int contactUpdatedAt = 0;
 
   Map<String, dynamic> toJson() {
@@ -88,16 +93,6 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
     info = jsonEncode(userInfo.toJson());
   }
 
-  UserInfoM.fromUserAndContactInfo(UserInfo userInfo, ContactInfo contactInfo) {
-    uid = userInfo.uid;
-    info = jsonEncode(userInfo.toJson());
-  }
-
-  UserInfoM.fromUserContact(UserContact userContact) {
-    uid = userContact.targetInfo.uid;
-    info = jsonEncode(userContact.targetInfo.toJson());
-  }
-
   UserInfoM.deleted() {
     info = json.encode(UserInfo.deleted());
   }
@@ -149,6 +144,8 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
         info,
         _properties,
         // createdAt,
+        contactStatusStr,
+        contactUpdatedAt
       ];
 }
 
@@ -294,10 +291,15 @@ class UserInfoDao extends Dao<UserInfoM> {
       for (var user in userList) {
         final contactInfo = await contactDao.getContactInfo(user.uid);
         if (contactInfo != null) {
-          user.contactStatus = contactInfo.status;
+          user.contactStatusStr = contactInfo.status;
           user.contactUpdatedAt = contactInfo.updatedAt;
         }
       }
+      return userList
+          .where((element) =>
+              element.contactStatusStr == ContactStatus.added.name ||
+              element.uid == 1)
+          .toList();
     }
 
     return userList;
@@ -319,10 +321,11 @@ class UserInfoDao extends Dao<UserInfoM> {
       final contactDao = ContactDao();
       final contactInfo = await contactDao.getContactInfo(user.uid);
       if (contactInfo != null) {
-        user.contactStatus = contactInfo.status;
+        user.contactStatusStr = contactInfo.status;
         user.contactUpdatedAt = contactInfo.updatedAt;
       }
     }
+
     return user;
   }
 

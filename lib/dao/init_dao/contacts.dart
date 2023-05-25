@@ -10,7 +10,7 @@ enum ContactUpdateAction { add, block, remove, unblock }
 
 class ContactM with M {
   int uid = -1;
-  String status = ContactStatus.none.toString();
+  String status = ContactStatus.none.name;
   int updatedAt = 0;
 
   ContactM();
@@ -94,13 +94,13 @@ class ContactDao extends Dao<ContactM> {
     if (contactM != null) {
       switch (status) {
         case ContactStatus.added:
-          contactM.status = ContactStatus.added.toString();
+          contactM.status = ContactStatus.added.name;
           break;
         case ContactStatus.blocked:
-          contactM.status = ContactStatus.blocked.toString();
+          contactM.status = ContactStatus.blocked.name;
           break;
         case ContactStatus.none:
-          contactM.status = ContactStatus.none.toString();
+          contactM.status = ContactStatus.none.name;
           break;
       }
       contactM.updatedAt = DateTime.now().millisecondsSinceEpoch;
@@ -108,8 +108,31 @@ class ContactDao extends Dao<ContactM> {
 
       return contactM;
     } else {
-      return null;
+      contactM = ContactM();
+      contactM.uid = uid;
+      contactM.status = status.name;
+      contactM.updatedAt = DateTime.now().millisecondsSinceEpoch;
+
+      await add(contactM);
+
+      return contactM;
     }
+  }
+
+  Future<ContactM?> updateContactInfo(int uid, ContactInfo contactInfo) async {
+    ContactM? contactM = await getContact(uid);
+    if (contactM != null) {
+      contactM.status = contactInfo.status;
+      contactM.createdAt = contactInfo.createdAt;
+      contactM.updatedAt = contactInfo.updatedAt;
+
+      await update(contactM);
+    } else {
+      contactM = ContactM.fromContactInfo(uid, contactInfo.status,
+          contactInfo.createdAt, contactInfo.updatedAt);
+      await add(contactM);
+    }
+    return contactM;
   }
 
   Future<ContactInfo?> getContactInfo(int uid) async {

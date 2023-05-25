@@ -105,7 +105,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   }
 
   Widget _buildSettings(UserInfoM userInfoM, BuildContext context) {
-    final titleText = userInfoM.contactStatus != ContactStatus.blocked.name
+    final titleText = userInfoM.contactStatusStr != ContactStatus.blocked.name
         ? AppLocalizations.of(context)!.sendMessage
         : AppLocalizations.of(context)!.viewChatHistory;
     // final titleText = AppLocalizations.of(context)!.sendMessage;
@@ -127,7 +127,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               padding: const EdgeInsets.only(top: 8),
               child: AppBannerButton(
                   title: AppLocalizations.of(context)!.removeFromServer,
-                  textColor: Colors.red,
+                  textColor: AppColors.systemRed,
                   onTap: () {
                     onTapRemoveUserFromServer(userInfoM, context);
                   }),
@@ -195,19 +195,19 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
 
   bool get _showBlockBtn =>
       (!SharedFuncs.isSelf(_userInfoMNotifier.value.uid)) &&
-      _userInfoMNotifier.value.contactStatus != ContactStatus.blocked.name;
+      _userInfoMNotifier.value.contactStatusStr != ContactStatus.blocked.name;
 
   bool get _showUnblockBtn =>
       (!SharedFuncs.isSelf(_userInfoMNotifier.value.uid)) &&
-      _userInfoMNotifier.value.contactStatus == ContactStatus.blocked.name;
+      _userInfoMNotifier.value.contactStatusStr == ContactStatus.blocked.name;
 
   bool get _showRemoveBtn =>
       (!SharedFuncs.isSelf(_userInfoMNotifier.value.uid)) &&
-      _userInfoMNotifier.value.contactStatus == ContactStatus.added.name;
+      _userInfoMNotifier.value.contactStatusStr == ContactStatus.added.name;
 
   bool get _showAddBtn =>
       !SharedFuncs.isSelf(_userInfoMNotifier.value.uid) &&
-      _userInfoMNotifier.value.contactStatus == ContactStatus.none.name;
+      _userInfoMNotifier.value.contactStatusStr == ContactStatus.none.name;
 
   void onTapDm(UserInfoM userInfoM, BuildContext context) async {
     GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
@@ -357,7 +357,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
             .then((upatedContactM) async {
           if (upatedContactM != null) {
             final updatedUserInfoM = _userInfoMNotifier.value
-              ..contactStatus = upatedContactM.status
+              ..contactStatusStr = upatedContactM.status
               ..contactUpdatedAt = upatedContactM.updatedAt;
 
             App.app.chatService
@@ -389,15 +389,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         await ContactDao()
             .updateContact(_userInfoMNotifier.value.uid, ContactStatus.none)
             .then((upatedContactM) async {
-          if (upatedContactM != null) {
-            final updatedUserInfoM = _userInfoMNotifier.value
-              ..contactStatus = upatedContactM.status
-              ..contactUpdatedAt = upatedContactM.updatedAt;
-
-            App.app.chatService
-                .fireUser(updatedUserInfoM, EventActions.update, true);
-            dismissBusyDialog();
-          }
+          dismissBusyDialog();
         });
       } else {
         dismissBusyDialog();
@@ -425,15 +417,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         await ContactDao()
             .updateContact(_userInfoMNotifier.value.uid, ContactStatus.none)
             .then((upatedContactM) async {
-          if (upatedContactM != null) {
-            final updatedUserInfoM = _userInfoMNotifier.value
-              ..contactStatus = upatedContactM.status
-              ..contactUpdatedAt = upatedContactM.updatedAt;
-
-            App.app.chatService
-                .fireUser(updatedUserInfoM, EventActions.update, true);
-            dismissBusyDialog();
-          }
+          dismissBusyDialog();
         });
       } else {
         dismissBusyDialog();
@@ -459,15 +443,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         await ContactDao()
             .updateContact(_userInfoMNotifier.value.uid, ContactStatus.added)
             .then((upatedContactM) async {
-          if (upatedContactM != null) {
-            final updatedUserInfoM = _userInfoMNotifier.value
-              ..contactStatus = upatedContactM.status
-              ..contactUpdatedAt = upatedContactM.updatedAt;
-
-            App.app.chatService
-                .fireUser(updatedUserInfoM, EventActions.update, true);
-            dismissBusyDialog();
-          }
+          dismissBusyDialog();
         });
       } else {
         dismissBusyDialog();
@@ -494,5 +470,9 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     }
 
     _userInfoMNotifier.value = userInfoM;
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 }

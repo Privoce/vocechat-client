@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/local_kits.dart';
@@ -13,6 +14,7 @@ import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
 
 class ChatPageController {
@@ -50,6 +52,8 @@ class ChatPageController {
   ValueNotifier<bool> isLoadingNotifier = ValueNotifier(false);
   Set<VoidCallback> _scrollToBottomListeners = {};
   ValueNotifier<bool> isLoadingHistory = ValueNotifier(false);
+  // ValueNotifier<ContactStatus> contactStatusNotifier =
+  //     ValueNotifier(ContactStatus.none);
 
   // Instances of tools
   final ChatMsgDao _chatMsgDao = ChatMsgDao();
@@ -423,6 +427,7 @@ class ChatPageController {
       case EventActions.create:
       case EventActions.update:
         _userInfoMap.addAll({userInfoM.uid: userInfoM});
+
         for (var each in tileDataList) {
           if (each.chatMsgMNotifier.value.fromUid == userInfoM.uid) {
             if (each.userInfoM.userInfo.avatarUpdatedAt <

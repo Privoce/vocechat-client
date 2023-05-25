@@ -214,7 +214,7 @@ class _ContactListState extends State<ContactList>
 
         // Then handle general case.
         if (enableContact) {
-          if (userInfoM.contactStatus == ContactStatus.added.name) {
+          if (userInfoM.contactStatusStr == ContactStatus.added.name) {
             _uidSet.add(userInfoM.uid);
 
             final index = _contactList

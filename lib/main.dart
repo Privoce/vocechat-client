@@ -73,20 +73,18 @@ Future<void> main() async {
         } else {
           App.app.chatServerM = chatServerM;
 
-          // Update server info.
-          // Must be done before App.app.chatServerM is initialized.
-          // No need await. Will fire new data after data is fetched.
-          SharedFuncs.updateServerInfo(App.app.chatServerM, enableFire: true)
+          App.app.statusService = StatusService();
+          App.app.authService = AuthService(chatServerM: App.app.chatServerM);
+          App.app.chatService = VoceChatService();
+
+          await SharedFuncs.updateServerInfo(App.app.chatServerM,
+                  enableFire: true)
               .then((value) {
             if (value != null) {
               App.app.chatServerM = value;
+              App.logger.info("Server info updated.");
             }
           });
-
-          App.app.statusService = StatusService();
-          App.app.authService = AuthService(chatServerM: App.app.chatServerM);
-
-          App.app.chatService = VoceChatService();
         }
       }
     }

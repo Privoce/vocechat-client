@@ -213,8 +213,9 @@ class _VoceChatPageState extends State<VoceChatPage>
     return ValueListenableBuilder<UserInfoM>(
       valueListenable: widget.userInfoNotifier!,
       builder: (context, userInfoM, child) {
+        print("userInfo updated: ${userInfoM.contactStatusStr}");
         Widget widget;
-        if (userInfoM.contactStatus == ContactStatus.blocked.name) {
+        if (userInfoM.contactStatus == ContactStatus.blocked) {
           widget = Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
@@ -231,7 +232,7 @@ class _VoceChatPageState extends State<VoceChatPage>
                       AppLocalizations.of(context)!.unblock, context))
             ],
           );
-        } else if (userInfoM.contactStatus == "") {
+        } else if (userInfoM.contactStatus == ContactStatus.none) {
           widget = Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
@@ -307,13 +308,6 @@ class _VoceChatPageState extends State<VoceChatPage>
         await ContactDao()
             .updateContact(uid, ContactStatus.none)
             .then((updatedContactM) async {
-          if (updatedContactM != null) {
-            final updatedUserInfoM = widget.userInfoNotifier!.value
-              ..contactStatus = updatedContactM.status
-              ..contactUpdatedAt = updatedContactM.updatedAt;
-            App.app.chatService
-                .fireUser(updatedUserInfoM, EventActions.update, true);
-          }
           dismissBusyDialog();
         });
       } else {
@@ -341,13 +335,6 @@ class _VoceChatPageState extends State<VoceChatPage>
         await ContactDao()
             .updateContact(uid, ContactStatus.blocked)
             .then((updatedContactM) async {
-          if (updatedContactM != null) {
-            final updatedUserInfoM = widget.userInfoNotifier!.value
-              ..contactStatus = updatedContactM.status
-              ..contactUpdatedAt = updatedContactM.updatedAt;
-            App.app.chatService
-                .fireUser(updatedUserInfoM, EventActions.update, true);
-          }
           dismissBusyDialog();
         });
       } else {
@@ -373,13 +360,6 @@ class _VoceChatPageState extends State<VoceChatPage>
         await ContactDao()
             .updateContact(uid, ContactStatus.added)
             .then((updatedContactM) async {
-          if (updatedContactM != null) {
-            final updatedUserInfoM = widget.userInfoNotifier!.value
-              ..contactStatus = updatedContactM.status
-              ..contactUpdatedAt = updatedContactM.updatedAt;
-            App.app.chatService
-                .fireUser(updatedUserInfoM, EventActions.update, true);
-          }
           dismissBusyDialog();
         });
       } else {

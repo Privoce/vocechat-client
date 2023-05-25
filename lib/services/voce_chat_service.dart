@@ -10,6 +10,7 @@ import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
+import 'package:vocechat_client/api/models/user/contact_info.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
@@ -36,6 +37,7 @@ import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
 import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 
 import '../dao/org_dao/chat_server.dart';
 
@@ -96,35 +98,21 @@ class VoceChatService {
   final Map<int, ChatMsgM> msgMap = {};
   final Map<int, ReactionM> reactionMap = {};
 
-  Future<void> initContacts() async {
-    // if (enableContact) {
-    //   final res = await UserApi().getUserContacts();
-    //   if (res.statusCode == 200 && res.data != null) {
-    //     final dao = UserInfoDao();
-    //     final userInfoMList =
-    //         res.data!.map((e) => UserInfoM.fromUserContact(e)).toList();
-    //     for (final each in userInfoMList) {
-    //       await dao.addOrUpdate(each);
-    //     }
+  Future<void> preSseInits() async {
+    if (enableContact) {
+      final res = await UserApi().getUserContacts();
 
-    //     final uidList = userInfoMList.map((e) => e.uid).toList();
-    //     await dao.emptyUnpushedContactStatus(uidList);
-    //   }
-    // } else {
-    //   return;
-    // }
-    // final res = await UserApi().getUserContacts();
-    // if (res.statusCode == 200 && res.data != null) {
-    //   final dao = ContactDao();
-    //   final userInfoMList =
-    //       res.data!.map((e) => UserInfoM.fromUserContact(e)).toList();
-    //   for (final each in userInfoMList) {
-    //     await dao.addOrUpdate(each);
-    //   }
+      if (res.statusCode == 200 && res.data != null) {
+        final rawList = res.data!;
+        final contactList = rawList.map((e) {
+          return ContactM.fromContactInfo(e.targetUid, e.contactInfo.status,
+              e.contactInfo.createdAt, e.contactInfo.updatedAt);
+        }).toList();
 
-    //   final uidList = userInfoMList.map((e) => e.uid).toList();
-    //   await dao.emptyUnpushedContactStatus(uidList);
-    // }
+        await ContactDao().batchAdd(contactList);
+      }
+      App.logger.info("Contact list initialized. total: ${res.data?.length}");
+    }
   }
 
   void initSse() async {
@@ -138,7 +126,7 @@ class VoceChatService {
     }
 
     try {
-      initContacts().then((_) => Sse.sse.connect());
+      preSseInits().then((_) => Sse.sse.connect());
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1285,39 +1273,46 @@ class VoceChatService {
 
     {
       // handle "add_contacts"
-      // final addContacts = map["add_contacts"] as List?;
-      // if (addContacts != null && addContacts.isNotEmpty) {
-      //   final dao = UserInfoDao();
-      //   for (var contact in addContacts) {
-      //     final contactInfo = ContactInfo.fromJson(contact["info"]);
-      //     final targetUid = contact["target_uid"] as int;
-      //     await dao
-      //         .updateContactInfo(targetUid,
-      //             status: contactInfo.status,
-      //             contactCreatedAt: contactInfo.createdAt,
-      //             contactUpdatedAt: contactInfo.updatedAt)
-      //         .then((value) {
-      //       if (value != null) {
-      //         fireUser(value, EventActions.update);
-      //       }
-      //     });
-      //   }
-      // }
+      final addContacts = map["add_contacts"] as List?;
+      if (addContacts != null && addContacts.isNotEmpty) {
+        final dao = ContactDao();
+        for (var contact in addContacts) {
+          final contactInfo = ContactInfo.fromJson(contact["info"]);
+          final targetUid = contact["target_uid"] as int;
+          await dao
+              .updateContactInfo(targetUid, contactInfo)
+              .then((updatedContactM) async {
+            if (updatedContactM != null) {
+              await UserInfoDao().getUserByUid(targetUid).then((userInfoM) {
+                if (userInfoM != null) {
+                  fireUser(userInfoM, EventActions.update, true);
+                }
+              });
+            }
+          });
+        }
+      }
     }
 
     {
       // handle "remove_contacts"
-      // final removeContacts = map["remove_contacts"] as List?;
-      // if (removeContacts != null) {
-      //   final dao = UserInfoDao();
-      //   for (final uid in removeContacts) {
-      //     await dao.updateContactInfo((uid as int), status: "").then((value) {
-      //       if (value != null) {
-      //         fireUser(value, EventActions.update);
-      //       }
-      //     });
-      //   }
-      // }
+      final removeContacts = map["remove_contacts"] as List?;
+      if (removeContacts != null) {
+        final dao = ContactDao();
+        for (final uid in removeContacts) {
+          await dao
+              .updateContact((uid as int), ContactStatus.none)
+              .then((updatedContactM) async {
+            if (updatedContactM != null) {
+              await UserInfoDao().getUserByUid(uid).then((userInfoM) {
+                if (userInfoM != null) {
+                  fireUser(userInfoM, EventActions.update, true);
+                }
+              });
+            }
+          });
+        }
+      }
     }
 
     {

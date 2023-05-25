@@ -81,7 +81,7 @@ class _VoceProgressBarState extends State<VoceProgressBar>
       //   // });
       // },
       onHorizontalDragUpdate: (DragUpdateDetails details) {
-        print('onHorizontalDragUpdate');
+        // print('onHorizontalDragUpdate');
 
         double p = (details.localPosition.dx / context.size!.width);
         if (p < 0) {

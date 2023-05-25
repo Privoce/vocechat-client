@@ -50,8 +50,9 @@ class AdminSystemApi {
     return dio.post("/organization", data: jsonEncode(req));
   }
 
-  Future<Response<AdminSystemOrgInfo>> getOrgInfo() async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<AdminSystemOrgInfo>> getOrgInfo(
+      {bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     final res = await dio.get("/organization");
 
     var newRes = Response<AdminSystemOrgInfo>(
@@ -70,8 +71,9 @@ class AdminSystemApi {
     return newRes;
   }
 
-  Future<Response<AdminSystemCommonInfo>> getCommonInfo() async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<AdminSystemCommonInfo>> getCommonInfo(
+      {bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     final res = await dio.get("/common");
 
     var newRes = Response<AdminSystemCommonInfo>(
@@ -109,8 +111,8 @@ class AdminSystemApi {
     );
   }
 
-  Future<Response<bool>> getInitialized() async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<bool>> getInitialized({bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     final res = await dio.get("/initialized");
 
     var newRes = Response<bool>(
