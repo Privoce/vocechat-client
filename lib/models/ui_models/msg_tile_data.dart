@@ -352,6 +352,7 @@ class MsgTileData {
   void initAutoDeleteTimer() {
     final chatMsgM = chatMsgMNotifier.value;
     if (isAutoDelete) {
+      isAutoDeleteN.value = true;
       autoDeleteTimer?.cancel();
       autoDeleteCountDown.value = _getAutoDeletionRemains();
 

@@ -69,6 +69,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   @override
   void initState() {
     super.initState();
+    widget.tileData.initAutoDeleteTimer();
   }
 
   @override
