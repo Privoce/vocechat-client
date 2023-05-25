@@ -92,6 +92,7 @@ dependencies:
   audioplayers: ^3.0.1
   device_info_plus: 8.2.2
   android_id: ^0.3.3
+  photo_view: ^0.14.0
   
 
 dependency_overrides:
