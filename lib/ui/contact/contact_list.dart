@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -211,32 +213,32 @@ class _ContactListState extends State<ContactList>
         }
 
         // Then handle general case.
-        // if (enableContact) {
-        //   if (userInfoM.contactStatus == ContactInfoStatus.added.name) {
-        //     _uidSet.add(userInfoM.uid);
+        if (enableContact) {
+          if (userInfoM.contactStatus == ContactStatus.added.name) {
+            _uidSet.add(userInfoM.uid);
 
-        //     final index = _contactList
-        //         .indexWhere((element) => element.uid == userInfoM.uid);
-        //     if (index > -1) {
-        //       _contactList[index] = userInfoM;
-        //     } else {
-        //       _contactList.add(userInfoM);
-        //     }
-        //   } else {
-        //     _uidSet.remove(userInfoM.uid);
-        //     _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-        //   }
-        // } else {
-        _uidSet.add(userInfoM.uid);
-
-        final index =
-            _contactList.indexWhere((element) => element.uid == userInfoM.uid);
-        if (index > -1) {
-          _contactList[index] = userInfoM;
+            final index = _contactList
+                .indexWhere((element) => element.uid == userInfoM.uid);
+            if (index > -1) {
+              _contactList[index] = userInfoM;
+            } else {
+              _contactList.add(userInfoM);
+            }
+          } else {
+            _uidSet.remove(userInfoM.uid);
+            _contactList.removeWhere((element) => element.uid == userInfoM.uid);
+          }
         } else {
-          _contactList.add(userInfoM);
+          _uidSet.add(userInfoM.uid);
+
+          final index = _contactList
+              .indexWhere((element) => element.uid == userInfoM.uid);
+          if (index > -1) {
+            _contactList[index] = userInfoM;
+          } else {
+            _contactList.add(userInfoM);
+          }
         }
-        // }
         break;
       case EventActions.delete:
         if (_uidSet.contains(userInfoM.uid)) {

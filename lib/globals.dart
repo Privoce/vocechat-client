@@ -2,6 +2,7 @@ library globals;
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/app.dart';
 
 // To use globals, import package as follow:
 // import 'package:vocechat_client/globals.dart' as globals;
@@ -18,6 +19,8 @@ final ValueNotifier<int> unreadCountSum = ValueNotifier(0);
 /// private channels need be deleted due to safety concerns.
 bool enablePublicChannels = true;
 
-const bool enableContact = false;
+bool enableContact =
+    App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
+        true;
 
 EventBus eventBus = EventBus();

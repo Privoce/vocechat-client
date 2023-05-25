@@ -1,14 +1,16 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:vocechat_client/api/models/user/contact_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
-enum ContactStatus { added, blocked }
+enum ContactStatus { added, blocked, none }
+
+enum ContactUpdateAction { add, block, remove, unblock }
 
 class ContactM with M {
   int uid = -1;
-  String status = ContactStatus.blocked.toString();
+  String status = ContactStatus.none.toString();
   int updatedAt = 0;
 
   ContactM();
@@ -85,5 +87,40 @@ class ContactDao extends Dao<ContactM> {
 
   Future<ContactM?> getContact(int uid) async {
     return super.first(where: "${ContactM.F_uid} = ?", whereArgs: [uid]);
+  }
+
+  Future<ContactM?> updateContact(int uid, ContactStatus status) async {
+    ContactM? contactM = await getContact(uid);
+    if (contactM != null) {
+      switch (status) {
+        case ContactStatus.added:
+          contactM.status = ContactStatus.added.toString();
+          break;
+        case ContactStatus.blocked:
+          contactM.status = ContactStatus.blocked.toString();
+          break;
+        case ContactStatus.none:
+          contactM.status = ContactStatus.none.toString();
+          break;
+      }
+      contactM.updatedAt = DateTime.now().millisecondsSinceEpoch;
+      await update(contactM);
+
+      return contactM;
+    } else {
+      return null;
+    }
+  }
+
+  Future<ContactInfo?> getContactInfo(int uid) async {
+    final contactM = await getContact(uid);
+    if (contactM != null) {
+      return ContactInfo(
+          createdAt: contactM.createdAt,
+          status: contactM.status,
+          updatedAt: contactM.updatedAt);
+    } else {
+      return null;
+    }
   }
 }
