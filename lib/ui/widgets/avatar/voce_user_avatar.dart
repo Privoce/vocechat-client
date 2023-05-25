@@ -259,7 +259,8 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
     }
   }
 
-  Future<void> _onUserChanged(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUserChanged(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     if (userInfoM.uid == widget.userInfoM?.uid &&
         userInfoM.userInfo.avatarUpdatedAt !=
             widget.userInfoM?.userInfo.avatarUpdatedAt) {

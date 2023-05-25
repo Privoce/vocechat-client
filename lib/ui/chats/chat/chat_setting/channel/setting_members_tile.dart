@@ -240,7 +240,8 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
     );
   }
 
-  Future<void> _onGroup(GroupInfoM groupInfoM, EventActions action) async {
+  Future<void> _onGroup(
+      GroupInfoM groupInfoM, EventActions action, bool afterReady) async {
     if (groupInfoM.gid != widget.groupInfoMNotifier.value.gid) {
       return;
     }

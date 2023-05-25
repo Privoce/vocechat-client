@@ -183,7 +183,8 @@ class _ChatsPageState extends State<ChatsPage>
     prepareChats();
   }
 
-  Future<void> _onChannel(GroupInfoM groupInfoM, EventActions action) async {
+  Future<void> _onChannel(
+      GroupInfoM groupInfoM, EventActions action, bool afterReady) async {
     final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
 
     switch (action) {
@@ -207,9 +208,13 @@ class _ChatsPageState extends State<ChatsPage>
     }
 
     calUnreadCountSum();
+    // if (afterReady) {
+    //   setState(() {});
+    // }
   }
 
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     final chatId = SharedFuncs.getChatId(uid: userInfoM.uid);
 
     switch (action) {
@@ -233,6 +238,9 @@ class _ChatsPageState extends State<ChatsPage>
     }
 
     calUnreadCountSum();
+    // if (afterReady) {
+    //   setState(() {});
+    // }
   }
 
   void clearChats() {

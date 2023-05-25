@@ -17,7 +17,6 @@ import 'package:vocechat_client/dao/init_dao/properties_models/user_properties.d
 import 'package:sqflite/utils/utils.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 
-enum ContactInfoStatus { added, blocked }
 
 class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   int uid = -1;

@@ -14,8 +14,6 @@ import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class ChatPageController {
   // What do we need?
@@ -143,7 +141,8 @@ class ChatPageController {
           .updateProperties(gid, readIndex: mid)
           .then((groupInfoM) {
         if (groupInfoM != null) {
-          App.app.chatService.fireChannel(groupInfoM, EventActions.update);
+          App.app.chatService
+              .fireChannel(groupInfoM, EventActions.update, true);
         }
         App.app.chatService.addGroupReadIndex(mid, gid);
       });
@@ -153,7 +152,7 @@ class ChatPageController {
           .updateProperties(uid, readIndex: mid)
           .then((userInfoM) {
         if (userInfoM != null) {
-          App.app.chatService.fireUser(userInfoM, EventActions.update);
+          App.app.chatService.fireUser(userInfoM, EventActions.update, true);
         }
         App.app.chatService.addUserReadIndex(mid, uid);
       });
@@ -418,7 +417,8 @@ class ChatPageController {
     }
   }
 
-  Future<void> onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     switch (action) {
       case EventActions.create:
       case EventActions.update:

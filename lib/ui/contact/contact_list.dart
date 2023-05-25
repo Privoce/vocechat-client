@@ -191,7 +191,8 @@ class _ContactListState extends State<ContactList>
     );
   }
 
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     switch (action) {
       case EventActions.create:
       case EventActions.update:

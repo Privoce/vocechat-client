@@ -2,6 +2,7 @@
 
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
 enum ContactStatus { added, blocked }
 
@@ -15,6 +16,11 @@ class ContactM with M {
   ContactM.item(
       String id, this.uid, this.status, int createdAt, this.updatedAt) {
     super.id = id;
+    super.createdAt = createdAt;
+  }
+
+  ContactM.fromContactInfo(
+      this.uid, this.status, int createdAt, this.updatedAt) {
     super.createdAt = createdAt;
   }
 

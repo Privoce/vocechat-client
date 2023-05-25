@@ -225,7 +225,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           widget.groupInfoNotifier.value.gid,
           burnAfterReadSecond: expiresIn);
       if (groupInfoM != null) {
-        App.app.chatService.fireChannel(groupInfoM, EventActions.update);
+        App.app.chatService.fireChannel(groupInfoM, EventActions.update, true);
         return true;
       }
     }

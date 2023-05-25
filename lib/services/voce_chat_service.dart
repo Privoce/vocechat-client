@@ -13,6 +13,7 @@ import 'package:vocechat_client/api/models/msg/msg_normal.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/reaction.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
@@ -41,9 +42,9 @@ import '../dao/org_dao/chat_server.dart';
 enum EventActions { create, delete, update }
 
 typedef UsersAware = Future<void> Function(
-    UserInfoM userInfoM, EventActions action);
+    UserInfoM userInfoM, EventActions action, bool afterReady);
 typedef GroupAware = Future<void> Function(
-    GroupInfoM groupInfoM, EventActions action);
+    GroupInfoM groupInfoM, EventActions action, bool afterReady);
 
 typedef MsgAware = Future<void> Function(ChatMsgM chatMsgM, bool afterReady,
     {bool? snippetOnly});
@@ -96,22 +97,34 @@ class VoceChatService {
   final Map<int, ReactionM> reactionMap = {};
 
   Future<void> initContacts() async {
-    if (enableContact) {
-      final res = await UserApi().getUserContacts();
-      if (res.statusCode == 200 && res.data != null) {
-        final dao = UserInfoDao();
-        final userInfoMList =
-            res.data!.map((e) => UserInfoM.fromUserContact(e)).toList();
-        for (final each in userInfoMList) {
-          await dao.addOrUpdate(each);
-        }
+    // if (enableContact) {
+    //   final res = await UserApi().getUserContacts();
+    //   if (res.statusCode == 200 && res.data != null) {
+    //     final dao = UserInfoDao();
+    //     final userInfoMList =
+    //         res.data!.map((e) => UserInfoM.fromUserContact(e)).toList();
+    //     for (final each in userInfoMList) {
+    //       await dao.addOrUpdate(each);
+    //     }
 
-        final uidList = userInfoMList.map((e) => e.uid).toList();
-        await dao.emptyUnpushedContactStatus(uidList);
-      }
-    } else {
-      return;
-    }
+    //     final uidList = userInfoMList.map((e) => e.uid).toList();
+    //     await dao.emptyUnpushedContactStatus(uidList);
+    //   }
+    // } else {
+    //   return;
+    // }
+    // final res = await UserApi().getUserContacts();
+    // if (res.statusCode == 200 && res.data != null) {
+    //   final dao = ContactDao();
+    //   final userInfoMList =
+    //       res.data!.map((e) => UserInfoM.fromUserContact(e)).toList();
+    //   for (final each in userInfoMList) {
+    //     await dao.addOrUpdate(each);
+    //   }
+
+    //   final uidList = userInfoMList.map((e) => e.uid).toList();
+    //   await dao.emptyUnpushedContactStatus(uidList);
+    // }
   }
 
   void initSse() async {
@@ -271,23 +284,24 @@ class VoceChatService {
     _orgInfoListeners.remove(orgInfoAware);
   }
 
-  void fireUser(UserInfoM userInfoM, EventActions action) {
+  void fireUser(UserInfoM userInfoM, EventActions action, bool afterReady) {
     if (userInfoM.uid == App.app.userDb?.uid) {
       App.app.userDb!.info = userInfoM.info;
     }
     for (UsersAware userAware in _userListeners) {
       try {
-        userAware(userInfoM, action);
+        userAware(userInfoM, action, afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
     }
   }
 
-  void fireChannel(GroupInfoM groupInfoM, EventActions action) {
+  void fireChannel(
+      GroupInfoM groupInfoM, EventActions action, bool afterReady) {
     for (GroupAware groupAware in _groupListeners) {
       try {
-        groupAware(groupInfoM, action);
+        groupAware(groupInfoM, action, afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -618,7 +632,7 @@ class VoceChatService {
             isPublic: map["is_public"]);
 
         if (oldGroupInfoM != newGroupInfoM && newGroupInfoM != null) {
-          fireChannel(newGroupInfoM, EventActions.update);
+          fireChannel(newGroupInfoM, EventActions.update, afterReady);
         }
       }
     } catch (e) {
@@ -636,7 +650,7 @@ class VoceChatService {
       GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-        fireChannel(value, EventActions.create);
+        fireChannel(value, EventActions.create, afterReady);
       });
     } catch (e) {
       App.logger.severe(e);
@@ -648,7 +662,7 @@ class VoceChatService {
     try {
       await GroupInfoDao().removeByGid(map["gid"]).then((value) {
         if (value != null) {
-          fireChannel(value, EventActions.delete);
+          fireChannel(value, EventActions.delete, afterReady);
         }
       });
     } catch (e) {
@@ -716,7 +730,7 @@ class VoceChatService {
         await ChatMsgDao().pinMsgByMid(mid, pinnedBy ?? -1).then((updatedMsgM) {
           if (updatedGroupInfoM != null && updatedMsgM != null) {
             fireMsg(updatedMsgM, true);
-            fireChannel(updatedGroupInfoM, EventActions.update);
+            fireChannel(updatedGroupInfoM, EventActions.update, afterReady);
           }
         });
       });
@@ -841,9 +855,8 @@ class VoceChatService {
           await GroupInfoDao().deleteGroupByGid(localGid);
 
           final groupInfoM = GroupInfoM()..gid = localGid;
-          if (afterReady) {
-            fireChannel(groupInfoM, EventActions.delete);
-          }
+
+          fireChannel(groupInfoM, EventActions.delete, afterReady);
         }
       }
 
@@ -860,9 +873,7 @@ class VoceChatService {
 
         if (oldGroupInfoM != groupInfoM) {
           await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-            if (afterReady) {
-              fireChannel(groupInfoM, EventActions.create);
-            }
+            fireChannel(groupInfoM, EventActions.create, afterReady);
           });
         }
       }
@@ -880,7 +891,7 @@ class VoceChatService {
 
       await GroupInfoDao().addMembers(gid, uids).then((value) {
         if (value != null) {
-          fireChannel(value, EventActions.update);
+          fireChannel(value, EventActions.update, afterReady);
         }
       });
     } catch (e) {
@@ -902,13 +913,13 @@ class VoceChatService {
         await ChatMsgDao().deleteMsgByGid(gid);
         await GroupInfoDao().removeByGid(gid).then((value) {
           if (value != null) {
-            fireChannel(value, EventActions.delete);
+            fireChannel(value, EventActions.delete, afterReady);
           }
         });
       } else {
         await GroupInfoDao().removeMembers(gid, uids).then((value) {
           if (value != null) {
-            fireChannel(value, EventActions.update);
+            fireChannel(value, EventActions.update, afterReady);
           }
         });
       }
@@ -936,7 +947,7 @@ class VoceChatService {
 
               if (oldUserInfoM != userInfoM) {
                 await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
-                  fireUser(value, EventActions.create);
+                  fireUser(value, EventActions.create, afterReady);
                 });
               }
 
@@ -956,7 +967,7 @@ class VoceChatService {
                   await UserInfoDao()
                       .addOrUpdate(newUserInfoM)
                       .then((value) async {
-                    fireUser(value, EventActions.update);
+                    fireUser(value, EventActions.update, afterReady);
                   });
                 }
               }
@@ -966,8 +977,8 @@ class VoceChatService {
               if (uid != null) {
                 UserInfoM userDeleted = UserInfoM()..uid = uid;
 
-                await UserInfoDao().removeByUid(uid).then(
-                    (value) => fireUser(userDeleted, EventActions.delete));
+                await UserInfoDao().removeByUid(uid).then((value) =>
+                    fireUser(userDeleted, EventActions.delete, afterReady));
 
                 if (uid == App.app.userDb?.uid) {
                   await App.app.authService?.selfDelete();
@@ -1001,7 +1012,7 @@ class VoceChatService {
                 .updateProperties(gid, readIndex: mid)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1020,7 +1031,7 @@ class VoceChatService {
                 .updateProperties(uid, readIndex: mid)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1041,7 +1052,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1062,7 +1073,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1083,7 +1094,7 @@ class VoceChatService {
                 .updateProperties(gid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1104,7 +1115,7 @@ class VoceChatService {
                 .updateProperties(uid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1127,7 +1138,7 @@ class VoceChatService {
               .updateProperties(gid, readIndex: mid)
               .then((value) {
             if (value != null) {
-              fireChannel(value, EventActions.update);
+              fireChannel(value, EventActions.update, afterReady);
             }
           });
         }
@@ -1145,7 +1156,7 @@ class VoceChatService {
               .updateProperties(uid, readIndex: mid)
               .then((value) {
             if (value != null) {
-              fireUser(value, EventActions.update);
+              fireUser(value, EventActions.update, afterReady);
             }
           });
         }
@@ -1165,7 +1176,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1186,7 +1197,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1204,7 +1215,7 @@ class VoceChatService {
                 .updateProperties(gid, enableMute: false, muteExpiresAt: null)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1222,7 +1233,7 @@ class VoceChatService {
                 .updateProperties(uid, enableMute: false, muteExpiresAt: null)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1243,7 +1254,7 @@ class VoceChatService {
                 .updateProperties(gid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1264,7 +1275,7 @@ class VoceChatService {
                 .updateProperties(uid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1325,7 +1336,7 @@ class VoceChatService {
                 .updateProperties(uid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           } else if (gid != null) {
@@ -1333,7 +1344,7 @@ class VoceChatService {
                 .updateProperties(gid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1357,7 +1368,7 @@ class VoceChatService {
                 .updateProperties(uid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           } else if (gid != null) {
@@ -1365,7 +1376,7 @@ class VoceChatService {
                 .updateProperties(gid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }

@@ -70,6 +70,17 @@
                 <data
                     android:scheme="https"
                     android:host="voce.chat"
+                    android:pathPrefix="/url" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with https://YOUR_HOST -->
+                <data
+                    android:scheme="https"
+                    android:host="voce.chat"
                     android:pathPrefix="/join" />
             </intent-filter>
 

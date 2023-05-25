@@ -249,7 +249,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     await AdminUserApi().deleteUser(userInfoM.uid).then((res) async {
       if (res.statusCode == 200) {
         await UserInfoDao().removeByUid(userInfoM.uid).then((_) {
-          App.app.chatService.fireUser(userInfoM, EventActions.delete);
+          App.app.chatService.fireUser(userInfoM, EventActions.delete, true);
           dismissBusyDialog();
           Navigator.pop(context);
         });
@@ -460,8 +460,14 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   //   });
   // }
 
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     if (userInfoM.uid != widget.userInfoM.uid) {
+      return;
+    }
+
+    if (action == EventActions.delete) {
+      Navigator.pop(context);
       return;
     }
 
