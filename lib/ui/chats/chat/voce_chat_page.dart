@@ -213,7 +213,7 @@ class _VoceChatPageState extends State<VoceChatPage>
     return ValueListenableBuilder<UserInfoM>(
       valueListenable: widget.userInfoNotifier!,
       builder: (context, userInfoM, child) {
-        print("userInfo updated: ${userInfoM.contactStatusStr}");
+        
         Widget widget;
         if (userInfoM.contactStatus == ContactStatus.blocked) {
           widget = Column(
