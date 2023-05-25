@@ -1592,7 +1592,7 @@ class VoceChatService {
     try {
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
-      cumulateMsg(chatMsgM);
+      await cumulateMsg(chatMsgM);
       await cumulateDmInfo(chatMsgM);
     } catch (e) {
       App.logger.severe(e);

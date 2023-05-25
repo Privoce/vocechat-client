@@ -267,7 +267,7 @@ class ChatTileData {
       }
     }
 
-    if (chatMsgM.isNormalMsg) {
+    if (chatMsgM.isNormalMsg || chatMsgM.isReplyMsg) {
       await setSnippet(chatMsgM);
     } else if (chatMsgM.isReactionMsg) {
       if (chatMsgM.isEditReactionMsg) {
