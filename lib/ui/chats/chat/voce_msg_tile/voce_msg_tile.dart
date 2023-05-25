@@ -61,13 +61,7 @@ class VoceMsgTile extends StatefulWidget {
 class _VoceMsgTileState extends State<VoceMsgTile> {
   final avatarSize = VoceAvatarSize.s40;
 
-  final ValueNotifier<bool> selected = ValueNotifier(false);
-
-  // Auto-deletion variables.
-  Timer? _autoDeleteTimer;
-
-  final ValueNotifier<bool> _isAutoDelete = ValueNotifier(false);
-  final ValueNotifier<int> _autoDeleteCountDown = ValueNotifier(0);
+  // final ValueNotifier<bool> selected = ValueNotifier(false);
 
   /// Selection icon size, also used for status icon size.
   final double selectSize = 36;
@@ -75,17 +69,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   @override
   void initState() {
     super.initState();
-
-    _isAutoDelete.value = widget.tileData.isAutoDelete;
-
-    initAutoDeleteTimer();
-    widget.tileData.chatMsgMNotifier.addListener(_onChatMsgMChange);
   }
 
   @override
   void dispose() {
-    widget.tileData.chatMsgMNotifier.removeListener(_onChatMsgMChange);
-    _autoDeleteTimer?.cancel();
+    widget.tileData.autoDeleteTimer?.cancel();
     super.dispose();
   }
 
@@ -96,11 +84,12 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return SizeTransition(
       sizeFactor: widget.sizeFactor,
       child: ValueListenableBuilder<UserInfoM?>(
+          key: widget.key,
           valueListenable: widget.tileData.pinnedByUserInfoM,
           builder: (context, pinnedBy, _) {
             final isPinned = pinnedBy != null;
             return ValueListenableBuilder<bool>(
-                valueListenable: _isAutoDelete,
+                valueListenable: widget.tileData.isAutoDeleteN,
                 builder: (context, isAutoDelete, _) {
                   return Container(
                       decoration: BoxDecoration(
@@ -164,9 +153,10 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
             padding: EdgeInsets.zero,
             onPressed: enableSelection
                 ? () {
-                    selected.value = !selected.value;
+                    widget.tileData.selected.value =
+                        !widget.tileData.selected.value;
                     widget.onSelectChange
-                        ?.call(widget.tileData, selected.value);
+                        ?.call(widget.tileData, widget.tileData.selected.value);
                   }
                 : null,
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -180,7 +170,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   Widget _buildSelectIcon(bool enableSelection, BuildContext context) {
     if (enableSelection) {
       return ValueListenableBuilder<bool>(
-        valueListenable: selected,
+        valueListenable: widget.tileData.selected,
         builder: (context, selected, _) {
           return selected
               ? Icon(AppIcons.select, color: Colors.cyan, size: selectSize)
@@ -487,13 +477,14 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: ValueListenableBuilder<bool>(
-          valueListenable: _isAutoDelete,
+          valueListenable: widget.tileData.isAutoDeleteN,
           builder: (context, isAutoDelete, _) {
             if (!isAutoDelete) {
               return const SizedBox.shrink();
             } else {
               return ValueListenableBuilder<int>(
-                  valueListenable: _autoDeleteCountDown,
+                  key: widget.key,
+                  valueListenable: widget.tileData.autoDeleteCountDown,
                   builder: (context, countDown, _) {
                     return SizedBox(
                       height: 20,
@@ -507,6 +498,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                           const SizedBox(width: 4),
                           SizedBox(
                             child: Text(
+                              key: widget.key,
                               _printDuration(Duration(milliseconds: countDown)),
                               textAlign: TextAlign.end,
                               style: TextStyle(
@@ -569,26 +561,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   }
 
   void resetSelectStatus() {
-    selected.value = false;
-  }
-
-  int _getAutoDeletionRemains() {
-    final chatMsgM = widget.tileData.chatMsgMNotifier.value;
-    if (widget.tileData.isAutoDelete) {
-      final expiresIn = chatMsgM.msgNormal?.expiresIn;
-      if (expiresIn != null && expiresIn > 0) {
-        final currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
-        final msgTimeStamp = chatMsgM.createdAt;
-
-        final dif = msgTimeStamp + expiresIn * 1000 - currentTimeStamp;
-        if (dif < 0) {
-          return 0;
-        } else {
-          return dif;
-        }
-      }
-    }
-    return -1;
+    widget.tileData.selected.value = false;
   }
 
   void _resend() async {
@@ -726,62 +699,6 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
             ]);
       }
     }
-  }
-
-  void initAutoDeleteTimer() {
-    final chatMsgM = widget.tileData.chatMsgMNotifier.value;
-    if (widget.tileData.isAutoDelete) {
-      _autoDeleteTimer?.cancel();
-      _autoDeleteCountDown.value = _getAutoDeletionRemains();
-
-      if (_autoDeleteCountDown.value > 0 &&
-          (_autoDeleteTimer == null || !_autoDeleteTimer!.isActive)) {
-        _autoDeleteTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          _autoDeleteCountDown.value -= 1000;
-          if (_autoDeleteCountDown.value <= 0) {
-            ChatMsgDao().deleteMsgByLocalMid(chatMsgM).then((value) async {
-              App.app.chatService.fireLmidDelete(chatMsgM.localMid);
-
-              FileHandler.singleton.deleteWithChatMsgM(chatMsgM);
-              AudioFileHandler().deleteWithChatMsgM(chatMsgM);
-
-              int curMaxMid;
-
-              if (chatMsgM.isGroupMsg) {
-                curMaxMid = await ChatMsgDao().getChannelMaxMid(chatMsgM.gid);
-              } else {
-                curMaxMid = await ChatMsgDao().getDmMaxMid(chatMsgM.dmUid);
-              }
-
-              if (curMaxMid > -1) {
-                final latestMsgM = await ChatMsgDao().getMsgByMid(curMaxMid);
-
-                if (latestMsgM != null) {
-                  App.app.chatService
-                      .fireMsg(latestMsgM, true, snippetOnly: true);
-                }
-              }
-            });
-            _autoDeleteTimer?.cancel();
-          }
-        });
-      }
-    }
-  }
-
-  void _onChatMsgMChange() {
-    final chatMsgM = widget.tileData.chatMsgMNotifier.value;
-    final isAutoDelete = (chatMsgM.msgNormal?.expiresIn != null &&
-            chatMsgM.msgNormal!.expiresIn! > 0) ||
-        (chatMsgM.msgReply?.expiresIn != null &&
-            chatMsgM.msgReply!.expiresIn! > 0);
-
-    if (!isAutoDelete) {
-      _autoDeleteTimer?.cancel();
-    } else {
-      initAutoDeleteTimer();
-    }
-    _isAutoDelete.value = isAutoDelete;
   }
 }
 
