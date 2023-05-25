@@ -161,37 +161,40 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
     imageFile = widget.imageFile;
     getImageList = widget.getImageList;
 
-    try {
-      final detail =
-          json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
-      detailProperties = detail['properties'];
-      width = detailProperties?["width"] ?? 240;
-      height = detailProperties?["height"] ?? 140;
-    } catch (e) {
-      App.logger.severe(e);
-    }
+    secondaryPrepare();
 
-    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
-      widget.tileData!.secondaryPrepare().then((value) {
-        if (mounted) {
-          setState(() {
-            try {
-              final detail =
-                  json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
-              detailProperties = detail['properties'];
-              width = detailProperties?["width"] ?? 240;
-              height = detailProperties?["height"] ?? 140;
+    // try {
+    //   final detail =
+    //       json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
+    //   detailProperties = detail['properties'];
+    //   width = detailProperties?["width"] ?? 240;
+    //   height = detailProperties?["height"] ?? 140;
+    // } catch (e) {
+    //   App.logger.severe(e);
+    // }
 
-              imageFile = widget.tileData!.imageFile;
-              getImageList = () => VoceTileImageBubble.defaultGetImageList(
-                  widget.tileData!.chatMsgMNotifier.value);
-            } catch (e) {
-              App.logger.severe(e);
-            }
-          });
-        }
-      });
-    }
+    // if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
+    // widget.tileData!.secondaryPrepare().then((value) {
+    //   if (mounted) {
+    //     setState(() {
+    //       try {
+    //         final detail =
+    //             json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
+    //         detailProperties = detail['properties'];
+    //         width = detailProperties?["width"] ?? 240;
+    //         height = detailProperties?["height"] ?? 140;
+
+    //         imageFile = widget.tileData!.imageFile;
+    //         getImageList = () => VoceTileImageBubble.defaultGetImageList(
+    //             widget.tileData!.chatMsgMNotifier.value);
+    //       } catch (e) {
+    //         App.logger.severe(e);
+    //       }
+    //     });
+
+    //   }
+    // });
+    // }
   }
 
   @override
@@ -218,5 +221,27 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
       }
       return VoceImageBubble(imageFile: imageFile, getImageList: getImageList);
     }
+  }
+
+  void secondaryPrepare() async {
+    widget.tileData!.secondaryPrepare().then((value) {
+      if (mounted) {
+        setState(() {
+          try {
+            final detail =
+                json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
+            detailProperties = detail['properties'];
+            width = detailProperties?["width"] ?? 240;
+            height = detailProperties?["height"] ?? 140;
+
+            imageFile = widget.tileData!.imageFile;
+            getImageList = () => VoceTileImageBubble.defaultGetImageList(
+                widget.tileData!.chatMsgMNotifier.value);
+          } catch (e) {
+            App.logger.severe(e);
+          }
+        });
+      }
+    });
   }
 }

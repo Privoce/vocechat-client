@@ -230,6 +230,7 @@ class ChatPageController {
 
     final tileData = MsgTileData(
         chatMsgM: chatMsgM, userInfoM: userInfoM, avatarFile: avatarFile);
+
     await tileData.primaryPrepare();
 
     return tileData;
@@ -412,7 +413,6 @@ class ChatPageController {
     if (isChannel && chatMsgM.gid == groupInfoMNotifier!.value.gid ||
         isUser && chatMsgM.dmUid == userInfoMNotifier!.value.uid) {
       final tileData = await prepareTileData(chatMsgM);
-
       taskQueue.add(() async {
         insert(findInsertIndex(chatMsgM), tileData);
       });

@@ -75,6 +75,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   @override
   void dispose() {
     widget.tileData.autoDeleteTimer?.cancel();
+
     super.dispose();
   }
 
@@ -84,32 +85,39 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
     return SizeTransition(
       sizeFactor: widget.sizeFactor,
-      child: ValueListenableBuilder<UserInfoM?>(
-          key: widget.key,
-          valueListenable: widget.tileData.pinnedByUserInfoM,
-          builder: (context, pinnedBy, _) {
-            final isPinned = pinnedBy != null;
-            return ValueListenableBuilder<bool>(
-                valueListenable: widget.tileData.isAutoDeleteN,
-                builder: (context, isAutoDelete, _) {
-                  return Container(
-                      decoration: BoxDecoration(
-                        color: _getMsgTileBgColor(
-                            isPinned: isPinned, isAutoDelete: isAutoDelete),
-                      ),
-                      constraints: BoxConstraints(
-                          minHeight: avatarSize, maxWidth: width),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (isPinned) _buildPinnedBy(pinnedBy),
-                          _buildTileWithSelectionIcon(),
-                        ],
-                      ));
-                });
-          }),
+      child: GestureDetector(
+        onTap: () {
+          // print(widget.tileData.chatMsgMNotifier.value.values);
+          // print(widget.tileData.imageFile?.path);
+          // print(widget.tileData.needSecondaryPrepare);
+        },
+        child: ValueListenableBuilder<UserInfoM?>(
+            key: widget.key,
+            valueListenable: widget.tileData.pinnedByUserInfoM,
+            builder: (context, pinnedBy, _) {
+              final isPinned = pinnedBy != null;
+              return ValueListenableBuilder<bool>(
+                  valueListenable: widget.tileData.isAutoDeleteN,
+                  builder: (context, isAutoDelete, _) {
+                    return Container(
+                        decoration: BoxDecoration(
+                          color: _getMsgTileBgColor(
+                              isPinned: isPinned, isAutoDelete: isAutoDelete),
+                        ),
+                        constraints: BoxConstraints(
+                            minHeight: avatarSize, maxWidth: width),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (isPinned) _buildPinnedBy(pinnedBy),
+                            _buildTileWithSelectionIcon(),
+                          ],
+                        ));
+                  });
+            }),
+      ),
     );
   }
 
@@ -375,7 +383,9 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
             return VoceMdBubble(chatMsgM: chatMsgM);
           } else if (chatMsgM.isFileMsg) {
             if (chatMsgM.isImageMsg) {
-              return VoceTileImageBubble.tileData(tileData: widget.tileData);
+              return VoceTileImageBubble.tileData(
+                  key: ObjectKey(widget.tileData.imageFile),
+                  tileData: widget.tileData);
             } else {
               final msgNormal = chatMsgM.msgNormal!;
               final path = msgNormal.content;

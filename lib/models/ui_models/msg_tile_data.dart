@@ -141,7 +141,11 @@ class MsgTileData {
 
     if (chatMsgMNotifier.value.isNormalMsg) {
       // If is text/markdown/file/image/audio, do nothing.
-      if (chatMsgMNotifier.value.isArchiveMsg) {
+      if (chatMsgMNotifier.value.isImageMsg) {
+        await setNormalImage(serverFetch: false);
+      } else if (chatMsgMNotifier.value.isAudioMsg) {
+        await setNormalAudio(serverFetch: false);
+      } else if (chatMsgMNotifier.value.isArchiveMsg) {
         await setNormalArchive(serverFetch: false);
       }
     } else if (chatMsgMNotifier.value.isReplyMsg) {
