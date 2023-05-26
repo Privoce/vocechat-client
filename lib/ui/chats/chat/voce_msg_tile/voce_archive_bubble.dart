@@ -204,18 +204,6 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
               overflow: TextOverflow.ellipsis,
               style: AppTextStyles.labelMedium);
         }),
-        // children: [
-        //   // Text(getBubbleSnippet(),
-        //   //     maxLines: 3,
-        //   //     overflow: TextOverflow.ellipsis,
-        //   //     style: AppTextStyles.labelMedium),
-        //   Text(
-        //     "$listLength  ${listLength > 1 ? AppLocalizations.of(context)!.messagesWQuantifier : AppLocalizations.of(context)!.messageWQuantifier}",
-        //     maxLines: 1,
-        //     overflow: TextOverflow.ellipsis,
-        //     style: AppTextStyles.labelMedium,
-        //   ),
-        // ],
       ),
     );
   }

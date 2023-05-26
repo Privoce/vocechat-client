@@ -213,7 +213,6 @@ class _VoceChatPageState extends State<VoceChatPage>
     return ValueListenableBuilder<UserInfoM>(
       valueListenable: widget.userInfoNotifier!,
       builder: (context, userInfoM, child) {
-        
         Widget widget;
         if (userInfoM.contactStatus == ContactStatus.blocked) {
           widget = Column(
@@ -440,6 +439,8 @@ class _VoceChatPageState extends State<VoceChatPage>
                   onPressed: () {
                     selectEnabled.value = false;
                     selectedMsgMap.clear();
+                    widget.controller.clearSelection();
+                    selectedMsgCantMultipleArchive.value = false;
                   },
                   child: Icon(AppIcons.close_circle,
                       size: 16, color: AppColors.grey600)),

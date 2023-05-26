@@ -157,7 +157,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return ValueListenableBuilder<bool>(
         valueListenable: widget.enableSelection ?? ValueNotifier(false),
         builder: (context, enableSelection, _) {
-          resetSelectStatus();
+          // resetSelectStatus();
           return CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: enableSelection
@@ -573,9 +573,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return twoDigitSeconds;
   }
 
-  void resetSelectStatus() {
-    widget.tileData.selected.value = false;
-  }
+  // void resetSelectStatus() {
+  //   widget.tileData.selected.value = false;
+  //   widget.onSelectChange
+  //       ?.call(widget.tileData, widget.tileData.selected.value);
+  // }
 
   void _resend() async {
     final chatMsgM = widget.tileData.chatMsgMNotifier.value;

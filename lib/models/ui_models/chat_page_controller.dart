@@ -497,6 +497,12 @@ class ChatPageController {
       removeAt(index);
     }
   }
+
+  void clearSelection() {
+    for (final tileData in tileDataList) {
+      tileData.selected.value = false;
+    }
+  }
 }
 
 typedef RemovedItemBuilder<T> = Widget Function(
