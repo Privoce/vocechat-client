@@ -402,7 +402,9 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
             }
           } else if (chatMsgM.isAudioMsg) {
             return VoceAudioBubble.tileData(
-                tileData: widget.tileData, isSelf: widget.selfRightLayout);
+                key: ObjectKey(widget.tileData),
+                tileData: widget.tileData,
+                isSelf: widget.selfRightLayout);
           } else if (chatMsgM.isArchiveMsg) {
             return VoceArchiveBubble.tileData(tileData: widget.tileData);
           }
