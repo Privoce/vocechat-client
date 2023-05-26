@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -20,6 +21,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/firebase_options.dart';
+import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
@@ -166,7 +168,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-    _initLocale();
+    SharedFuncs.initLocale();
 
     _handleIncomingUniLink();
     _handleInitUniLink();
@@ -303,27 +305,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         }
       }
     });
-  }
-
-  Future<void> _initLocale() async {
-    if (App.app.userDb != null) {
-      final userDbM = await UserDbMDao.dao.getUserDbById(App.app.userDb!.id);
-      final userLanguageTag = userDbM?.userInfo.language;
-
-      if (userLanguageTag != null && userLanguageTag.isNotEmpty) {
-        final split = userLanguageTag.split("-");
-        String languageTag = "", regionTag = "";
-        try {
-          languageTag = split[0];
-          regionTag = split[2];
-        } catch (e) {
-          App.logger.warning(e);
-        }
-        final locale = Locale(languageTag, regionTag);
-
-        setUILocale(locale);
-      }
-    }
   }
 
   void _handleMessage(RemoteMessage message) async {
