@@ -141,7 +141,10 @@
     "logoutWarningWithQM":"Are you sure to log out?",
 
     "male":"Male",
+    "markdown":"Markdown",
     "message": "Message",
+    "messageWQuantifier":"Message",
+    "messagesWQuantifier":"Messages",
     "messageDetail":"Message Detail",
     "messageDeletionFailed":"Message deletion failed",
     "messageHasBeenDeleted":"This message has been deleted.",
@@ -217,6 +220,7 @@
     "switchServer": "Switch Server",
 
     "tapForMore":"Tap for more",
+    "text":"Text",
     "to":"to",
     "today":"Today",
     "transferOwnership":"Transfer Ownership",
