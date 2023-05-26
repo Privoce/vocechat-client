@@ -13,6 +13,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:uni_links/uni_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -355,7 +356,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   void _handleIncomingUniLink() async {
     uriLinkStream.listen((Uri? uri) async {
-      print(uri);
       if (uri == null) return;
       _parseLink(uri);
     });
@@ -367,134 +367,147 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     _parseLink(initialUri);
   }
 
-  void _parseLink(Uri uri) {
-    const String loginRegexStr = r"\/?(?:\w+\/)?login";
-    const String joinRegexStr = r"\/?(?:\w+\/)?join";
+  void _parseLink(Uri uri) async {
+    // Sign in page example: http://voce.chat/url?s=https%3A%2F%2Fdev.voce.chat
+    // const String loginRegexStr = r"\/?(?:\w+\/)?login";
+    // const String joinRegexStr = r"\/?(?:\w+\/)?join";
+    await SharedFuncs.parseLink(uri);
 
-    final path = uri.path;
+    // final path = uri.path;
+    // if (uri.host == 'voce.chat' && uri.path == '/url') {
+    //   if (uri.queryParameters.containsKey('s')) {
+    //     _handleServerLink(uri);
+    //   } else if (uri.queryParameters.containsKey('i')) {
+    //     _handleInvitationLink(uri);
+    //   } else {
+    //     if (!await launchUrl(uri)) {
+    //       throw Exception('Could not launch $uri');
+    //     }
+    //   }
+    // }
 
-    if (RegExp(loginRegexStr).hasMatch(path)) {
-      _handleLoginLink(uri);
-    } else if (RegExp(joinRegexStr).hasMatch(path)) {
-      _handleJoinLink(uri);
-    } else {
-      App.logger.warning("Unrecongizable invitation link");
-    }
+    // if (RegExp(loginRegexStr).hasMatch(path)) {
+    //   _handleServerLink(uri);
+    // } else if (RegExp(joinRegexStr).hasMatch(path)) {
+    //   _handleInvitationLink(uri);
+    // } else {
+    //   App.logger.warning("Unrecongizable invitation link");
+    // }
   }
 
-  Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
-    try {
-      final magicLink = uri.queryParameters["magic_link"];
-      print("magicLinkHost: $magicLink");
+  // Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
+  //   try {
+  //     final magicLink = uri.queryParameters["magic_link"];
+  //     print("magicLinkHost: $magicLink");
 
-      if (magicLink == null || magicLink.isEmpty) return null;
-      final magicLinkUri = Uri.parse(magicLink);
-      final magicToken = magicLinkUri.queryParameters["magic_token"];
+  //     if (magicLink == null || magicLink.isEmpty) return null;
+  //     final magicLinkUri = Uri.parse(magicLink);
+  //     final magicToken = magicLinkUri.queryParameters["magic_token"];
 
-      print("invLinkUri: $magicLinkUri");
+  //     print("invLinkUri: $magicLinkUri");
 
-      String serverUrl = magicLinkUri.scheme +
-          '://' +
-          magicLinkUri.host +
-          ":" +
-          magicLinkUri.port.toString();
+  //     String serverUrl = magicLinkUri.scheme +
+  //         '://' +
+  //         magicLinkUri.host +
+  //         ":" +
+  //         magicLinkUri.port.toString();
 
-      if (serverUrl == "https://privoce.voce.chat" ||
-          serverUrl == "https://privoce.voce.chat:443") {
-        serverUrl = "https://dev.voce.chat";
-      }
+  //     if (serverUrl == "https://privoce.voce.chat" ||
+  //         serverUrl == "https://privoce.voce.chat:443") {
+  //       serverUrl = "https://dev.voce.chat";
+  //     }
 
-      if (magicToken != null && magicToken.isNotEmpty) {
-        if (await _validateMagicToken(serverUrl, magicToken)) {
-          return InvitationLinkData(
-              serverUrl: serverUrl, magicToken: magicToken);
-        } else {
-          final context = navigatorKey.currentContext;
-          if (context == null) return null;
-          _showInvalidLinkWarning(context);
-        }
-      }
-    } catch (e) {
-      App.logger.severe(e);
-    }
+  //     if (magicToken != null && magicToken.isNotEmpty) {
+  //       if (await _validateMagicToken(serverUrl, magicToken)) {
+  //         return InvitationLinkData(
+  //             serverUrl: serverUrl, magicToken: magicToken);
+  //       } else {
+  //         final context = navigatorKey.currentContext;
+  //         if (context == null) return null;
+  //         _showInvalidLinkWarning(context);
+  //       }
+  //     }
+  //   } catch (e) {
+  //     App.logger.severe(e);
+  //   }
 
-    return null;
-  }
+  //   return null;
+  // }
 
-  void _handleJoinLink(Uri uri) async {
-    print("handleJoinLink");
-    final data = await _prepareInvitationLinkData(uri);
-    final context = navigatorKey.currentContext;
-    print("data: $data, context: $context");
-    if (data == null || context == null) return;
-    try {
-      final chatServer = await ChatServerHelper()
-          .prepareChatServerM(data.serverUrl, showAlert: false);
-      print("chatServer: $chatServer");
-      if (chatServer == null) return;
+  // void _handleInvitationLink(Uri uri) async {
+  //   print("handleJoinLink");
+  //   final data = await _prepareInvitationLinkData(uri);
+  //   final context = navigatorKey.currentContext;
+  //   print("data: $data, context: $context");
+  //   if (data == null || context == null) return;
+  //   try {
+  //     final chatServer = await ChatServerHelper()
+  //         .prepareChatServerM(data.serverUrl, showAlert: false);
+  //     print("chatServer: $chatServer");
+  //     if (chatServer == null) return;
 
-      final route = PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            PasswordRegisterPage(
-                chatServer: chatServer, magicToken: data.magicToken),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.fastOutSlowIn;
+  //     final route = PageRouteBuilder(
+  //       pageBuilder: (context, animation, secondaryAnimation) =>
+  //           PasswordRegisterPage(
+  //               chatServer: chatServer, magicToken: data.magicToken),
+  //       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+  //         const begin = Offset(0.0, 1.0);
+  //         const end = Offset.zero;
+  //         const curve = Curves.fastOutSlowIn;
 
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+  //         var tween =
+  //             Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-      );
+  //         return SlideTransition(
+  //           position: animation.drive(tween),
+  //           child: child,
+  //         );
+  //       },
+  //     );
 
-      print("before push");
+  //     print("before push");
 
-      Navigator.push(context, route);
-    } catch (e) {
-      App.logger.severe(e);
-    }
-  }
+  //     Navigator.push(context, route);
+  //   } catch (e) {
+  //     App.logger.severe(e);
+  //   }
+  // }
 
-  void _handleLoginLink(Uri uri) async {
-    final serverUrl = uri.queryParameters["s"];
+  // void _handleServerLink(Uri uri) async {
+  //   final serverUrl = uri.queryParameters["s"];
 
-    final context = navigatorKey.currentContext;
-    if (serverUrl == null || serverUrl.isEmpty || context == null) return;
-    try {
-      final chatServer = await ChatServerHelper()
-          .prepareChatServerM(serverUrl, showAlert: false);
-      if (chatServer == null) return;
+  //   final context = navigatorKey.currentContext;
+  //   if (serverUrl == null || serverUrl.isEmpty || context == null) return;
+  //   try {
+  //     final chatServer = await ChatServerHelper()
+  //         .prepareChatServerM(serverUrl, showAlert: false);
+  //     if (chatServer == null) return;
 
-      final route = PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            // PasswordRegisterPage(
-            //     chatServer: chatServer, magicToken: data.magicToken),
-            LoginPage(baseUrl: serverUrl),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.fastOutSlowIn;
+  //     final route = PageRouteBuilder(
+  //       pageBuilder: (context, animation, secondaryAnimation) =>
+  //           // PasswordRegisterPage(
+  //           //     chatServer: chatServer, magicToken: data.magicToken),
+  //           LoginPage(baseUrl: serverUrl),
+  //       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+  //         const begin = Offset(0.0, 1.0);
+  //         const end = Offset.zero;
+  //         const curve = Curves.fastOutSlowIn;
 
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+  //         var tween =
+  //             Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-      );
+  //         return SlideTransition(
+  //           position: animation.drive(tween),
+  //           child: child,
+  //         );
+  //       },
+  //     );
 
-      Navigator.push(context, route);
-    } catch (e) {
-      App.logger.severe(e);
-    }
-  }
+  //     Navigator.push(context, route);
+  //   } catch (e) {
+  //     App.logger.severe(e);
+  //   }
+  // }
 
   void onResume() async {
     try {

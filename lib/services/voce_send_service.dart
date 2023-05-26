@@ -469,7 +469,6 @@ class VoceSendService {
       // Save original image for gif.
 
       if (isGif) {
-        print("isGif");
         // TODO: change to save File instead of bytes.
         await FileHandler.singleton
             .saveImageNormal(chatId, fileBytes, localMid, filename);

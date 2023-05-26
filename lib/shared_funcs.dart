@@ -11,6 +11,7 @@ import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/token/token_renew_request.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -23,7 +24,10 @@ import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 
 import 'models/local_kits.dart';
@@ -144,6 +148,88 @@ class SharedFuncs {
 
   static bool isSelf(int? uid) {
     return uid == App.app.userDb?.uid;
+  }
+
+  static Future<void> parseLink(Uri uri) async {
+    if (uri.host == "voce.chat" && uri.path == '/url') {
+      if (uri.queryParameters.containsKey('s')) {
+        // server url (visitor mode in Web client only)
+        await _handleServerLink(uri);
+        return;
+      } else if (uri.queryParameters.containsKey('i')) {
+        // invitation link (both web and mobile client)
+        await _handleInvitationLink(uri);
+        return;
+      }
+    }
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
+  }
+
+  static Future<void> _handleServerLink(Uri uri) async {
+    final serverUrl = uri.queryParameters["s"];
+
+    final context = navigatorKey.currentContext;
+    if (serverUrl == null || serverUrl.isEmpty || context == null) return;
+    try {
+      await ChatServerHelper()
+          .prepareChatServerM(serverUrl, showAlert: false)
+          .then((chatServer) {
+        if (chatServer != null) {
+          final route = PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                LoginPage(baseUrl: serverUrl),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0.0, 1.0);
+              const end = Offset.zero;
+              const curve = Curves.fastOutSlowIn;
+
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
+          );
+
+          Navigator.push(context, route);
+        }
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  static Future<void> _handleInvitationLink(Uri uri) async {
+    final invitationLink = uri.queryParameters["i"];
+
+    if (invitationLink == null || invitationLink.isEmpty) return;
+
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          InvitationLinkPastePage(initialLink: invitationLink),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+    Navigator.of(context).push(route);
   }
 
   /// Parse mention info in text and markdowns.

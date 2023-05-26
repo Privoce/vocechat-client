@@ -243,22 +243,9 @@ class _ServerPageState extends State<ServerPage> {
                             color: Colors.blue, size: 30),
                         onPressed: () {
                           final route = PageRouteBuilder(
-                            pageBuilder: (context, animation,
-                                    secondaryAnimation) =>
-                                AppQrScanPage(onQrCodeDetected: (link) async {
-                              final uri = Uri.parse(link);
-
-                              if (uri.host == "voce.chat") {
-                                if (uri.path == "/login") {
-                                  _urlController.text =
-                                      uri.queryParameters["s"] ?? "";
-                                }
-                              } else {
-                                if (!await launchUrl(uri)) {
-                                  throw Exception('Could not launch $uri');
-                                }
-                              }
-                            }),
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    AppQrScanPage(),
                             transitionsBuilder: (context, animation,
                                 secondaryAnimation, child) {
                               const begin = Offset(0.0, 1.0);

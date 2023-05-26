@@ -39,8 +39,8 @@ class AppQrScanPage extends StatelessWidget {
                     App.logger.warning('Failed to scan Barcode');
                   } else {
                     final String code = barcode.rawValue!;
-                    _onQrCodeDetected(code, context);
                     App.logger.info('Barcode found! $code');
+                    _onQrCodeDetected(code, context);
                   }
                 }
               }),
@@ -72,90 +72,17 @@ class AppQrScanPage extends StatelessWidget {
   }
 
   void _onQrCodeDetected(String link, BuildContext context) async {
-    // await SharedFuncs.handleQRCodeLinks(link).then((serverUrl) {
-    //   if (serverUrl != null) {
-    //     Navigator.pop(context, serverUrl);
-    //   }
-    // });
-    onQrCodeDetected?.call(link);
-    Navigator.pop(context);
+    if (onQrCodeDetected != null) {
+      onQrCodeDetected!(link);
+      Navigator.pop(context);
+    } else {
+      final uri = Uri.parse(link);
 
-    // showLoaderDialog(context);
-    // await _validateLink(link).then((valid) {
-    //   if (valid) {
-    //     App.logger.info("success, $link");
-    //   } else {
-    //     // Dismiss loading dialog.
-    //     Navigator.pop(context);
-
-    //     showAppAlert(
-    //         context: context,
-    //         title:
-    //             AppLocalizations.of(context)!.appQrCodeScanPageInvalidCodeTitle,
-    //         content: AppLocalizations.of(context)!
-    //             .appQrCodeScanPageInvalidCodeContent,
-    //         actions: [
-    //           AppAlertDialogAction(
-    //               text: AppLocalizations.of(context)!.ok,
-    //               action: () => Navigator.of(context).pop())
-    //         ]);
-
-    //     // Pop scan page.
-    //     Navigator.pop(context);
-    //   }
-    // });
-  }
-
-  Future<bool> _validateLink(String link) async {
-    try {
-      final context = navigatorKey.currentContext!;
-
-      Uri uri = Uri.parse(link);
-
-      String host = uri.host;
-      if (host == "privoce.voce.chat") {
-        host = "dev.voce.chat";
-      }
-
-      // Check if host is the same when a pre-set server url is available
-      if (SharedFuncs.hasPreSetServerUrl() &&
-          Uri.parse(App.app.customConfig!.configs.serverUrl).host != host) {
-        _showUrlUnmatchAlert();
-
-        return false;
-      }
-
-      final apiPath =
-          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
-      final userApi = UserApi(serverUrl: apiPath);
-      final magicToken = uri.queryParameters["magic_token"] as String;
-
-      final res = await userApi.checkMagicToken(magicToken);
-      if (res.statusCode == 200 && res.data == true) {
-        final chatServerM =
-            await ChatServerHelper().prepareChatServerM(apiPath);
-        if (chatServerM != null) {
-          // Dismiss loading dialog.
-          Navigator.pop(context);
-
-          Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => PasswordRegisterPage(
-                    chatServer: chatServerM,
-                    magicToken: magicToken,
-                  )));
-        }
-      } else {
-        App.logger.warning("Link not valid.");
-
-        return false;
-      }
-    } catch (e) {
-      App.logger.severe(e);
-
-      return false;
+      // This pop should be put before [SharedFuncs.parseLink] as there will be
+      // a [Navigator.push] in it.
+      Navigator.pop(context);
+      SharedFuncs.parseLink(uri);
     }
-
-    return true;
   }
 
   void showLoaderDialog(BuildContext context) {
@@ -177,18 +104,5 @@ class AppQrScanPage extends StatelessWidget {
         return Center(child: alert);
       },
     );
-  }
-
-  void _showUrlUnmatchAlert() {
-    final context = navigatorKey.currentContext!;
-    showAppAlert(
-        context: context,
-        title: AppLocalizations.of(context)!.invitationLinkError,
-        content: AppLocalizations.of(context)!.invitationLinkUrlNotMatch,
-        actions: [
-          AppAlertDialogAction(
-              text: AppLocalizations.of(context)!.ok,
-              action: () => Navigator.of(context).pop())
-        ]);
   }
 }
