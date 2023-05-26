@@ -149,8 +149,8 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
     );
   }
 
-  String getBubbleSnippet() {
-    String result = "";
+  List<String> getBubbleSnippet() {
+    List<String> result = [];
 
     final users = widget.archive?.users ?? [];
     final msgs = widget.archive?.messages ?? [];
@@ -175,26 +175,48 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
         content = AppLocalizations.of(context)!.message;
       }
 
-      result += "${user.name}: $content\n";
+      result.add("${user.name}: $content");
     }
     return result;
   }
 
   Widget _buildContentBubble(int listLength) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(getBubbleSnippet(),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.labelMedium),
-        Text(
-          "$listLength  ${listLength > 1 ? AppLocalizations.of(context)!.messagesWQuantifier : AppLocalizations.of(context)!.messageWQuantifier}",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.labelMedium,
-        ),
-      ],
+    final snippets = getBubbleSnippet();
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List<Widget>.generate(snippets.length + 1, (index) {
+          if (index == snippets.length) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Text(
+                "$listLength  ${listLength > 1 ? AppLocalizations.of(context)!.messagesWQuantifier : AppLocalizations.of(context)!.messageWQuantifier}",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.labelMedium,
+              ),
+            );
+          }
+          return Text(snippets[index],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.labelMedium);
+        }),
+        // children: [
+        //   // Text(getBubbleSnippet(),
+        //   //     maxLines: 3,
+        //   //     overflow: TextOverflow.ellipsis,
+        //   //     style: AppTextStyles.labelMedium),
+        //   Text(
+        //     "$listLength  ${listLength > 1 ? AppLocalizations.of(context)!.messagesWQuantifier : AppLocalizations.of(context)!.messageWQuantifier}",
+        //     maxLines: 1,
+        //     overflow: TextOverflow.ellipsis,
+        //     style: AppTextStyles.labelMedium,
+        //   ),
+        // ],
+      ),
     );
   }
 
