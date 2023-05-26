@@ -133,7 +133,6 @@ class _VoceArchiveContentBubbleState extends State<VoceArchiveContentBubble> {
                     widget.archiveMsg.thumbnailId!, widget.archiveMsg.fileName),
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data != null) {
-                    // return Image.file(snapshot.data!);
                     return VoceImageBubble(
                         imageFile: snapshot.data,
                         getImageList: () =>

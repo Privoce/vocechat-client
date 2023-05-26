@@ -146,7 +146,8 @@ class MsgTileData {
       } else if (chatMsgMNotifier.value.isAudioMsg) {
         await setNormalAudio(serverFetch: false);
       } else if (chatMsgMNotifier.value.isArchiveMsg) {
-        await setNormalArchive(serverFetch: false);
+        // Needs server fetch to be true
+        await setNormalArchive(serverFetch: true);
       }
     } else if (chatMsgMNotifier.value.isReplyMsg) {
       // Replied message is a text/markdown/file/image/audio/archive
@@ -154,7 +155,11 @@ class MsgTileData {
       await setReplyGeneralData();
       if (repliedMsgMNotifier.value == null) return;
 
-      if (repliedMsgMNotifier.value!.isArchiveMsg) {
+      if (repliedMsgMNotifier.value!.isImageMsg) {
+        await setRepliedImage(serverFetch: false);
+      } else if (repliedMsgMNotifier.value!.isAudioMsg) {
+        await setRepliedAudio(serverFetch: false);
+      } else if (repliedMsgMNotifier.value!.isArchiveMsg) {
         await setRepliedArchive(serverFetch: false);
       }
     }

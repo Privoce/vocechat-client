@@ -988,6 +988,7 @@ class VoceChatService {
 
   Future<void> _handleUserSettings(Map<String, dynamic> map) async {
     assert(map["type"] == sseUserSettings);
+
     {
       // read index groups
       final readIndexGroups = map["read_index_groups"] as List?;

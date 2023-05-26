@@ -144,6 +144,7 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
               final user = users[msg.fromUser];
 
               return VoceArchiveContentBubble(
+                  key: ObjectKey(msg),
                   archiveMsg: msg,
                   archiveId: widget.archiveId,
                   archiveUser: user,
