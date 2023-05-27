@@ -202,6 +202,7 @@
     "resetFcmToken":"Reset Push Notification",
     "resetFcmTokenFooter":"You may re-register Firebase device token for Push Notifications, if a push notification error occurred during login process. Please check your network condition, as it needs to connect Google service.",
 
+    "scanQrCode":"Scan QR Code",
     "scanQrCodeToRegister": "Scan this QR Code to register",
     "save": "Save",
     "savedItems": "Saved Items",

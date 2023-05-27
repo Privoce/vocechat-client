@@ -207,6 +207,7 @@
 
     "save": "保存",
     "savedItems": "保存的消息",
+    "scanQrCode":"扫描二维码",
     "scanQrCodeToRegister": "扫描二维码来注册",
     "searching":"搜索中",
     "second":"秒",
