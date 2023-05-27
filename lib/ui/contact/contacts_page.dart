@@ -69,12 +69,6 @@ class _ContactsPageState extends State<ContactsPage>
 
   Future<List<UserInfoM>?> getUserList() async {
     final userList = await UserInfoDao().getUserList();
-
     return userList;
   }
-
-  // Future<List<UserInfoM>?> getContactList() async {
-  //   final contactList = await UserInfoDao().getContactList();
-  //   return contactList;
-  // }
 }
