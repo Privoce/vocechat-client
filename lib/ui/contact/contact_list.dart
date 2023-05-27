@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:azlistview/azlistview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -47,12 +49,17 @@ class _ContactListState extends State<ContactList>
   List<UserInfoM> _contactList = [];
   final Set<int> _uidSet = {};
 
+  bool isPreparing = false;
+
   @override
   bool get wantKeepAlive => false;
 
   @override
   void initState() {
     super.initState();
+    _contactList = widget.userList;
+    _uidSet.addAll(_contactList.map((e) => e.uid));
+
     _prepareContactList();
 
     if (widget.enableUserUpdate) {
@@ -125,6 +132,7 @@ class _ContactListState extends State<ContactList>
                       return ContactTile(
                         user,
                         isSelf,
+                        key: ObjectKey(user),
                         disabled: preSelected,
                         avatarSize: widget.avatarSize,
                         mark: ownerMark,
@@ -195,6 +203,12 @@ class _ContactListState extends State<ContactList>
 
   Future<void> _onUser(
       UserInfoM userInfoM, EventActions action, bool afterReady) async {
+    if (enableContact) {
+      if (userInfoM.contactStatusStr != ContactStatus.added.name) {
+        return;
+      }
+    }
+
     switch (action) {
       case EventActions.create:
       case EventActions.update:
@@ -252,14 +266,18 @@ class _ContactListState extends State<ContactList>
         break;
     }
 
-    _prepareContactList();
+    if (afterReady) {
+      _prepareContactList();
+    }
   }
 
-  void _prepareContactList() async {
-    try {
-      _contactList = widget.userList;
-      _uidSet.addAll(_contactList.map((e) => e.uid));
+  void _prepareContactList() {
+    if (isPreparing) {
+      return;
+    }
 
+    isPreparing = true;
+    try {
       // A-Z sort.
       SuspensionUtil.sortListBySuspensionTag(_contactList);
 
@@ -272,5 +290,6 @@ class _ContactListState extends State<ContactList>
     } catch (e) {
       App.logger.severe(e);
     }
+    isPreparing = false;
   }
 }
