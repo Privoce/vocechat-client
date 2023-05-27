@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/archive.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -17,10 +19,11 @@ class MsgTileData {
   // General Data
   late ValueNotifier<ChatMsgM> chatMsgMNotifier;
   UserInfoM userInfoM;
+  final ValueKey key;
 
   // Tile frame data
   // int avatarUpdatedAt = 0;
-  Widget avatarWidget;
+  File? avatarFile;
   String name = "";
   int time = 0;
   ValueNotifier<MsgStatus> status = ValueNotifier(MsgStatus.success);
@@ -55,13 +58,21 @@ class MsgTileData {
   // File? repliedAudioFile;
   AudioInfo? repliedAudioInfo;
 
+  // For auto-delete messages
+  ValueNotifier<bool> isAutoDeleteN = ValueNotifier(false);
+  ValueNotifier<int> autoDeleteCountDown = ValueNotifier(0);
+  Timer? autoDeleteTimer;
+
+  // For multi-message selection
+  final ValueNotifier<bool> selected = ValueNotifier(false);
+
   // Constructors
   MsgTileData(
-      {required ChatMsgM chatMsgM,
-      required this.userInfoM,
-      required this.avatarWidget}) {
+      {required ChatMsgM chatMsgM, required this.userInfoM, this.avatarFile})
+      : key = ValueKey(chatMsgM.localMid) {
     chatMsgMNotifier = ValueNotifier(chatMsgM);
     setGeneralData();
+    initAutoDeleteTimer();
   }
 
   void setGeneralData() {
@@ -70,7 +81,7 @@ class MsgTileData {
     name = userInfoM.userInfo.name;
     time = chatMsgM.createdAt;
 
-    chatMsgMNotifier.addListener(statusListener);
+    chatMsgMNotifier.addListener(msgListener);
 
     // Still need the following for initial status.
     MsgStatus status = chatMsgMNotifier.value.status;
@@ -86,8 +97,22 @@ class MsgTileData {
   }
 
   // -- Subscriptions
-  void statusListener() {
+  void msgListener() {
     status.value = chatMsgMNotifier.value.status;
+
+    final chatMsgM = chatMsgMNotifier.value;
+    final isAutoDelete = (chatMsgM.msgNormal?.expiresIn != null &&
+            chatMsgM.msgNormal!.expiresIn! > 0) ||
+        (chatMsgM.msgReply?.expiresIn != null &&
+            chatMsgM.msgReply!.expiresIn! > 0);
+
+    if (!isAutoDelete) {
+      autoDeleteTimer?.cancel();
+    } else {
+      initAutoDeleteTimer();
+    }
+
+    isAutoDeleteN.value = isAutoDelete;
   }
 
   // -- Property getters
@@ -116,8 +141,13 @@ class MsgTileData {
 
     if (chatMsgMNotifier.value.isNormalMsg) {
       // If is text/markdown/file/image/audio, do nothing.
-      if (chatMsgMNotifier.value.isArchiveMsg) {
-        await setNormalArchive(serverFetch: false);
+      if (chatMsgMNotifier.value.isImageMsg) {
+        await setNormalImage(serverFetch: false);
+      } else if (chatMsgMNotifier.value.isAudioMsg) {
+        await setNormalAudio(serverFetch: false);
+      } else if (chatMsgMNotifier.value.isArchiveMsg) {
+        // Needs server fetch to be true
+        await setNormalArchive(serverFetch: true);
       }
     } else if (chatMsgMNotifier.value.isReplyMsg) {
       // Replied message is a text/markdown/file/image/audio/archive
@@ -125,7 +155,11 @@ class MsgTileData {
       await setReplyGeneralData();
       if (repliedMsgMNotifier.value == null) return;
 
-      if (repliedMsgMNotifier.value!.isArchiveMsg) {
+      if (repliedMsgMNotifier.value!.isImageMsg) {
+        await setRepliedImage(serverFetch: false);
+      } else if (repliedMsgMNotifier.value!.isAudioMsg) {
+        await setRepliedAudio(serverFetch: false);
+      } else if (repliedMsgMNotifier.value!.isArchiveMsg) {
         await setRepliedArchive(serverFetch: false);
       }
     }
@@ -322,5 +356,66 @@ class MsgTileData {
     if (archiveM != null) {
       archive = archiveM.archive;
     }
+  }
+
+  void initAutoDeleteTimer() {
+    final chatMsgM = chatMsgMNotifier.value;
+    if (isAutoDelete) {
+      isAutoDeleteN.value = true;
+      autoDeleteTimer?.cancel();
+      autoDeleteCountDown.value = _getAutoDeletionRemains();
+
+      if (autoDeleteCountDown.value > 0 &&
+          (autoDeleteTimer == null || !autoDeleteTimer!.isActive)) {
+        autoDeleteTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          autoDeleteCountDown.value -= 1000;
+          if (autoDeleteCountDown.value <= 0) {
+            ChatMsgDao().deleteMsgByLocalMid(chatMsgM).then((value) async {
+              App.app.chatService.fireLmidDelete(chatMsgM.localMid);
+
+              FileHandler.singleton.deleteWithChatMsgM(chatMsgM);
+              AudioFileHandler().deleteWithChatMsgM(chatMsgM);
+
+              int curMaxMid;
+
+              if (chatMsgM.isGroupMsg) {
+                curMaxMid = await ChatMsgDao().getChannelMaxMid(chatMsgM.gid);
+              } else {
+                curMaxMid = await ChatMsgDao().getDmMaxMid(chatMsgM.dmUid);
+              }
+
+              if (curMaxMid > -1) {
+                final latestMsgM = await ChatMsgDao().getMsgByMid(curMaxMid);
+
+                if (latestMsgM != null) {
+                  App.app.chatService
+                      .fireMsg(latestMsgM, true, snippetOnly: true);
+                }
+              }
+            });
+            autoDeleteTimer?.cancel();
+          }
+        });
+      }
+    }
+  }
+
+  int _getAutoDeletionRemains() {
+    final chatMsgM = chatMsgMNotifier.value;
+    if (isAutoDelete) {
+      final expiresIn = chatMsgM.msgNormal?.expiresIn;
+      if (expiresIn != null && expiresIn > 0) {
+        final currentTimeStamp = DateTime.now().millisecondsSinceEpoch;
+        final msgTimeStamp = chatMsgM.createdAt;
+
+        final dif = msgTimeStamp + expiresIn * 1000 - currentTimeStamp;
+        if (dif < 0) {
+          return 0;
+        } else {
+          return dif;
+        }
+      }
+    }
+    return -1;
   }
 }

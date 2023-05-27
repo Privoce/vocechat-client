@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -13,9 +16,11 @@ import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/app_qr_scan_page.dart';
 
-enum _InvitationLinkTextFieldButtonType { clear, paste }
+enum InvitationLinkTextFieldButtonType { clear, paste }
 
 class InvitationLinkPastePage extends StatelessWidget {
+  static const String route = "/invitation_link_paste_page";
+
   late final BoxDecoration _bgDeco;
 
   final _centerColor = const Color.fromRGBO(0, 113, 236, 1);
@@ -24,16 +29,22 @@ class InvitationLinkPastePage extends StatelessWidget {
 
   final TextEditingController _controller = TextEditingController();
 
-  final ValueNotifier<_InvitationLinkTextFieldButtonType> buttonType =
-      ValueNotifier(_InvitationLinkTextFieldButtonType.paste);
+  final ValueNotifier<InvitationLinkTextFieldButtonType> buttonType =
+      ValueNotifier(InvitationLinkTextFieldButtonType.paste);
 
-  InvitationLinkPastePage() {
+  InvitationLinkPastePage({super.key, String? initialLink}) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
             center: Alignment.topRight,
             radius: 0.9,
             colors: [_centerColor, _midColor, _edgeColor],
             stops: const [0, 0.6, 1]));
+    _controller.text = initialLink ?? "";
+    if (_controller.text.trim().isNotEmpty) {
+      buttonType.value = InvitationLinkTextFieldButtonType.clear;
+    } else {
+      buttonType.value = InvitationLinkTextFieldButtonType.paste;
+    }
   }
 
   @override
@@ -95,15 +106,15 @@ class InvitationLinkPastePage extends StatelessWidget {
                     final text = _controller.text;
                     if (text.trim().isNotEmpty) {
                       buttonType.value =
-                          _InvitationLinkTextFieldButtonType.clear;
+                          InvitationLinkTextFieldButtonType.clear;
                     } else {
                       buttonType.value =
-                          _InvitationLinkTextFieldButtonType.paste;
+                          InvitationLinkTextFieldButtonType.paste;
                     }
                   },
                 )),
                 // Flexible(child: TextField()),
-                ValueListenableBuilder<_InvitationLinkTextFieldButtonType>(
+                ValueListenableBuilder<InvitationLinkTextFieldButtonType>(
                     valueListenable: buttonType,
                     builder: (context, type, _) {
                       return _buildTextFieldPasteButton(context, type);
@@ -111,10 +122,34 @@ class InvitationLinkPastePage extends StatelessWidget {
                 IconButton(
                     icon: Icon(Icons.qr_code_scanner_rounded,
                         color: Colors.blue, size: 30),
-                    onPressed: () {
+                    onPressed: () async {
                       final route = PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
-                            AppQrScanPage(),
+                            AppQrScanPage(
+                          onQrCodeDetected: (link) async {
+                            final uri = Uri.parse(link);
+                            if (uri.host == "voce.chat" && uri.path == "/url") {
+                              if (uri.queryParameters.containsKey("i")) {
+                                _controller.text =
+                                    uri.queryParameters["i"] ?? "";
+                                if (_controller.text.trim().isNotEmpty) {
+                                  buttonType.value =
+                                      InvitationLinkTextFieldButtonType.clear;
+                                } else {
+                                  buttonType.value =
+                                      InvitationLinkTextFieldButtonType.paste;
+                                }
+                                return;
+                              } else if (uri.queryParameters.containsKey("s")) {
+                                await SharedFuncs.handleServerLink(uri);
+                                return;
+                              }
+                            }
+                            if (!await launchUrl(uri)) {
+                              throw Exception('Could not launch $uri');
+                            }
+                          },
+                        ),
                         transitionsBuilder:
                             (context, animation, secondaryAnimation, child) {
                           const begin = Offset(0.0, 1.0);
@@ -169,7 +204,8 @@ class InvitationLinkPastePage extends StatelessWidget {
     final link = _controller.text.trim();
 
     try {
-      Uri uri = Uri.parse(link);
+      final modifiedLink = link.replaceFirst("/#", "");
+      Uri uri = Uri.parse(modifiedLink).replace(fragment: '');
 
       String host = uri.host;
       if (host == "privoce.voce.chat") {
@@ -189,22 +225,36 @@ class InvitationLinkPastePage extends StatelessWidget {
       final userApi = UserApi(serverUrl: apiPath);
       final magicToken = uri.queryParameters["magic_token"] as String;
 
-      final res = await userApi.checkMagicToken(magicToken);
-      if (res.statusCode == 200 && res.data == true) {
-        final chatServerM =
-            await ChatServerHelper().prepareChatServerM(apiPath);
-        if (chatServerM != null) {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PasswordRegisterPage(
-                    chatServer: chatServerM,
-                    magicToken: magicToken,
-                  )));
+      await userApi.checkMagicToken(magicToken).then((res) async {
+        if (res.statusCode == 200 && res.data == true) {
+          await ChatServerHelper()
+              .prepareChatServerM(apiPath)
+              .then((chatServerM) {
+            if (chatServerM?.fullUrl == App.app.chatServerM.fullUrl &&
+                App.app.userDb?.loggedIn != 0) {
+              // Current chat server is the same as the invitation link,
+              // and is logged in.
+              if (uri.pathSegments.length == 2 &&
+                  uri.pathSegments[0] == "invite_private") {
+                Navigator.of(context).pop();
+                eventBus.fire(PrivateChannelInvitationLinkEvent(uri));
+              } else {
+                Navigator.of(context).pop();
+              }
+            } else if (chatServerM != null) {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PasswordRegisterPage(
+                      chatServer: chatServerM,
+                      magicToken: magicToken,
+                      invitationLink: uri)));
+            }
+          });
+        } else {
+          App.logger.warning("Link not valid.");
+          _showInvalidLinkWarning(context);
+          return false;
         }
-      } else {
-        App.logger.warning("Link not valid.");
-        _showInvalidLinkWarning(context);
-        return false;
-      }
+      });
     } catch (e) {
       App.logger.severe(e);
       _showInvalidLinkWarning(context);
@@ -241,20 +291,20 @@ class InvitationLinkPastePage extends StatelessWidget {
   }
 
   Widget _buildTextFieldPasteButton(
-      BuildContext context, _InvitationLinkTextFieldButtonType type) {
+      BuildContext context, InvitationLinkTextFieldButtonType type) {
     Widget child;
     void Function()? onPressed;
 
     switch (type) {
-      case _InvitationLinkTextFieldButtonType.clear:
+      case InvitationLinkTextFieldButtonType.clear:
         child = Icon(CupertinoIcons.clear_circled_solid);
         onPressed = (() {
           _controller.clear();
-          buttonType.value = _InvitationLinkTextFieldButtonType.paste;
+          buttonType.value = InvitationLinkTextFieldButtonType.paste;
         });
 
         break;
-      case _InvitationLinkTextFieldButtonType.paste:
+      case InvitationLinkTextFieldButtonType.paste:
         child = Text(AppLocalizations.of(context)!.paste);
         onPressed = () async {
           ClipboardData? data = await Clipboard.getData('text/plain');
@@ -263,9 +313,9 @@ class InvitationLinkPastePage extends StatelessWidget {
             _controller.selection = TextSelection.fromPosition(
                 TextPosition(offset: _controller.text.length));
             if (_controller.text.trim().isNotEmpty) {
-              buttonType.value = _InvitationLinkTextFieldButtonType.clear;
+              buttonType.value = InvitationLinkTextFieldButtonType.clear;
             } else {
-              buttonType.value = _InvitationLinkTextFieldButtonType.paste;
+              buttonType.value = InvitationLinkTextFieldButtonType.paste;
             }
           }
         };

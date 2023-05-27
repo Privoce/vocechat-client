@@ -12,17 +12,26 @@ import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/properties_models/user_properties.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
-
-enum ContactInfoStatus { added, blocked }
+import 'package:vocechat_client/globals.dart';
 
 class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   int uid = -1;
   String info = "";
   String _properties = "";
+
+  // Following properties in [contacts] table.
+  String contactStatusStr = ContactStatus.none.name;
+  ContactStatus get contactStatus {
+    return ContactStatus.values.firstWhere((e) => e.name == contactStatusStr,
+        orElse: () => ContactStatus.none);
+  }
+
+  int contactUpdatedAt = 0;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -84,16 +93,6 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
     info = jsonEncode(userInfo.toJson());
   }
 
-  UserInfoM.fromUserAndContactInfo(UserInfo userInfo, ContactInfo contactInfo) {
-    uid = userInfo.uid;
-    info = jsonEncode(userInfo.toJson());
-  }
-
-  UserInfoM.fromUserContact(UserContact userContact) {
-    uid = userContact.targetInfo.uid;
-    info = jsonEncode(userContact.targetInfo.toJson());
-  }
-
   UserInfoM.deleted() {
     info = json.encode(UserInfo.deleted());
   }
@@ -145,6 +144,8 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
         info,
         _properties,
         // createdAt,
+        contactStatusStr,
+        contactUpdatedAt
       ];
 }
 
@@ -178,56 +179,6 @@ class UserInfoDao extends Dao<UserInfoM> {
     }
 
     return m;
-  }
-
-  /// Add or update UserInfoM. This will update [ContactInfo] fields.
-  ///
-  /// UserInfoM extends EquatableMixin and it can be compared by
-  /// [uid], [info], [contactStatus], [contactCreatedAt] and
-  /// [contactUpdatedAt].
-  ///
-  /// When these fields are the same, the UserInfoM will not be updated.
-  Future<UserInfoM> addOrUpdateWithContactInfo(UserInfoM m) async {
-    UserInfoM? old =
-        await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [m.uid]);
-    if (old != null) {
-      if (old == m) return old;
-
-      m.id = old.id;
-      m.createdAt = old.createdAt;
-
-      await super.update(m);
-
-      App.logger.info("UserInfoM updated. ${m.uid}");
-    } else {
-      await super.add(m);
-      App.logger.info("UserInfoM added. ${m.uid}");
-    }
-
-    return m;
-  }
-
-  /// Empty contact status of UserInfoM.
-  ///
-  /// If [uidList] is not empty, the contact status of UserInfoM whose uid is
-  /// not in [uidList] will be emptied.
-  /// [uidList] is the list of uid which is pushed by server, that is, the
-  /// contacts with valid [contactStatus].
-  Future<bool> emptyUnpushedContactStatus(List<int> uidList) async {
-    final allUids = ((await getUserList()) ?? []).map((e) => e.uid).toList();
-
-    final unpushedUids =
-        allUids.where((element) => !uidList.contains(element)).toList();
-
-    for (final uid in unpushedUids) {
-      UserInfoM? old =
-          await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
-      if (old != null) {
-        await super.update(old);
-        App.logger.info("UserInfoM contact status emptyed. ${old.uid}");
-      }
-    }
-    return true;
   }
 
   /// Empty pinned status of UserInfoM.
@@ -332,25 +283,27 @@ class UserInfoDao extends Dao<UserInfoM> {
   /// uid, ascending order
   Future<List<UserInfoM>?> getUserList() async {
     String orderBy = "${UserInfoM.F_uid} ASC";
-    return super.list(orderBy: orderBy);
+    final userList = await super.list(orderBy: orderBy);
+
+    if (enableContact) {
+      final contactDao = ContactDao();
+
+      for (var user in userList) {
+        final contactInfo = await contactDao.getContactInfo(user.uid);
+        if (contactInfo != null) {
+          user.contactStatusStr = contactInfo.status;
+          user.contactUpdatedAt = contactInfo.updatedAt;
+        }
+      }
+      return userList
+          .where((element) =>
+              element.contactStatusStr == ContactStatus.added.name ||
+              element.uid == 1)
+          .toList();
+    }
+
+    return userList;
   }
-
-  /// Get a list of UserInfoM
-  ///
-  /// Only show contactInfoStatus == [ContactInfoStatus.added]
-  // Future<List<UserInfoM>?> getContactList() async {
-  //   String sqlStr =
-  //       "SELECT * FROM ${UserInfoM.F_tableName} WHERE ${UserInfoM.F_contactStatus} = '${ContactInfoStatus.added.name}' ORDER BY ${UserInfoM.F_uid} ASC";
-  //   List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
-
-  //   final list = records.map((e) => UserInfoM.fromMap(e)).toList();
-
-  //   final me = await getUserByUid(App.app.userDb!.uid);
-  //   if (me != null) {
-  //     list.add(me);
-  //   }
-  //   return list;
-  // }
 
   Future<int> getUserCount() async {
     String sqlStr = "SELECT COUNT(*) FROM ${UserInfoM.F_tableName}";
@@ -362,19 +315,18 @@ class UserInfoDao extends Dao<UserInfoM> {
   }
 
   Future<UserInfoM?> getUserByUid(int uid) async {
-    return super.first(where: "${UserInfoM.F_uid} = ?", whereArgs: [uid]);
-  }
-
-  Future<List<UserInfoM>?> getUsersWithDraft() async {
-    String sqlStr =
-        "SELECT * FROM ${UserInfoM.F_tableName} WHERE json_extract(json(IIF(${UserInfoM.F_properties} <> '',${UserInfoM.F_properties}, NULL)) , '\$.draft') != ''";
-
-    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
-    if (records.isNotEmpty) {
-      final result = records.map((e) => UserInfoM.fromMap(e)).toList();
-      return result;
+    final user =
+        await super.first(where: "${UserInfoM.F_uid} = ?", whereArgs: [uid]);
+    if (user != null && enableContact) {
+      final contactDao = ContactDao();
+      final contactInfo = await contactDao.getContactInfo(user.uid);
+      if (contactInfo != null) {
+        user.contactStatusStr = contactInfo.status;
+        user.contactUpdatedAt = contactInfo.updatedAt;
+      }
     }
-    return null;
+
+    return user;
   }
 
   Future<int> removeByUid(int uid) async {
@@ -407,18 +359,4 @@ class UserInfoDao extends Dao<UserInfoM> {
     }
     return null;
   }
-
-  // Future<ChatServerM?> currentServer() async {
-  //   ChatServerM? chatServer = await get(await OrgSettingDao.dao.getCurrentServerId());
-  //   return chatServer;
-  // }
-
-  // Future<void> updateCompanyFromServer(ChatServerM m) async {
-  //   ChatClient chat = createChatClient(createClientChannel(m.tls.toTrue(), m.url, m.port));
-  //   Company res = await chat.companyGet(EmptyReq(token: ""));
-  //   m.serverName = res.name;
-  //   m.logo = imageWebStringToBytes(res.logo);
-  //   await get(await OrgSettingDao.dao.getCurrentServerId());
-  //   return;
-  // }
 }

@@ -7,7 +7,6 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/ui/chats/chat/chat_setting/invite/invite_link_view.dart';
 import 'package:vocechat_client/ui/contact/contact_list.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 
@@ -31,6 +30,8 @@ class _MemberAddPageState extends State<MemberAddPage>
 
   @override
   void initState() {
+    print("member add page");
+
     super.initState();
     membersFuture = prepareUserList();
 
@@ -51,12 +52,6 @@ class _MemberAddPageState extends State<MemberAddPage>
   Widget build(BuildContext context) {
     List<Tab> tabs = [];
     List<Widget> tabViews = [];
-
-    if (enableInvitationLink) {
-      tabs.add(
-          Tab(text: AppLocalizations.of(context)!.memberAddPageInvitationLink));
-      tabViews.add(InviteLinkView(widget.groupInfoMNotifier.value.gid));
-    }
 
     if (!widget.groupInfoMNotifier.value.isPublic) {
       tabs.insert(

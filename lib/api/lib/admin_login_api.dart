@@ -16,8 +16,9 @@ class AdminLoginApi {
     return await dio.post("/config", data: info);
   }
 
-  Future<Response<AdminLoginConfig>> getConfig() async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<AdminLoginConfig>> getConfig(
+      {bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     final res = await dio.get("/config");
 
     var newRes = Response<AdminLoginConfig>(

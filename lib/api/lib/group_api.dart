@@ -273,13 +273,34 @@ class GroupApi {
     return newRes;
   }
 
-  Future<Response<String>> createInviteLink(int gid,
-      {int expiredIn = 1800}) async {
+  Future<Response> getInvitePrivateMagicLink(int gid,
+      {int? expiredIn = 172800, int? maxTimes = 1}) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
 
-    return dio.get<String>(
-      "/$gid/create_invite_link?expired_in=$expiredIn",
-    );
+    String url = "/create_invite_private_magic_link";
+
+    List<String> paramList = [];
+
+    paramList.add("gid=$gid");
+
+    if (expiredIn != null) {
+      paramList.add("expired_in=$expiredIn");
+    }
+
+    if (maxTimes != null) {
+      paramList.add("max_times=$maxTimes");
+    }
+
+    if (paramList.isNotEmpty) {
+      final str = paramList.join("&");
+      url += "?$str";
+    }
+
+    var uri = Uri.parse(_baseUrl + url);
+    dio.options.headers["Authority"] = "${uri.authority}:${uri.port}";
+    dio.options.headers["Host"] = uri.host;
+
+    return dio.get(url);
   }
 
   Future<Response<String>> uploadGroupAvatar(
@@ -322,7 +343,7 @@ class GroupApi {
   }
 
   Future<Response> getRegMagicLink(
-      {int? gid, int? expiredIn = 3600, int? maxTimes = 1}) async {
+      {int? gid, int? expiredIn = 172800, int? maxTimes = 1}) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
 
     String url = "/create_reg_magic_link";
@@ -347,7 +368,7 @@ class GroupApi {
     }
 
     var uri = Uri.parse(_baseUrl + url);
-    dio.options.headers["Authority"] = uri.authority + ":${uri.port}";
+    dio.options.headers["Authority"] = "${uri.authority}:${uri.port}";
     dio.options.headers["Host"] = uri.host;
 
     return dio.get(url);

@@ -22,8 +22,9 @@ import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/invite_user_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_channel_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_dm_page.dart';
+import 'package:vocechat_client/ui/widgets/app_qr_scan_page.dart';
 
-enum AddActions { channel, private, dm, user }
+enum AddActions { channel, private, dm, user, scan }
 
 enum ConnectionStates { disconnected, connecting, successful }
 
@@ -350,6 +351,28 @@ class _ChatsBarState extends State<ChatsBar> {
                     Navigator.push(context, route);
 
                     break;
+                  case AddActions.scan:
+                    final route = PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          AppQrScanPage(),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(0.0, 1.0);
+                        const end = Offset.zero;
+                        const curve = Curves.fastOutSlowIn;
+
+                        var tween = Tween(begin: begin, end: end)
+                            .chain(CurveTween(curve: curve));
+
+                        return SlideTransition(
+                          position: animation.drive(tween),
+                          child: child,
+                        );
+                      },
+                    );
+                    Navigator.push(context, route);
+
+                    break;
 
                   default:
                 }
@@ -367,7 +390,11 @@ class _ChatsBarState extends State<ChatsBar> {
                   _buildItem(
                       Icon(AppIcons.member_add, color: AppColors.grey97),
                       AppLocalizations.of(context)!.inviteNewUsers,
-                      AddActions.user)
+                      AddActions.user),
+                  _buildItem(
+                      Icon(Icons.qr_code_scanner, color: AppColors.grey97),
+                      AppLocalizations.of(context)!.scanQrCode,
+                      AddActions.scan)
                 ];
               },
             ))

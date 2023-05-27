@@ -139,9 +139,9 @@ class _VoceChannelAvatarState extends State<VoceChannelAvatar> {
   }
 
   Future<void> _onChannelChanged(
-      GroupInfoM groupInfoM, EventActions action) async {
+      GroupInfoM groupInfoM, EventActions action, bool afterReady) async {
     if (groupInfoM.gid == widget.groupInfoM?.gid) {
-      if (mounted) {
+      if (mounted && afterReady) {
         setState(() {});
       }
     }

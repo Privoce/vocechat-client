@@ -83,7 +83,8 @@ class _NewDmPageState extends State<NewDmPage> {
     );
   }
 
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     switch (action) {
       case EventActions.create:
         if (!_uidSet.contains(userInfoM.uid)) {
@@ -114,7 +115,7 @@ class _NewDmPageState extends State<NewDmPage> {
         break;
     }
 
-    if (mounted) {
+    if (mounted && afterReady) {
       setState(() {});
     }
   }

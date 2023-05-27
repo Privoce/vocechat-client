@@ -323,7 +323,7 @@ class FileHandler {
           break;
       }
       if (!await File(path).exists()) {
-        throw "File not exist: $fileName, path: $path";
+        throw "$type not exist: $fileName, path: $path";
       }
 
       return File(path);

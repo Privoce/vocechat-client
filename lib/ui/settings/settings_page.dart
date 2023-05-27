@@ -323,13 +323,10 @@ class _SettingPageState extends State<SettingPage> {
     }
   }
 
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     if (userInfoM.uid == App.app.userDb?.uid) {
       userInfoNotifier.value = userInfoM;
-
-      // Add [notifyListeners()] to avoid no UI response on avatar changed.
-      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-      userInfoNotifier.notifyListeners();
     }
   }
 }

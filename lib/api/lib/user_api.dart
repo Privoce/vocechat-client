@@ -11,9 +11,8 @@ import 'package:vocechat_client/api/models/user/user_contact.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/ui/contact/contacts_add_segmented_control.dart';
-
-enum UpdateContactAction { add, block, remove, unblock }
 
 class UserApi {
   late final String _baseUrl;
@@ -429,13 +428,13 @@ class UserApi {
     return newRes;
   }
 
-  Future<Response> updateContactRequest(
-      int targetUid, UpdateContactAction action) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> updateContactStatus(
+      int uid, ContactUpdateAction status) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
     dio.options.headers["content-type"] = "application/json";
 
     return dio.post("/update_contact_status",
-        data: json.encode({"target_uid": targetUid, "action": action.name}));
+        data: {"action": status.name, "target_uid": uid});
   }
 
   Future<Response<UserInfo?>> search(

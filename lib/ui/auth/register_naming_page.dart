@@ -22,11 +22,14 @@ import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 class RegisterNamingPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
   ChatServerM chatServer;
+  final Uri? invitationLink;
 
   RegisterRequest req;
   final bool rememberMe;
 
-  RegisterNamingPage(this.req, this.rememberMe, this.chatServer, {Key? key})
+  RegisterNamingPage(
+      this.req, this.rememberMe, this.chatServer, this.invitationLink,
+      {Key? key})
       : super(key: key) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
@@ -265,8 +268,9 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         final registerResponse = res.data!;
         await App.app.authService?.initServices(
             registerResponse, widget.rememberMe, widget.req.password);
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(ChatsMainPage.route, (route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            ChatsMainPage.route, (route) => false,
+            arguments: widget.invitationLink);
         App.app.chatService.initSse();
         return true;
       } else {

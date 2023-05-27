@@ -12,7 +12,7 @@ class AdminUserApi {
 
   Future<Response> deleteUser(int uid) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
-    return dio.delete("$uid");
+    return dio.delete("/$uid");
   }
 
   Future<Response<bool>> getSmtpEnableStatus() async {

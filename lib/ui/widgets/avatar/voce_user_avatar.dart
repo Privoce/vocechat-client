@@ -56,7 +56,7 @@ class VoceUserAvatar extends StatefulWidget {
       {Key? key,
       required String this.name,
       required int this.uid,
-      required File this.file,
+      required this.file,
       required this.size,
       this.isCircle = useCircleAvatar,
       this.enableOnlineStatus = true,
@@ -65,7 +65,7 @@ class VoceUserAvatar extends StatefulWidget {
       : avatarBytes = null,
         enableServerRetry = false,
         userInfoM = null,
-        _deleted = false,
+        _deleted = uid <= 0,
         super(key: key);
 
   VoceUserAvatar.user(
@@ -124,11 +124,16 @@ class VoceUserAvatar extends StatefulWidget {
 
 class _VoceUserAvatarState extends State<VoceUserAvatar> {
   File? imageFile;
+  bool enableOnlineStatus = true;
 
   @override
   void initState() {
     super.initState();
     App.app.chatService.subscribeUsers(_onUserChanged);
+
+    enableOnlineStatus = widget.enableOnlineStatus &&
+        (App.app.chatServerM.properties.commonInfo?.showUserOnlineStatus ==
+            true);
 
     _getImageFile();
   }
@@ -143,7 +148,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Widget build(BuildContext context) {
     if (widget._deleted) {
       return VoceAvatar.icon(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           icon: CupertinoIcons.person,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -152,7 +157,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
       Widget rawAvatar;
       if (widget.file != null) {
         rawAvatar = VoceAvatar.file(
-            key: UniqueKey(),
+            // key: UniqueKey(),
             file: widget.file!,
             size: widget.size,
             isCircle: widget.isCircle);
@@ -160,7 +165,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
           widget.userInfoM!.userInfo.avatarUpdatedAt != 0 &&
           imageFile != null) {
         rawAvatar = VoceAvatar.file(
-            key: UniqueKey(),
+            // key: UniqueKey(),
             file: imageFile!,
             size: widget.size,
             isCircle: widget.isCircle);
@@ -169,7 +174,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
       }
 
       // Add online status
-      if (widget.enableOnlineStatus && widget.uid != null) {
+      if (enableOnlineStatus && widget.uid != null) {
         final onlineStatus = SharedFuncs.isSelf(widget.uid)
             ? ValueNotifier(true)
             : App.app.onlineStatusMap[widget.uid] ?? ValueNotifier(false);
@@ -219,13 +224,13 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Widget _buildNonFileAvatar() {
     if (widget.avatarBytes != null && widget.avatarBytes!.isNotEmpty) {
       return VoceAvatar.bytes(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           avatarBytes: widget.avatarBytes!,
           size: widget.size,
           isCircle: widget.isCircle);
     } else if (widget.name != null && widget.name!.isNotEmpty) {
       return VoceAvatar.name(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           name: widget.name!,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -233,7 +238,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
           backgroundColor: widget.backgroundColor);
     } else {
       return VoceAvatar.icon(
-          key: UniqueKey(),
+          // key: UniqueKey(),
           icon: AppIcons.contact,
           size: widget.size,
           isCircle: widget.isCircle,
@@ -254,7 +259,8 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
     }
   }
 
-  Future<void> _onUserChanged(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUserChanged(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
     if (userInfoM.uid == widget.userInfoM?.uid &&
         userInfoM.userInfo.avatarUpdatedAt !=
             widget.userInfoM?.userInfo.avatarUpdatedAt) {

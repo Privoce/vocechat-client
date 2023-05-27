@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:vocechat_client/api/models/admin/login/login_config.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
@@ -58,6 +59,8 @@ class ChatServerM with M {
   set properties(ChatServerProperties p) {
     _properties = jsonEncode(p);
   }
+
+  // ChatServerProperties addProperty({AdminLoginConfig? loginConfig,  )
 
   ChatServerM();
 
@@ -160,7 +163,8 @@ class ChatServerDao extends OrgDao<ChatServerM> {
     } else {
       await super.add(m);
     }
-    App.logger.info("ChatServerM saved. Id: ${m.id}");
+    App.logger.info(
+        "ChatServerM saved. Id: ${m.id}, common info: ${m.properties.commonInfo?.toJson()}");
     return m;
   }
 

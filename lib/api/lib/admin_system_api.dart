@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
+import 'package:vocechat_client/api/models/admin/system/sys_common_info.dart';
 import 'package:vocechat_client/api/models/admin/system/sys_org_info.dart';
 import 'package:vocechat_client/app.dart';
 
@@ -49,8 +50,9 @@ class AdminSystemApi {
     return dio.post("/organization", data: jsonEncode(req));
   }
 
-  Future<Response<AdminSystemOrgInfo>> getOrgInfo() async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<AdminSystemOrgInfo>> getOrgInfo(
+      {bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     final res = await dio.get("/organization");
 
     var newRes = Response<AdminSystemOrgInfo>(
@@ -64,6 +66,27 @@ class AdminSystemApi {
 
     if (res.statusCode == 200 && res.data != null) {
       final data = AdminSystemOrgInfo.fromJson(res.data!);
+      newRes.data = data;
+    }
+    return newRes;
+  }
+
+  Future<Response<AdminSystemCommonInfo>> getCommonInfo(
+      {bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
+    final res = await dio.get("/common");
+
+    var newRes = Response<AdminSystemCommonInfo>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      final data = AdminSystemCommonInfo.fromJson(res.data!);
       newRes.data = data;
     }
     return newRes;
@@ -88,8 +111,8 @@ class AdminSystemApi {
     );
   }
 
-  Future<Response<bool>> getInitialized() async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<bool>> getInitialized({bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     final res = await dio.get("/initialized");
 
     var newRes = Response<bool>(

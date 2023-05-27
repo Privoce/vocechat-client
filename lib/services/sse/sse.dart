@@ -60,6 +60,7 @@ class Sse {
       eventSource.onError.listen((event) {
         App.app.statusService?.fireSseLoading(SseStatus.disconnected);
         App.logger.severe(event);
+        App.logger.severe(event.type);
         eventSource.close();
         handleError(event);
 

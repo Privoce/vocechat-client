@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -527,7 +528,7 @@ class _ServerPageState extends State<ServerPage> {
     // final chatServerM = await ChatServerHelper().prepareChatServerM(url);
     // if (chatServerM == null) return false;
 
-    _urlFocusNode.requestFocus();
+    // _urlFocusNode.requestFocus();
 
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => LoginPage(baseUrl: url)));
