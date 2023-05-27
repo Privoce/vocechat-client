@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,25 +13,18 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:uni_links/uni_links.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/firebase_options.dart';
-import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
-import 'package:vocechat_client/ui/auth/login_page.dart';
-import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contacts_page.dart';
@@ -134,6 +126,7 @@ class VoceChatApp extends StatefulWidget {
 
   late Widget defaultHome;
 
+  // ignore: library_private_types_in_public_api
   static _VoceChatAppState? of(BuildContext context) =>
       context.findAncestorStateOfType<_VoceChatAppState>();
 
@@ -311,30 +304,6 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     print(message.data);
   }
 
-  void _showInvalidLinkWarning(BuildContext context) {
-    showAppAlert(
-        context: context,
-        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
-        content:
-            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
-        actions: [
-          AppAlertDialogAction(
-              text: AppLocalizations.of(context)!.ok,
-              action: (() => Navigator.of(context).pop()))
-        ]);
-  }
-
-  Future<bool> _validateMagicToken(String url, String magicToken) async {
-    try {
-      final res = await UserApi(serverUrl: url).checkMagicToken(magicToken);
-      return (res.statusCode == 200 && res.data == true);
-    } catch (e) {
-      App.logger.severe(e);
-    }
-
-    return false;
-  }
-
   void _handleIncomingUniLink() async {
     uriLinkStream.listen((Uri? uri) async {
       if (uri == null) return;
@@ -350,145 +319,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
   void _parseLink(Uri uri) async {
     // Sign in page example: http://voce.chat/url?s=https%3A%2F%2Fdev.voce.chat
-    // const String loginRegexStr = r"\/?(?:\w+\/)?login";
-    // const String joinRegexStr = r"\/?(?:\w+\/)?join";
     await SharedFuncs.parseLink(uri);
-
-    // final path = uri.path;
-    // if (uri.host == 'voce.chat' && uri.path == '/url') {
-    //   if (uri.queryParameters.containsKey('s')) {
-    //     _handleServerLink(uri);
-    //   } else if (uri.queryParameters.containsKey('i')) {
-    //     _handleInvitationLink(uri);
-    //   } else {
-    //     if (!await launchUrl(uri)) {
-    //       throw Exception('Could not launch $uri');
-    //     }
-    //   }
-    // }
-
-    // if (RegExp(loginRegexStr).hasMatch(path)) {
-    //   _handleServerLink(uri);
-    // } else if (RegExp(joinRegexStr).hasMatch(path)) {
-    //   _handleInvitationLink(uri);
-    // } else {
-    //   App.logger.warning("Unrecongizable invitation link");
-    // }
   }
-
-  // Future<InvitationLinkData?> _prepareInvitationLinkData(Uri uri) async {
-  //   try {
-  //     final magicLink = uri.queryParameters["magic_link"];
-  //     print("magicLinkHost: $magicLink");
-
-  //     if (magicLink == null || magicLink.isEmpty) return null;
-  //     final magicLinkUri = Uri.parse(magicLink);
-  //     final magicToken = magicLinkUri.queryParameters["magic_token"];
-
-  //     print("invLinkUri: $magicLinkUri");
-
-  //     String serverUrl = magicLinkUri.scheme +
-  //         '://' +
-  //         magicLinkUri.host +
-  //         ":" +
-  //         magicLinkUri.port.toString();
-
-  //     if (serverUrl == "https://privoce.voce.chat" ||
-  //         serverUrl == "https://privoce.voce.chat:443") {
-  //       serverUrl = "https://dev.voce.chat";
-  //     }
-
-  //     if (magicToken != null && magicToken.isNotEmpty) {
-  //       if (await _validateMagicToken(serverUrl, magicToken)) {
-  //         return InvitationLinkData(
-  //             serverUrl: serverUrl, magicToken: magicToken);
-  //       } else {
-  //         final context = navigatorKey.currentContext;
-  //         if (context == null) return null;
-  //         _showInvalidLinkWarning(context);
-  //       }
-  //     }
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-
-  //   return null;
-  // }
-
-  // void _handleInvitationLink(Uri uri) async {
-  //   print("handleJoinLink");
-  //   final data = await _prepareInvitationLinkData(uri);
-  //   final context = navigatorKey.currentContext;
-  //   print("data: $data, context: $context");
-  //   if (data == null || context == null) return;
-  //   try {
-  //     final chatServer = await ChatServerHelper()
-  //         .prepareChatServerM(data.serverUrl, showAlert: false);
-  //     print("chatServer: $chatServer");
-  //     if (chatServer == null) return;
-
-  //     final route = PageRouteBuilder(
-  //       pageBuilder: (context, animation, secondaryAnimation) =>
-  //           PasswordRegisterPage(
-  //               chatServer: chatServer, magicToken: data.magicToken),
-  //       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-  //         const begin = Offset(0.0, 1.0);
-  //         const end = Offset.zero;
-  //         const curve = Curves.fastOutSlowIn;
-
-  //         var tween =
-  //             Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-  //         return SlideTransition(
-  //           position: animation.drive(tween),
-  //           child: child,
-  //         );
-  //       },
-  //     );
-
-  //     print("before push");
-
-  //     Navigator.push(context, route);
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
-
-  // void _handleServerLink(Uri uri) async {
-  //   final serverUrl = uri.queryParameters["s"];
-
-  //   final context = navigatorKey.currentContext;
-  //   if (serverUrl == null || serverUrl.isEmpty || context == null) return;
-  //   try {
-  //     final chatServer = await ChatServerHelper()
-  //         .prepareChatServerM(serverUrl, showAlert: false);
-  //     if (chatServer == null) return;
-
-  //     final route = PageRouteBuilder(
-  //       pageBuilder: (context, animation, secondaryAnimation) =>
-  //           // PasswordRegisterPage(
-  //           //     chatServer: chatServer, magicToken: data.magicToken),
-  //           LoginPage(baseUrl: serverUrl),
-  //       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-  //         const begin = Offset(0.0, 1.0);
-  //         const end = Offset.zero;
-  //         const curve = Curves.fastOutSlowIn;
-
-  //         var tween =
-  //             Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-  //         return SlideTransition(
-  //           position: animation.drive(tween),
-  //           child: child,
-  //         );
-  //       },
-  //     );
-
-  //     Navigator.push(context, route);
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
 
   void onResume() async {
     try {
