@@ -23,6 +23,10 @@ class ChatsPage extends StatefulWidget {
 
   const ChatsPage({Key? key}) : super(key: key);
 
+  // ignore: library_private_types_in_public_api
+  static _ChatsPageState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_ChatsPageState>();
+
   @override
   State<ChatsPage> createState() => _ChatsPageState();
 }
@@ -68,6 +72,7 @@ class _ChatsPageState extends State<ChatsPage>
 
   @override
   void dispose() {
+    clearChats();
     App.app.chatService.unsubscribeMsg(_onMessage);
     App.app.chatService.unsubscribeGroups(_onChannel);
     App.app.chatService.unsubscribeUsers(_onUser);
@@ -248,12 +253,20 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   Future<void> prepareChats() async {
-    clearChats();
     await prepareChannels();
     await prepareDms();
     calUnreadCountSum();
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  void onTapFromGid(int gid) async {
+    final chatId = SharedFuncs.getChatId(gid: gid);
+    if (chatTileMap.containsKey(chatId)) {
+      onTap(chatTileMap[chatId]!);
+    } else {
+      return;
     }
   }
 

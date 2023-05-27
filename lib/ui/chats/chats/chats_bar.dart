@@ -277,7 +277,6 @@ class _ChatsBarState extends State<ChatsBar> {
                   borderRadius: BorderRadius.circular(8)),
               offset: const Offset(0.0, 50.0),
               onSelected: (action) async {
-                print(action);
                 switch (action as AddActions) {
                   case AddActions.channel:
                     final route = PageRouteBuilder(

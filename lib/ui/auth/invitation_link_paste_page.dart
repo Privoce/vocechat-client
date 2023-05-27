@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/main.dart';
@@ -37,6 +38,11 @@ class InvitationLinkPastePage extends StatelessWidget {
             colors: [_centerColor, _midColor, _edgeColor],
             stops: const [0, 0.6, 1]));
     _controller.text = initialLink ?? "";
+    if (_controller.text.trim().isNotEmpty) {
+      buttonType.value = InvitationLinkTextFieldButtonType.clear;
+    } else {
+      buttonType.value = InvitationLinkTextFieldButtonType.paste;
+    }
   }
 
   @override
@@ -118,8 +124,28 @@ class InvitationLinkPastePage extends StatelessWidget {
                       final route = PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             AppQrScanPage(
-                          onQrCodeDetected: (link) {
-                            _controller.text = link;
+                          onQrCodeDetected: (link) async {
+                            final uri = Uri.parse(link);
+                            if (uri.host == "voce.chat" && uri.path == "/url") {
+                              if (uri.queryParameters.containsKey("i")) {
+                                _controller.text =
+                                    uri.queryParameters["i"] ?? "";
+                                if (_controller.text.trim().isNotEmpty) {
+                                  buttonType.value =
+                                      InvitationLinkTextFieldButtonType.clear;
+                                } else {
+                                  buttonType.value =
+                                      InvitationLinkTextFieldButtonType.paste;
+                                }
+                                return;
+                              } else if (uri.queryParameters.containsKey("s")) {
+                                await SharedFuncs.handleServerLink(uri);
+                                return;
+                              }
+                            }
+                            if (!await launchUrl(uri)) {
+                              throw Exception('Could not launch $uri');
+                            }
                           },
                         ),
                         transitionsBuilder:
@@ -204,9 +230,7 @@ class InvitationLinkPastePage extends StatelessWidget {
         if (chatServerM != null) {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => PasswordRegisterPage(
-                    chatServer: chatServerM,
-                    magicToken: magicToken,
-                  )));
+                  chatServer: chatServerM, magicToken: magicToken)));
         }
       } else {
         App.logger.warning("Link not valid.");

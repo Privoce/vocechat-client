@@ -220,20 +220,26 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
   /// Temp function to replace server default domain for invitation link.
   /// Should be deleted after the issue resolves.
-  String _tempChangeInvitationLinkDomain(String originalDomain) {
+  String _tempChangeInvitationLinkDomain(String originalLink) {
+    print(originalLink);
     const pattern = "http://1.2.3.4:4000";
 
-    if (originalDomain.startsWith(pattern)) {
-      originalDomain =
-          originalDomain.replaceFirst(pattern, App.app.chatServerM.fullUrl);
+    if (originalLink.startsWith(pattern)) {
+      originalLink =
+          originalLink.replaceFirst(pattern, App.app.chatServerM.fullUrl);
     }
 
-    _invitationLink = originalDomain;
-    _linkController.text = originalDomain;
+    final uri = Uri.parse(originalLink);
+    final newUrl = "${uri.scheme}://${uri.host}/#/register?${uri.query}";
+
+    final wrappedUrl = "https://voce.chat/url?i=${Uri.encodeComponent(newUrl)}";
+
+    _invitationLink = wrappedUrl;
+    _linkController.text = wrappedUrl;
 
     _linkStatus.value = LinkStatus.ready;
 
-    return originalDomain;
+    return wrappedUrl;
   }
 
   Future<void> _captureAndShareQrCode() async {

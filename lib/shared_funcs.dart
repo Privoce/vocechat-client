@@ -127,68 +127,35 @@ class SharedFuncs {
     }
   }
 
-  static Future<String?> handleQRCodeLinks(String link) async {
-    // final uri = Uri.parse(link);
+  static Future<void> handleInvitationLink(Uri uri) async {
+    final invitationLink = uri.queryParameters["i"];
 
-    // if (uri.host == "voce.chat") {
-    //   if (uri.path == "/login") {
-    //     return uri.queryParameters["s"];
-    //   }
-    // } else {
-    //   if (!await launchUrl(uri)) {
-    //     throw Exception('Could not launch $uri');
-    //   }
-    // }
-    // return null;
+    if (invitationLink == null || invitationLink.isEmpty) return;
+
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          InvitationLinkPastePage(initialLink: invitationLink),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+    Navigator.of(context).push(route);
   }
 
-  static bool hasPreSetServerUrl() {
-    return App.app.customConfig?.hasPreSetServerUrl ?? false;
-  }
-
-  static Future<void> initLocale() async {
-    String? localLocal = await SharedPreferenceHelper.getString("locale");
-    if (localLocal != null && localLocal.isNotEmpty) {
-    } else {
-      SharedPreferenceHelper.setString("locale", Platform.localeName);
-      localLocal = Platform.localeName;
-    }
-    if (navigatorKey.currentContext != null) {
-      final split = localLocal.split("-");
-      String languageTag = "", regionTag = "";
-      try {
-        languageTag = split[0];
-        regionTag = split[2];
-      } catch (e) {
-        App.logger.warning(e);
-      }
-      final locale = Locale(languageTag, regionTag);
-      VoceChatApp.of(navigatorKey.currentContext!)?.setUILocale(locale);
-    }
-  }
-
-  static bool isSelf(int? uid) {
-    return uid == App.app.userDb?.uid;
-  }
-
-  static Future<void> parseLink(Uri uri) async {
-    if (uri.host == "voce.chat" && uri.path == '/url') {
-      if (uri.queryParameters.containsKey('s')) {
-        // server url (visitor mode in Web client only)
-        await _handleServerLink(uri);
-        return;
-      } else if (uri.queryParameters.containsKey('i')) {
-        // invitation link (both web and mobile client)
-        await _handleInvitationLink(uri);
-        return;
-      }
-    }
-    if (!await launchUrl(uri)) {
-      throw Exception('Could not launch $uri');
-    }
-  }
-
-  static Future<void> _handleServerLink(Uri uri) async {
+  static Future<void> handleServerLink(Uri uri) async {
     final serverUrl = uri.queryParameters["s"];
 
     final context = navigatorKey.currentContext;
@@ -225,32 +192,50 @@ class SharedFuncs {
     }
   }
 
-  static Future<void> _handleInvitationLink(Uri uri) async {
-    final invitationLink = uri.queryParameters["i"];
+  static bool hasPreSetServerUrl() {
+    return App.app.customConfig?.hasPreSetServerUrl ?? false;
+  }
 
-    if (invitationLink == null || invitationLink.isEmpty) return;
+  static Future<void> initLocale() async {
+    String? localLocal = await SharedPreferenceHelper.getString("locale");
+    if (localLocal != null && localLocal.isNotEmpty) {
+    } else {
+      SharedPreferenceHelper.setString("locale", Platform.localeName);
+      localLocal = Platform.localeName;
+    }
+    if (navigatorKey.currentContext != null) {
+      final split = localLocal.split("-");
+      String languageTag = "", regionTag = "";
+      try {
+        languageTag = split[0];
+        regionTag = split[2];
+      } catch (e) {
+        App.logger.warning(e);
+      }
+      final locale = Locale(languageTag, regionTag);
+      VoceChatApp.of(navigatorKey.currentContext!)?.setUILocale(locale);
+    }
+  }
 
-    final route = PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) =>
-          InvitationLinkPastePage(initialLink: invitationLink),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0.0, 1.0);
-        const end = Offset.zero;
-        const curve = Curves.fastOutSlowIn;
+  static bool isSelf(int? uid) {
+    return uid == App.app.userDb?.uid;
+  }
 
-        var tween =
-            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
-      },
-    );
-
-    final context = navigatorKey.currentContext;
-    if (context == null) return;
-    Navigator.of(context).push(route);
+  static Future<void> parseLink(Uri uri) async {
+    if (uri.host == "voce.chat" && uri.path == '/url') {
+      if (uri.queryParameters.containsKey('s')) {
+        // server url (visitor mode in Web client only)
+        await handleServerLink(uri);
+        return;
+      } else if (uri.queryParameters.containsKey('i')) {
+        // invitation link (both web and mobile client)
+        await handleInvitationLink(uri);
+        return;
+      }
+    }
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
   }
 
   /// Parse mention info in text and markdowns.
