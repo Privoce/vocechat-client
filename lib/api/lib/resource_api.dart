@@ -96,8 +96,8 @@ class ResourceApi {
     return null;
   }
 
-  Future<Response<Uint8List>> getOrgLogo() async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<Uint8List>> getOrgLogo({bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     final res = await dio.get<List<int>>("/organization/logo",
         options: Options(responseType: ResponseType.bytes));
 

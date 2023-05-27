@@ -10,9 +10,11 @@ import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
 import 'package:vocechat_client/api/models/msg/msg_normal.dart';
+import 'package:vocechat_client/api/models/user/contact_info.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/reaction.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
@@ -35,15 +37,16 @@ import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
 import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 
 import '../dao/org_dao/chat_server.dart';
 
 enum EventActions { create, delete, update }
 
 typedef UsersAware = Future<void> Function(
-    UserInfoM userInfoM, EventActions action);
+    UserInfoM userInfoM, EventActions action, bool afterReady);
 typedef GroupAware = Future<void> Function(
-    GroupInfoM groupInfoM, EventActions action);
+    GroupInfoM groupInfoM, EventActions action, bool afterReady);
 
 typedef MsgAware = Future<void> Function(ChatMsgM chatMsgM, bool afterReady,
     {bool? snippetOnly});
@@ -95,22 +98,20 @@ class VoceChatService {
   final Map<int, ChatMsgM> msgMap = {};
   final Map<int, ReactionM> reactionMap = {};
 
-  Future<void> initContacts() async {
+  Future<void> preSseInits() async {
     if (enableContact) {
       final res = await UserApi().getUserContacts();
-      if (res.statusCode == 200 && res.data != null) {
-        final dao = UserInfoDao();
-        final userInfoMList =
-            res.data!.map((e) => UserInfoM.fromUserContact(e)).toList();
-        for (final each in userInfoMList) {
-          await dao.addOrUpdate(each);
-        }
 
-        final uidList = userInfoMList.map((e) => e.uid).toList();
-        await dao.emptyUnpushedContactStatus(uidList);
+      if (res.statusCode == 200 && res.data != null) {
+        final rawList = res.data!;
+        final contactList = rawList.map((e) {
+          return ContactM.fromContactInfo(e.targetUid, e.contactInfo.status,
+              e.contactInfo.createdAt, e.contactInfo.updatedAt);
+        }).toList();
+
+        await ContactDao().batchAdd(contactList);
       }
-    } else {
-      return;
+      App.logger.info("Contact list initialized. total: ${res.data?.length}");
     }
   }
 
@@ -125,7 +126,7 @@ class VoceChatService {
     }
 
     try {
-      initContacts().then((_) => Sse.sse.connect());
+      preSseInits().then((_) => Sse.sse.connect());
     } catch (e) {
       App.logger.severe(e);
     }
@@ -271,23 +272,24 @@ class VoceChatService {
     _orgInfoListeners.remove(orgInfoAware);
   }
 
-  void fireUser(UserInfoM userInfoM, EventActions action) {
+  void fireUser(UserInfoM userInfoM, EventActions action, bool afterReady) {
     if (userInfoM.uid == App.app.userDb?.uid) {
       App.app.userDb!.info = userInfoM.info;
     }
     for (UsersAware userAware in _userListeners) {
       try {
-        userAware(userInfoM, action);
+        userAware(userInfoM, action, afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
     }
   }
 
-  void fireChannel(GroupInfoM groupInfoM, EventActions action) {
+  void fireChannel(
+      GroupInfoM groupInfoM, EventActions action, bool afterReady) {
     for (GroupAware groupAware in _groupListeners) {
       try {
-        groupAware(groupInfoM, action);
+        groupAware(groupInfoM, action, afterReady);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -618,7 +620,7 @@ class VoceChatService {
             isPublic: map["is_public"]);
 
         if (oldGroupInfoM != newGroupInfoM && newGroupInfoM != null) {
-          fireChannel(newGroupInfoM, EventActions.update);
+          fireChannel(newGroupInfoM, EventActions.update, afterReady);
         }
       }
     } catch (e) {
@@ -636,7 +638,7 @@ class VoceChatService {
       GroupInfoM groupInfoM = GroupInfoM.fromGroupInfo(groupInfo, true);
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-        fireChannel(value, EventActions.create);
+        fireChannel(value, EventActions.create, afterReady);
       });
     } catch (e) {
       App.logger.severe(e);
@@ -648,7 +650,7 @@ class VoceChatService {
     try {
       await GroupInfoDao().removeByGid(map["gid"]).then((value) {
         if (value != null) {
-          fireChannel(value, EventActions.delete);
+          fireChannel(value, EventActions.delete, afterReady);
         }
       });
     } catch (e) {
@@ -716,7 +718,7 @@ class VoceChatService {
         await ChatMsgDao().pinMsgByMid(mid, pinnedBy ?? -1).then((updatedMsgM) {
           if (updatedGroupInfoM != null && updatedMsgM != null) {
             fireMsg(updatedMsgM, true);
-            fireChannel(updatedGroupInfoM, EventActions.update);
+            fireChannel(updatedGroupInfoM, EventActions.update, afterReady);
           }
         });
       });
@@ -841,9 +843,8 @@ class VoceChatService {
           await GroupInfoDao().deleteGroupByGid(localGid);
 
           final groupInfoM = GroupInfoM()..gid = localGid;
-          if (afterReady) {
-            fireChannel(groupInfoM, EventActions.delete);
-          }
+
+          fireChannel(groupInfoM, EventActions.delete, afterReady);
         }
       }
 
@@ -860,9 +861,7 @@ class VoceChatService {
 
         if (oldGroupInfoM != groupInfoM) {
           await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
-            if (afterReady) {
-              fireChannel(groupInfoM, EventActions.create);
-            }
+            fireChannel(groupInfoM, EventActions.create, afterReady);
           });
         }
       }
@@ -880,7 +879,7 @@ class VoceChatService {
 
       await GroupInfoDao().addMembers(gid, uids).then((value) {
         if (value != null) {
-          fireChannel(value, EventActions.update);
+          fireChannel(value, EventActions.update, afterReady);
         }
       });
     } catch (e) {
@@ -902,13 +901,13 @@ class VoceChatService {
         await ChatMsgDao().deleteMsgByGid(gid);
         await GroupInfoDao().removeByGid(gid).then((value) {
           if (value != null) {
-            fireChannel(value, EventActions.delete);
+            fireChannel(value, EventActions.delete, afterReady);
           }
         });
       } else {
         await GroupInfoDao().removeMembers(gid, uids).then((value) {
           if (value != null) {
-            fireChannel(value, EventActions.update);
+            fireChannel(value, EventActions.update, afterReady);
           }
         });
       }
@@ -920,74 +919,76 @@ class VoceChatService {
   Future<void> _handleUsersLog(Map<String, dynamic> usersLog) async {
     assert(usersLog.containsKey("type") && usersLog["type"] == sseUsersLog);
 
-    // try {
-    final List<dynamic> usersMap = usersLog["logs"];
-    if (usersMap.isNotEmpty) {
-      for (var userMap in usersMap) {
-        String action = userMap["action"];
+    try {
+      final List<dynamic> usersMap = usersLog["logs"];
+      if (usersMap.isNotEmpty) {
+        for (var userMap in usersMap) {
+          String action = userMap["action"];
 
-        switch (action) {
-          case "create":
-            UserInfo userInfo = UserInfo.fromJson(userMap);
-            UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
+          switch (action) {
+            case "create":
+              UserInfo userInfo = UserInfo.fromJson(userMap);
+              UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
 
-            final oldUserInfoM =
-                await UserInfoDao().getUserByUid(userInfoM.uid);
+              final oldUserInfoM =
+                  await UserInfoDao().getUserByUid(userInfoM.uid);
 
-            if (oldUserInfoM != userInfoM) {
-              await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
-                fireUser(value, EventActions.create);
-              });
-            }
-
-            await UserDbMDao.dao.updateUserInfo(userInfo);
-
-            break;
-          case "update":
-            UserInfoUpdate update = UserInfoUpdate.fromJson(userMap);
-            final old = await UserInfoDao().getUserByUid(update.uid);
-            if (old != null) {
-              final oldInfo = UserInfo.fromJson(json.decode(old.info));
-              final newInfo = UserInfo.getUpdated(oldInfo, update);
-              final newUserInfoM =
-                  UserInfoM.fromUserInfo(newInfo, old.propertiesStr);
-
-              if (old != newUserInfoM) {
-                await UserInfoDao()
-                    .addOrUpdate(newUserInfoM)
-                    .then((value) async {
-                  fireUser(value, EventActions.update);
+              if (oldUserInfoM != userInfoM) {
+                await UserInfoDao().addOrUpdate(userInfoM).then((value) async {
+                  fireUser(value, EventActions.create, afterReady);
                 });
               }
-            }
-            break;
-          case "delete":
-            UserInfo userInfo = UserInfo.fromJson(userMap);
-            UserInfoM m = UserInfoM.fromUserInfo(userInfo, "");
 
-            await UserInfoDao()
-                .removeByUid(m.uid)
-                .then((value) => fireUser(m, EventActions.delete));
+              await UserDbMDao.dao.updateUserInfo(userInfo);
 
-            if (m.uid == App.app.userDb?.uid) {
-              await App.app.authService?.selfDelete();
-            }
+              break;
+            case "update":
+              UserInfoUpdate update = UserInfoUpdate.fromJson(userMap);
+              final old = await UserInfoDao().getUserByUid(update.uid);
+              if (old != null) {
+                final oldInfo = UserInfo.fromJson(json.decode(old.info));
+                final newInfo = UserInfo.getUpdated(oldInfo, update);
+                final newUserInfoM =
+                    UserInfoM.fromUserInfo(newInfo, old.propertiesStr);
 
-            break;
-          default:
+                if (old != newUserInfoM) {
+                  await UserInfoDao()
+                      .addOrUpdate(newUserInfoM)
+                      .then((value) async {
+                    fireUser(value, EventActions.update, afterReady);
+                  });
+                }
+              }
+              break;
+            case "delete":
+              final uid = userMap["uid"] as int?;
+              if (uid != null) {
+                UserInfoM userDeleted = UserInfoM()..uid = uid;
+
+                await UserInfoDao().removeByUid(uid).then((value) =>
+                    fireUser(userDeleted, EventActions.delete, afterReady));
+
+                if (uid == App.app.userDb?.uid) {
+                  await App.app.authService?.selfDelete();
+                }
+              }
+
+              break;
+            default:
+          }
+          int version = userMap["log_id"];
+
+          await UserDbMDao.dao.updateUsersVersion(App.app.userDb!.id, version);
         }
-        int version = userMap["log_id"];
-
-        await UserDbMDao.dao.updateUsersVersion(App.app.userDb!.id, version);
       }
+    } catch (e) {
+      App.logger.severe(e);
     }
-    // } catch (e) {
-    //   App.logger.severe(e);
-    // }
   }
 
   Future<void> _handleUserSettings(Map<String, dynamic> map) async {
     assert(map["type"] == sseUserSettings);
+
     {
       // read index groups
       final readIndexGroups = map["read_index_groups"] as List?;
@@ -1000,7 +1001,7 @@ class VoceChatService {
                 .updateProperties(gid, readIndex: mid)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1019,7 +1020,7 @@ class VoceChatService {
                 .updateProperties(uid, readIndex: mid)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1040,7 +1041,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1061,7 +1062,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1082,7 +1083,7 @@ class VoceChatService {
                 .updateProperties(gid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1103,7 +1104,7 @@ class VoceChatService {
                 .updateProperties(uid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1126,7 +1127,7 @@ class VoceChatService {
               .updateProperties(gid, readIndex: mid)
               .then((value) {
             if (value != null) {
-              fireChannel(value, EventActions.update);
+              fireChannel(value, EventActions.update, afterReady);
             }
           });
         }
@@ -1144,7 +1145,7 @@ class VoceChatService {
               .updateProperties(uid, readIndex: mid)
               .then((value) {
             if (value != null) {
-              fireUser(value, EventActions.update);
+              fireUser(value, EventActions.update, afterReady);
             }
           });
         }
@@ -1164,7 +1165,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1185,7 +1186,7 @@ class VoceChatService {
                     enableMute: true, muteExpiresAt: expiredAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1203,7 +1204,7 @@ class VoceChatService {
                 .updateProperties(gid, enableMute: false, muteExpiresAt: null)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1221,7 +1222,7 @@ class VoceChatService {
                 .updateProperties(uid, enableMute: false, muteExpiresAt: null)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1242,7 +1243,7 @@ class VoceChatService {
                 .updateProperties(gid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1263,7 +1264,7 @@ class VoceChatService {
                 .updateProperties(uid, burnAfterReadSecond: expiresIn)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1273,39 +1274,46 @@ class VoceChatService {
 
     {
       // handle "add_contacts"
-      // final addContacts = map["add_contacts"] as List?;
-      // if (addContacts != null && addContacts.isNotEmpty) {
-      //   final dao = UserInfoDao();
-      //   for (var contact in addContacts) {
-      //     final contactInfo = ContactInfo.fromJson(contact["info"]);
-      //     final targetUid = contact["target_uid"] as int;
-      //     await dao
-      //         .updateContactInfo(targetUid,
-      //             status: contactInfo.status,
-      //             contactCreatedAt: contactInfo.createdAt,
-      //             contactUpdatedAt: contactInfo.updatedAt)
-      //         .then((value) {
-      //       if (value != null) {
-      //         fireUser(value, EventActions.update);
-      //       }
-      //     });
-      //   }
-      // }
+      final addContacts = map["add_contacts"] as List?;
+      if (addContacts != null && addContacts.isNotEmpty) {
+        final dao = ContactDao();
+        for (var contact in addContacts) {
+          final contactInfo = ContactInfo.fromJson(contact["info"]);
+          final targetUid = contact["target_uid"] as int;
+          await dao
+              .updateContactInfo(targetUid, contactInfo)
+              .then((updatedContactM) async {
+            if (updatedContactM != null) {
+              await UserInfoDao().getUserByUid(targetUid).then((userInfoM) {
+                if (userInfoM != null) {
+                  fireUser(userInfoM, EventActions.update, true);
+                }
+              });
+            }
+          });
+        }
+      }
     }
 
     {
       // handle "remove_contacts"
-      // final removeContacts = map["remove_contacts"] as List?;
-      // if (removeContacts != null) {
-      //   final dao = UserInfoDao();
-      //   for (final uid in removeContacts) {
-      //     await dao.updateContactInfo((uid as int), status: "").then((value) {
-      //       if (value != null) {
-      //         fireUser(value, EventActions.update);
-      //       }
-      //     });
-      //   }
-      // }
+      final removeContacts = map["remove_contacts"] as List?;
+      if (removeContacts != null) {
+        final dao = ContactDao();
+        for (final uid in removeContacts) {
+          await dao
+              .updateContact((uid as int), ContactStatus.none)
+              .then((updatedContactM) async {
+            if (updatedContactM != null) {
+              await UserInfoDao().getUserByUid(uid).then((userInfoM) {
+                if (userInfoM != null) {
+                  fireUser(userInfoM, EventActions.update, true);
+                }
+              });
+            }
+          });
+        }
+      }
     }
 
     {
@@ -1324,7 +1332,7 @@ class VoceChatService {
                 .updateProperties(uid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           } else if (gid != null) {
@@ -1332,7 +1340,7 @@ class VoceChatService {
                 .updateProperties(gid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1356,7 +1364,7 @@ class VoceChatService {
                 .updateProperties(uid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireUser(value, EventActions.update);
+                fireUser(value, EventActions.update, afterReady);
               }
             });
           } else if (gid != null) {
@@ -1364,7 +1372,7 @@ class VoceChatService {
                 .updateProperties(gid, pinnedAt: updatedAt)
                 .then((value) {
               if (value != null) {
-                fireChannel(value, EventActions.update);
+                fireChannel(value, EventActions.update, afterReady);
               }
             });
           }
@@ -1585,7 +1593,7 @@ class VoceChatService {
     try {
       ChatMsgM chatMsgM =
           ChatMsgM.fromReply(chatMsg, localMid, MsgStatus.success);
-      cumulateMsg(chatMsgM);
+      await cumulateMsg(chatMsgM);
       await cumulateDmInfo(chatMsgM);
     } catch (e) {
       App.logger.severe(e);

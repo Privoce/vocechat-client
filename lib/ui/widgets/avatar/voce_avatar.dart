@@ -93,10 +93,7 @@ class VoceAvatar extends StatelessWidget {
           width: size,
           child: ClipOval(
               child: Image.file(file!,
-                  key: key,
-                  fit: BoxFit.cover,
-                  width: size,
-                  height: size, frameBuilder:
+                  fit: BoxFit.cover, width: size, height: size, frameBuilder:
                       (context, child, frame, wasSynchronouslyLoaded) {
             if (wasSynchronouslyLoaded) {
               return child;

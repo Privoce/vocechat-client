@@ -69,8 +69,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      SizedBox(height: 30),
-      SizedBox(height: 4),
+      SizedBox(height: 34),
       VoceTextField.filled(
         emailController,
         autofocus: true,
@@ -87,7 +86,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
           isEmailValid = email.isEmail;
           showEmailAlert.value =
               emailController.text.trim().isNotEmpty && !isEmailValid;
-          enableLogin.value = isEmailValid && isPswdValid;
+          enableLogin.value = isEmailValid && isPswdValid && widget.enable;
         },
       ),
       SizedBox(
@@ -128,7 +127,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
 
           // showInvalidPswdWarning.value =
           //     pswdController.text.trim().isNotEmpty && !pswd.isValidPswd;
-          enableLogin.value = isEmailValid && isPswdValid;
+          enableLogin.value = isEmailValid && isPswdValid && widget.enable;
         },
       ),
       SizedBox(height: 24),

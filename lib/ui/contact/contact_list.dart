@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:azlistview/azlistview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -45,12 +49,17 @@ class _ContactListState extends State<ContactList>
   List<UserInfoM> _contactList = [];
   final Set<int> _uidSet = {};
 
+  bool isPreparing = false;
+
   @override
   bool get wantKeepAlive => false;
 
   @override
   void initState() {
     super.initState();
+    _contactList = widget.userList;
+    _uidSet.addAll(_contactList.map((e) => e.uid));
+
     _prepareContactList();
 
     if (widget.enableUserUpdate) {
@@ -123,6 +132,7 @@ class _ContactListState extends State<ContactList>
                       return ContactTile(
                         user,
                         isSelf,
+                        key: ObjectKey(user),
                         disabled: preSelected,
                         avatarSize: widget.avatarSize,
                         mark: ownerMark,
@@ -191,7 +201,14 @@ class _ContactListState extends State<ContactList>
     );
   }
 
-  Future<void> _onUser(UserInfoM userInfoM, EventActions action) async {
+  Future<void> _onUser(
+      UserInfoM userInfoM, EventActions action, bool afterReady) async {
+    if (enableContact) {
+      if (userInfoM.contactStatusStr != ContactStatus.added.name) {
+        return;
+      }
+    }
+
     switch (action) {
       case EventActions.create:
       case EventActions.update:
@@ -210,32 +227,32 @@ class _ContactListState extends State<ContactList>
         }
 
         // Then handle general case.
-        // if (enableContact) {
-        //   if (userInfoM.contactStatus == ContactInfoStatus.added.name) {
-        //     _uidSet.add(userInfoM.uid);
+        if (enableContact) {
+          if (userInfoM.contactStatusStr == ContactStatus.added.name) {
+            _uidSet.add(userInfoM.uid);
 
-        //     final index = _contactList
-        //         .indexWhere((element) => element.uid == userInfoM.uid);
-        //     if (index > -1) {
-        //       _contactList[index] = userInfoM;
-        //     } else {
-        //       _contactList.add(userInfoM);
-        //     }
-        //   } else {
-        //     _uidSet.remove(userInfoM.uid);
-        //     _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-        //   }
-        // } else {
-        _uidSet.add(userInfoM.uid);
-
-        final index =
-            _contactList.indexWhere((element) => element.uid == userInfoM.uid);
-        if (index > -1) {
-          _contactList[index] = userInfoM;
+            final index = _contactList
+                .indexWhere((element) => element.uid == userInfoM.uid);
+            if (index > -1) {
+              _contactList[index] = userInfoM;
+            } else {
+              _contactList.add(userInfoM);
+            }
+          } else {
+            _uidSet.remove(userInfoM.uid);
+            _contactList.removeWhere((element) => element.uid == userInfoM.uid);
+          }
         } else {
-          _contactList.add(userInfoM);
+          _uidSet.add(userInfoM.uid);
+
+          final index = _contactList
+              .indexWhere((element) => element.uid == userInfoM.uid);
+          if (index > -1) {
+            _contactList[index] = userInfoM;
+          } else {
+            _contactList.add(userInfoM);
+          }
         }
-        // }
         break;
       case EventActions.delete:
         if (_uidSet.contains(userInfoM.uid)) {
@@ -249,14 +266,18 @@ class _ContactListState extends State<ContactList>
         break;
     }
 
-    _prepareContactList();
+    if (afterReady) {
+      _prepareContactList();
+    }
   }
 
-  void _prepareContactList() async {
-    try {
-      _contactList = widget.userList;
-      _uidSet.addAll(_contactList.map((e) => e.uid));
+  void _prepareContactList() {
+    if (isPreparing) {
+      return;
+    }
 
+    isPreparing = true;
+    try {
       // A-Z sort.
       SuspensionUtil.sortListBySuspensionTag(_contactList);
 
@@ -269,5 +290,6 @@ class _ContactListState extends State<ContactList>
     } catch (e) {
       App.logger.severe(e);
     }
+    isPreparing = false;
   }
 }

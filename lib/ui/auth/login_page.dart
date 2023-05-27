@@ -138,7 +138,8 @@ class _LoginPageState extends State<LoginPage> {
                             chatServer: _chatServerM!,
                             email: widget.email,
                             password: widget.password,
-                            isRelogin: widget.isRelogin);
+                            isRelogin: widget.isRelogin,
+                            enable: true);
                       case _ServerInfoFetchingStatus.error:
                         return Center(
                           child: SizedBox(

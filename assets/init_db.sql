@@ -111,3 +111,12 @@ CREATE TABLE IF NOT EXISTS reactions (
   created_at INTEGER NOT NULL,
   FOREIGN KEY(target_mid) REFERENCES chat_msg(mid) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS contacts (
+  id TEXT NOT NULL,
+  uid INTEGER PRIMARY KEY,
+  status TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  FOREIGN KEY(uid) REFERENCES user_info(uid) ON DELETE CASCADE
+)

@@ -5,6 +5,7 @@ import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -110,15 +111,14 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
     _isUpdatingLanguage.value = true;
 
     try {
-      await UserApi().updateUserInfo(language: locale.toLanguageTag());
-
-      await UserInfoDao()
-          .updateLanguage(App.app.userDb!.uid, locale.toLanguageTag());
+      await SharedPreferenceHelper.setString("locale", locale.toLanguageTag())
+          .then((value) {
+        VoceChatApp.of(context)?.setUILocale(locale);
+      });
     } catch (e) {
       App.logger.severe(e);
     }
 
-    VoceChatApp.of(context)?.setUILocale(locale);
     _isUpdatingLanguage.value = false;
   }
 }

@@ -6,9 +6,12 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:vocechat_client/api/lib/admin_login_api.dart';
 import 'package:vocechat_client/api/lib/admin_system_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/token_api.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/token/token_renew_request.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -21,7 +24,10 @@ import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
 
 import 'models/local_kits.dart';
@@ -121,12 +127,115 @@ class SharedFuncs {
     }
   }
 
+  static Future<void> handleInvitationLink(Uri uri) async {
+    final invitationLink = uri.queryParameters["i"];
+
+    if (invitationLink == null || invitationLink.isEmpty) return;
+
+    final route = PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          InvitationLinkPastePage(initialLink: invitationLink),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(0.0, 1.0);
+        const end = Offset.zero;
+        const curve = Curves.fastOutSlowIn;
+
+        var tween =
+            Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+    );
+
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+    Navigator.of(context).push(route);
+  }
+
+  static Future<void> handleServerLink(Uri uri) async {
+    final serverUrl = uri.queryParameters["s"];
+
+    final context = navigatorKey.currentContext;
+    if (serverUrl == null || serverUrl.isEmpty || context == null) return;
+    try {
+      await ChatServerHelper()
+          .prepareChatServerM(serverUrl, showAlert: false)
+          .then((chatServer) {
+        if (chatServer != null) {
+          final route = PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                LoginPage(baseUrl: serverUrl),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0.0, 1.0);
+              const end = Offset.zero;
+              const curve = Curves.fastOutSlowIn;
+
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
+          );
+
+          Navigator.push(context, route);
+        }
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
   static bool hasPreSetServerUrl() {
     return App.app.customConfig?.hasPreSetServerUrl ?? false;
   }
 
+  static Future<void> initLocale() async {
+    String? localLocal = await SharedPreferenceHelper.getString("locale");
+    if (localLocal != null && localLocal.isNotEmpty) {
+    } else {
+      SharedPreferenceHelper.setString("locale", Platform.localeName);
+      localLocal = Platform.localeName;
+    }
+    if (navigatorKey.currentContext != null) {
+      final split = localLocal.split("-");
+      String languageTag = "", regionTag = "";
+      try {
+        languageTag = split[0];
+        regionTag = split[2];
+      } catch (e) {
+        App.logger.warning(e);
+      }
+      final locale = Locale(languageTag, regionTag);
+      VoceChatApp.of(navigatorKey.currentContext!)?.setUILocale(locale);
+    }
+  }
+
   static bool isSelf(int? uid) {
     return uid == App.app.userDb?.uid;
+  }
+
+  static Future<void> parseLink(Uri uri) async {
+    if (uri.host == "voce.chat" && uri.path == '/url') {
+      if (uri.queryParameters.containsKey('s')) {
+        // server url (visitor mode in Web client only)
+        await handleServerLink(uri);
+        return;
+      } else if (uri.queryParameters.containsKey('i')) {
+        // invitation link (both web and mobile client)
+        await handleInvitationLink(uri);
+        return;
+      }
+    }
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $uri');
+    }
   }
 
   /// Parse mention info in text and markdowns.
@@ -335,29 +444,54 @@ class SharedFuncs {
 
   /// Get or update server information, including server name, description and
   /// logo image.
-  static Future<bool> updateServerInfo() async {
+  static Future<ChatServerM?> updateServerInfo(ChatServerM chatServerM,
+      {bool enableFire = false}) async {
     try {
-      final orgInfoRes = await AdminSystemApi().getOrgInfo();
+      final fullUrl = chatServerM.fullUrl;
+      final orgInfoRes = await AdminSystemApi(serverUrl: fullUrl).getOrgInfo();
       if (orgInfoRes.statusCode == 200 && orgInfoRes.data != null) {
         final orgInfo = orgInfoRes.data!;
-        App.app.chatServerM.properties = ChatServerProperties(
+        chatServerM.properties = ChatServerProperties(
             serverName: orgInfo.name, description: orgInfo.description ?? "");
 
-        final logoRes = await ResourceApi().getOrgLogo();
+        final logoRes = await ResourceApi(serverUrl: fullUrl).getOrgLogo();
         if (logoRes.statusCode == 200 && logoRes.data != null) {
-          App.app.chatServerM.logo = logoRes.data!;
+          chatServerM.logo = logoRes.data!;
         }
 
-        App.app.chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
-        await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
+        final adminLoginRes =
+            await AdminLoginApi(serverUrl: fullUrl).getConfig();
+        if (adminLoginRes.statusCode == 200 && adminLoginRes.data != null) {
+          chatServerM.properties = ChatServerProperties(
+              serverName: orgInfo.name,
+              description: orgInfo.description ?? "",
+              config: adminLoginRes.data);
+        }
 
-        App.app.chatService.fireOrgInfo(App.app.chatServerM);
+        final adminSysCommonInfo =
+            await AdminSystemApi(serverUrl: fullUrl).getCommonInfo();
+        if (adminSysCommonInfo.statusCode == 200 &&
+            adminSysCommonInfo.data != null) {
+          final commonInfo = adminSysCommonInfo.data!;
+          chatServerM.properties = ChatServerProperties(
+              serverName: orgInfo.name,
+              description: orgInfo.description ?? "",
+              config: adminLoginRes.data,
+              commonInfo: commonInfo);
+        }
 
-        return true;
+        chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
+        await ChatServerDao.dao.addOrUpdate(chatServerM);
+
+        if (enableFire) {
+          App.app.chatService.fireOrgInfo(chatServerM);
+        }
+
+        return chatServerM;
       }
     } catch (e) {
       App.logger.severe(e);
     }
-    return false;
+    return null;
   }
 }

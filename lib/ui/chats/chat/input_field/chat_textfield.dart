@@ -712,6 +712,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
                 bool microphonePermissionDenied =
                     (await Permission.microphone.request()) !=
                         PermissionStatus.granted;
+
                 if (cameraPermissionDenied || microphonePermissionDenied) {
                   showAppAlert(
                       context: context,

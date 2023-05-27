@@ -144,7 +144,10 @@
     "logoutWarningWithQM":"您确认要登出吗？",
 
     "male":"男",
+    "markdown":"Markdown",
     "message": "发消息",
+    "messageWQuantifier":"条消息",
+    "messagesWQuantifier":"条消息",
     "messageDetail":"消息全文",
     "messageDeletionFailed":"消息删除失败。",
     "messageHasBeenDeleted":"此消息已被删除。",
@@ -163,6 +166,7 @@
     "next": "下一步",
     "nickname":"昵称",  
     "noContent":"没有内容",
+    "notificationLanguage":"通知语言",
     "open":"打开",
     "openWithOtherApps":"用其他 App 打开",
     "off":"关闭",
@@ -189,6 +193,8 @@
     "releaseToSend":"松开发送",
     "removeContact":"移除联系人",
     "removeContactWarning":"联系人将从列表中被移除，但您仍然可以聊天。所有消息和数据都将保留。",
+    "removeFromServer":"从服务器移除",
+    "removeFromServerWarning":"用户将从服务器中被移除。",
     "rememberMe": "记住我",
     "reply": "回复",
     "repliedMessageDeleted":"被回复的消息已被删除。",
@@ -201,6 +207,7 @@
 
     "save": "保存",
     "savedItems": "保存的消息",
+    "scanQrCode":"扫描二维码",
     "scanQrCodeToRegister": "扫描二维码来注册",
     "searching":"搜索中",
     "second":"秒",
@@ -218,6 +225,7 @@
     "switchServer": "切换服务器",
 
     "tapForMore":"点按查看更多",
+    "text":"文本",
     "to":"至",
     "today":"今天",
     "transferOwnership":"转让所有权",

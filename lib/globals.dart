@@ -2,6 +2,7 @@ library globals;
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/app.dart';
 
 // To use globals, import package as follow:
 // import 'package:vocechat_client/globals.dart' as globals;
@@ -18,12 +19,8 @@ final ValueNotifier<int> unreadCountSum = ValueNotifier(0);
 /// private channels need be deleted due to safety concerns.
 bool enablePublicChannels = true;
 
-const bool enableContact = false;
-
-/// A global variable showing whether to allow self message tile.
-///
-/// A self message tile aligns to the right side of the screen, and is used to
-/// display messages sent by the user.
-const bool enableSelfMsgTile = false;
+bool get enableContact =>
+    App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
+    true;
 
 EventBus eventBus = EventBus();

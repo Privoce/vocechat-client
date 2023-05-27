@@ -136,7 +136,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
           widget.userInfoNotifier.value.uid,
           burnAfterReadSecond: expiresIn);
       if (userInfoM != null) {
-        App.app.chatService.fireUser(userInfoM, EventActions.update);
+        App.app.chatService.fireUser(userInfoM, EventActions.update, true);
         return true;
       }
     }
