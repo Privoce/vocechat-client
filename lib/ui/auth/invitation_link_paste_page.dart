@@ -236,7 +236,6 @@ class InvitationLinkPastePage extends StatelessWidget {
               // and is logged in.
               if (uri.pathSegments.length == 2 &&
                   uri.pathSegments[0] == "invite_private") {
-                // If the link is a register link, then go to register page.
                 Navigator.of(context).pop();
                 eventBus.fire(PrivateChannelInvitationLinkEvent(uri));
               } else {

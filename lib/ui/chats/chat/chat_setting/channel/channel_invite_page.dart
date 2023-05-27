@@ -15,15 +15,18 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/chats/chats/new/invite_user_page.dart';
 
-enum LinkStatus { loading, ready, error }
-
-class InviteUserPage extends StatefulWidget {
+class ChannelInvitePage extends StatefulWidget {
   @override
-  State<InviteUserPage> createState() => _InviteUserPageState();
+  State<ChannelInvitePage> createState() => _ChannelInvitePageState();
+
+  final int gid;
+
+  const ChannelInvitePage(this.gid, {super.key});
 }
 
-class _InviteUserPageState extends State<InviteUserPage> {
+class _ChannelInvitePageState extends State<ChannelInvitePage> {
   final TextEditingController _linkController = TextEditingController();
 
   final ValueNotifier<LinkStatus> _linkStatus =
@@ -203,7 +206,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
 
     try {
       final groupApi = GroupApi();
-      final res = await groupApi.getRegMagicLink(expiredIn: expiredIn * 3600);
+      final res = await groupApi.getInvitePrivateMagicLink(widget.gid,
+          expiredIn: expiredIn * 3600);
 
       if (res.statusCode == 200) {
         return _tempChangeInvitationLinkDomain(res.data as String);
@@ -229,7 +233,8 @@ class _InviteUserPageState extends State<InviteUserPage> {
     }
 
     final uri = Uri.parse(originalLink);
-    final newUrl = "${uri.scheme}://${uri.host}/#/register?${uri.query}";
+
+    final newUrl = "${uri.scheme}://${uri.host}/#${uri.fragment}?${uri.query}";
 
     final wrappedUrl = "https://voce.chat/url?i=${Uri.encodeComponent(newUrl)}";
 
