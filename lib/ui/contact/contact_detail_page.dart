@@ -242,7 +242,6 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
             text: AppLocalizations.of(context)!.continueStr,
             isDangerAction: true,
             action: () async {
-              Navigator.pop(context);
               removeContactFromServer(userInfoM);
             }));
   }
