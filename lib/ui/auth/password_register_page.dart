@@ -17,8 +17,13 @@ class PasswordRegisterPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
   ChatServerM chatServer;
   String? magicToken;
+  Uri? invitationLink;
 
-  PasswordRegisterPage({Key? key, required this.chatServer, this.magicToken})
+  PasswordRegisterPage(
+      {Key? key,
+      required this.chatServer,
+      this.magicToken,
+      this.invitationLink})
       : super(key: key) {
     _bgDeco = BoxDecoration(
         gradient: RadialGradient(
@@ -356,7 +361,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
         email: email, password: password, magicToken: magicToken);
     Navigator.of(context).push(MaterialPageRoute(
         builder: ((context) =>
-            RegisterNamingPage(registerReq, rememberMe, widget.chatServer))));
+            RegisterNamingPage(registerReq, rememberMe, widget.chatServer, widget.invitationLink))));
   }
 
   void _showEmailFormattingErrorSnack() {

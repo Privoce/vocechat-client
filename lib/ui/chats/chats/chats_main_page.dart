@@ -1,10 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/api/lib/group_api.dart';
+import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
 import 'package:vocechat_client/globals.dart' as globals;
+import 'package:vocechat_client/globals.dart';
+import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_drawer.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contacts_page.dart';
@@ -40,6 +47,12 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final Uri? invitationLink =
+        ModalRoute.of(context)!.settings.arguments as Uri?;
+    if (invitationLink != null) {
+      eventBus.fire(PrivateChannelInvitationLinkEvent(invitationLink));
+    }
+
     return ValueListenableBuilder<bool>(
         valueListenable: disableGesture,
         builder: (context, disableGesture, _) {

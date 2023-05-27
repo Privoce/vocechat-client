@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -223,20 +225,37 @@ class InvitationLinkPastePage extends StatelessWidget {
       final userApi = UserApi(serverUrl: apiPath);
       final magicToken = uri.queryParameters["magic_token"] as String;
 
-      final res = await userApi.checkMagicToken(magicToken);
-      if (res.statusCode == 200 && res.data == true) {
-        final chatServerM =
-            await ChatServerHelper().prepareChatServerM(apiPath);
-        if (chatServerM != null) {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PasswordRegisterPage(
-                  chatServer: chatServerM, magicToken: magicToken)));
+      await userApi.checkMagicToken(magicToken).then((res) async {
+        if (res.statusCode == 200 && res.data == true) {
+          await ChatServerHelper()
+              .prepareChatServerM(apiPath)
+              .then((chatServerM) {
+            if (chatServerM?.fullUrl == App.app.chatServerM.fullUrl &&
+                App.app.userDb?.loggedIn != 0) {
+              // Current chat server is the same as the invitation link,
+              // and is logged in.
+              if (uri.pathSegments.length == 2 &&
+                  uri.pathSegments[0] == "invite_private") {
+                // If the link is a register link, then go to register page.
+                Navigator.of(context).pop();
+                eventBus.fire(PrivateChannelInvitationLinkEvent(uri));
+              } else {
+                Navigator.of(context).pop();
+              }
+            } else if (chatServerM != null) {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PasswordRegisterPage(
+                      chatServer: chatServerM,
+                      magicToken: magicToken,
+                      invitationLink: uri)));
+            }
+          });
+        } else {
+          App.logger.warning("Link not valid.");
+          _showInvalidLinkWarning(context);
+          return false;
         }
-      } else {
-        App.logger.warning("Link not valid.");
-        _showInvalidLinkWarning(context);
-        return false;
-      }
+      });
     } catch (e) {
       App.logger.severe(e);
       _showInvalidLinkWarning(context);

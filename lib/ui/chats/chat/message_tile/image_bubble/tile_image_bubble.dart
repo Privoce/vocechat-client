@@ -161,7 +161,7 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
     imageFile = widget.imageFile;
     getImageList = widget.getImageList;
 
-    secondaryPrepare();
+    // secondaryPrepare();
 
     // try {
     //   final detail =
@@ -224,7 +224,7 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
   }
 
   void secondaryPrepare() async {
-    widget.tileData!.secondaryPrepare().then((value) {
+    widget.tileData?.secondaryPrepare().then((value) {
       if (mounted) {
         setState(() {
           try {

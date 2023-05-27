@@ -1,11 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
@@ -39,6 +43,8 @@ class _ChatsPageState extends State<ChatsPage>
 
   final Map<String, ChatTileData> chatTileMap = {};
 
+  Completer<void> initialListDataCompleter = Completer();
+
   int count = 0;
 
   @override
@@ -67,6 +73,16 @@ class _ChatsPageState extends State<ChatsPage>
       App.app.chatService.subscribeGroups(_onChannel);
       App.app.chatService.subscribeUsers(_onUser);
       App.app.chatService.subscribeRefresh(_onRefresh);
+    });
+
+    // test
+    // final url =
+    //     "https://privoce.voce.chat/invite_private/226?magic_token=8e2d6785ddbccad5e61cefdb48ac8d98bc4c5c15dff84a2aba1bc35f1d469f4202000000e200000000000000060000000000000034303438333496e97a6400000000";
+    // final uri = Uri.parse(url);
+    // handleInvitationLink(uri);
+
+    eventBus.on<PrivateChannelInvitationLinkEvent>().listen((event) {
+      handleInvitationLink(event.uri);
     });
   }
 
@@ -259,16 +275,24 @@ class _ChatsPageState extends State<ChatsPage>
     if (mounted) {
       setState(() {});
     }
-  }
 
-  void onTapFromGid(int gid) async {
-    final chatId = SharedFuncs.getChatId(gid: gid);
-    if (chatTileMap.containsKey(chatId)) {
-      onTap(chatTileMap[chatId]!);
-    } else {
-      return;
+    if (!initialListDataCompleter.isCompleted) {
+      initialListDataCompleter.complete();
     }
   }
+
+  /// For invitation link only.
+  // void onTapFromGid(int gid) async {
+  //   if (!initialListDataCompleter.isCompleted) {
+  //     await initialListDataCompleter.future.then((value) {});
+  //   }
+  //   final chatId = SharedFuncs.getChatId(gid: gid);
+  //   if (chatTileMap.containsKey(chatId)) {
+  //     onTap(chatTileMap[chatId]!);
+  //   } else {
+  //     return;
+  //   }
+  // }
 
   void onTap(ChatTileData tileData) async {
     if (tileData.isChannel) {
@@ -365,5 +389,71 @@ class _ChatsPageState extends State<ChatsPage>
       count += element.unreadCount.value;
     }
     unreadCountSum.value = count;
+  }
+
+  void handleInvitationLink(Uri uri) async {
+    print("1: uri: $uri");
+    final pathSegments = uri.pathSegments;
+
+    if (pathSegments.length < 2) {
+      return;
+    }
+
+    if (pathSegments[0] == 'invite_private') {
+      final gid = int.tryParse(pathSegments[1]);
+      print("2: gid: $gid");
+
+      if (gid == null) return;
+
+      if (!initialListDataCompleter.isCompleted) {
+        await initialListDataCompleter.future.then((_) {
+          pushToChannel(gid);
+        });
+      } else {
+        pushToChannel(gid);
+      }
+    }
+  }
+
+  void pushToChannel(int gid) async {
+    print("3: pushToChannel: $gid");
+    final chatId = SharedFuncs.getChatId(gid: gid);
+    if (chatId == null) return;
+    print("4");
+    if (chatTileMap.containsKey(chatId)) {
+      print("5");
+      onTap(chatTileMap[chatId]!);
+    } else {
+      print("6");
+      final groupInfoM = await GroupInfoDao().getGroupByGid(gid);
+      if (groupInfoM != null) {
+        final tileData = await ChatTileData.fromChannel(groupInfoM);
+        final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
+        chatTileMap.addAll({chatId!: tileData});
+
+        onTap(tileData);
+      } else {
+        await GroupInfoDao().getGroupByGid(gid).then((groupInfoM) async {
+          if (groupInfoM != null) {
+            return;
+          } else {
+            await GroupApi()
+                .addMembers(gid, [App.app.userDb!.uid]).then((response) async {
+              if (response.statusCode == 200) {
+                App.logger.info("addMembers success, gid: $gid");
+                await prepareChats().then((_) {
+                  final chatId = SharedFuncs.getChatId(gid: gid);
+                  if (chatId != null) {
+                    onTap(chatTileMap[chatId]!);
+                  }
+                });
+              } else {
+                App.logger.severe("addMembers failed, gid: $gid");
+              }
+            });
+          }
+        });
+      }
+    }
   }
 }
