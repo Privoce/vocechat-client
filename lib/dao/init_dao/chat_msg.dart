@@ -304,7 +304,8 @@ class ChatMsgM extends Equatable with M {
   }
 
   ChatMsgM.fromMsg(ChatMsg chatMsg, this.localMid, MsgStatus status) {
-    id = chatMsg.mid.toString();
+    // id = chatMsg.mid.toString();
+    id = localMid;
     mid = chatMsg.mid;
     fromUid = chatMsg.fromUid;
 
@@ -322,7 +323,7 @@ class ChatMsgM extends Equatable with M {
 
     gid = chatMsg.target["gid"] ?? -1;
 
-    this.statusStr = status.name;
+    statusStr = status.name;
     createdAt = chatMsg.createdAt;
   }
 

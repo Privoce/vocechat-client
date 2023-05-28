@@ -21,7 +21,7 @@ class SingleImageGetters {
               ValueNotifier<File> imageNotifier,
               Function(int progress, int total) onReceiveProgress)?
           getServerImageFile}) {
-    this.getLocalImageFile = () async {
+    getLocalImageFile = () async {
       final data = await getInitImageFile();
       isOriginal = data?.isOriginal ?? false;
       return data;
