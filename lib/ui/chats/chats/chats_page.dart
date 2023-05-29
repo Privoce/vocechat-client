@@ -281,19 +281,6 @@ class _ChatsPageState extends State<ChatsPage>
     }
   }
 
-  /// For invitation link only.
-  // void onTapFromGid(int gid) async {
-  //   if (!initialListDataCompleter.isCompleted) {
-  //     await initialListDataCompleter.future.then((value) {});
-  //   }
-  //   final chatId = SharedFuncs.getChatId(gid: gid);
-  //   if (chatTileMap.containsKey(chatId)) {
-  //     onTap(chatTileMap[chatId]!);
-  //   } else {
-  //     return;
-  //   }
-  // }
-
   void onTap(ChatTileData tileData) async {
     if (tileData.isChannel) {
       GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
@@ -322,8 +309,10 @@ class _ChatsPageState extends State<ChatsPage>
       });
     } else {
       GlobalKey<AppMentionsState> mentionsKey = GlobalKey<AppMentionsState>();
+
       ChatPageController controller =
           ChatPageController.user(userInfoMNotifier: tileData.userInfoM!);
+
       controller.prepare().then((value) {
         final unreadCount = tileData.unreadCount.value;
         unreadCountSum.value -= unreadCount;
@@ -392,7 +381,6 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   void handleInvitationLink(Uri uri) async {
-    print("1: uri: $uri");
     final pathSegments = uri.pathSegments;
 
     if (pathSegments.length < 2) {
@@ -401,7 +389,6 @@ class _ChatsPageState extends State<ChatsPage>
 
     if (pathSegments[0] == 'invite_private') {
       final gid = int.tryParse(pathSegments[1]);
-      print("2: gid: $gid");
 
       if (gid == null) return;
 
@@ -416,22 +403,17 @@ class _ChatsPageState extends State<ChatsPage>
   }
 
   void pushToChannel(int gid) async {
-    print("3: pushToChannel: $gid");
     final chatId = SharedFuncs.getChatId(gid: gid);
     if (chatId == null) return;
-    print("4");
+
     if (chatTileMap.containsKey(chatId)) {
-      print("5");
       onTap(chatTileMap[chatId]!);
     } else {
-      print("6");
       final groupInfoM = await GroupInfoDao().getGroupByGid(gid);
       if (groupInfoM != null) {
         final tileData = await ChatTileData.fromChannel(groupInfoM);
         final chatId = SharedFuncs.getChatId(gid: groupInfoM.gid);
         chatTileMap.addAll({chatId!: tileData});
-
-        onTap(tileData);
       } else {
         await GroupInfoDao().getGroupByGid(gid).then((groupInfoM) async {
           if (groupInfoM != null) {
