@@ -122,8 +122,6 @@ class _VoceChatPageState extends State<VoceChatPage>
   @override
   void initState() {
     super.initState();
-    print(
-        "########### contact: ${widget.userInfoNotifier?.value.contactStatus}");
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.jumpTo(0);
