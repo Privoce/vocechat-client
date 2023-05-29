@@ -48,7 +48,6 @@ class _SingleImagePageState extends State<SingleImagePage> {
 
   @override
   Widget build(BuildContext context) {
-    print("######### ${widget.initImageFile.path}");
     final child = ValueListenableBuilder<File>(
         valueListenable: _imageNotifier,
         builder: (context, imageFile, _) {

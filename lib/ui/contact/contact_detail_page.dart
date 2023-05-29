@@ -354,14 +354,6 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         await ContactDao()
             .updateContact(_userInfoMNotifier.value.uid, ContactStatus.blocked)
             .then((upatedContactM) async {
-          if (upatedContactM != null) {
-            final updatedUserInfoM = _userInfoMNotifier.value
-              ..contactStatusStr = upatedContactM.status
-              ..contactUpdatedAt = upatedContactM.updatedAt;
-
-            App.app.chatService
-                .fireUser(updatedUserInfoM, EventActions.update, true);
-          }
           dismissBusyDialog();
         });
       } else {
