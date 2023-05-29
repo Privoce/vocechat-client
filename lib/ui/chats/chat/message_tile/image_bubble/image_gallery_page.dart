@@ -2,12 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/main.dart';
-import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
@@ -117,8 +116,8 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
             );
           } else {
             return Center(
-                child: Container(
-                    color: Colors.amber, child: Text("cant find file")));
+                child: Text(AppLocalizations.of(context)!.imageBeDeletedDes,
+                    style: TextStyle(color: Colors.white)));
           }
         });
   }

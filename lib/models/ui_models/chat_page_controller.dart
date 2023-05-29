@@ -239,7 +239,7 @@ class ChatPageController {
   Future<void> loadHistory({bool enableServerHistory = true}) async {
     if (isLoadingHistory.value) return;
 
-    App.logger.info("Loading server history");
+    App.logger.info("Loading history");
 
     isLoadingHistory.value = true;
 

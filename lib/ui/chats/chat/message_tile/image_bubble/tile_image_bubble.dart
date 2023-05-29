@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
@@ -71,7 +70,7 @@ class VoceTileImageBubble extends StatefulWidget {
     return ImageGalleryData(
         imageItemList: (preList
                     ?.map((e) => SingleImageGetters(
-                          getInitImageFile: () => getLocalImageFileData(e),
+                          getInitImageFile: () => getInitImageFileData(e),
                           getServerImageFile:
                               (isOriginal, imageNotifier, onReceiveProgress) =>
                                   getServerImageFileData(isOriginal, e,
@@ -83,7 +82,7 @@ class VoceTileImageBubble extends StatefulWidget {
                 []) +
             [
               SingleImageGetters(
-                getInitImageFile: () => getLocalImageFileData(centerMsgM),
+                getInitImageFile: () => getInitImageFileData(centerMsgM),
                 getServerImageFile:
                     (isOriginal, imageNotifier, onReceiveProgress) =>
                         getServerImageFileData(isOriginal, centerMsgM,
@@ -92,7 +91,7 @@ class VoceTileImageBubble extends StatefulWidget {
             ] +
             (afterList
                     ?.map((e) => SingleImageGetters(
-                          getInitImageFile: () => getLocalImageFileData(e),
+                          getInitImageFile: () => getInitImageFileData(e),
                           getServerImageFile:
                               (isOriginal, imageNotifier, onReceiveProgress) =>
                                   getServerImageFileData(isOriginal, e,
@@ -103,7 +102,7 @@ class VoceTileImageBubble extends StatefulWidget {
         initialPage: initPage);
   }
 
-  static Future<SingleImageData?> getLocalImageFileData(
+  static Future<SingleImageData?> getInitImageFileData(
       ChatMsgM chatMsgM) async {
     final localImageNormal =
         await FileHandler.singleton.getLocalImageNormal(chatMsgM);
@@ -114,6 +113,11 @@ class VoceTileImageBubble extends StatefulWidget {
           await FileHandler.singleton.getLocalImageThumb(chatMsgM);
       if (localImageThumb != null) {
         return SingleImageData(imageFile: localImageThumb, isOriginal: false);
+      } else {
+        final imageThumb = await FileHandler.singleton.getImageThumb(chatMsgM);
+        if (imageThumb != null) {
+          return SingleImageData(imageFile: imageThumb, isOriginal: false);
+        }
       }
     }
     return null;
