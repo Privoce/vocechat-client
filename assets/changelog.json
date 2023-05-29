@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.93", "build_num": 63},
+    "latest": {"version": "0.2.94", "build_num": 64},
     "logs":  [
+        {"time": 1685330425671, "version": "0.2.94", "build_num": 64, "updates": [
+            "- fix: contact status update error."
+        ]},
         {"time": 1685176021522, "version": "0.2.93", "build_num": 63, "updates": [
             "- add: right align messages sent by yourself (settings in Web client only).",
             "- add: contact mode (settings in Web client only).",
