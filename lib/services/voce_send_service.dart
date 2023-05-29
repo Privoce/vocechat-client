@@ -63,7 +63,7 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
 
@@ -117,7 +117,7 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromReply(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
 
@@ -219,7 +219,7 @@ class VoceSendService {
         detail: detail.toJson());
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
     });
@@ -277,7 +277,7 @@ class VoceSendService {
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
     });
@@ -329,7 +329,7 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
 
@@ -397,7 +397,7 @@ class VoceSendService {
         detail: detail.toJson());
     ChatMsgM chatMsgM = ChatMsgM.fromReply(message, localMid, MsgStatus.fail);
 
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
 
@@ -500,7 +500,7 @@ class VoceSendService {
         detail: detail.toJson());
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
     });
@@ -558,7 +558,7 @@ class VoceSendService {
         detail: detail.toJson());
 
     ChatMsgM chatMsgM = ChatMsgM.fromMsg(message, localMid, MsgStatus.fail);
-    await chatMsgDao.add(chatMsgM).then((_) async {
+    await chatMsgDao.addOrUpdate(chatMsgM).then((_) async {
       final toBeFired = ChatMsgM.fromMsg(message, localMid, MsgStatus.sending);
       App.app.chatService.fireMsg(toBeFired, true);
     });
@@ -778,24 +778,10 @@ class VoceSendService {
     }
   }
 
-  Future<void> resend(ChatMsgM chatMsgM) async {
-    if (chatMsgM.isGroupMsg) {
-      if (chatMsgM.detailContentType == MsgContentType.text) {
-        final content =
-            chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content ?? '';
-        await sendChannelText(chatMsgM.gid, content,
-            resendLocalMid: chatMsgM.localMid);
-      } else if (chatMsgM.detailContentType == MsgContentType.file) {
-        final file = await FileHandler.singleton.getLocalFile(chatMsgM);
-        await sendChannelFile(chatMsgM.gid, file?.path ?? "");
-      }
-    } else {}
-  }
-
   Future<int> _getFakeMid() async {
-    // return -1;
-    final maxMid = await ChatMsgDao().getMaxMid();
-    final awaitingTaskCount = SendTaskQueue.singleton.length;
-    return maxMid + awaitingTaskCount + 1;
+    return -1;
+    // final maxMid = await ChatMsgDao().getMaxMid();
+    // final awaitingTaskCount = SendTaskQueue.singleton.length;
+    // return maxMid + awaitingTaskCount + 1;
   }
 }
