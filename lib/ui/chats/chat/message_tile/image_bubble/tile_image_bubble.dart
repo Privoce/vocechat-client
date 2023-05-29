@@ -21,22 +21,26 @@ class VoceTileImageBubble extends StatefulWidget {
 
   final bool isReply;
 
-  VoceTileImageBubble.tileData({Key? key, required MsgTileData this.tileData})
-      : chatMsgM = tileData.chatMsgMNotifier.value,
+  VoceTileImageBubble.tileData({
+    Key? key,
+    required MsgTileData this.tileData,
+  })  : chatMsgM = tileData.chatMsgMNotifier.value,
         imageFile = tileData.imageFile,
         isReply = false,
         super(key: key) {
-    getImageList = () => defaultGetImageList(chatMsgM!);
+    getImageList = () => defaultGetImageList(tileData!.chatMsgMNotifier.value);
   }
 
-  VoceTileImageBubble.data({
+  VoceTileImageBubble.reply({
     Key? key,
-    this.chatMsgM,
-    this.imageFile,
-    required this.getImageList,
-    this.isReply = false,
-  })  : tileData = null,
-        super(key: key);
+    required MsgTileData this.tileData,
+  })  : chatMsgM = tileData.repliedMsgMNotifier.value,
+        imageFile = tileData.repliedImageFile,
+        isReply = true,
+        super(key: key) {
+    getImageList =
+        () => defaultGetImageList(tileData!.repliedMsgMNotifier.value!);
+  }
 
   static Future<ImageGalleryData> getSingleImageList(File imageFile) async {
     return ImageGalleryData(imageItemList: [
@@ -163,14 +167,18 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
 
     secondaryPrepare();
 
-    try {
-      final detail =
-          json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
-      detailProperties = detail['properties'];
-      width = detailProperties?["width"] ?? 240;
-      height = detailProperties?["height"] ?? 140;
-    } catch (e) {
-      App.logger.severe(e);
+    if (!widget.isReply) {
+      // If the message is of reply type, tile data is empty, as the iamge is passed
+      // through [.data] constructor.
+      try {
+        final detail =
+            json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
+        detailProperties = detail['properties'];
+        width = detailProperties?["width"] ?? 240;
+        height = detailProperties?["height"] ?? 140;
+      } catch (e) {
+        App.logger.severe(e);
+      }
     }
   }
 
@@ -201,24 +209,32 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
   }
 
   void secondaryPrepare() async {
-    widget.tileData?.secondaryPrepare().then((value) {
-      if (mounted) {
-        setState(() {
-          try {
-            final detail =
-                json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
-            detailProperties = detail['properties'];
-            width = detailProperties?["width"] ?? 240;
-            height = detailProperties?["height"] ?? 140;
+    if (widget.tileData != null) {
+      widget.tileData?.secondaryPrepare().then((value) {
+        if (mounted) {
+          setState(() {
+            try {
+              final detail =
+                  json.decode(widget.tileData!.chatMsgMNotifier.value.detail);
+              detailProperties = detail['properties'];
+              width = detailProperties?["width"] ?? 240;
+              height = detailProperties?["height"] ?? 140;
 
-            imageFile = widget.tileData!.imageFile;
-            getImageList = () => VoceTileImageBubble.defaultGetImageList(
-                widget.tileData!.chatMsgMNotifier.value);
-          } catch (e) {
-            App.logger.severe(e);
-          }
-        });
-      }
-    });
+              if (widget.isReply) {
+                imageFile = widget.tileData!.repliedImageFile;
+                getImageList = () => VoceTileImageBubble.defaultGetImageList(
+                    widget.tileData!.repliedMsgMNotifier.value!);
+              } else {
+                imageFile = widget.tileData!.imageFile;
+                getImageList = () => VoceTileImageBubble.defaultGetImageList(
+                    widget.tileData!.chatMsgMNotifier.value);
+              }
+            } catch (e) {
+              App.logger.severe(e);
+            }
+          });
+        }
+      });
+    } else if (widget.isReply) {}
   }
 }

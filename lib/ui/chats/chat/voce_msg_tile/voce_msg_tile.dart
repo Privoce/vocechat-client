@@ -86,11 +86,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return SizeTransition(
       sizeFactor: widget.sizeFactor,
       child: GestureDetector(
-        onTap: () {
-          // print(widget.tileData.chatMsgMNotifier.value.values);
-          // print(widget.tileData.imageFile?.path);
-          // print(widget.tileData.needSecondaryPrepare);
-        },
+        // onTap: () {
+        //   print(widget.tileData.chatMsgMNotifier.value.values);
+        //   // print(widget.tileData.imageFile?.path);
+        //   // print(widget.tileData.needSecondaryPrepare);
+        // },
         child: ValueListenableBuilder<UserInfoM?>(
             key: widget.key,
             valueListenable: widget.tileData.pinnedByUserInfoM,

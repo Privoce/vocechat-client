@@ -103,7 +103,9 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
     return FutureBuilder<SingleImageData?>(
         future: item.getLocalImageFile(),
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData &&
+              snapshot.data != null) {
             return SingleImagePage(
               initImageFile: snapshot.data!.imageFile,
               singleImageGetters: item,
@@ -114,26 +116,11 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
               },
             );
           } else {
-            return Center(child: Text("cant find file"));
+            return Center(
+                child: Container(
+                    color: Colors.amber, child: Text("cant find file")));
           }
         });
-
-    // }
-  }
-
-  Future<SingleImageData?> _getLocalImageFileData(ChatMsgM chatMsgM) async {
-    final localImageNormal =
-        await FileHandler.singleton.getLocalImageNormal(chatMsgM);
-    if (localImageNormal != null) {
-      return SingleImageData(imageFile: localImageNormal, isOriginal: true);
-    } else {
-      final localImageThumb =
-          await FileHandler.singleton.getLocalImageThumb(chatMsgM);
-      if (localImageThumb != null) {
-        return SingleImageData(imageFile: localImageThumb, isOriginal: false);
-      }
-    }
-    return null;
   }
 
   Widget _buildButtons() {
