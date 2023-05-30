@@ -35,7 +35,8 @@ import 'models/local_kits.dart';
 
 class SharedFuncs {
   // local variables.
-  static final Completer<bool> _tokenCompleter = Completer();
+  static Completer<bool> _tokenCompleter = Completer();
+  static bool isRenewingToken = false;
 
   /// Clear all local data
   static Future<void> clearLocalData() async {
@@ -303,15 +304,21 @@ class SharedFuncs {
 
   /// Renew access token and refresh token, and do related data storage.
   static Future<bool> renewAuthToken({bool forceRefresh = false}) async {
-    if (!_tokenCompleter.isCompleted) {
+    if (isRenewingToken) {
       return _tokenCompleter.future;
     }
 
+    _tokenCompleter = Completer();
+    isRenewingToken = true;
     App.app.statusService?.fireTokenLoading(TokenStatus.connecting);
+
     try {
       if (App.app.userDb == null) {
         App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
+
         _tokenCompleter.complete(false);
+        isRenewingToken = false;
+        return _tokenCompleter.future;
       }
 
       // Check whether old token expires:
@@ -326,7 +333,10 @@ class SharedFuncs {
           App.app.statusService?.fireTokenLoading(TokenStatus.successful);
           App.logger
               .config("Token is still valid. ExpiresAt: $oldTokenExpiresAt");
-          _tokenCompleter.complete(false);
+
+          _tokenCompleter.complete(true);
+          isRenewingToken = false;
+          return _tokenCompleter.future;
         }
       }
 
@@ -346,22 +356,30 @@ class SharedFuncs {
         await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
 
         _tokenCompleter.complete(true);
+        isRenewingToken = false;
+        return _tokenCompleter.future;
       } else {
         if (res.statusCode == 401 || res.statusCode == 403) {
           App.logger
               .severe("Renew Token Failed, Status code: ${res.statusCode}");
 
           App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
+
+          App.logger
+              .severe("Renew Token Failed, Status code: ${res.statusCode}");
+
           _tokenCompleter.complete(false);
+          isRenewingToken = false;
+          return _tokenCompleter.future;
         }
       }
-      App.logger.severe("Renew Token Failed, Status code: ${res.statusCode}");
     } catch (e) {
       App.logger.severe(e);
       App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
     }
 
     _tokenCompleter.complete(false);
+    isRenewingToken = false;
     return _tokenCompleter.future;
   }
 
