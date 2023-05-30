@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -33,6 +34,9 @@ import 'package:vocechat_client/ui/auth/server_page.dart';
 import 'models/local_kits.dart';
 
 class SharedFuncs {
+  // local variables.
+  static final Completer<bool> _tokenCompleter = Completer();
+
   /// Clear all local data
   static Future<void> clearLocalData() async {
     if (navigatorKey.currentState?.context == null) return;
@@ -297,32 +301,17 @@ class SharedFuncs {
     return device;
   }
 
-  /// Read assets/custom_configs.yaml and put it into [App] object.
-  // static Future<void> readCustomConfigs() async {
-  //   final data = await rootBundle.loadString('assets/custom_configs.yaml');
-  //   final yaml = loadYaml(data);
-
-  //   try {
-  //     final version = yaml["version"].toString();
-
-  //     if (version == "0.1") {
-  //       final serverUrl = yaml["configs"]["server_url"];
-
-  //       App.app.customConfig = CustomConfigs0001(
-  //           version: version, configs: Configs0001(serverUrl: serverUrl));
-  //     }
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
-
   /// Renew access token and refresh token, and do related data storage.
   static Future<bool> renewAuthToken({bool forceRefresh = false}) async {
+    if (!_tokenCompleter.isCompleted) {
+      return _tokenCompleter.future;
+    }
+
     App.app.statusService?.fireTokenLoading(TokenStatus.connecting);
     try {
       if (App.app.userDb == null) {
         App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
-        return false;
+        _tokenCompleter.complete(false);
       }
 
       // Check whether old token expires:
@@ -337,7 +326,7 @@ class SharedFuncs {
           App.app.statusService?.fireTokenLoading(TokenStatus.successful);
           App.logger
               .config("Token is still valid. ExpiresAt: $oldTokenExpiresAt");
-          return true;
+          _tokenCompleter.complete(false);
         }
       }
 
@@ -356,14 +345,14 @@ class SharedFuncs {
 
         await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
 
-        return true;
+        _tokenCompleter.complete(true);
       } else {
         if (res.statusCode == 401 || res.statusCode == 403) {
           App.logger
               .severe("Renew Token Failed, Status code: ${res.statusCode}");
 
           App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
-          return false;
+          _tokenCompleter.complete(false);
         }
       }
       App.logger.severe("Renew Token Failed, Status code: ${res.statusCode}");
@@ -372,7 +361,8 @@ class SharedFuncs {
       App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
     }
 
-    return false;
+    _tokenCompleter.complete(false);
+    return _tokenCompleter.future;
   }
 
   static Future<void> _renewAuthDataInUserDb(
