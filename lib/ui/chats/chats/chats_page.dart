@@ -259,9 +259,7 @@ class _ChatsPageState extends State<ChatsPage>
     }
 
     calUnreadCountSum();
-    // if (afterReady) {
-    //   setState(() {});
-    // }
+    getMemberCount();
   }
 
   void clearChats() {

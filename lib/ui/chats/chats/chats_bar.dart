@@ -233,7 +233,8 @@ class _ChatsBarState extends State<ChatsBar> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (widget.enableDescription && _serverDescription.isNotEmpty)
+                if (enableContact ||
+                    widget.enableDescription && _serverDescription.isNotEmpty)
                   Text(
                     _serverDescription,
                     style: AppTextStyles.labelSmall,
