@@ -50,7 +50,7 @@ const typeAudio = "vocechat/audio";
 //     r"^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$";
 // const pswdRegEx = r"^[a-zA-Z0-9]{6}$";
 const urlRegEx =
-    r"[(http(s)?):\/\/(www\.)?a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)";
+    r'''(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/="'`]*)''';
 
 const List<String> audioExts = [
   "mp3",
