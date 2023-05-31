@@ -180,6 +180,15 @@ class ChatMsgM extends Equatable with M {
     }
   }
 
+  bool get isVideoMsg {
+    try {
+      final type = json.decode(detail)["properties"]["content_type"] as String?;
+      return type?.split("/").first.toLowerCase() == 'video';
+    } catch (e) {
+      return false;
+    }
+  }
+
   bool get isGifImageMsg {
     try {
       final type = json.decode(detail)["properties"]["content_type"] as String?;
@@ -202,15 +211,6 @@ class ChatMsgM extends Equatable with M {
     try {
       final type = json.decode(detail)["content_type"] as String?;
       return type == typeArchive;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  bool get isVideoMsg {
-    try {
-      final type = json.decode(detail)["properties"]["content_type"] as String?;
-      return type?.split("/").first.toLowerCase() == 'video';
     } catch (e) {
       return false;
     }

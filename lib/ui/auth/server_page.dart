@@ -439,7 +439,7 @@ class _ServerPageState extends State<ServerPage> {
 
       final chatServer = await ChatServerDao.dao.getServerById(serverId);
 
-      final avatarBytes = await (await UserAvatarHander().readOrFetch(
+      final avatarBytes = await (await UserAvatarHandler().readOrFetch(
               UserInfoM.fromUserInfo(userDb.userInfo, ""),
               dbName: userDb.dbName,
               enableServerFetch: false))

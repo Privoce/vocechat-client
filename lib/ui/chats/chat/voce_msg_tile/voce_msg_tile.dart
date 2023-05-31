@@ -25,6 +25,7 @@ import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/audio/voce_audio_bub
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_text_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_video_bubble.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
@@ -386,6 +387,8 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
               return VoceTileImageBubble.tileData(
                   key: ObjectKey(widget.tileData.imageFile),
                   tileData: widget.tileData);
+            } else if (chatMsgM.isVideoMsg) {
+              return VoceVideoBubble(chatMsgM: chatMsgM);
             } else {
               final msgNormal = chatMsgM.msgNormal!;
               final path = msgNormal.content;

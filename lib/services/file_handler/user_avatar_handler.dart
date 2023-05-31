@@ -7,9 +7,9 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
 
-class UserAvatarHander extends VoceFileHander {
+class UserAvatarHandler extends VoceFileHandler {
   static const String _pathStr = "user_avatar";
-  UserAvatarHander() : super();
+  UserAvatarHandler() : super();
 
   @override
   Future<String> filePath(String fileName,

@@ -101,7 +101,7 @@ class _VoceChannelAvatarState extends State<VoceChannelAvatar> {
     if (widget.groupInfoM != null &&
         widget.groupInfoM!.groupInfo.avatarUpdatedAt != 0) {
       return FutureBuilder<File?>(
-          future: ChannelAvatarHander().readOrFetch(widget.groupInfoM!,
+          future: ChannelAvatarHandler().readOrFetch(widget.groupInfoM!,
               enableServerRetry: widget.enableServerRetry),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
