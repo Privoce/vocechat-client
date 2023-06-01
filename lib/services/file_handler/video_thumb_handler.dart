@@ -46,7 +46,7 @@ class VideoThumbHandler extends VoceFileHandler {
     final chatId =
         SharedFuncs.getChatId(gid: chatMsgM.gid, uid: chatMsgM.dmUid);
     final file = await read(fileName, chatId: chatId, dbName: dbName);
-    if (file != null) {
+    if (file != null && await file.exists()) {
       App.logger.info("Thumb fetched locally.");
       return file;
     }
@@ -62,12 +62,10 @@ class VideoThumbHandler extends VoceFileHandler {
           "${App.app.chatServerM.fullUrl}/api/resource/file?file_path=$serverFilePath&thumbnail=false&download=false";
       final path = await filePath(generateFileName(chatMsgM),
           chatId: chatId, dbName: dbName);
-      await File(path).create(recursive: true);
 
       final fileName = await VideoThumbnail.thumbnailFile(
         video: fileUrl,
-        thumbnailPath: await filePath(generateFileName(chatMsgM),
-            chatId: chatId, dbName: dbName),
+        thumbnailPath: path,
         imageFormat: ImageFormat.JPEG,
         maxHeight:
             64, // specify the height of the thumbnail, let the width auto-scaled to keep the source aspect ratio
