@@ -388,7 +388,8 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                   key: ObjectKey(widget.tileData.imageFile),
                   tileData: widget.tileData);
             } else if (chatMsgM.isVideoMsg) {
-              return VoceVideoBubble(chatMsgM: chatMsgM);
+              return VoceVideoBubble(
+                  key: ObjectKey(chatMsgM), chatMsgM: chatMsgM);
             } else {
               final msgNormal = chatMsgM.msgNormal!;
               final path = msgNormal.content;
