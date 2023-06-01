@@ -12,7 +12,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class DioUtil {
   final String baseUrl;
 
-  static final _dio = Dio();
+  final _dio = Dio();
 
   DioUtil({required this.baseUrl, bool enableRetry = true}) {
     _init(enableRetry: enableRetry);
@@ -39,7 +39,7 @@ class DioUtil {
       _dio.interceptors.add(RetryInterceptor(
           dio: _dio,
           options:
-              RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
+              RetryOptions(retries: 3, retryInterval: Duration(seconds: 5))));
     }
     _dio.options.baseUrl = baseUrl;
     // _dio.options.connectTimeout = 5000; //5s

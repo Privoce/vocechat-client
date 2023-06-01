@@ -307,10 +307,6 @@ class ChatPageController {
       throw Exception('Neither channel nor user');
     }
 
-    for (var each in pageData.records) {
-      print(each.values);
-    }
-
     msgList.addAll(await removeExpiredMsgs(pageData.records.reversed.toList()));
 
     if (msgList.length < _pageMeta.pageSize && _pageMeta.hasNextPage) {
