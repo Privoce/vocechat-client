@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
@@ -15,10 +16,13 @@ import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 import 'package:vocechat_client/ui/widgets/app_qr_scan_page.dart';
@@ -245,7 +249,9 @@ class _ServerPageState extends State<ServerPage> {
                           final route = PageRouteBuilder(
                             pageBuilder:
                                 (context, animation, secondaryAnimation) =>
-                                    AppQrScanPage(),
+                                    AppQrScanPage(
+                              onQrCodeDetected: _onQrCodeDetected,
+                            ),
                             transitionsBuilder: (context, animation,
                                 secondaryAnimation, child) {
                               const begin = Offset(0.0, 1.0);
@@ -557,17 +563,108 @@ class _ServerPageState extends State<ServerPage> {
     Navigator.of(context).push(route);
   }
 
-  // void _onPinHistory(BuildContext context, int index) async {
-  //   try {
-  //     ChatServerM server = _serverListNotifier.value[index];
-  //     server.pin = 1;
-  //     _serverListNotifier.value.sort((a, b) => (a.pin - b.pin));
-  //     await ChatServerDao.dao.addOrReplace(server);
-  //     setState(() {});
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
+  void _onQrCodeDetected(String data) async {
+    final uri = Uri.parse(data);
+
+    if (uri.scheme != "http" && uri.scheme != "https") {
+      await _showInvalidLinkFormatWarning(context);
+      return;
+    }
+
+    // Handle invitation link
+    if (uri.queryParameters.containsKey("magic_token")) {
+      // considerd as a potential invitation link.
+      await _onInvitationLinkDetected(data);
+    } else {
+      _urlController.text = data;
+    }
+  }
+
+  Future<void> _onInvitationLinkDetected(String link) async {
+    try {
+      final modifiedLink = link.replaceFirst("/#", "");
+      Uri uri = Uri.parse(modifiedLink).replace(fragment: '');
+
+      String host = uri.host;
+      if (host == "privoce.voce.chat") {
+        host = "dev.voce.chat";
+      }
+
+      final apiPath =
+          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
+      final userApi = UserApi(serverUrl: apiPath);
+      final magicToken = uri.queryParameters["magic_token"] as String;
+
+      await userApi.checkMagicToken(magicToken).then((res) async {
+        if (res.statusCode == 200 && res.data == true) {
+          await ChatServerHelper()
+              .prepareChatServerM(apiPath)
+              .then((chatServerM) {
+            if (chatServerM != null) {
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => PasswordRegisterPage(
+                      chatServer: chatServerM,
+                      magicToken: magicToken,
+                      invitationLink: uri)));
+            } else {}
+          });
+        } else {
+          App.logger.warning("Link not valid. link: $link");
+          await _showInvalidInvitationLinkWarning(context);
+          return;
+        }
+      }).onError((error, stackTrace) async {
+        App.logger.severe(error);
+        await _showNetworkErrorWarning(context);
+        return;
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  Future<void> _showInvalidLinkFormatWarning(BuildContext context) async {
+    await showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invalidLinkFormat,
+        content: AppLocalizations.of(context)!.invalidLinkFormat,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
+  }
+
+  Future<void> _showInvalidInvitationLinkWarning(BuildContext context) async {
+    await showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
+  }
+
+  Future<void> _showNetworkErrorWarning(BuildContext context) async {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.networkError,
+        content: AppLocalizations.of(context)!.networkErrorDes,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
+  }
 }
 
 enum ServerStatus { available, uninitialized, error }

@@ -73,8 +73,8 @@ class AppQrScanPage extends StatelessWidget {
 
   void _onQrCodeDetected(String link, BuildContext context) async {
     if (onQrCodeDetected != null) {
-      onQrCodeDetected!(link);
       Navigator.pop(context);
+      onQrCodeDetected!(link);
     } else {
       final uri = Uri.parse(link);
 

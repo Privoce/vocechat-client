@@ -160,6 +160,10 @@ class SharedFuncs {
     Navigator.of(context).push(route);
   }
 
+  static Future<void> handleIncomingLink(Uri uri) async {}
+
+  static Future<void> handleQrCode(Uri uri) async {}
+
   static Future<void> handleServerLink(Uri uri) async {
     final serverUrl = uri.queryParameters["s"];
 
@@ -227,20 +231,21 @@ class SharedFuncs {
   }
 
   static Future<void> parseLink(Uri uri) async {
-    if (uri.host == "voce.chat" && uri.path == '/url') {
-      if (uri.queryParameters.containsKey('s')) {
-        // server url (visitor mode in Web client only)
-        await handleServerLink(uri);
-        return;
-      } else if (uri.queryParameters.containsKey('i')) {
-        // invitation link (both web and mobile client)
-        await handleInvitationLink(uri);
-        return;
-      }
-    }
-    if (!await launchUrl(uri)) {
-      throw Exception('Could not launch $uri');
-    }
+    // if (uri.host == "voce.chat" && uri.path == '/url') {
+    //   if (uri.queryParameters.containsKey('s')) {
+    //     // server url (visitor mode in Web client only)
+    //     await handleServerLink(uri);
+    //     return;
+    //   } else if (uri.queryParameters.containsKey('i')) {
+    //     // invitation link (both web and mobile client)
+    //     await handleInvitationLink(uri);
+    //     return;
+    //   }
+    // }
+    // if (!await launchUrl(uri)) {
+    //   throw Exception('Could not launch $uri');
+    // }
+    // if (ur)
   }
 
   /// Parse mention info in text and markdowns.
