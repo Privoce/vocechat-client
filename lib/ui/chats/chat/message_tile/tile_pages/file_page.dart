@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -17,8 +19,9 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/pdf_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/video_page.dart';
+import 'package:voce_widgets/voce_widgets.dart';
 
-enum FilePageStatus { download, open, share, downloading }
+enum FilePageStatus { download, open, openWithOtherApp, downloading }
 
 class FilePage extends StatefulWidget {
   /// This file name does not contain extension.
@@ -49,6 +52,8 @@ class _FilePageState extends State<FilePage> {
 
   final ValueNotifier<bool> _enableShare = ValueNotifier(false);
 
+  final downloadsPath = '/storage/emulated/0/Download';
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +81,7 @@ class _FilePageState extends State<FilePage> {
           overflow: TextOverflow.ellipsis,
         ),
         leading: CupertinoButton(
+            padding: EdgeInsets.zero,
             onPressed: () {
               Navigator.pop(context);
             },
@@ -126,6 +132,7 @@ class _FilePageState extends State<FilePage> {
                       switch (status) {
                         case FilePageStatus.download:
                           return CupertinoButton.filled(
+                              padding: EdgeInsets.zero,
                               child:
                                   Text(AppLocalizations.of(context)!.download),
                               onPressed: () {
@@ -133,12 +140,14 @@ class _FilePageState extends State<FilePage> {
                               });
                         case FilePageStatus.open:
                           return CupertinoButton.filled(
+                              padding: EdgeInsets.zero,
                               child: Text(AppLocalizations.of(context)!.open),
                               onPressed: () async {
                                 _open(_localFile!);
                               });
-                        case FilePageStatus.share:
+                        case FilePageStatus.openWithOtherApp:
                           return CupertinoButton.filled(
+                              padding: EdgeInsets.zero,
                               child: Text(AppLocalizations.of(context)!
                                   .openWithOtherApps),
                               onPressed: () async {
@@ -158,31 +167,101 @@ class _FilePageState extends State<FilePage> {
                     }),
               ),
             ),
-            Padding(
-                padding: EdgeInsets.only(top: 16),
-                child: SizedBox(
-                  height: 48,
-                  width: double.maxFinite,
-                  child: ValueListenableBuilder<bool>(
-                    valueListenable: _enableShare,
-                    builder: (context, value, child) {
-                      if (value) {
-                        return CupertinoButton.filled(
-                            child: Text(AppLocalizations.of(context)!.share),
-                            onPressed: () async {
-                              _shareFile(_localFile!,
-                                  "${widget.fileName}.${widget.extension}");
-                            });
-                      } else {
-                        return SizedBox.shrink();
-                      }
-                    },
-                  ),
-                )),
+            ValueListenableBuilder<bool>(
+              valueListenable: _enableShare,
+              builder: (context, value, child) {
+                if (value) {
+                  return Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: CupertinoButton.filled(
+                        padding: EdgeInsets.zero,
+                        child: Text(AppLocalizations.of(context)!.share),
+                        onPressed: () async {
+                          _shareFile(_localFile!,
+                              "${widget.fileName}.${widget.extension}");
+                        }),
+                  );
+                } else {
+                  return SizedBox.shrink();
+                }
+              },
+            ),
+            if (Platform.isAndroid)
+              Padding(
+                  padding: EdgeInsets.only(top: 16),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                          height: 48,
+                          width: double.maxFinite,
+                          child: CupertinoButton.filled(
+                              padding: EdgeInsets.zero,
+                              onPressed: _saveToDownloads,
+                              child: Text(
+                                  AppLocalizations.of(context)!.saveToDownloads,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis))),
+                      SizedBox(height: 8),
+                      Text(AppLocalizations.of(context)!.showInFileSystem,
+                          style: AppTextStyles.labelSmall,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                    ],
+                  )),
           ],
         ),
       ),
     );
+  }
+
+  Future<bool> _saveToDownloads() async {
+    try {
+      await Permission.storage.request().isGranted.then((value) async {
+        if (value) {
+          final externalFile = await _localFile!
+              .copy("$downloadsPath/${widget.fileName}.${widget.extension}");
+
+          return true;
+        } else {
+          await showAppAlert(
+              context: context,
+              title: AppLocalizations.of(context)!.permissionRequired,
+              content: AppLocalizations.of(context)!.permissionRequiredDes,
+              actions: [
+                AppAlertDialogAction(
+                    text: AppLocalizations.of(context)!.ok,
+                    action: () => Navigator.of(context).pop())
+              ]);
+        }
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return false;
+  }
+
+  Future<bool> _showInDownloads() async {
+    try {
+      await Permission.storage.request().isGranted.then((value) async {
+        if (value) {
+          await launchUrl(Uri.file(downloadsPath));
+          return true;
+        } else {
+          await showAppAlert(
+              context: context,
+              title: AppLocalizations.of(context)!.permissionRequired,
+              content: AppLocalizations.of(context)!.permissionRequiredDes,
+              actions: [
+                AppAlertDialogAction(
+                    text: AppLocalizations.of(context)!.ok,
+                    action: () => Navigator.of(context).pop())
+              ]);
+        }
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return false;
   }
 
   /// To replace internal filename (localMid) with real name, making shared file
@@ -265,7 +344,7 @@ class _FilePageState extends State<FilePage> {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => PdfPage(widget.fileName, file)));
       } else {
-        _status.value = FilePageStatus.share;
+        _status.value = FilePageStatus.openWithOtherApp;
         _enableShare.value = false;
       }
     } catch (e) {
