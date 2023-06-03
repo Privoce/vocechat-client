@@ -214,6 +214,7 @@
     "save": "保存",
     "savedItems": "保存的消息",
     "saveToDownloads": "保存到下载文件夹",
+    "saveToAlbum": "保存到相册",
     "scanQrCode":"扫描二维码",
     "scanQrCodeToRegister": "扫描二维码来注册",
     "searching":"搜索中",

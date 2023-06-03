@@ -181,8 +181,9 @@ class _VoceVideoBubbleState extends State<VoceVideoBubble> {
           videoPlayerController: videoPlayerController,
           autoPlay: false,
           looping: false);
-      Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => VideoPage(chewieController)));
+
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => VideoPage(chewieController, file)));
     });
   }
 }

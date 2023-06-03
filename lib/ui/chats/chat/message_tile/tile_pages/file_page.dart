@@ -240,30 +240,6 @@ class _FilePageState extends State<FilePage> {
     return false;
   }
 
-  Future<bool> _showInDownloads() async {
-    try {
-      await Permission.storage.request().isGranted.then((value) async {
-        if (value) {
-          await launchUrl(Uri.file(downloadsPath));
-          return true;
-        } else {
-          await showAppAlert(
-              context: context,
-              title: AppLocalizations.of(context)!.permissionRequired,
-              content: AppLocalizations.of(context)!.permissionRequiredDes,
-              actions: [
-                AppAlertDialogAction(
-                    text: AppLocalizations.of(context)!.ok,
-                    action: () => Navigator.of(context).pop())
-              ]);
-        }
-      });
-    } catch (e) {
-      App.logger.severe(e);
-    }
-    return false;
-  }
-
   /// To replace internal filename (localMid) with real name, making shared file
   /// consistant with the original one.
   void _shareFile(File file, String filename) async {
@@ -337,7 +313,7 @@ class _FilePageState extends State<FilePage> {
             autoPlay: false,
             looping: false);
         await Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => VideoPage(chewieController)));
+            builder: (context) => VideoPage(chewieController, file)));
       } else if (widget.extension.toLowerCase() == "pdf") {
         _status.value = FilePageStatus.open;
         _enableShare.value = true;
