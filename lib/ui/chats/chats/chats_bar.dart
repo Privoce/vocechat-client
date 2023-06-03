@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -19,6 +20,7 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/invite_user_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_channel_page.dart';
 import 'package:vocechat_client/ui/chats/chats/new/new_dm_page.dart';
@@ -355,7 +357,7 @@ class _ChatsBarState extends State<ChatsBar> {
                   case AddActions.scan:
                     final route = PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          AppQrScanPage(),
+                          AppQrScanPage(onQrCodeDetected: _onQrCodeDetected),
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {
                         const begin = Offset(0.0, 1.0);
@@ -403,6 +405,57 @@ class _ChatsBarState extends State<ChatsBar> {
       // bottom: tabBar
       // bottom: AppSearchField(AppLocalizations.of(context)!.chatsPageSearchHint),
     );
+  }
+
+  void _onQrCodeDetected(String link) async {
+    final uri = Uri.parse(link);
+
+    if (uri.scheme != "http" && uri.scheme != "https") {
+      return;
+    }
+
+    final modifiedLink = link.replaceFirst("/#", "");
+    final modifiedUri = Uri.parse(modifiedLink).replace(fragment: '');
+
+    // Handle invitation link
+    if (modifiedUri.queryParameters.containsKey("magic_token")) {
+      // considerd as a potential invitation link.
+      await _onInvitationLinkDetected(modifiedUri);
+    } else {
+      if (!await launchUrl(uri)) {
+        throw Exception('Could not launch $uri');
+      }
+    }
+  }
+
+  Future<void> _onInvitationLinkDetected(Uri uri) async {
+    // _isBusy.value = true;
+    await SharedFuncs.parseQrInvitationUri(uri).then((res) {
+      switch (res.status) {
+        case InvitationLinkPreparationStatus.successful:
+          // _isBusy.value = false;
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => PasswordRegisterPage(
+                  chatServer: res.chatServerM!,
+                  magicToken: res.magicToken!,
+                  invitationLink: res.uri)));
+          break;
+        case InvitationLinkPreparationStatus.networkError:
+          // _isBusy.value = false;
+          // _showNetworkErrorWarning(context);
+          break;
+        case InvitationLinkPreparationStatus.invalid:
+          // _isBusy.value = false;
+          // _showInvalidInvitationLinkWarning(context);
+          break;
+        default:
+      }
+    }).onError((error, stackTrace) {
+      // _isBusy.value = false;
+      App.logger.severe(error);
+    });
+
+    // _isBusy.value = false;
   }
 
   bool _isInitial() {

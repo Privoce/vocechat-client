@@ -21,6 +21,8 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
@@ -265,7 +267,20 @@ class SharedFuncs {
       if (res.statusCode == 200 && res.data == true) {
         final chatServerM =
             await ChatServerHelper().prepareChatServerM(apiPath);
-        if (chatServerM != null) {
+        if (chatServerM?.fullUrl == App.app.chatServerM.fullUrl &&
+            App.app.userDb?.loggedIn != 0) {
+          // Current chat server is the same as the invitation link,
+          // and is logged in.
+          if (uri.pathSegments.length == 2 &&
+              uri.pathSegments[0] == "invite_private") {
+            print("here1: uri: $uri");
+            eventBus.fire(PrivateChannelInvitationLinkEvent(uri));
+          } else {
+            print("here2: uri: $uri");
+            return QrScanResult(
+                status: InvitationLinkPreparationStatus.invalid);
+          }
+        } else if (chatServerM != null) {
           return QrScanResult(
               chatServerM: chatServerM,
               magicToken: magicToken,

@@ -62,6 +62,7 @@ class VideoThumbHandler extends VoceFileHandler {
           "${App.app.chatServerM.fullUrl}/api/resource/file?file_path=$serverFilePath&thumbnail=false&download=false";
       final path = await filePath(generateFileName(chatMsgM),
           chatId: chatId, dbName: dbName);
+      await File(path).create(recursive: true);
 
       final fileName = await VideoThumbnail.thumbnailFile(
         video: fileUrl,
