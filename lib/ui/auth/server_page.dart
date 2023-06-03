@@ -609,7 +609,7 @@ class _ServerPageState extends State<ServerPage> {
 
   Future<void> _onInvitationLinkDetected(Uri uri) async {
     _isBusy.value = true;
-    await SharedFuncs.parseQrInvitationUri(uri).then((res) {
+    await SharedFuncs.parseInvitationUri(uri).then((res) {
       switch (res.status) {
         case InvitationLinkPreparationStatus.successful:
           _isBusy.value = false;

@@ -233,25 +233,74 @@ class SharedFuncs {
     return uid == App.app.userDb?.uid;
   }
 
-  static Future<void> parseLink(Uri uri) async {
-    // if (uri.host == "voce.chat" && uri.path == '/url') {
-    //   if (uri.queryParameters.containsKey('s')) {
-    //     // server url (visitor mode in Web client only)
-    //     await handleServerLink(uri);
-    //     return;
-    //   } else if (uri.queryParameters.containsKey('i')) {
-    //     // invitation link (both web and mobile client)
-    //     await handleInvitationLink(uri);
-    //     return;
-    //   }
-    // }
-    // if (!await launchUrl(uri)) {
-    //   throw Exception('Could not launch $uri');
-    // }
-    // if (ur)
+  static Future<void> parseUniLink(Uri uri) async {
+    if (!uri.queryParameters.containsKey("magic_link")) {
+      return;
+    }
+
+    final context = navigatorKey.currentContext;
+
+    try {
+      final magicLink = uri.queryParameters["magic_link"]!;
+      final modifiedLink = magicLink.replaceFirst("/#", "");
+      final modifiedUri = Uri.parse(modifiedLink).replace(fragment: '');
+
+      await SharedFuncs.parseInvitationUri(modifiedUri).then((res) {
+        App.logger.info("Invitation link preparation status: ${res.status}");
+        switch (res.status) {
+          case InvitationLinkPreparationStatus.successful:
+            final route = PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  PasswordRegisterPage(
+                      chatServer: res.chatServerM!,
+                      magicToken: res.magicToken!,
+                      invitationLink: res.uri),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                const begin = Offset(0.0, 1.0);
+                const end = Offset.zero;
+                const curve = Curves.fastOutSlowIn;
+
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+
+                return SlideTransition(
+                  position: animation.drive(tween),
+                  child: child,
+                );
+              },
+            );
+
+            if (context != null) {
+              Navigator.of(context).push(route);
+            }
+
+            break;
+          case InvitationLinkPreparationStatus.networkError:
+            // _isBusy.value = false;
+            if (context != null) {
+              _showNetworkErrorWarning(context);
+            }
+            break;
+          case InvitationLinkPreparationStatus.invalid:
+            // _isBusy.value = false;
+            if (context != null) {
+              _showInvalidLinkWarning(context);
+            }
+            break;
+          default:
+        }
+      }).onError((error, stackTrace) {
+        // _isBusy.value = false;
+        App.logger.severe(error);
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
   }
 
-  static Future<QrScanResult> parseQrInvitationUri(Uri uri) async {
+  /// Input a modified invitation link (without hash#).
+  static Future<QrScanResult> parseInvitationUri(Uri uri) async {
     try {
       String host = uri.host;
       if (host == "privoce.voce.chat") {
@@ -273,12 +322,13 @@ class SharedFuncs {
           // and is logged in.
           if (uri.pathSegments.length == 2 &&
               uri.pathSegments[0] == "invite_private") {
-            print("here1: uri: $uri");
             eventBus.fire(PrivateChannelInvitationLinkEvent(uri));
           } else {
-            print("here2: uri: $uri");
             return QrScanResult(
-                status: InvitationLinkPreparationStatus.invalid);
+                chatServerM: chatServerM,
+                magicToken: magicToken,
+                uri: uri,
+                status: InvitationLinkPreparationStatus.successful);
           }
         } else if (chatServerM != null) {
           return QrScanResult(
@@ -561,6 +611,33 @@ class SharedFuncs {
       App.logger.severe(e);
     }
     return null;
+  }
+
+  static void _showInvalidLinkWarning(BuildContext context) {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: (() => Navigator.of(context).pop()))
+        ]);
+  }
+
+  static Future<void> _showNetworkErrorWarning(BuildContext context) async {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.networkError,
+        content: AppLocalizations.of(context)!.networkErrorDes,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
   }
 }
 

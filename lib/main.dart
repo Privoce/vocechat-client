@@ -318,8 +318,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _parseLink(Uri uri) async {
-    // Sign in page example: http://voce.chat/url?s=https%3A%2F%2Fdev.voce.chat
-    await SharedFuncs.parseLink(uri);
+    App.logger.info("UniLink/DeepLink: $uri");
+    await SharedFuncs.parseUniLink(uri);
   }
 
   void onResume() async {

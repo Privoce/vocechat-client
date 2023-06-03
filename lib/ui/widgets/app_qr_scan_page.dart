@@ -81,7 +81,7 @@ class AppQrScanPage extends StatelessWidget {
       // This pop should be put before [SharedFuncs.parseLink] as there will be
       // a [Navigator.push] in it.
       Navigator.pop(context);
-      SharedFuncs.parseLink(uri);
+      SharedFuncs.parseUniLink(uri);
     }
   }
 

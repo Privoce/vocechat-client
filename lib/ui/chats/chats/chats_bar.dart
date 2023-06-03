@@ -430,15 +430,33 @@ class _ChatsBarState extends State<ChatsBar> {
 
   Future<void> _onInvitationLinkDetected(Uri uri) async {
     // _isBusy.value = true;
-    await SharedFuncs.parseQrInvitationUri(uri).then((res) {
+    await SharedFuncs.parseInvitationUri(uri).then((res) {
+      App.logger.info("Invitation link preparation status: ${res.status}");
       switch (res.status) {
         case InvitationLinkPreparationStatus.successful:
-          // _isBusy.value = false;
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PasswordRegisterPage(
-                  chatServer: res.chatServerM!,
-                  magicToken: res.magicToken!,
-                  invitationLink: res.uri)));
+          final route = PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PasswordRegisterPage(
+                    chatServer: res.chatServerM!,
+                    magicToken: res.magicToken!,
+                    invitationLink: res.uri),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(0.0, 1.0);
+              const end = Offset.zero;
+              const curve = Curves.fastOutSlowIn;
+
+              var tween =
+                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+              return SlideTransition(
+                position: animation.drive(tween),
+                child: child,
+              );
+            },
+          );
+          Navigator.of(context).push(route);
+
           break;
         case InvitationLinkPreparationStatus.networkError:
           // _isBusy.value = false;
@@ -543,7 +561,7 @@ class _ChatsBarState extends State<ChatsBar> {
     final userDb = App.app.userDb;
     if (userDb == null) return;
 
-    final storage = const FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     final password = await storage.read(key: userDb.dbName);
 
     final route = PageRouteBuilder(
