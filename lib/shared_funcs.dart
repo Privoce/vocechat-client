@@ -30,6 +30,7 @@ import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 
 import 'models/local_kits.dart';
 
@@ -246,6 +247,45 @@ class SharedFuncs {
     //   throw Exception('Could not launch $uri');
     // }
     // if (ur)
+  }
+
+  static Future<QrScanResult> parseQrInvitationUri(Uri uri) async {
+    try {
+      String host = uri.host;
+      if (host == "privoce.voce.chat") {
+        host = "dev.voce.chat";
+      }
+
+      final apiPath =
+          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
+      final userApi = UserApi(serverUrl: apiPath);
+      final magicToken = uri.queryParameters["magic_token"] as String;
+
+      final res = await userApi.checkMagicToken(magicToken);
+      if (res.statusCode == 200 && res.data == true) {
+        final chatServerM =
+            await ChatServerHelper().prepareChatServerM(apiPath);
+        if (chatServerM != null) {
+          return QrScanResult(
+              chatServerM: chatServerM,
+              magicToken: magicToken,
+              uri: uri,
+              status: InvitationLinkPreparationStatus.successful);
+        }
+      } else if (res.statusCode == 599) {
+        App.logger.severe("Network Error");
+
+        return QrScanResult(
+            status: InvitationLinkPreparationStatus.networkError);
+      } else {
+        App.logger.warning("Link not valid. link: $uri");
+
+        return QrScanResult(status: InvitationLinkPreparationStatus.invalid);
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return QrScanResult(status: InvitationLinkPreparationStatus.invalid);
   }
 
   /// Parse mention info in text and markdowns.
@@ -507,4 +547,14 @@ class SharedFuncs {
     }
     return null;
   }
+}
+
+class QrScanResult {
+  ChatServerM? chatServerM;
+  String? magicToken;
+  Uri? uri;
+  InvitationLinkPreparationStatus status;
+
+  QrScanResult(
+      {this.chatServerM, this.magicToken, this.uri, required this.status});
 }

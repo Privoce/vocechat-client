@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
@@ -608,54 +609,31 @@ class _ServerPageState extends State<ServerPage> {
 
   Future<void> _onInvitationLinkDetected(Uri uri) async {
     _isBusy.value = true;
-    try {
-      String host = uri.host;
-      if (host == "privoce.voce.chat") {
-        host = "dev.voce.chat";
+    await SharedFuncs.parseQrInvitationUri(uri).then((res) {
+      switch (res.status) {
+        case InvitationLinkPreparationStatus.successful:
+          _isBusy.value = false;
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => PasswordRegisterPage(
+                  chatServer: res.chatServerM!,
+                  magicToken: res.magicToken!,
+                  invitationLink: res.uri)));
+          break;
+        case InvitationLinkPreparationStatus.networkError:
+          _isBusy.value = false;
+          _showNetworkErrorWarning(context);
+          break;
+        case InvitationLinkPreparationStatus.invalid:
+          _isBusy.value = false;
+          _showInvalidInvitationLinkWarning(context);
+          break;
+        default:
       }
+    }).onError((error, stackTrace) {
+      _isBusy.value = false;
+      App.logger.severe(error);
+    });
 
-      final apiPath =
-          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
-      final userApi = UserApi(serverUrl: apiPath);
-      final magicToken = uri.queryParameters["magic_token"] as String;
-
-      await userApi.checkMagicToken(magicToken).then((res) async {
-        if (res.statusCode == 200 && res.data == true) {
-          await ChatServerHelper()
-              .prepareChatServerM(apiPath)
-              .then((chatServerM) {
-            if (chatServerM != null) {
-              _isBusy.value = false;
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => PasswordRegisterPage(
-                      chatServer: chatServerM,
-                      magicToken: magicToken,
-                      invitationLink: uri)));
-            } else {}
-          });
-        } else if (res.statusCode == 599) {
-          App.logger.severe("Network Error");
-          _isBusy.value = false;
-          await _showNetworkErrorWarning(context);
-
-          return;
-        } else {
-          App.logger.warning("Link not valid. link: $uri");
-          _isBusy.value = false;
-          await _showInvalidInvitationLinkWarning(context);
-
-          return;
-        }
-      }).onError((error, stackTrace) async {
-        App.logger.severe(error);
-        _isBusy.value = false;
-        await _showNetworkErrorWarning(context);
-
-        return;
-      });
-    } catch (e) {
-      App.logger.severe(e);
-    }
     _isBusy.value = false;
   }
 

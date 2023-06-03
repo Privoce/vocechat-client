@@ -25,6 +25,8 @@ enum TokenStatus { init, connecting, successful, unauthorized, disconnected }
 
 enum ButtonStatus { normal, inProgress, success, error }
 
+enum InvitationLinkPreparationStatus { successful, networkError, invalid }
+
 // ignore: constant_identifier_names
 enum ChatLayoutMode { Left, SelfRight }
 
