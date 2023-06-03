@@ -25,6 +25,7 @@ import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
+import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/app_qr_scan_page.dart';
 
 class ServerPage extends StatefulWidget {
@@ -69,6 +70,7 @@ class _ServerPageState extends State<ServerPage> {
   final ValueNotifier<bool> _isUrlValid = ValueNotifier(true);
   final ValueNotifier<bool> _showUrlWarning = ValueNotifier(false);
   final ValueNotifier<bool> _pushPageBusy = ValueNotifier(false);
+  final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
   @override
   void initState() {
@@ -81,32 +83,37 @@ class _ServerPageState extends State<ServerPage> {
     return Scaffold(
         resizeToAvoidBottomInset: true,
         backgroundColor: widget._edgeColor,
-        body: GestureDetector(
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            decoration: widget._bgDeco,
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        widget.showClose
-                            ? _buildTopBtn(context)
-                            : SizedBox(height: 60),
-                        _buildTitle(),
-                        const SizedBox(height: 50),
-                        _buildUrlTextField(),
-                        const SizedBox(height: 20),
-                        _buildHistoryList(),
-                      ]),
+        body: Stack(
+          children: [
+            GestureDetector(
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                decoration: widget._bgDeco,
+                child: SafeArea(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            widget.showClose
+                                ? _buildTopBtn(context)
+                                : SizedBox(height: 60),
+                            _buildTitle(),
+                            const SizedBox(height: 50),
+                            _buildUrlTextField(),
+                            const SizedBox(height: 20),
+                            _buildHistoryList(),
+                          ]),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            BusyDialog(busy: _isBusy)
+          ],
         ),
         bottomNavigationBar: SafeArea(
             child: Column(
@@ -563,6 +570,22 @@ class _ServerPageState extends State<ServerPage> {
     Navigator.of(context).push(route);
   }
 
+  /// Called when QR code is detected.
+  ///
+  /// if a link contains query parameter `magic_token`, it will be considered as
+  /// an invitation link. The link will be further handled by
+  /// [_onInvitationLinkDetected].
+  /// Otherwise, it will be considered as a normal link. All data characters will
+  /// be pasted into the text field, without verification.
+  ///
+  /// Test with following types of links:
+  /// 1. valid invitation link;
+  /// 2. valid server url;
+  /// 3. invalid invitation link (same format with an invalid magic token)
+  /// 4. any valid url.
+  ///
+  /// Test also in network good/disconnected situation.
+
   void _onQrCodeDetected(String data) async {
     final uri = Uri.parse(data);
 
@@ -571,20 +594,21 @@ class _ServerPageState extends State<ServerPage> {
       return;
     }
 
+    final modifiedLink = data.replaceFirst("/#", "");
+    final modifiedUri = Uri.parse(modifiedLink).replace(fragment: '');
+
     // Handle invitation link
-    if (uri.queryParameters.containsKey("magic_token")) {
+    if (modifiedUri.queryParameters.containsKey("magic_token")) {
       // considerd as a potential invitation link.
-      await _onInvitationLinkDetected(data);
+      await _onInvitationLinkDetected(modifiedUri);
     } else {
       _urlController.text = data;
     }
   }
 
-  Future<void> _onInvitationLinkDetected(String link) async {
+  Future<void> _onInvitationLinkDetected(Uri uri) async {
+    _isBusy.value = true;
     try {
-      final modifiedLink = link.replaceFirst("/#", "");
-      Uri uri = Uri.parse(modifiedLink).replace(fragment: '');
-
       String host = uri.host;
       if (host == "privoce.voce.chat") {
         host = "dev.voce.chat";
@@ -601,6 +625,7 @@ class _ServerPageState extends State<ServerPage> {
               .prepareChatServerM(apiPath)
               .then((chatServerM) {
             if (chatServerM != null) {
+              _isBusy.value = false;
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => PasswordRegisterPage(
                       chatServer: chatServerM,
@@ -608,19 +633,30 @@ class _ServerPageState extends State<ServerPage> {
                       invitationLink: uri)));
             } else {}
           });
+        } else if (res.statusCode == 599) {
+          App.logger.severe("Network Error");
+          _isBusy.value = false;
+          await _showNetworkErrorWarning(context);
+
+          return;
         } else {
-          App.logger.warning("Link not valid. link: $link");
+          App.logger.warning("Link not valid. link: $uri");
+          _isBusy.value = false;
           await _showInvalidInvitationLinkWarning(context);
+
           return;
         }
       }).onError((error, stackTrace) async {
         App.logger.severe(error);
+        _isBusy.value = false;
         await _showNetworkErrorWarning(context);
+
         return;
       });
     } catch (e) {
       App.logger.severe(e);
     }
+    _isBusy.value = false;
   }
 
   Future<void> _showInvalidLinkFormatWarning(BuildContext context) async {

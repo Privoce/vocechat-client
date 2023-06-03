@@ -39,7 +39,12 @@ class DioUtil {
       _dio.interceptors.add(RetryInterceptor(
           dio: _dio,
           options:
-              RetryOptions(retries: 3, retryInterval: Duration(seconds: 5))));
+              RetryOptions(retries: 3, retryInterval: Duration(seconds: 2))));
+    } else {
+      _dio.interceptors.add(RetryInterceptor(
+          dio: _dio,
+          options:
+              RetryOptions(retries: 0, retryInterval: Duration(seconds: 1))));
     }
     _dio.options.baseUrl = baseUrl;
     // _dio.options.connectTimeout = 5000; //5s

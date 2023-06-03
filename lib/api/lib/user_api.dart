@@ -306,9 +306,11 @@ class UserApi {
     return dio.get("/check_email?email=$email");
   }
 
-  Future<Response<bool>> checkMagicToken(String magicToken) async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<bool>> checkMagicToken(String magicToken,
+      {bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
+    dio.options.connectTimeout = 2000;
 
     final res = await dio.post("/check_magic_token",
         data: json.encode({"magic_token": magicToken}));
@@ -322,7 +324,7 @@ class UserApi {
         redirects: res.redirects,
         extra: res.extra);
 
-    newRes.data = res.statusCode == 200 && res.data != null;
+    newRes.data = res.statusCode == 200 && res.data == true;
     return newRes;
   }
 
