@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.94", "build_num": 64},
+    "latest": {"version": "0.2.95", "build_num": 65},
     "logs":  [
+        {"time": 1685818445886, "version": "0.2.95", "build_num": 65, "updates": [
+            "- fix: contact status update error."
+        ]},
         {"time": 1685330425671, "version": "0.2.94", "build_num": 64, "updates": [
             "- fix: contact status update error."
         ]},

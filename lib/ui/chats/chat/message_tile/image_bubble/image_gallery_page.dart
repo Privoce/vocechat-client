@@ -2,12 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/main.dart';
-import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
@@ -103,7 +102,9 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
     return FutureBuilder<SingleImageData?>(
         future: item.getLocalImageFile(),
         builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData &&
+              snapshot.data != null) {
             return SingleImagePage(
               initImageFile: snapshot.data!.imageFile,
               singleImageGetters: item,
@@ -114,26 +115,11 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
               },
             );
           } else {
-            return Center(child: Text("cant find file"));
+            return Center(
+                child: Text(AppLocalizations.of(context)!.imageBeDeletedDes,
+                    style: TextStyle(color: Colors.white)));
           }
         });
-
-    // }
-  }
-
-  Future<SingleImageData?> _getLocalImageFileData(ChatMsgM chatMsgM) async {
-    final localImageNormal =
-        await FileHandler.singleton.getLocalImageNormal(chatMsgM);
-    if (localImageNormal != null) {
-      return SingleImageData(imageFile: localImageNormal, isOriginal: true);
-    } else {
-      final localImageThumb =
-          await FileHandler.singleton.getLocalImageThumb(chatMsgM);
-      if (localImageThumb != null) {
-        return SingleImageData(imageFile: localImageThumb, isOriginal: false);
-      }
-    }
-    return null;
   }
 
   Widget _buildButtons() {

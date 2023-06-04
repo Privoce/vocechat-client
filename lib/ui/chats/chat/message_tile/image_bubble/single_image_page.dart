@@ -51,8 +51,11 @@ class _SingleImagePageState extends State<SingleImagePage> {
     final child = ValueListenableBuilder<File>(
         valueListenable: _imageNotifier,
         builder: (context, imageFile, _) {
-          return Center(
-            child: PhotoView(imageProvider: FileImage(imageFile)),
+          return SizedBox(
+            width: double.maxFinite,
+            child: Center(
+              child: PhotoView(imageProvider: FileImage(imageFile)),
+            ),
           );
         });
 

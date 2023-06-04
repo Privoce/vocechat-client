@@ -143,7 +143,6 @@ class MsgTileData {
       // If is text/markdown/file/image/audio, do nothing.
       if (chatMsgMNotifier.value.isImageMsg) {
         await setNormalImage(serverFetch: false);
-        // print("#########Image file: ${imageFile?.path}");
       } else if (chatMsgMNotifier.value.isAudioMsg) {
         await setNormalAudio(serverFetch: false);
       } else if (chatMsgMNotifier.value.isArchiveMsg) {

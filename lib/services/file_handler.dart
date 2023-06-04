@@ -589,7 +589,7 @@ class FileHandler {
     }
 
     String localMid = chatMsgM.localMid;
-    String fileName = chatMsgM.msgNormal?.properties?["name"];
+    String fileName = chatMsgM.msgNormal?.properties?["name"] ?? "";
 
     return readImageNormal(chatId, localMid, fileName);
   }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
@@ -31,6 +32,8 @@ class InvitationLinkPastePage extends StatelessWidget {
 
   final ValueNotifier<InvitationLinkTextFieldButtonType> buttonType =
       ValueNotifier(InvitationLinkTextFieldButtonType.paste);
+
+  final ValueNotifier<bool> _isSubmitBusy = ValueNotifier(false);
 
   InvitationLinkPastePage({super.key, String? initialLink}) {
     _bgDeco = BoxDecoration(
@@ -84,7 +87,7 @@ class InvitationLinkPastePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(BuildContext context) {
+  Widget _buildTextField(BuildContext pageContext) {
     const double height = 44;
     const double btnRadius = height / 2;
     const double iconSize = btnRadius * 1.414;
@@ -127,27 +130,15 @@ class InvitationLinkPastePage extends StatelessWidget {
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             AppQrScanPage(
                           onQrCodeDetected: (link) async {
-                            final uri = Uri.parse(link);
-                            if (uri.host == "voce.chat" && uri.path == "/url") {
-                              if (uri.queryParameters.containsKey("i")) {
-                                _controller.text =
-                                    uri.queryParameters["i"] ?? "";
-                                if (_controller.text.trim().isNotEmpty) {
-                                  buttonType.value =
-                                      InvitationLinkTextFieldButtonType.clear;
-                                } else {
-                                  buttonType.value =
-                                      InvitationLinkTextFieldButtonType.paste;
-                                }
-                                return;
-                              } else if (uri.queryParameters.containsKey("s")) {
-                                await SharedFuncs.handleServerLink(uri);
-                                return;
-                              }
+                            _controller.text = link;
+                            if (_controller.text.trim().isNotEmpty) {
+                              buttonType.value =
+                                  InvitationLinkTextFieldButtonType.clear;
+                            } else {
+                              buttonType.value =
+                                  InvitationLinkTextFieldButtonType.paste;
                             }
-                            if (!await launchUrl(uri)) {
-                              throw Exception('Could not launch $uri');
-                            }
+                            _onLinkSubmitted(pageContext);
                           },
                         ),
                         transitionsBuilder:
@@ -165,42 +156,75 @@ class InvitationLinkPastePage extends StatelessWidget {
                           );
                         },
                       );
-                      Navigator.push(context, route);
+                      Navigator.push(pageContext, route);
                     })
               ],
             ),
           ),
         ),
         SizedBox(width: 8),
-        VoceButton(
-          height: height,
-          width: height,
-          contentPadding: EdgeInsets.all(4),
-          decoration: BoxDecoration(
-              color: Colors.blue,
-              borderRadius: BorderRadius.circular(btnRadius)),
-          normal: Icon(
-            Icons.arrow_forward,
-            color: Colors.white,
-            size: iconSize,
-          ),
-          busy: CupertinoActivityIndicator(
-            color: Colors.white,
-            radius: iconSize / 2,
-          ),
-          keepNormalWhenBusy: false,
-          action: () async {
-            // return await _onUrlSubmit(_urlController.text + "/api");
-            await _onLinkSubmitted(context);
+        CupertinoButton(
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isSubmitBusy,
+              builder: (context, isBusy, child) {
+                Widget icon;
 
-            return true;
-          },
-        )
+                if (isBusy) {
+                  icon = CupertinoActivityIndicator(
+                    color: Colors.white,
+                    radius: iconSize / 2,
+                  );
+                } else {
+                  icon = Icon(
+                    Icons.arrow_forward,
+                    color: Colors.white,
+                    size: iconSize,
+                  );
+                }
+
+                return Container(
+                  height: height,
+                  width: height,
+                  decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(btnRadius)),
+                  child: icon,
+                );
+              },
+            ),
+            onPressed: () async {
+              await _onLinkSubmitted(pageContext);
+            })
+        // VoceButton(
+        //   height: height,
+        //   width: height,
+        //   contentPadding: EdgeInsets.all(4),
+        //   decoration: BoxDecoration(
+        //       color: Colors.blue,
+        //       borderRadius: BorderRadius.circular(btnRadius)),
+        //   normal: Icon(
+        //     Icons.arrow_forward,
+        //     color: Colors.white,
+        //     size: iconSize,
+        //   ),
+        //   busy: CupertinoActivityIndicator(
+        //     color: Colors.white,
+        //     radius: iconSize / 2,
+        //   ),
+        //   keepNormalWhenBusy: false,
+        //   action: () async {
+        //     // return await _onUrlSubmit(_urlController.text + "/api");
+        //     await _onLinkSubmitted(pageContext);
+
+        //     return true;
+        //   },
+        // )
       ],
     );
   }
 
   Future<bool> _onLinkSubmitted(BuildContext context) async {
+    _isSubmitBusy.value = true;
     final link = _controller.text.trim();
 
     try {
@@ -217,6 +241,7 @@ class InvitationLinkPastePage extends StatelessWidget {
           Uri.parse(App.app.customConfig!.configs.serverUrl).host != host) {
         _showUrlUnmatchAlert();
         _controller.clear();
+        _isSubmitBusy.value = false;
         return false;
       }
 
@@ -252,15 +277,17 @@ class InvitationLinkPastePage extends StatelessWidget {
         } else {
           App.logger.warning("Link not valid.");
           _showInvalidLinkWarning(context);
+          _isSubmitBusy.value = false;
           return false;
         }
       });
     } catch (e) {
       App.logger.severe(e);
-      _showInvalidLinkWarning(context);
+      _showNetworkErrorWarning(context);
+      _isSubmitBusy.value = false;
       return false;
     }
-
+    _isSubmitBusy.value = false;
     return true;
   }
 
@@ -287,6 +314,20 @@ class InvitationLinkPastePage extends StatelessWidget {
           AppAlertDialogAction(
               text: AppLocalizations.of(context)!.ok,
               action: (() => Navigator.of(context).pop()))
+        ]);
+  }
+
+  Future<void> _showNetworkErrorWarning(BuildContext context) async {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.networkError,
+        content: AppLocalizations.of(context)!.networkErrorDes,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
         ]);
   }
 

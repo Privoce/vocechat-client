@@ -221,7 +221,7 @@ class ChatPageController {
       avatarFile = _avatarMap[userInfoM.uid];
     } else {
       bool enableServerFetch = userInfoM.userInfo.avatarUpdatedAt > 0;
-      avatarFile = await UserAvatarHander()
+      avatarFile = await UserAvatarHandler()
           .readOrFetch(userInfoM, enableServerFetch: enableServerFetch);
       if (avatarFile != null) {
         _avatarMap.addAll({userInfoM.uid: avatarFile});
@@ -239,7 +239,7 @@ class ChatPageController {
   Future<void> loadHistory({bool enableServerHistory = true}) async {
     if (isLoadingHistory.value) return;
 
-    App.logger.info("Loading server history");
+    App.logger.info("Loading history");
 
     isLoadingHistory.value = true;
 
@@ -432,7 +432,8 @@ class ChatPageController {
           if (each.chatMsgMNotifier.value.fromUid == userInfoM.uid) {
             if (each.userInfoM.userInfo.avatarUpdatedAt <
                 userInfoM.userInfo.avatarUpdatedAt) {
-              each.avatarFile = await UserAvatarHander().readOrFetch(userInfoM);
+              each.avatarFile =
+                  await UserAvatarHandler().readOrFetch(userInfoM);
               _avatarMap.addAll({userInfoM.uid: each.avatarFile!});
             }
             each.userInfoM = userInfoM;
