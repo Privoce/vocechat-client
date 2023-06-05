@@ -125,13 +125,16 @@ class VoceChatService {
       return;
     }
 
+    Sse.sse.subscribeSseEvent(handleSseEvent);
+    Sse.sse.subscribeReady((ready) {
+      afterReady = ready;
+    });
+
     try {
       preSseInits().then((_) => Sse.sse.connect());
     } catch (e) {
       App.logger.severe(e);
     }
-
-    Sse.sse.subscribeSseEvent(handleSseEvent);
   }
 
   Map<int, int> readIndexGroup = {}; // {gid: mid}
