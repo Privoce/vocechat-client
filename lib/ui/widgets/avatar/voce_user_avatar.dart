@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -36,6 +37,8 @@ class VoceUserAvatar extends StatefulWidget {
 
   final bool enableServerRetry;
 
+  final bool isBot;
+
   const VoceUserAvatar(
       {Key? key,
       required this.size,
@@ -48,7 +51,8 @@ class VoceUserAvatar extends StatefulWidget {
       this.enableServerRetry = false,
       required this.uid,
       this.backgroundColor = Colors.blue,
-      this.onTap})
+      this.onTap,
+      this.isBot = false})
       : _deleted = (uid != null && uid > 0) ? false : true,
         super(key: key);
 
@@ -61,7 +65,8 @@ class VoceUserAvatar extends StatefulWidget {
       this.isCircle = useCircleAvatar,
       this.enableOnlineStatus = true,
       this.backgroundColor = Colors.blue,
-      this.onTap})
+      this.onTap,
+      this.isBot = false})
       : avatarBytes = null,
         enableServerRetry = false,
         userInfoM = null,
@@ -82,6 +87,7 @@ class VoceUserAvatar extends StatefulWidget {
         uid = userInfoM.uid,
         _deleted = false,
         file = null,
+        isBot = userInfoM.userInfo.isBot ?? false,
         super(key: key);
 
   const VoceUserAvatar.name(
@@ -93,7 +99,8 @@ class VoceUserAvatar extends StatefulWidget {
       this.backgroundColor = Colors.blue,
       bool? enableOnlineStatus,
       this.onTap,
-      this.enableServerRetry = true})
+      this.enableServerRetry = true,
+      this.isBot = false})
       : userInfoM = null,
         avatarBytes = null,
         enableOnlineStatus =
@@ -116,6 +123,7 @@ class VoceUserAvatar extends StatefulWidget {
         _deleted = true,
         onTap = null,
         file = null,
+        isBot = false,
         super(key: key);
 
   @override
@@ -157,68 +165,71 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
       Widget rawAvatar;
       if (widget.file != null) {
         rawAvatar = VoceAvatar.file(
-            // key: UniqueKey(),
-            file: widget.file!,
-            size: widget.size,
-            isCircle: widget.isCircle);
+            file: widget.file!, size: widget.size, isCircle: widget.isCircle);
       } else if (widget.userInfoM != null &&
           widget.userInfoM!.userInfo.avatarUpdatedAt != 0 &&
           imageFile != null) {
         rawAvatar = VoceAvatar.file(
-            // key: UniqueKey(),
-            file: imageFile!,
-            size: widget.size,
-            isCircle: widget.isCircle);
+            file: imageFile!, size: widget.size, isCircle: widget.isCircle);
       } else {
         rawAvatar = _buildNonFileAvatar();
       }
 
-      // Add online status
-      if (enableOnlineStatus && widget.uid != null) {
-        final onlineStatus = SharedFuncs.isSelf(widget.uid)
-            ? ValueNotifier(true)
-            : App.app.onlineStatusMap[widget.uid] ?? ValueNotifier(false);
-        final statusIndicatorSize = widget.size / 3;
-
-        rawAvatar = Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            rawAvatar,
-            Positioned(
-              right: -1,
-              bottom: -1,
-              child: Container(
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(statusIndicatorSize)),
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: onlineStatus,
-                  builder: (context, isOnline, child) {
-                    Color color;
-                    if (isOnline || SharedFuncs.isSelf(widget.uid)) {
-                      color = Color.fromRGBO(34, 197, 94, 1);
-                    } else {
-                      color = Color.fromRGBO(161, 161, 170, 1);
-                    }
-                    return Icon(Icons.circle,
-                        size: statusIndicatorSize, color: color);
-                  },
-                ),
-              ),
-            ),
-          ],
-        );
-      }
-
+      rawAvatar = Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          rawAvatar,
+          _buildBadge(),
+        ],
+      );
       if (widget.onTap != null && widget.uid != null) {
         rawAvatar = CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: () => widget.onTap!(widget.uid!),
+            onPressed: () => widget.onTap!.call(widget.uid!),
             child: rawAvatar);
       }
 
       return rawAvatar;
     }
+  }
+
+  Widget _buildBadge() {
+    final statusIndicatorSize = widget.size / 3;
+
+    Widget badge = SizedBox.shrink();
+    if (enableOnlineStatus && widget.uid != null) {
+      final onlineStatus = SharedFuncs.isSelf(widget.uid)
+          ? ValueNotifier(true)
+          : App.app.onlineStatusMap[widget.uid] ?? ValueNotifier(false);
+
+      badge = ValueListenableBuilder<bool>(
+        valueListenable: onlineStatus,
+        builder: (context, isOnline, child) {
+          Color color;
+          if (isOnline) {
+            color = Color.fromRGBO(34, 197, 94, 1);
+          } else {
+            color = Color.fromRGBO(161, 161, 170, 1);
+          }
+          return Icon(Icons.circle, size: statusIndicatorSize, color: color);
+        },
+      );
+    } else if (widget.isBot) {
+      badge = Image.asset('assets/images/bot.png',
+          width: statusIndicatorSize, height: statusIndicatorSize);
+    } else {
+      return SizedBox.shrink();
+    }
+
+    return Positioned(
+      right: 0,
+      bottom: 0,
+      child: Container(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(statusIndicatorSize)),
+          child: badge),
+    );
   }
 
   Widget _buildNonFileAvatar() {

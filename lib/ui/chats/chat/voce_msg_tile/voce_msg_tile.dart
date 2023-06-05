@@ -237,10 +237,12 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                     }));
                   },
             child: VoceUserAvatar.file(
-                name: widget.tileData.name,
-                uid: widget.tileData.userInfoM.uid,
-                file: widget.tileData.avatarFile,
-                size: VoceAvatarSize.s40)));
+              name: widget.tileData.name,
+              uid: widget.tileData.userInfoM.uid,
+              file: widget.tileData.avatarFile,
+              size: VoceAvatarSize.s40,
+              isBot: widget.tileData.userInfoM.userInfo.isBot ?? false,
+            )));
   }
 
   Widget _buildMidCol(BuildContext context) {
