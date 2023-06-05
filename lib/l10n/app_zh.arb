@@ -130,6 +130,10 @@
     "image":"图片",
     "imageBeDeletedDes":"图片可能已被删除。",
     "inputInvitationLink":"输入邀请链接",
+    "invalidLinkFormat":"无效的链接格式",
+    "invalidLinkFormatContent":"请检查您的链接格式是否正确，或联系服务器拥有者寻求帮助。",
+    "invalidServerLink":"无效的服务器链接",
+    "invalidServerLinkContent":"请检查您的服务器链接是否正确，或联系服务器拥有者寻求帮助。",
     "invitationLink": "邀请链接",
     "invitationLinkError":"邀请链接错误",
     "invitationLinkGenerationError": "生成邀请链接时出现问题。\n请检查网络状况或联系服务器所有者获取帮助。",
@@ -175,6 +179,8 @@
 
     "paste": "粘贴",
     "password": "密码",
+    "permissionRequired":"需要权限",
+    "permissionRequiredDes":"请前往设置中授权。",
     "pin": "钉选",
     
     "privateChannelToPublicTitle":"转为公有频道",
@@ -207,6 +213,8 @@
 
     "save": "保存",
     "savedItems": "保存的消息",
+    "saveToDownloads": "保存到下载文件夹",
+    "saveToAlbum": "保存到相册",
     "scanQrCode":"扫描二维码",
     "scanQrCodeToRegister": "扫描二维码来注册",
     "searching":"搜索中",
@@ -219,6 +227,7 @@
     "share":"分享",
     "shareInvitationLink":"分享邀请链接",
     "shareQrCode": "分享二维码",
+    "showInFileSystem":"您可前往文件App查看。",
     "signIn": "登入",
     "signUp": "注册",
     "signUpTo": "注册",

@@ -7,7 +7,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
@@ -15,12 +17,16 @@ import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
+import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
+import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/app_qr_scan_page.dart';
 
 class ServerPage extends StatefulWidget {
@@ -65,6 +71,7 @@ class _ServerPageState extends State<ServerPage> {
   final ValueNotifier<bool> _isUrlValid = ValueNotifier(true);
   final ValueNotifier<bool> _showUrlWarning = ValueNotifier(false);
   final ValueNotifier<bool> _pushPageBusy = ValueNotifier(false);
+  final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
   @override
   void initState() {
@@ -77,32 +84,37 @@ class _ServerPageState extends State<ServerPage> {
     return Scaffold(
         resizeToAvoidBottomInset: true,
         backgroundColor: widget._edgeColor,
-        body: GestureDetector(
-          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            decoration: widget._bgDeco,
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        widget.showClose
-                            ? _buildTopBtn(context)
-                            : SizedBox(height: 60),
-                        _buildTitle(),
-                        const SizedBox(height: 50),
-                        _buildUrlTextField(),
-                        const SizedBox(height: 20),
-                        _buildHistoryList(),
-                      ]),
+        body: Stack(
+          children: [
+            GestureDetector(
+              onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                decoration: widget._bgDeco,
+                child: SafeArea(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            widget.showClose
+                                ? _buildTopBtn(context)
+                                : SizedBox(height: 60),
+                            _buildTitle(),
+                            const SizedBox(height: 50),
+                            _buildUrlTextField(),
+                            const SizedBox(height: 20),
+                            _buildHistoryList(),
+                          ]),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            BusyDialog(busy: _isBusy)
+          ],
         ),
         bottomNavigationBar: SafeArea(
             child: Column(
@@ -245,7 +257,9 @@ class _ServerPageState extends State<ServerPage> {
                           final route = PageRouteBuilder(
                             pageBuilder:
                                 (context, animation, secondaryAnimation) =>
-                                    AppQrScanPage(),
+                                    AppQrScanPage(
+                              onQrCodeDetected: _onQrCodeDetected,
+                            ),
                             transitionsBuilder: (context, animation,
                                 secondaryAnimation, child) {
                               const begin = Offset(0.0, 1.0);
@@ -439,7 +453,7 @@ class _ServerPageState extends State<ServerPage> {
 
       final chatServer = await ChatServerDao.dao.getServerById(serverId);
 
-      final avatarBytes = await (await UserAvatarHander().readOrFetch(
+      final avatarBytes = await (await UserAvatarHandler().readOrFetch(
               UserInfoM.fromUserInfo(userDb.userInfo, ""),
               dbName: userDb.dbName,
               enableServerFetch: false))
@@ -557,17 +571,114 @@ class _ServerPageState extends State<ServerPage> {
     Navigator.of(context).push(route);
   }
 
-  // void _onPinHistory(BuildContext context, int index) async {
-  //   try {
-  //     ChatServerM server = _serverListNotifier.value[index];
-  //     server.pin = 1;
-  //     _serverListNotifier.value.sort((a, b) => (a.pin - b.pin));
-  //     await ChatServerDao.dao.addOrReplace(server);
-  //     setState(() {});
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
+  /// Called when QR code is detected.
+  ///
+  /// if a link contains query parameter `magic_token`, it will be considered as
+  /// an invitation link. The link will be further handled by
+  /// [_onInvitationLinkDetected].
+  /// Otherwise, it will be considered as a normal link. All data characters will
+  /// be pasted into the text field, without verification.
+  ///
+  /// Test with following types of links:
+  /// 1. valid invitation link;
+  /// 2. valid server url;
+  /// 3. invalid invitation link (same format with an invalid magic token)
+  /// 4. any valid url.
+  ///
+  /// Test also in network good/disconnected situation.
+
+  void _onQrCodeDetected(String data) async {
+    final uri = Uri.parse(data);
+
+    if (uri.scheme != "http" && uri.scheme != "https") {
+      await _showInvalidLinkFormatWarning(context);
+      return;
+    }
+
+    final modifiedLink = data.replaceFirst("/#", "");
+    final modifiedUri = Uri.parse(modifiedLink).replace(fragment: '');
+
+    // Handle invitation link
+    if (modifiedUri.queryParameters.containsKey("magic_token")) {
+      // considerd as a potential invitation link.
+      await _onInvitationLinkDetected(modifiedUri);
+    } else {
+      _urlController.text = data;
+    }
+  }
+
+  Future<void> _onInvitationLinkDetected(Uri uri) async {
+    _isBusy.value = true;
+    await SharedFuncs.parseInvitationUri(uri).then((res) {
+      switch (res.status) {
+        case InvitationLinkPreparationStatus.successful:
+          _isBusy.value = false;
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => PasswordRegisterPage(
+                  chatServer: res.chatServerM!,
+                  magicToken: res.magicToken!,
+                  invitationLink: res.uri)));
+          break;
+        case InvitationLinkPreparationStatus.networkError:
+          _isBusy.value = false;
+          _showNetworkErrorWarning(context);
+          break;
+        case InvitationLinkPreparationStatus.invalid:
+          _isBusy.value = false;
+          _showInvalidInvitationLinkWarning(context);
+          break;
+        default:
+      }
+    }).onError((error, stackTrace) {
+      _isBusy.value = false;
+      App.logger.severe(error);
+    });
+
+    _isBusy.value = false;
+  }
+
+  Future<void> _showInvalidLinkFormatWarning(BuildContext context) async {
+    await showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invalidLinkFormat,
+        content: AppLocalizations.of(context)!.invalidLinkFormat,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
+  }
+
+  Future<void> _showInvalidInvitationLinkWarning(BuildContext context) async {
+    await showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
+  }
+
+  Future<void> _showNetworkErrorWarning(BuildContext context) async {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.networkError,
+        content: AppLocalizations.of(context)!.networkErrorDes,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
+  }
 }
 
 enum ServerStatus { available, uninitialized, error }

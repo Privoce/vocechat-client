@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/models/ui_models/audio_info.dart';
@@ -113,13 +114,7 @@ class _VoceReplyBubbleState extends State<VoceReplyBubble> {
       return VoceTextBubble(key: key, chatMsgM: repliedMsgM, maxLines: 2);
     } else if (repliedMsgM.isFileMsg) {
       if (repliedMsgM.isImageMsg) {
-        return VoceTileImageBubble.data(
-          key: key,
-          imageFile: widget.tileData?.repliedImageFile,
-          isReply: true,
-          getImageList: () =>
-              VoceTileImageBubble.defaultGetImageList(repliedMsgM),
-        );
+        return VoceTileImageBubble.reply(key: key, tileData: widget.tileData!);
       } else {
         final msgNormal = repliedMsgM.msgNormal!;
         final path = msgNormal.content;

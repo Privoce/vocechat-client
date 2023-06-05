@@ -250,7 +250,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   Future<void> _getImageFile() async {
     if (widget.userInfoM != null &&
         widget.userInfoM!.userInfo.avatarUpdatedAt != 0) {
-      imageFile = await UserAvatarHander().readOrFetch(widget.userInfoM!,
+      imageFile = await UserAvatarHandler().readOrFetch(widget.userInfoM!,
           enableServerRetry: widget.enableServerRetry);
 
       if (imageFile != null && (await imageFile!.exists()) && mounted) {

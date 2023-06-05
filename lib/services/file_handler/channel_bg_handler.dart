@@ -2,9 +2,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
 
-class ChannelBgHander extends VoceFileHander {
+class ChannelBgHandler extends VoceFileHandler {
   static const String _pathStr = "channel_background";
-  ChannelBgHander() : super();
+  ChannelBgHandler() : super();
 
   @override
   Future<String> filePath(String fileName,

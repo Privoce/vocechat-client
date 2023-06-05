@@ -7,7 +7,7 @@ import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 
-class AudioFileHandler extends VoceFileHander {
+class AudioFileHandler extends VoceFileHandler {
   // path format: chatId/_pathStr/fileName
 
   static const String _pathStr = "voice_messages";

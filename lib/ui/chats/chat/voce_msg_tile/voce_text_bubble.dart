@@ -1,4 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -50,35 +53,65 @@ class VoceTextBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     var children = <InlineSpan>[];
 
-    if (_hasMention) {
-      _content.splitMapJoin(
-        RegExp(r'\s@[0-9]+\s'),
-        onMatch: (Match match) {
-          final uidStr = match[0]?.substring(2);
-          if (uidStr != null && uidStr.isNotEmpty) {
-            final uid = int.parse(uidStr);
-            children.add(WidgetSpan(
-                child: FutureBuilder<UserInfoM?>(
-              future: UserInfoDao().getUserByUid(uid),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  final mentionStr = snapshot.data!.userInfo.name;
-                  return Text(' @$mentionStr ', style: _mentionStyle);
-                }
-                return Text(" @$uid ", style: _mentionStyle);
-              },
-            )));
-          }
-          return '';
-        },
-        onNonMatch: (String text) {
+    _content.splitMapJoin(
+      RegExp(urlRegEx, caseSensitive: false, dotAll: true),
+      onMatch: (Match match) {
+        String? url = match[0];
+
+        if (url != null && url.isNotEmpty) {
+          children.add(TextSpan(
+              text: url,
+              style: TextStyle(color: Colors.blue),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () async {
+                  String url0 = url;
+                  if (url0.substring(0, 4) != 'http') {
+                    url0 = 'http://$url';
+                  }
+
+                  try {
+                    await launchUrl(Uri.parse(url0));
+                  } catch (e) {
+                    App.logger.severe(e);
+                    throw "error: $url0";
+                  }
+                }));
+        }
+        return "";
+      },
+      onNonMatch: (String text) {
+        if (_hasMention) {
+          text.splitMapJoin(
+            RegExp(r'\s@[0-9]+\s'),
+            onMatch: (Match match) {
+              final uidStr = match[0]?.substring(2);
+              if (uidStr != null && uidStr.isNotEmpty) {
+                final uid = int.parse(uidStr);
+                children.add(WidgetSpan(
+                    child: FutureBuilder<UserInfoM?>(
+                  future: UserInfoDao().getUserByUid(uid),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final mentionStr = snapshot.data!.userInfo.name;
+                      return Text(' @$mentionStr ', style: _mentionStyle);
+                    }
+                    return Text(" @$uid ", style: _mentionStyle);
+                  },
+                )));
+              }
+              return '';
+            },
+            onNonMatch: (String text) {
+              children.add(TextSpan(text: text, style: _normalStyle));
+              return '';
+            },
+          );
+        } else {
           children.add(TextSpan(text: text, style: _normalStyle));
-          return '';
-        },
-      );
-    } else {
-      children.add(TextSpan(text: _content, style: _normalStyle));
-    }
+        }
+        return "";
+      },
+    );
 
     TextSpan textSpan = TextSpan(children: [
       TextSpan(

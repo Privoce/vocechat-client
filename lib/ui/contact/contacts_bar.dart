@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -27,7 +28,7 @@ class ContactsBar extends StatelessWidget implements PreferredSizeWidget {
         overflow: TextOverflow.ellipsis,
       ),
       centerTitle: true,
-      actions: [_buildAddContactsBtn(context)],
+      actions: enableContact ? [_buildAddContactsBtn(context)] : [],
       bottom: SearchFieldButton(
         hintText: AppLocalizations.of(context)!.contactsPageSearchHint,
         onTap: () {

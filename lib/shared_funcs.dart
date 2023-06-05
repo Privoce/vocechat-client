@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -20,6 +21,8 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
@@ -29,10 +32,15 @@ import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
+import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 
 import 'models/local_kits.dart';
 
 class SharedFuncs {
+  // local variables.
+  static Completer<bool> _tokenCompleter = Completer();
+  static bool isRenewingToken = false;
+
   /// Clear all local data
   static Future<void> clearLocalData() async {
     if (navigatorKey.currentState?.context == null) return;
@@ -155,6 +163,10 @@ class SharedFuncs {
     Navigator.of(context).push(route);
   }
 
+  static Future<void> handleIncomingLink(Uri uri) async {}
+
+  static Future<void> handleQrCode(Uri uri) async {}
+
   static Future<void> handleServerLink(Uri uri) async {
     final serverUrl = uri.queryParameters["s"];
 
@@ -221,21 +233,124 @@ class SharedFuncs {
     return uid == App.app.userDb?.uid;
   }
 
-  static Future<void> parseLink(Uri uri) async {
-    if (uri.host == "voce.chat" && uri.path == '/url') {
-      if (uri.queryParameters.containsKey('s')) {
-        // server url (visitor mode in Web client only)
-        await handleServerLink(uri);
-        return;
-      } else if (uri.queryParameters.containsKey('i')) {
-        // invitation link (both web and mobile client)
-        await handleInvitationLink(uri);
-        return;
+  static Future<void> parseUniLink(Uri uri) async {
+    if (!uri.queryParameters.containsKey("magic_link")) {
+      return;
+    }
+
+    final context = navigatorKey.currentContext;
+
+    try {
+      final magicLink = uri.queryParameters["magic_link"]!;
+      final modifiedLink = magicLink.replaceFirst("/#", "");
+      final modifiedUri = Uri.parse(modifiedLink).replace(fragment: '');
+
+      await SharedFuncs.parseInvitationUri(modifiedUri).then((res) {
+        App.logger.info("Invitation link preparation status: ${res.status}");
+        switch (res.status) {
+          case InvitationLinkPreparationStatus.successful:
+            final route = PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  PasswordRegisterPage(
+                      chatServer: res.chatServerM!,
+                      magicToken: res.magicToken!,
+                      invitationLink: res.uri),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                const begin = Offset(0.0, 1.0);
+                const end = Offset.zero;
+                const curve = Curves.fastOutSlowIn;
+
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+
+                return SlideTransition(
+                  position: animation.drive(tween),
+                  child: child,
+                );
+              },
+            );
+
+            if (context != null) {
+              Navigator.of(context).push(route);
+            }
+
+            break;
+          case InvitationLinkPreparationStatus.networkError:
+            // _isBusy.value = false;
+            if (context != null) {
+              _showNetworkErrorWarning(context);
+            }
+            break;
+          case InvitationLinkPreparationStatus.invalid:
+            // _isBusy.value = false;
+            if (context != null) {
+              _showInvalidLinkWarning(context);
+            }
+            break;
+          default:
+        }
+      }).onError((error, stackTrace) {
+        // _isBusy.value = false;
+        App.logger.severe(error);
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  /// Input a modified invitation link (without hash#).
+  static Future<QrScanResult> parseInvitationUri(Uri uri) async {
+    try {
+      String host = uri.host;
+      if (host == "privoce.voce.chat") {
+        host = "dev.voce.chat";
       }
+
+      final apiPath =
+          "${uri.scheme}://$host${uri.hasPort ? ":${uri.port}" : ""}";
+      final userApi = UserApi(serverUrl: apiPath);
+      final magicToken = uri.queryParameters["magic_token"] as String;
+
+      final res = await userApi.checkMagicToken(magicToken);
+      if (res.statusCode == 200 && res.data == true) {
+        final chatServerM =
+            await ChatServerHelper().prepareChatServerM(apiPath);
+        if (chatServerM?.fullUrl == App.app.chatServerM.fullUrl &&
+            App.app.userDb?.loggedIn != 0) {
+          // Current chat server is the same as the invitation link,
+          // and is logged in.
+          if (uri.pathSegments.length == 2 &&
+              uri.pathSegments[0] == "invite_private") {
+            eventBus.fire(PrivateChannelInvitationLinkEvent(uri));
+          } else {
+            return QrScanResult(
+                chatServerM: chatServerM,
+                magicToken: magicToken,
+                uri: uri,
+                status: InvitationLinkPreparationStatus.successful);
+          }
+        } else if (chatServerM != null) {
+          return QrScanResult(
+              chatServerM: chatServerM,
+              magicToken: magicToken,
+              uri: uri,
+              status: InvitationLinkPreparationStatus.successful);
+        }
+      } else if (res.statusCode == 599) {
+        App.logger.severe("Network Error");
+
+        return QrScanResult(
+            status: InvitationLinkPreparationStatus.networkError);
+      } else {
+        App.logger.warning("Link not valid. link: $uri");
+
+        return QrScanResult(status: InvitationLinkPreparationStatus.invalid);
+      }
+    } catch (e) {
+      App.logger.severe(e);
     }
-    if (!await launchUrl(uri)) {
-      throw Exception('Could not launch $uri');
-    }
+    return QrScanResult(status: InvitationLinkPreparationStatus.invalid);
   }
 
   /// Parse mention info in text and markdowns.
@@ -297,32 +412,23 @@ class SharedFuncs {
     return device;
   }
 
-  /// Read assets/custom_configs.yaml and put it into [App] object.
-  // static Future<void> readCustomConfigs() async {
-  //   final data = await rootBundle.loadString('assets/custom_configs.yaml');
-  //   final yaml = loadYaml(data);
-
-  //   try {
-  //     final version = yaml["version"].toString();
-
-  //     if (version == "0.1") {
-  //       final serverUrl = yaml["configs"]["server_url"];
-
-  //       App.app.customConfig = CustomConfigs0001(
-  //           version: version, configs: Configs0001(serverUrl: serverUrl));
-  //     }
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
-
   /// Renew access token and refresh token, and do related data storage.
   static Future<bool> renewAuthToken({bool forceRefresh = false}) async {
+    if (isRenewingToken) {
+      return _tokenCompleter.future;
+    }
+
+    _tokenCompleter = Completer();
+    isRenewingToken = true;
     App.app.statusService?.fireTokenLoading(TokenStatus.connecting);
+
     try {
       if (App.app.userDb == null) {
         App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
-        return false;
+
+        _tokenCompleter.complete(false);
+        isRenewingToken = false;
+        return _tokenCompleter.future;
       }
 
       // Check whether old token expires:
@@ -337,7 +443,10 @@ class SharedFuncs {
           App.app.statusService?.fireTokenLoading(TokenStatus.successful);
           App.logger
               .config("Token is still valid. ExpiresAt: $oldTokenExpiresAt");
-          return true;
+
+          _tokenCompleter.complete(true);
+          isRenewingToken = false;
+          return _tokenCompleter.future;
         }
       }
 
@@ -356,23 +465,32 @@ class SharedFuncs {
 
         await _renewAuthDataInUserDb(token, refreshToken, expiredIn);
 
-        return true;
+        _tokenCompleter.complete(true);
+        isRenewingToken = false;
+        return _tokenCompleter.future;
       } else {
         if (res.statusCode == 401 || res.statusCode == 403) {
           App.logger
               .severe("Renew Token Failed, Status code: ${res.statusCode}");
 
           App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
-          return false;
+
+          App.logger
+              .severe("Renew Token Failed, Status code: ${res.statusCode}");
+
+          _tokenCompleter.complete(false);
+          isRenewingToken = false;
+          return _tokenCompleter.future;
         }
       }
-      App.logger.severe("Renew Token Failed, Status code: ${res.statusCode}");
     } catch (e) {
       App.logger.severe(e);
       App.app.statusService?.fireTokenLoading(TokenStatus.disconnected);
     }
 
-    return false;
+    _tokenCompleter.complete(false);
+    isRenewingToken = false;
+    return _tokenCompleter.future;
   }
 
   static Future<void> _renewAuthDataInUserDb(
@@ -494,4 +612,41 @@ class SharedFuncs {
     }
     return null;
   }
+
+  static void _showInvalidLinkWarning(BuildContext context) {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.invalidInvitationLinkWarning,
+        content:
+            AppLocalizations.of(context)!.invalidInvitationLinkWarningContent,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: (() => Navigator.of(context).pop()))
+        ]);
+  }
+
+  static Future<void> _showNetworkErrorWarning(BuildContext context) async {
+    showAppAlert(
+        context: context,
+        title: AppLocalizations.of(context)!.networkError,
+        content: AppLocalizations.of(context)!.networkErrorDes,
+        actions: [
+          AppAlertDialogAction(
+              text: AppLocalizations.of(context)!.ok,
+              action: () {
+                Navigator.pop(context);
+              })
+        ]);
+  }
+}
+
+class QrScanResult {
+  ChatServerM? chatServerM;
+  String? magicToken;
+  Uri? uri;
+  InvitationLinkPreparationStatus status;
+
+  QrScanResult(
+      {this.chatServerM, this.magicToken, this.uri, required this.status});
 }

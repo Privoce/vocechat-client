@@ -30,8 +30,6 @@ class _MemberAddPageState extends State<MemberAddPage>
 
   @override
   void initState() {
-    print("member add page");
-
     super.initState();
     membersFuture = prepareUserList();
 
