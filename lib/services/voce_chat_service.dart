@@ -505,9 +505,12 @@ class VoceChatService {
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
+    // Cases that need to be ignored:
+    // 1. unsent message in local (status == fail && uid == self);
+    // 2. existing messages (sent by all, status == success && mid > -1)
     if (chatMsg.mid > -1) {
       final localMsg = await ChatMsgDao().getMsgByMid(chatMsg.mid);
-      if (localMsg != null && localMsg.status == MsgStatus.fail) {
+      if (localMsg != null && localMsg.status == MsgStatus.success) {
         return;
       }
     }
