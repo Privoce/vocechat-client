@@ -2,12 +2,9 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
-import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
-import 'package:path/path.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 
 class VideoThumbHandler extends VoceFileHandler {

@@ -2,8 +2,14 @@
     "latest": {"version": "0.2.95", "build_num": 65},
     "logs":  [
         {"time": 1685818445886, "version": "0.2.95", "build_num": 65, "updates": [
-            "- fix: contact status update error."
-        ]},
+            "- add: specified bubble for video messages.",
+            "- add: show url and its hyperlink for text messages.",
+            "- refactor: QR code scanning and invitation link handling.",
+            "- refactor: minor improvement on video page.",
+            "- fix: images might be mistakenly shown deleted.",
+            "- fix: one issue that may cause unsuccessful update of auth tokens.",
+            "- fix: a known retry issue that may cause unsuccessful connection retries."
+            ]},
         {"time": 1685330425671, "version": "0.2.94", "build_num": 64, "updates": [
             "- fix: contact status update error."
         ]},
