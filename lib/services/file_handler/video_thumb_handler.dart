@@ -43,7 +43,7 @@ class VideoThumbHandler extends VoceFileHandler {
     final chatId =
         SharedFuncs.getChatId(gid: chatMsgM.gid, uid: chatMsgM.dmUid);
     final file = await read(fileName, chatId: chatId, dbName: dbName);
-    if (file != null && await file.exists() && (await file.length()) > 0) {
+    if (file != null && (await file.length()) > 0) {
       App.logger.info("Thumb fetched locally.");
       return file;
     }

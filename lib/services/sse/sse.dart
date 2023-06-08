@@ -30,8 +30,8 @@ class Sse {
   void connect() async {
     if (isConnecting) return;
 
-    fireAfterReady(false);
     isConnecting = true;
+    fireAfterReady(false);
 
     close();
     App.logger.info("Connecting SSE: ${await prepareUrl()}");
