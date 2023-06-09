@@ -264,15 +264,11 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         valueListenable: widget.groupInfoNotifier,
         builder: (context, groupInfoM, _) {
           bool isAdmin = App.app.userDb?.userInfo.isAdmin ?? false;
-          bool isOwner = App.app.userDb?.uid == groupInfoM.groupInfo.owner;
-          bool isPublic = groupInfoM.isPublic;
+          // bool isOwner = App.app.userDb?.uid == groupInfoM.groupInfo.owner;
+          // bool isPublic = groupInfoM.isPublic;
           bool showSwitch = false;
 
-          if (isPublic) {
-            showSwitch = isAdmin;
-          } else {
-            showSwitch = isAdmin || isOwner;
-          }
+          showSwitch = isAdmin;
 
           if (showSwitch) {
             final isPublic = groupInfoM.isPublic;
@@ -284,8 +280,8 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                     keepTrailingArrow: false,
                     trailing: CupertinoSwitch(
                         value: isPublic,
-                        onChanged: (_isPublic) async {
-                          await _changeChannelVisibility(_isPublic);
+                        onChanged: (isPublic) async {
+                          await _changeChannelVisibility(isPublic);
                           setState(() {});
                         }),
                   )
