@@ -241,6 +241,7 @@ class _ChatsPageState extends State<ChatsPage>
 
     switch (action) {
       case EventActions.create:
+        break;
       case EventActions.update:
         if (chatId != null) {
           if (!chatTileMap.containsKey(chatId)) {

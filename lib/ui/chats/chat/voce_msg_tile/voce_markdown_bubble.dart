@@ -13,7 +13,7 @@ class VoceMdBubble extends StatelessWidget {
   late final bool _edited;
 
   VoceMdBubble({Key? key, required this.chatMsgM}) : super(key: key) {
-    _mdText = chatMsgM.msgNormal?.content;
+    _mdText = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content;
 
     _edited = chatMsgM.reactionData?.hasEditedText ?? false;
   }
