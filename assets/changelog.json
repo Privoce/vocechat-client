@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.95", "build_num": 65},
+    "latest": {"version": "0.2.96", "build_num": 66},
     "logs":  [
+        {"time": 1686415712607, "version": "0.2.96", "build_num": 66, "updates": [
+            "- fix: multiple bug fixes."          
+            ]},
         {"time": 1685818445886, "version": "0.2.95", "build_num": 65, "updates": [
             "- add: specified bubble for video messages.",
             "- add: show url and its hyperlink for text messages.",
