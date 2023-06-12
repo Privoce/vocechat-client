@@ -236,14 +236,14 @@ class _ChannelInvitePageState extends State<ChannelInvitePage> {
 
     final newUrl = "${uri.scheme}://${uri.host}/#${uri.fragment}?${uri.query}";
 
-    final wrappedUrl = "https://voce.chat/url?i=${Uri.encodeComponent(newUrl)}";
+    // final wrappedUrl = "https://voce.chat/url?i=${Uri.encodeComponent(newUrl)}";
 
-    _invitationLink = wrappedUrl;
-    _linkController.text = wrappedUrl;
+    _invitationLink = newUrl;
+    _linkController.text = newUrl;
 
     _linkStatus.value = LinkStatus.ready;
 
-    return wrappedUrl;
+    return newUrl;
   }
 
   Future<void> _captureAndShareQrCode() async {

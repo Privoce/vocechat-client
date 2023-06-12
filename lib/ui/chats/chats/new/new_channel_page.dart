@@ -155,7 +155,7 @@ class _NewChannelPageState extends State<NewChannelPage> {
     String text = isPrivate
         ? AppLocalizations.of(context)!.newChannelPagePrivateEnableDes
         : AppLocalizations.of(context)!.newChannelPagePrivateDisableDes;
-    text += " " + AppLocalizations.of(context)!.newChannelPagePrivateDes;
+    text += " ${AppLocalizations.of(context)!.newChannelPagePrivateDes}";
 
     Widget child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -79,12 +79,13 @@ class _VoceVideoBubbleState extends State<VoceVideoBubble> {
                   return child!;
                 }
               },
-              child: SizedBox(
+              child: Container(
+                color: Colors.black,
                 child: Image.file(
                   width: double.maxFinite,
                   height: double.maxFinite,
                   _thumbFile!,
-                  fit: BoxFit.fill,
+                  fit: BoxFit.contain,
                 ),
               ),
             )
@@ -179,7 +180,7 @@ class _VoceVideoBubbleState extends State<VoceVideoBubble> {
     await videoPlayerController.initialize().then((value) {
       final ChewieController chewieController = ChewieController(
           videoPlayerController: videoPlayerController,
-          autoPlay: false,
+          autoPlay: true,
           looping: false);
 
       Navigator.of(context).push(MaterialPageRoute(
