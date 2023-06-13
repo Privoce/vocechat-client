@@ -146,7 +146,7 @@ class VoceChatTile extends StatelessWidget {
               child: Icon(
                 AppIcons.mute,
                 size: 14,
-                color: AppColors.grey500,
+                color: AppColors.grey400,
               ),
             );
           } else {

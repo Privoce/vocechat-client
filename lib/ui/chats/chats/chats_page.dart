@@ -375,7 +375,9 @@ class _ChatsPageState extends State<ChatsPage>
   void calUnreadCountSum() {
     int count = 0;
     for (var element in chatTileMap.values) {
-      count += element.unreadCount.value;
+      if (!element.isMuted.value) {
+        count += element.unreadCount.value;
+      }
     }
     unreadCountSum.value = count;
   }
