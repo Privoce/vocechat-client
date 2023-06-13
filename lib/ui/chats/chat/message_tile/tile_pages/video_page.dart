@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -22,6 +23,8 @@ class VideoPage extends StatefulWidget {
 class _VideoPageState extends State<VideoPage>
 // with PortraitStatefulModeMixin<VideoPage>
 {
+  final saveToAlbumStatus = ValueNotifier<ButtonStatus>(ButtonStatus.normal);
+
   @override
   void initState() {
     super.initState();
@@ -55,32 +58,7 @@ class _VideoPageState extends State<VideoPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: () async {
-                  try {
-                    await SaverGallery.saveFile(
-                        file: widget.file.path,
-                        name: widget.file.path.split("/").last,
-                        androidExistNotSave: false);
-                  } catch (e) {
-                    App.logger.severe(e);
-                  }
-                },
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(CupertinoIcons.arrow_down_to_line_alt,
-                        color: AppColors.grey97),
-                    Flexible(
-                      child: Text(AppLocalizations.of(context)!.saveToAlbum,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style:
-                              TextStyle(color: AppColors.grey97, fontSize: 14)),
-                    )
-                  ],
-                )),
+            _saveToAlbumButton(context),
             CupertinoButton(
                 padding: EdgeInsets.zero,
                 onPressed: () async {
@@ -107,5 +85,62 @@ class _VideoPageState extends State<VideoPage>
         ),
       ),
     );
+  }
+
+  Widget _saveToAlbumButton(BuildContext context) {
+    return CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: () async {
+          try {
+            showSnackBar(ButtonStatus.inProgress);
+            await SaverGallery.saveFile(
+                    file: widget.file.path,
+                    name: widget.file.path.split("/").last,
+                    androidExistNotSave: false)
+                .then((value) {
+              if (value.isSuccess) {
+                showSnackBar(ButtonStatus.success);
+              } else {
+                showSnackBar(ButtonStatus.error);
+              }
+            });
+          } catch (e) {
+            App.logger.severe(e);
+          }
+        },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(CupertinoIcons.arrow_down_to_line_alt,
+                color: AppColors.grey97),
+            Flexible(
+              child: Text(AppLocalizations.of(context)!.saveToAlbum,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: AppColors.grey97, fontSize: 14)),
+            )
+          ],
+        ));
+  }
+
+  void showSnackBar(ButtonStatus status) {
+    String snackText;
+
+    switch (status) {
+      case ButtonStatus.success:
+        snackText = AppLocalizations.of(context)!.savedSuccessfully;
+        break;
+      case ButtonStatus.error:
+        snackText = AppLocalizations.of(context)!.saveFailed;
+        break;
+      case ButtonStatus.inProgress:
+        snackText = AppLocalizations.of(context)!.saving;
+        break;
+      default:
+        snackText = AppLocalizations.of(context)!.saveToAlbum;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(snackText), duration: Duration(seconds: 1)));
   }
 }
