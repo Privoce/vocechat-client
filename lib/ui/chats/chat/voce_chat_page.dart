@@ -225,7 +225,7 @@ class _VoceChatPageState extends State<VoceChatPage>
               CupertinoButton(
                   padding: const EdgeInsets.all(4.0),
                   onPressed: () => _unblockContact(userInfoM.uid),
-                  child: _buildContactStatusActionBtn(AppIcons.ban,
+                  child: _buildContactStatusActionBtn(Icons.block_flipped,
                       AppLocalizations.of(context)!.unblock, context))
             ],
           );
@@ -251,7 +251,7 @@ class _VoceChatPageState extends State<VoceChatPage>
                   CupertinoButton(
                       padding: const EdgeInsets.all(4.0),
                       onPressed: () => _blockContact(userInfoM.uid),
-                      child: _buildContactStatusActionBtn(AppIcons.ban,
+                      child: _buildContactStatusActionBtn(Icons.block_flipped,
                           AppLocalizations.of(context)!.block, context))
                 ],
               )

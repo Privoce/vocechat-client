@@ -105,7 +105,7 @@ class _VoceVideoBubbleState extends State<VoceVideoBubble> {
               return CupertinoButton(
                 padding: EdgeInsets.zero,
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(buttonSize / 2),
+                borderRadius: BorderRadius.circular(buttonSize),
                 onPressed: _fetchFile,
                 child: Icon(Icons.play_arrow,
                     color: Colors.grey, size: buttonSize),

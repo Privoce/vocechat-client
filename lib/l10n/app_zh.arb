@@ -161,6 +161,7 @@
     "minute":"分钟",
     "minutes":"分钟",
     "mute" : "静音",
+    "muteNotification": "静默通知",
     
     "name":"用户名",
     "networkError":"网络错误",
@@ -182,6 +183,7 @@
     "permissionRequired":"需要权限",
     "permissionRequiredDes":"请前往设置中授权。",
     "pin": "钉选",
+    "pinChat":"置顶会话",
     
     "privateChannelToPublicTitle":"转为公有频道",
     "privateChannelToPublicContent":"这将邀请本服务器的所有用户加入此频道。如果您不是管理员，您会失去此频道的所有权。",
@@ -215,6 +217,9 @@
     "savedItems": "保存的消息",
     "saveToDownloads": "保存到下载文件夹",
     "saveToAlbum": "保存到相册",
+    "savedSuccessfully": "保存成功",
+    "saveFailed": "保存失败",
+    "saving": "保存中...",
     "scanQrCode":"扫描二维码",
     "scanQrCodeToRegister": "扫描二维码来注册",
     "searching":"搜索中",

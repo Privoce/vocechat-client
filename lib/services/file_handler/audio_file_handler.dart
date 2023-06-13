@@ -34,12 +34,13 @@ class AudioFileHandler extends VoceFileHandler {
 
   Future<File?> readAudioFile(ChatMsgM chatMsgM,
       {bool serverFetch = true, Function(int, int)? onProgress}) async {
-    final filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content;
+    final serverFilePath =
+        chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content;
     final chatId =
         SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     final localMid = chatMsgM.localMid;
 
-    return readOrFetch(filePath ?? "", chatId ?? "", localMid, onProgress,
+    return readOrFetch(serverFilePath ?? "", chatId ?? "", localMid, onProgress,
         serverFetch: serverFetch);
   }
 
@@ -49,7 +50,7 @@ class AudioFileHandler extends VoceFileHandler {
       {String? dbName, bool serverFetch = true}) async {
     final localAudioFile =
         await read(generateFileName(localMid), chatId: chatId, dbName: dbName);
-    if (localAudioFile != null) {
+    if (localAudioFile != null || !serverFetch) {
       return localAudioFile;
     } else {
       // get from server
