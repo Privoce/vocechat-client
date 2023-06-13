@@ -33,6 +33,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
   final ValueNotifier<bool> _isMuted = ValueNotifier(false);
+  final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
@@ -140,7 +141,21 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
           //         }),
           //   )
           // ]),
-          // SizedBox(height: 8),
+          BannerTile(
+            title: AppLocalizations.of(context)!.pinChat,
+            keepTrailingArrow: false,
+            trailing: ValueListenableBuilder<bool>(
+                valueListenable: _pinned,
+                builder: (context, pinned, _) {
+                  return CupertinoSwitch(
+                    value: pinned,
+                    onChanged: (value) {
+                      _changePinSettings(value);
+                    },
+                  );
+                }),
+          ),
+          SizedBox(height: 8),
           if (widget.userInfoNotifier.value.uid != App.app.userDb?.uid)
             ValueListenableBuilder<UserInfoM>(
                 valueListenable: widget.userInfoNotifier,
@@ -193,6 +208,61 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
     return false;
   }
 
+  Future<void> _changePinSettings(bool value) async {
+    showBusyDialog();
+
+    try {
+      if (value) {
+        await _pin().then((value) {
+          if (value) {
+            _pinned.value = true;
+          } else {
+            showNetworkErrorBar();
+          }
+        });
+      } else {
+        await _unpin().then((value) {
+          if (value) {
+            _pinned.value = false;
+          } else {
+            showNetworkErrorBar();
+          }
+        });
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    dismissBusyDialog();
+  }
+
+  Future<bool> _pin() async {
+    try {
+      final res =
+          await UserApi().pinChat(uid: widget.userInfoNotifier.value.uid);
+      if (res.statusCode == 200) {
+        return true;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return false;
+  }
+
+  Future<bool> _unpin() async {
+    try {
+      final res =
+          await UserApi().unpinChat(uid: widget.userInfoNotifier.value.uid);
+      if (res.statusCode == 200) {
+        return true;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return false;
+  }
+
   Future<bool> _mute({int? expiredAt}) async {
     final reqMap = {
       "add_mute_users": [
@@ -231,5 +301,10 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
       App.logger.severe(e);
     }
     return false;
+  }
+
+  void showNetworkErrorBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
   }
 }

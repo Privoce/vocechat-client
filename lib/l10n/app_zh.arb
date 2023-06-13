@@ -183,6 +183,7 @@
     "permissionRequired":"需要权限",
     "permissionRequiredDes":"请前往设置中授权。",
     "pin": "钉选",
+    "pinChat":"置顶会话",
     
     "privateChannelToPublicTitle":"转为公有频道",
     "privateChannelToPublicContent":"这将邀请本服务器的所有用户加入此频道。如果您不是管理员，您会失去此频道的所有权。",

@@ -293,8 +293,8 @@ class UserApi {
     return dio.post<String>(url);
   }
 
-  Future<Response> mute(String req) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> mute(String req, {bool enableRetry = false}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
 
     return dio.post("/mute", data: req);
@@ -464,8 +464,9 @@ class UserApi {
     return newRes;
   }
 
-  Future<Response> pinChat({int? uid, int? gid}) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> pinChat(
+      {int? uid, int? gid, bool enableRetry = false}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
 
     Map reqMap = {};
@@ -480,8 +481,9 @@ class UserApi {
     return dio.post("/pin_chat", data: json.encode(reqMap));
   }
 
-  Future<Response> unpinChat({int? uid, int? gid}) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> unpinChat(
+      {int? uid, int? gid, bool enableRetry = false}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
 
     Map reqMap = {};
