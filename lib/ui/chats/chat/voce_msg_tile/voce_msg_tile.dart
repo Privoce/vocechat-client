@@ -25,6 +25,7 @@ import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/audio/voce_audio_bub
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_markdown_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_text_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_video_bubble.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
@@ -236,10 +237,12 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                     }));
                   },
             child: VoceUserAvatar.file(
-                name: widget.tileData.name,
-                uid: widget.tileData.userInfoM.uid,
-                file: widget.tileData.avatarFile,
-                size: VoceAvatarSize.s40)));
+              name: widget.tileData.name,
+              uid: widget.tileData.userInfoM.uid,
+              file: widget.tileData.avatarFile,
+              size: VoceAvatarSize.s40,
+              isBot: widget.tileData.userInfoM.userInfo.isBot ?? false,
+            )));
   }
 
   Widget _buildMidCol(BuildContext context) {
@@ -386,6 +389,9 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
               return VoceTileImageBubble.tileData(
                   key: ObjectKey(widget.tileData.imageFile),
                   tileData: widget.tileData);
+            } else if (chatMsgM.isVideoMsg) {
+              return VoceVideoBubble(
+                  key: ObjectKey(chatMsgM), chatMsgM: chatMsgM);
             } else {
               final msgNormal = chatMsgM.msgNormal!;
               final path = msgNormal.content;
@@ -406,7 +412,8 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                 tileData: widget.tileData,
                 isSelf: widget.selfRightLayout);
           } else if (chatMsgM.isArchiveMsg) {
-            return VoceArchiveBubble.tileData(tileData: widget.tileData);
+            return VoceArchiveBubble.tileData(
+                key: ObjectKey(widget.tileData), tileData: widget.tileData);
           }
           return Text(AppLocalizations.of(context)!.unsupportedMessageType);
         });

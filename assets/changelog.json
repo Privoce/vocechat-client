@@ -1,6 +1,23 @@
 {   
-    "latest": {"version": "0.2.94", "build_num": 64},
+    "latest": {"version": "0.2.97", "build_num": 67},
     "logs":  [
+        {"time": 1686678311279, "version": "0.2.97", "build_num": 67, "updates": [
+            "- add: mute and pin chats.",
+            "- fix: chats might be loaded slowly due to a file fetch error.",
+            "- fix: other bug fixes."
+            ]},
+        {"time": 1686415712607, "version": "0.2.96", "build_num": 66, "updates": [
+            "- fix: multiple bug fixes."          
+            ]},
+        {"time": 1685818445886, "version": "0.2.95", "build_num": 65, "updates": [
+            "- add: specified bubble for video messages.",
+            "- add: show url and its hyperlink for text messages.",
+            "- refactor: QR code scanning and invitation link handling.",
+            "- refactor: minor improvement on video page.",
+            "- fix: images might be mistakenly shown deleted.",
+            "- fix: one issue that may cause unsuccessful update of auth tokens.",
+            "- fix: a known retry issue that may cause unsuccessful connection retries."
+            ]},
         {"time": 1685330425671, "version": "0.2.94", "build_num": 64, "updates": [
             "- fix: contact status update error."
         ]},

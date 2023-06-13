@@ -17,8 +17,8 @@ class FileUploader {
   FileUploader(
       {required this.fileBytes, required this.fileId, this.onUploadProgress}) {
     _dio = Dio();
-    _dio.interceptors.add(RetryInterceptor(
-        dio: _dio, options: RetryOptions(retryInterval: Duration(seconds: 2))));
+    // _dio.interceptors.add(RetryInterceptor(
+    //     dio: _dio, options: RetryOptions(retryInterval: Duration(seconds: 2))));
 
     _dio.options.baseUrl = "${App.app.chatServerM.fullUrl}/api/resource";
     _dio.options.connectTimeout = 5000; //5s

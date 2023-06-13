@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
@@ -17,6 +18,7 @@ import 'package:vocechat_client/models/ui_models/chat_tile_data.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
@@ -126,7 +128,7 @@ class _ChatsPageState extends State<ChatsPage>
     );
   }
 
-  List<ChatTileData> sortTileData() {
+  Widget _buildChats() {
     final List<ChatTileData> pinned = [];
     final List<ChatTileData> unpinned = [];
 
@@ -148,23 +150,34 @@ class _ChatsPageState extends State<ChatsPage>
 
     unpinned.sort((a, b) => b.updatedAt.value - a.updatedAt.value);
 
-    return [...pinned] + [...unpinned];
-  }
-
-  Widget _buildChats() {
-    final chatTileList = sortTileData();
-
-    return ListView.separated(
-      itemCount: chatTileList.length,
-      itemBuilder: (context, index) {
-        return VoceChatTile(
-            key: ObjectKey(chatTileList[index]),
-            tileData: chatTileList[index],
-            onTap: onTap);
-      },
-      separatorBuilder: (context, index) {
-        return const Divider(indent: 80);
-      },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Column(
+            children: List<Widget>.generate(pinned.length, (index) {
+          return VoceChatTile(
+              key: ObjectKey(pinned[index]),
+              tileData: pinned[index],
+              onTap: onTap);
+        })),
+        Flexible(
+          child: ListView.separated(
+            itemCount: unpinned.length,
+            itemBuilder: (context, index) {
+              return VoceChatTile(
+                  key: ObjectKey(unpinned[index]),
+                  tileData: unpinned[index],
+                  onTap: onTap);
+            },
+            separatorBuilder: (context, index) {
+              return Divider(
+                indent: 80,
+                color: AppColors.grey200,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -229,9 +242,10 @@ class _ChatsPageState extends State<ChatsPage>
     }
 
     calUnreadCountSum();
-    // if (afterReady) {
-    //   setState(() {});
-    // }
+
+    if (afterReady) {
+      setState(() {});
+    }
   }
 
   Future<void> _onUser(
@@ -240,6 +254,7 @@ class _ChatsPageState extends State<ChatsPage>
 
     switch (action) {
       case EventActions.create:
+        break;
       case EventActions.update:
         if (chatId != null) {
           if (!chatTileMap.containsKey(chatId)) {
@@ -259,9 +274,11 @@ class _ChatsPageState extends State<ChatsPage>
     }
 
     calUnreadCountSum();
-    // if (afterReady) {
-    //   setState(() {});
-    // }
+    getMemberCount();
+
+    if (afterReady) {
+      setState(() {});
+    }
   }
 
   void clearChats() {
@@ -375,7 +392,9 @@ class _ChatsPageState extends State<ChatsPage>
   void calUnreadCountSum() {
     int count = 0;
     for (var element in chatTileMap.values) {
-      count += element.unreadCount.value;
+      if (!element.isMuted.value) {
+        count += element.unreadCount.value;
+      }
     }
     unreadCountSum.value = count;
   }
@@ -389,20 +408,21 @@ class _ChatsPageState extends State<ChatsPage>
 
     if (pathSegments[0] == 'invite_private') {
       final gid = int.tryParse(pathSegments[1]);
+      final magicToken = uri.queryParameters['magic_token'];
 
-      if (gid == null) return;
+      if (gid == null || magicToken == null || magicToken.isEmpty) return;
 
       if (!initialListDataCompleter.isCompleted) {
         await initialListDataCompleter.future.then((_) {
-          pushToChannel(gid);
+          pushToChannel(gid, magicToken);
         });
       } else {
-        pushToChannel(gid);
+        pushToChannel(gid, magicToken);
       }
     }
   }
 
-  void pushToChannel(int gid) async {
+  void pushToChannel(int gid, String magicToken) async {
     final chatId = SharedFuncs.getChatId(gid: gid);
     if (chatId == null) return;
 
@@ -419,18 +439,23 @@ class _ChatsPageState extends State<ChatsPage>
           if (groupInfoM != null) {
             return;
           } else {
-            await GroupApi()
-                .addMembers(gid, [App.app.userDb!.uid]).then((response) async {
-              if (response.statusCode == 200) {
-                App.logger.info("addMembers success, gid: $gid");
-                await prepareChats().then((_) {
-                  final chatId = SharedFuncs.getChatId(gid: gid);
-                  if (chatId != null) {
-                    onTap(chatTileMap[chatId]!);
-                  }
+            await UserApi()
+                .joinPrivateChannel(magicToken)
+                .then((response) async {
+              if (response.statusCode == 200 && response.data != null) {
+                App.logger.info("joinPrivateChannel success, gid: $gid");
+                await GroupInfoDao()
+                    .addOrUpdate(GroupInfoM.fromGroupInfo(response.data!, true))
+                    .then((value) async {
+                  await prepareChats().then((_) {
+                    final chatId = SharedFuncs.getChatId(gid: gid);
+                    if (chatId != null) {
+                      onTap(chatTileMap[chatId]!);
+                    }
+                  });
                 });
               } else {
-                App.logger.severe("addMembers failed, gid: $gid");
+                App.logger.severe("joinPrivateChannel failed, gid: $gid");
               }
             });
           }

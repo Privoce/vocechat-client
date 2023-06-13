@@ -9,6 +9,7 @@ import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 
 typedef SseEventAware = void Function(dynamic);
+typedef SseReadyAware = void Function(bool ready);
 
 class Sse {
   static final Sse sse = Sse._internal();
@@ -18,6 +19,7 @@ class Sse {
   Sse._internal();
 
   final Set<SseEventAware> sseEventListeners = {};
+  final Set<SseReadyAware> readyListeners = {};
 
   int reconnectSec = 1;
 
@@ -29,6 +31,7 @@ class Sse {
     if (isConnecting) return;
 
     isConnecting = true;
+    fireAfterReady(false);
 
     close();
     App.logger.info("Connecting SSE: ${await prepareUrl()}");
@@ -86,10 +89,33 @@ class Sse {
     sseEventListeners.clear();
   }
 
+  void subscribeReady(SseReadyAware aware) {
+    unsubscribeReady(aware);
+    readyListeners.add(aware);
+  }
+
+  void unsubscribeReady(SseReadyAware aware) {
+    readyListeners.remove(aware);
+  }
+
+  void unsubscribeAllReadyListeners() {
+    readyListeners.clear();
+  }
+
   void fireSseEvent(dynamic event) {
     for (SseEventAware sseEventAware in sseEventListeners) {
       try {
         sseEventAware(event);
+      } catch (e) {
+        App.logger.severe(e);
+      }
+    }
+  }
+
+  void fireAfterReady(bool afterReady) {
+    for (SseReadyAware aware in readyListeners) {
+      try {
+        aware(afterReady);
       } catch (e) {
         App.logger.severe(e);
       }

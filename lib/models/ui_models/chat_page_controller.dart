@@ -221,7 +221,7 @@ class ChatPageController {
       avatarFile = _avatarMap[userInfoM.uid];
     } else {
       bool enableServerFetch = userInfoM.userInfo.avatarUpdatedAt > 0;
-      avatarFile = await UserAvatarHander()
+      avatarFile = await UserAvatarHandler()
           .readOrFetch(userInfoM, enableServerFetch: enableServerFetch);
       if (avatarFile != null) {
         _avatarMap.addAll({userInfoM.uid: avatarFile});
@@ -271,6 +271,7 @@ class ChatPageController {
 
       for (var msg in msgList) {
         final tileData = await prepareTileData(msg);
+
         if (_localMidSet.contains(tileData.chatMsgMNotifier.value.localMid)) {
           // duplicated
           final index = tileDataList.indexWhere((element) =>
@@ -432,7 +433,8 @@ class ChatPageController {
           if (each.chatMsgMNotifier.value.fromUid == userInfoM.uid) {
             if (each.userInfoM.userInfo.avatarUpdatedAt <
                 userInfoM.userInfo.avatarUpdatedAt) {
-              each.avatarFile = await UserAvatarHander().readOrFetch(userInfoM);
+              each.avatarFile =
+                  await UserAvatarHandler().readOrFetch(userInfoM);
               _avatarMap.addAll({userInfoM.uid: each.avatarFile!});
             }
             each.userInfoM = userInfoM;
@@ -498,7 +500,7 @@ class ChatPageController {
     }
   }
 
-  void clearSelection() {
+  void clearMsgsSelection() {
     for (final tileData in tileDataList) {
       tileData.selected.value = false;
     }

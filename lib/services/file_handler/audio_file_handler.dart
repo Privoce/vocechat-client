@@ -7,7 +7,7 @@ import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/services/file_handler/voce_file_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 
-class AudioFileHandler extends VoceFileHander {
+class AudioFileHandler extends VoceFileHandler {
   // path format: chatId/_pathStr/fileName
 
   static const String _pathStr = "voice_messages";
@@ -34,12 +34,13 @@ class AudioFileHandler extends VoceFileHander {
 
   Future<File?> readAudioFile(ChatMsgM chatMsgM,
       {bool serverFetch = true, Function(int, int)? onProgress}) async {
-    final filePath = chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content;
+    final serverFilePath =
+        chatMsgM.msgNormal?.content ?? chatMsgM.msgReply?.content;
     final chatId =
         SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     final localMid = chatMsgM.localMid;
 
-    return readOrFetch(filePath ?? "", chatId ?? "", localMid, onProgress,
+    return readOrFetch(serverFilePath ?? "", chatId ?? "", localMid, onProgress,
         serverFetch: serverFetch);
   }
 
@@ -49,7 +50,7 @@ class AudioFileHandler extends VoceFileHander {
       {String? dbName, bool serverFetch = true}) async {
     final localAudioFile =
         await read(generateFileName(localMid), chatId: chatId, dbName: dbName);
-    if (localAudioFile != null) {
+    if (localAudioFile != null || !serverFetch) {
       return localAudioFile;
     } else {
       // get from server

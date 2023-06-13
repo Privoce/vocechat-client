@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
+import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/token/login_response.dart';
 import 'package:vocechat_client/api/models/user/register_request.dart';
 import 'package:vocechat_client/api/models/user/send_reg_magic_token_request.dart';
@@ -292,8 +293,8 @@ class UserApi {
     return dio.post<String>(url);
   }
 
-  Future<Response> mute(String req) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> mute(String req, {bool enableRetry = false}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
 
     return dio.post("/mute", data: req);
@@ -306,9 +307,11 @@ class UserApi {
     return dio.get("/check_email?email=$email");
   }
 
-  Future<Response<bool>> checkMagicToken(String magicToken) async {
-    final dio = DioUtil(baseUrl: _baseUrl);
+  Future<Response<bool>> checkMagicToken(String magicToken,
+      {bool enableRetry = false}) async {
+    final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
+    dio.options.connectTimeout = 2000;
 
     final res = await dio.post("/check_magic_token",
         data: json.encode({"magic_token": magicToken}));
@@ -322,7 +325,7 @@ class UserApi {
         redirects: res.redirects,
         extra: res.extra);
 
-    newRes.data = res.statusCode == 200 && res.data != null;
+    newRes.data = res.statusCode == 200 && res.data == true;
     return newRes;
   }
 
@@ -461,8 +464,9 @@ class UserApi {
     return newRes;
   }
 
-  Future<Response> pinChat({int? uid, int? gid}) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> pinChat(
+      {int? uid, int? gid, bool enableRetry = false}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
 
     Map reqMap = {};
@@ -477,8 +481,9 @@ class UserApi {
     return dio.post("/pin_chat", data: json.encode(reqMap));
   }
 
-  Future<Response> unpinChat({int? uid, int? gid}) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+  Future<Response> unpinChat(
+      {int? uid, int? gid, bool enableRetry = false}) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
 
     Map reqMap = {};
@@ -491,5 +496,27 @@ class UserApi {
     reqMap = {"target": reqMap};
 
     return dio.post("/unpin_chat", data: json.encode(reqMap));
+  }
+
+  Future<Response<GroupInfo>> joinPrivateChannel(String magicToken) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    final res = await dio.post("/join_private",
+        data: json.encode({"magic_token": magicToken}));
+
+    var newRes = Response<GroupInfo>(
+        headers: res.headers,
+        requestOptions: res.requestOptions,
+        isRedirect: res.isRedirect,
+        statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
+        redirects: res.redirects,
+        extra: res.extra);
+
+    if (res.statusCode == 200 && res.data != null) {
+      newRes.data = GroupInfo.fromJson(res.data!);
+    }
+    return newRes;
   }
 }

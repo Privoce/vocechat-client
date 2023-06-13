@@ -24,10 +24,8 @@ import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/voce_audio_service.dart';
-import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/services/voce_send_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -227,7 +225,7 @@ class _VoceChatPageState extends State<VoceChatPage>
               CupertinoButton(
                   padding: const EdgeInsets.all(4.0),
                   onPressed: () => _unblockContact(userInfoM.uid),
-                  child: _buildContactStatusActionBtn(AppIcons.ban,
+                  child: _buildContactStatusActionBtn(Icons.block_flipped,
                       AppLocalizations.of(context)!.unblock, context))
             ],
           );
@@ -253,7 +251,7 @@ class _VoceChatPageState extends State<VoceChatPage>
                   CupertinoButton(
                       padding: const EdgeInsets.all(4.0),
                       onPressed: () => _blockContact(userInfoM.uid),
-                      child: _buildContactStatusActionBtn(AppIcons.ban,
+                      child: _buildContactStatusActionBtn(Icons.block_flipped,
                           AppLocalizations.of(context)!.block, context))
                 ],
               )
@@ -439,7 +437,7 @@ class _VoceChatPageState extends State<VoceChatPage>
                   onPressed: () {
                     selectEnabled.value = false;
                     selectedMsgMap.clear();
-                    widget.controller.clearSelection();
+                    widget.controller.clearMsgsSelection();
                     selectedMsgCantMultipleArchive.value = false;
                   },
                   child: Icon(AppIcons.close_circle,
@@ -642,6 +640,7 @@ class _VoceChatPageState extends State<VoceChatPage>
         });
 
     selectedMsgMap.clear();
+    widget.controller.clearMsgsSelection();
     selectEnabled.value = false;
   }
 
@@ -660,6 +659,7 @@ class _VoceChatPageState extends State<VoceChatPage>
     }
 
     selectedMsgMap.clear();
+    widget.controller.clearMsgsSelection();
     selectEnabled.value = false;
   }
 
@@ -673,6 +673,7 @@ class _VoceChatPageState extends State<VoceChatPage>
     }
 
     selectedMsgMap.clear();
+    widget.controller.clearMsgsSelection();
     selectEnabled.value = false;
   }
 

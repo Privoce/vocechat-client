@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
 import 'package:vocechat_client/models/ui_models/chat_tile_data.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
@@ -83,50 +84,73 @@ class VoceChatTile extends StatelessWidget {
             ],
           ),
         ),
-        subtitle: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            ValueListenableBuilder<String>(
-                valueListenable: tileData.draft,
-                builder: (context, draft, _) {
-                  if (draft.isNotEmpty) {
-                    return Expanded(
-                      child: Row(
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(right: 8.0),
-                            child:
-                                Icon(Icons.create, color: Colors.red, size: 18),
-                          ),
-                          Flexible(
-                            child: Text(draft,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.w400)),
-                          )
-                        ],
+        subtitle: _buildSubtitle(),
+      ),
+    );
+  }
+
+  Widget _buildSubtitle() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ValueListenableBuilder<String>(
+            valueListenable: tileData.draft,
+            builder: (context, draft, _) {
+              if (draft.isNotEmpty) {
+                return Expanded(
+                  child: Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Icon(Icons.create, color: Colors.red, size: 18),
                       ),
-                    );
-                  }
-                  return Expanded(
-                      child: ValueListenableBuilder<String>(
-                          valueListenable: tileData.snippet,
-                          builder: (context, snippet, _) {
-                            return Text(
-                              snippet,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              strutStyle:
-                                  const StrutStyle(forceStrutHeight: true),
-                              style: AppTextStyles.snippet,
-                            );
-                          }));
-                  // snippet
-                }),
-            ValueListenableBuilder<int>(
+                      Flexible(
+                        child: Text(draft,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 15,
+                                color: Colors.red,
+                                fontWeight: FontWeight.w400)),
+                      )
+                    ],
+                  ),
+                );
+              }
+              return Expanded(
+                  child: ValueListenableBuilder<String>(
+                      valueListenable: tileData.snippet,
+                      builder: (context, snippet, _) {
+                        return Text(
+                          snippet,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          strutStyle: const StrutStyle(forceStrutHeight: true),
+                          style: AppTextStyles.snippet,
+                        );
+                      }));
+              // snippet
+            }),
+        _buildSubtitleBadge()
+      ],
+    );
+  }
+
+  Widget _buildSubtitleBadge() {
+    return ValueListenableBuilder<bool>(
+        valueListenable: tileData.isMuted,
+        builder: (context, isMuted, _) {
+          if (isMuted) {
+            return Padding(
+              padding: EdgeInsets.only(left: 8),
+              child: Icon(
+                AppIcons.mute,
+                size: 14,
+                color: AppColors.grey400,
+              ),
+            );
+          } else {
+            return ValueListenableBuilder<int>(
                 valueListenable: tileData.mentionsCount,
                 builder: (context, value, _) {
                   if (value > 0) {
@@ -177,11 +201,9 @@ class VoceChatTile extends StatelessWidget {
                               ));
                         });
                   }
-                })
-          ],
-        ),
-      ),
-    );
+                });
+          }
+        });
   }
 
   Widget _buildAvatar() {

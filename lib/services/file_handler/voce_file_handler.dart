@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:vocechat_client/app.dart';
 
-class VoceFileHander {
-  VoceFileHander();
+class VoceFileHandler {
+  VoceFileHandler();
 
   Future<String> filePath(String fileName,
       {String? chatId, String? dbName}) async {
@@ -39,6 +39,8 @@ class VoceFileHander {
     try {
       if (await exists(fileName, chatId: chatId, dbName: dbName)) {
         return File(path);
+      } else {
+        // App.logger.info("File does not exist. path: $path");
       }
     } catch (e) {
       App.logger.severe(e);
