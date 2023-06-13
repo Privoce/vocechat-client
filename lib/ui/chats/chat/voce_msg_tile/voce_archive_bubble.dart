@@ -65,20 +65,20 @@ class _VoceArchiveBubbleState extends State<VoceArchiveBubble> {
     users = widget.archive?.users ?? [];
     msgs = widget.archive?.messages ?? [];
 
-    if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
-      widget.tileData!.secondaryPrepare().then((_) {
-        setState(() {
-          widget.archive = widget.tileData!.archive;
-          widget.archiveId =
-              widget.tileData!.chatMsgMNotifier.value.msgNormal!.content;
+    // if (widget.tileData != null && widget.tileData!.needSecondaryPrepare) {
+    widget.tileData?.secondaryPrepare().then((_) {
+      setState(() {
+        widget.archive = widget.tileData!.archive;
+        widget.archiveId =
+            widget.tileData!.chatMsgMNotifier.value.msgNormal!.content;
 
-          users = widget.archive?.users ?? [];
-          msgs = widget.archive?.messages ?? [];
+        users = widget.archive?.users ?? [];
+        msgs = widget.archive?.messages ?? [];
 
-          afterServerPrepare = true;
-        });
+        afterServerPrepare = true;
       });
-    }
+    });
+    // }
   }
 
   @override
