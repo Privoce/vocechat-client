@@ -412,7 +412,8 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                 tileData: widget.tileData,
                 isSelf: widget.selfRightLayout);
           } else if (chatMsgM.isArchiveMsg) {
-            return VoceArchiveBubble.tileData(tileData: widget.tileData);
+            return VoceArchiveBubble.tileData(
+                key: ObjectKey(widget.tileData), tileData: widget.tileData);
           }
           return Text(AppLocalizations.of(context)!.unsupportedMessageType);
         });
