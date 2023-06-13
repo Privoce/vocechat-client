@@ -82,31 +82,29 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
               },
               child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
         ),
-        body: SafeArea(
-          child: Stack(
-            children: [
-              SingleChildScrollView(
-                child: Column(
-                  children: [
-                    _buildChannelInfo(context),
-                    _buildMsgActions(),
-                    _buildInvitition(context),
-                    _buildMute(),
-                    _buildBurnAfterReading(context),
-                    ValueListenableBuilder<GroupInfoM>(
-                        valueListenable: widget.groupInfoNotifier,
-                        builder: (context, groupInfoM, _) {
-                          return SettingMembersTile(
-                              groupInfoMNotifier: widget.groupInfoNotifier);
-                        }),
-                    _buildChannelVisibiliy(),
-                    _buildBtns()
-                  ],
-                ),
-              ),
-              BusyDialog(busy: _isBusy)
-            ],
-          ),
+        body: Stack(
+          children: [
+            ListView(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom),
+              children: [
+                _buildChannelInfo(context),
+                _buildMsgActions(),
+                _buildInvitition(context),
+                _buildMute(),
+                _buildBurnAfterReading(context),
+                ValueListenableBuilder<GroupInfoM>(
+                    valueListenable: widget.groupInfoNotifier,
+                    builder: (context, groupInfoM, _) {
+                      return SettingMembersTile(
+                          groupInfoMNotifier: widget.groupInfoNotifier);
+                    }),
+                _buildChannelVisibiliy(),
+                _buildBtns()
+              ],
+            ),
+            BusyDialog(busy: _isBusy)
+          ],
         ));
   }
 

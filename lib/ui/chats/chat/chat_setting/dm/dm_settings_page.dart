@@ -30,15 +30,15 @@ class DmSettingsPage extends StatefulWidget {
 }
 
 class _DmSettingsPageState extends State<DmSettingsPage> {
-  bool isMuted = false;
-
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
+
+  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
 
-    isMuted = widget.userInfoNotifier.value.properties.enableMute;
+    _isMuted.value = widget.userInfoNotifier.value.properties.enableMute;
   }
 
   @override
@@ -68,8 +68,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             },
             child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
       ),
-      body: SafeArea(
-          child: Stack(
+      body: Stack(
         children: [
           ListView(children: [
             _buildDmInfo(context),
@@ -78,7 +77,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
           ]),
           BusyDialog(busy: _isBusy)
         ],
-      )),
+      ),
     );
   }
 
@@ -114,24 +113,30 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
           SizedBox(height: 8),
           // BannerTileGroup(bannerTileList: [
           //   BannerTile(
-          //     title: AppLocalizations.of(context)!.mute,
+          //     title: AppLocalizations.of(context)!.muteNotification,
           //     keepTrailingArrow: false,
-          //     trailing: CupertinoSwitch(
-          //         value: isMuted,
-          //         onChanged: (muted) async {
-          //           showBusyDialog();
+          //     trailing: ValueListenableBuilder<bool>(
+          //         valueListenable: _isMuted,
+          //         builder: (context, isMuted, _) {
+          //           return CupertinoSwitch(
+          //               value: isMuted,
+          //               onChanged: (muted) async {
+          //                 showBusyDialog();
 
-          //           try {
-          //             if (muted) {
-          //               await _mute();
-          //             } else {
-          //               await _unMute();
-          //             }
-          //           } catch (e) {
-          //             App.logger.severe(e);
-          //           }
+          //                 try {
+          //                   if (muted) {
+          //                     await _mute();
+          //                   } else {
+          //                     await _unMute();
+          //                   }
+          //                 } catch (e) {
+          //                   App.logger.severe(e);
+          //                 }
 
-          //           dismissBusyDialog();
+          //                 _isMuted.value = muted;
+
+          //                 dismissBusyDialog();
+          //               });
           //         }),
           //   )
           // ]),
