@@ -128,7 +128,7 @@ class _ChatsPageState extends State<ChatsPage>
     );
   }
 
-  List<ChatTileData> sortTileData() {
+  Widget _buildChats() {
     final List<ChatTileData> pinned = [];
     final List<ChatTileData> unpinned = [];
 
@@ -150,26 +150,34 @@ class _ChatsPageState extends State<ChatsPage>
 
     unpinned.sort((a, b) => b.updatedAt.value - a.updatedAt.value);
 
-    return [...pinned] + [...unpinned];
-  }
-
-  Widget _buildChats() {
-    final chatTileList = sortTileData();
-
-    return ListView.separated(
-      itemCount: chatTileList.length,
-      itemBuilder: (context, index) {
-        return VoceChatTile(
-            key: ObjectKey(chatTileList[index]),
-            tileData: chatTileList[index],
-            onTap: onTap);
-      },
-      separatorBuilder: (context, index) {
-        return Divider(
-          indent: 80,
-          color: AppColors.grey200,
-        );
-      },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Column(
+            children: List<Widget>.generate(pinned.length, (index) {
+          return VoceChatTile(
+              key: ObjectKey(pinned[index]),
+              tileData: pinned[index],
+              onTap: onTap);
+        })),
+        Flexible(
+          child: ListView.separated(
+            itemCount: unpinned.length,
+            itemBuilder: (context, index) {
+              return VoceChatTile(
+                  key: ObjectKey(unpinned[index]),
+                  tileData: unpinned[index],
+                  onTap: onTap);
+            },
+            separatorBuilder: (context, index) {
+              return Divider(
+                indent: 80,
+                color: AppColors.grey200,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -267,6 +275,10 @@ class _ChatsPageState extends State<ChatsPage>
 
     calUnreadCountSum();
     getMemberCount();
+
+    if (afterReady) {
+      setState(() {});
+    }
   }
 
   void clearChats() {
