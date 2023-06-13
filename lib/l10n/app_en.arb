@@ -158,6 +158,7 @@
     "minute":"minute",
     "minutes":"minutes",
     "mute" : "Mute",
+    "muteNotification": "Mute Notification",
 
     "name":"Name",
     "networkError":"Network Error",

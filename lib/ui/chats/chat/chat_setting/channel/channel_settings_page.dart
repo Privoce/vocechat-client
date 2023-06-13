@@ -23,6 +23,7 @@ import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/setting_membe
 import 'package:vocechat_client/ui/chats/chat/chat_setting/pinned_msg/pinned_msg_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
+import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_channel_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
@@ -43,14 +44,28 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   final ValueNotifier<bool> isDeleteBusy = ValueNotifier(false);
   final ValueNotifier<bool> isMuteBusy = ValueNotifier(false);
 
+  final ValueNotifier<bool> _isBusy = ValueNotifier(false);
+  // bool isMuted = false;
+  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
+
   @override
   void initState() {
     super.initState();
+
+    _isMuted.value = widget.groupInfoNotifier.value.properties.enableMute;
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void showBusyDialog() {
+    _isBusy.value = true;
+  }
+
+  void dismissBusyDialog() {
+    _isBusy.value = false;
   }
 
   @override
@@ -68,23 +83,29 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
               child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildChannelInfo(context),
-                _buildMsgActions(),
-                _buildInvitition(context),
-                _buildBurnAfterReading(context),
-                ValueListenableBuilder<GroupInfoM>(
-                    valueListenable: widget.groupInfoNotifier,
-                    builder: (context, groupInfoM, _) {
-                      return SettingMembersTile(
-                          groupInfoMNotifier: widget.groupInfoNotifier);
-                    }),
-                _buildChannelVisibiliy(),
-                _buildBtns()
-              ],
-            ),
+          child: Stack(
+            children: [
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildChannelInfo(context),
+                    _buildMsgActions(),
+                    _buildInvitition(context),
+                    _buildMute(),
+                    _buildBurnAfterReading(context),
+                    ValueListenableBuilder<GroupInfoM>(
+                        valueListenable: widget.groupInfoNotifier,
+                        builder: (context, groupInfoM, _) {
+                          return SettingMembersTile(
+                              groupInfoMNotifier: widget.groupInfoNotifier);
+                        }),
+                    _buildChannelVisibiliy(),
+                    _buildBtns()
+                  ],
+                ),
+              ),
+              BusyDialog(busy: _isBusy)
+            ],
           ),
         ));
   }
@@ -212,6 +233,30 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     );
   }
 
+  Widget _buildMute() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: BannerTileGroup(
+        bannerTileList: [
+          BannerTile(
+            title: AppLocalizations.of(context)!.muteNotification,
+            keepTrailingArrow: false,
+            trailing: ValueListenableBuilder<bool>(
+                valueListenable: _isMuted,
+                builder: (context, isMuted, _) {
+                  return CupertinoSwitch(
+                    value: isMuted,
+                    onChanged: (value) {
+                      _changeMuteSettings(value);
+                    },
+                  );
+                }),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBurnAfterReading(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -242,6 +287,23 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
             );
           }),
     );
+  }
+
+  Future<void> _changeMuteSettings(bool value) async {
+    showBusyDialog();
+
+    try {
+      if (value) {
+        await _mute();
+      } else {
+        await _unMute();
+      }
+      _isMuted.value = value;
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    dismissBusyDialog();
   }
 
   Future<bool> _changeBurnAfterReadingSettings(int expiresIn) async {
@@ -406,7 +468,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
     if (isOwner) {
       content +=
-          "\n" + AppLocalizations.of(context)!.leaveChannelTransferOwnerDes;
+          "\n${AppLocalizations.of(context)!.leaveChannelTransferOwnerDes}";
     }
 
     await showAppAlert(
@@ -524,7 +586,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   Future<bool> _mute({int? expiredAt}) async {
     final reqMap = {
       "add_groups": [
-        {"gid": widget.groupInfoNotifier.value.gid, "expired_at": expiredAt}
+        {"gid": widget.groupInfoNotifier.value.gid}
       ]
     };
 

@@ -161,6 +161,7 @@
     "minute":"分钟",
     "minutes":"分钟",
     "mute" : "静音",
+    "muteNotification": "静默通知",
     
     "name":"用户名",
     "networkError":"网络错误",
