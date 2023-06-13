@@ -84,9 +84,7 @@ class ChatTileData {
     updatedAt.value = latestMsgM?.createdAt ?? 0;
     unreadCount.value = await ChatMsgDao().getDmUnreadCount(userInfo.uid);
 
-    isMuted.value = properties.muteExpiresAt != null &&
-        properties.muteExpiresAt! > 0 &&
-        properties.muteExpiresAt! > DateTime.now().millisecondsSinceEpoch;
+    isMuted.value = properties.enableMute;
 
     pinnedAt = properties.pinnedAt ?? -1;
     isPinned.value = properties.pinnedAt != null && properties.pinnedAt! > 0;
@@ -134,9 +132,7 @@ class ChatTileData {
     mentionsCount.value =
         await ChatMsgDao().getGroupUnreadMentionCount(groupInfo.gid);
 
-    isMuted.value = properties.muteExpiresAt != null &&
-        properties.muteExpiresAt! > 0 &&
-        properties.muteExpiresAt! > DateTime.now().millisecondsSinceEpoch;
+    isMuted.value = properties.enableMute;
 
     pinnedAt = properties.pinnedAt ?? -1;
     isPinned.value = properties.pinnedAt != null && properties.pinnedAt! > 0;

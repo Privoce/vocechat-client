@@ -11,6 +11,7 @@ import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/auto_delete_settings_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/saved_page.dart';
+import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
@@ -29,14 +30,29 @@ class DmSettingsPage extends StatefulWidget {
 }
 
 class _DmSettingsPageState extends State<DmSettingsPage> {
+  final ValueNotifier<bool> _isBusy = ValueNotifier(false);
+
+  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
+  final ValueNotifier<bool> _pinned = ValueNotifier(false);
+
   @override
   void initState() {
     super.initState();
+
+    _isMuted.value = widget.userInfoNotifier.value.properties.enableMute;
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void showBusyDialog() {
+    _isBusy.value = true;
+  }
+
+  void dismissBusyDialog() {
+    _isBusy.value = false;
   }
 
   @override
@@ -53,12 +69,16 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             },
             child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
       ),
-      body: SafeArea(
-          child: ListView(children: [
-        _buildDmInfo(context),
-        SizedBox(height: 8),
-        _buildItems(widget.userInfoNotifier.value, context)
-      ])),
+      body: Stack(
+        children: [
+          ListView(children: [
+            _buildDmInfo(context),
+            SizedBox(height: 8),
+            _buildItems(widget.userInfoNotifier.value, context)
+          ]),
+          BusyDialog(busy: _isBusy)
+        ],
+      ),
     );
   }
 
@@ -91,6 +111,50 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
               },
             )
           ]),
+          SizedBox(height: 8),
+          // BannerTileGroup(bannerTileList: [
+          //   BannerTile(
+          //     title: AppLocalizations.of(context)!.muteNotification,
+          //     keepTrailingArrow: false,
+          //     trailing: ValueListenableBuilder<bool>(
+          //         valueListenable: _isMuted,
+          //         builder: (context, isMuted, _) {
+          //           return CupertinoSwitch(
+          //               value: isMuted,
+          //               onChanged: (muted) async {
+          //                 showBusyDialog();
+
+          //                 try {
+          //                   if (muted) {
+          //                     await _mute();
+          //                   } else {
+          //                     await _unMute();
+          //                   }
+          //                 } catch (e) {
+          //                   App.logger.severe(e);
+          //                 }
+
+          //                 _isMuted.value = muted;
+
+          //                 dismissBusyDialog();
+          //               });
+          //         }),
+          //   )
+          // ]),
+          BannerTile(
+            title: AppLocalizations.of(context)!.pinChat,
+            keepTrailingArrow: false,
+            trailing: ValueListenableBuilder<bool>(
+                valueListenable: _pinned,
+                builder: (context, pinned, _) {
+                  return CupertinoSwitch(
+                    value: pinned,
+                    onChanged: (value) {
+                      _changePinSettings(value);
+                    },
+                  );
+                }),
+          ),
           SizedBox(height: 8),
           if (widget.userInfoNotifier.value.uid != App.app.userDb?.uid)
             ValueListenableBuilder<UserInfoM>(
@@ -144,6 +208,61 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
     return false;
   }
 
+  Future<void> _changePinSettings(bool value) async {
+    showBusyDialog();
+
+    try {
+      if (value) {
+        await _pin().then((value) {
+          if (value) {
+            _pinned.value = true;
+          } else {
+            showNetworkErrorBar();
+          }
+        });
+      } else {
+        await _unpin().then((value) {
+          if (value) {
+            _pinned.value = false;
+          } else {
+            showNetworkErrorBar();
+          }
+        });
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    dismissBusyDialog();
+  }
+
+  Future<bool> _pin() async {
+    try {
+      final res =
+          await UserApi().pinChat(uid: widget.userInfoNotifier.value.uid);
+      if (res.statusCode == 200) {
+        return true;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+    return false;
+  }
+
+  Future<bool> _unpin() async {
+    try {
+      final res =
+          await UserApi().unpinChat(uid: widget.userInfoNotifier.value.uid);
+      if (res.statusCode == 200) {
+        return true;
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+
+    return false;
+  }
+
   Future<bool> _mute({int? expiredAt}) async {
     final reqMap = {
       "add_mute_users": [
@@ -155,8 +274,8 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
       final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
-        await App.app.chatService
-            .mute(uid: widget.userInfoNotifier.value.uid, expiredAt: expiredAt);
+        // await App.app.chatService
+        //     .mute(uid: widget.userInfoNotifier.value.uid, expiredAt: expiredAt);
         return true;
       }
     } catch (e) {
@@ -174,13 +293,18 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
       final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
-        await App.app.chatService
-            .mute(uid: widget.userInfoNotifier.value.uid, unmute: true);
+        // await App.app.chatService
+        //     .mute(uid: widget.userInfoNotifier.value.uid, unmute: true);
         return true;
       }
     } catch (e) {
       App.logger.severe(e);
     }
     return false;
+  }
+
+  void showNetworkErrorBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.networkError)));
   }
 }

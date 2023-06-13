@@ -271,6 +271,7 @@ class ChatPageController {
 
       for (var msg in msgList) {
         final tileData = await prepareTileData(msg);
+
         if (_localMidSet.contains(tileData.chatMsgMNotifier.value.localMid)) {
           // duplicated
           final index = tileDataList.indexWhere((element) =>

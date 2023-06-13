@@ -146,8 +146,7 @@ class MsgTileData {
       } else if (chatMsgMNotifier.value.isAudioMsg) {
         await setNormalAudio(serverFetch: false);
       } else if (chatMsgMNotifier.value.isArchiveMsg) {
-        // Needs server fetch to be true
-        await setNormalArchive(serverFetch: true);
+        await setNormalArchive(serverFetch: false);
       }
     } else if (chatMsgMNotifier.value.isReplyMsg) {
       // Replied message is a text/markdown/file/image/audio/archive

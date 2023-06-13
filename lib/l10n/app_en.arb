@@ -158,6 +158,7 @@
     "minute":"minute",
     "minutes":"minutes",
     "mute" : "Mute",
+    "muteNotification": "Mute Notification",
 
     "name":"Name",
     "networkError":"Network Error",
@@ -180,6 +181,7 @@
     "permissionRequired":"Permission Required",
     "permissionRequiredDes":"Please go to Settings to grant permission.",
     "pin": "Pin",
+    "pinChat":"Pin Chat",
     "privateChannelToPublicTitle":"Change to Public Channel",
     "privateChannelToPublicContent":"It will invite all members in this server to this channel. If you are not an admin, you will lose ownership of this channel.",
     "publicChannel":"Public Channel",
@@ -208,12 +210,17 @@
     "resetFcmToken":"Reset Push Notification",
     "resetFcmTokenFooter":"You may re-register Firebase device token for Push Notifications, if a push notification error occurred during login process. Please check your network condition, as it needs to connect Google service.",
 
-    "scanQrCode":"Scan QR Code",
-    "scanQrCodeToRegister": "Scan this QR Code to register",
+    
+    
     "save": "Save",
     "savedItems": "Saved Items",
     "saveToDownloads": "Save to Downloads Folder",
     "saveToAlbum": "Save to Photo Album",
+    "savedSuccessfully": "File has been saved successfully",
+    "saveFailed": "File save failed",
+    "saving": "Saving...",
+    "scanQrCode":"Scan QR Code",
+    "scanQrCodeToRegister": "Scan this QR Code to register",
     "searching":"Searching",
     "second":"second",
     "seconds":"seconds",

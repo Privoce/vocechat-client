@@ -18,6 +18,7 @@ import 'package:vocechat_client/models/ui_models/chat_tile_data.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
@@ -127,7 +128,7 @@ class _ChatsPageState extends State<ChatsPage>
     );
   }
 
-  List<ChatTileData> sortTileData() {
+  Widget _buildChats() {
     final List<ChatTileData> pinned = [];
     final List<ChatTileData> unpinned = [];
 
@@ -149,23 +150,34 @@ class _ChatsPageState extends State<ChatsPage>
 
     unpinned.sort((a, b) => b.updatedAt.value - a.updatedAt.value);
 
-    return [...pinned] + [...unpinned];
-  }
-
-  Widget _buildChats() {
-    final chatTileList = sortTileData();
-
-    return ListView.separated(
-      itemCount: chatTileList.length,
-      itemBuilder: (context, index) {
-        return VoceChatTile(
-            key: ObjectKey(chatTileList[index]),
-            tileData: chatTileList[index],
-            onTap: onTap);
-      },
-      separatorBuilder: (context, index) {
-        return const Divider(indent: 80);
-      },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Column(
+            children: List<Widget>.generate(pinned.length, (index) {
+          return VoceChatTile(
+              key: ObjectKey(pinned[index]),
+              tileData: pinned[index],
+              onTap: onTap);
+        })),
+        Flexible(
+          child: ListView.separated(
+            itemCount: unpinned.length,
+            itemBuilder: (context, index) {
+              return VoceChatTile(
+                  key: ObjectKey(unpinned[index]),
+                  tileData: unpinned[index],
+                  onTap: onTap);
+            },
+            separatorBuilder: (context, index) {
+              return Divider(
+                indent: 80,
+                color: AppColors.grey200,
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -230,9 +242,10 @@ class _ChatsPageState extends State<ChatsPage>
     }
 
     calUnreadCountSum();
-    // if (afterReady) {
-    //   setState(() {});
-    // }
+
+    if (afterReady) {
+      setState(() {});
+    }
   }
 
   Future<void> _onUser(
@@ -262,6 +275,10 @@ class _ChatsPageState extends State<ChatsPage>
 
     calUnreadCountSum();
     getMemberCount();
+
+    if (afterReady) {
+      setState(() {});
+    }
   }
 
   void clearChats() {
@@ -375,7 +392,9 @@ class _ChatsPageState extends State<ChatsPage>
   void calUnreadCountSum() {
     int count = 0;
     for (var element in chatTileMap.values) {
-      count += element.unreadCount.value;
+      if (!element.isMuted.value) {
+        count += element.unreadCount.value;
+      }
     }
     unreadCountSum.value = count;
   }

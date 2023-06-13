@@ -1,6 +1,11 @@
 {   
-    "latest": {"version": "0.2.96", "build_num": 66},
+    "latest": {"version": "0.2.97", "build_num": 67},
     "logs":  [
+        {"time": 1686678311279, "version": "0.2.97", "build_num": 67, "updates": [
+            "- add: mute and pin chats.",
+            "- fix: chats might be loaded slowly due to a file fetch error.",
+            "- fix: other bug fixes."
+            ]},
         {"time": 1686415712607, "version": "0.2.96", "build_num": 66, "updates": [
             "- fix: multiple bug fixes."          
             ]},
