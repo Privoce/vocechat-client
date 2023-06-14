@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/ui/agora/av_chat_page.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -230,5 +231,17 @@ class _ChatBarState extends State<ChatBar> {
     ];
   }
 
-  void _startAudioCall() async {}
+  void _startAudioCall() async {
+    // TODO: AVCalls: change navigation effects.
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        if (widget._isGroup) {
+          return AvChatPage.channel(
+              groupInfoNotifier: widget.groupInfoNotifier!);
+        } else {
+          return AvChatPage.dm(userInfoNotifier: widget.userInfoNotifier!);
+        }
+      },
+    ));
+  }
 }

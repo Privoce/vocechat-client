@@ -26,21 +26,22 @@ class SheetAppBar extends StatelessWidget {
                         borderRadius: BorderRadius.circular(25))),
               ),
             )),
-        SizedBox(
-          width: double.maxFinite,
-          height: height,
-          child: NavigationToolbar(
-            leading: leading,
-            middle: title,
-            centerMiddle: true,
-            trailing: (actions != null && actions!.isNotEmpty)
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: actions!)
-                : null,
+        if (title != null || leading != null || actions != null)
+          SizedBox(
+            width: double.maxFinite,
+            height: height,
+            child: NavigationToolbar(
+              leading: leading,
+              middle: title,
+              centerMiddle: true,
+              trailing: (actions != null && actions!.isNotEmpty)
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: actions!)
+                  : null,
+            ),
           ),
-        ),
       ],
     );
   }
