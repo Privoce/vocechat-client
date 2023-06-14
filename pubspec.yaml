@@ -94,7 +94,6 @@ dependencies:
   android_id: ^0.3.3
   photo_view: ^0.14.0
   video_thumbnail: ^0.5.3
-  agora_rtc_engine: ^6.2.0
   
   
 
