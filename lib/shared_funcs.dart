@@ -392,6 +392,7 @@ class SharedFuncs {
 
     if (Platform.isIOS) {
       String? info = (await DeviceInfoPlugin().iosInfo).identifierForVendor;
+
       if (info == null || info.isEmpty) {
         info = await _setDeviceId();
       }

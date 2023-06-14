@@ -12,7 +12,6 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/settings/child_pages/firebase_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/language_setting_page.dart';
-// import 'package:vocechat_client/ui/settings/child_pages/reload_notification_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/userinfo_setting_page.dart';
@@ -126,32 +125,6 @@ class _SettingPageState extends State<SettingPage> {
         })));
       },
     );
-    // return ValueListenableBuilder<UserInfoM?>(
-    //     valueListenable: userInfoNotifier,
-    //     builder: (context, userInfoM, _) {
-    //       if (userInfoM != null) {
-    //         final userInfo = userInfoM.userInfo;
-    //         return AvatarInfoTile(
-    //           avatar: VoceUserAvatar.user(
-    //               userInfoM: userInfoM, size: VoceAvatarSize.s84),
-    //           title: userInfo.name,
-    //           subtitle: userInfo.email,
-    //           enableEdit: true,
-    //           onTap: () {
-    //             Navigator.of(context)
-    //                 .push(MaterialPageRoute(builder: ((context) {
-    //               return UserInfoSettingPage(userInfoNotifier);
-    //             })));
-    //           },
-    //         );
-    //       } else {
-    //         return AvatarInfoTile(
-    //             avatar: CircleAvatar(
-    //               radius: 40,
-    //             ),
-    //             title: "");
-    //       }
-    //     });
   }
 
   Widget _buildServer(BuildContext context) {
@@ -231,12 +204,12 @@ class _SettingPageState extends State<SettingPage> {
           },
         ),
         SizedBox(height: 8),
-        AppBannerButton(
-            onTap: () async {
-              await SharedFuncs.clearLocalData();
-            },
-            title: AppLocalizations.of(context)!.clearLocalData),
-        SizedBox(height: 8),
+        // AppBannerButton(
+        //     onTap: () async {
+        //       await SharedFuncs.clearLocalData();
+        //     },
+        //     title: AppLocalizations.of(context)!.clearLocalData),
+        // SizedBox(height: 8),
         if (App.app.userDb?.uid != 1)
           AppBannerButton(
             onTap: () => _onDeleteAccountTapped(context),

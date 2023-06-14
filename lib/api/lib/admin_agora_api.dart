@@ -7,10 +7,10 @@ import 'package:vocechat_client/api/models/admin/agora/agora_token_response.dart
 import 'package:vocechat_client/api/models/admin/smtp/smtp.dart';
 import 'package:vocechat_client/app.dart';
 
-class AdminAgora {
+class AdminAgoraApi {
   late final String _baseUrl;
 
-  AdminAgora({String? serverUrl}) {
+  AdminAgoraApi({String? serverUrl}) {
     final url = serverUrl ?? App.app.chatServerM.fullUrl;
     _baseUrl = "$url/api/admin/agora";
   }
