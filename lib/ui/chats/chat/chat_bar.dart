@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/ui/agora/av_chat_page.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -198,10 +197,10 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildChannelActions(BuildContext context) {
     return [
-      CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _startAudioCall,
-          child: Icon(AppIcons.headphone, size: 20, color: AppColors.grey500)),
+      // CupertinoButton(
+      //     padding: EdgeInsets.zero,
+      //     onPressed: _startAudioCall,
+      //     child: Icon(AppIcons.headphone, size: 20, color: AppColors.grey500)),
       CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () async {
