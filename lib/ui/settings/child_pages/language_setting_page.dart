@@ -21,7 +21,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
   // Please keep Locale consistant with the ones in main.dart
   final List<LanguageItem> languageList = [
     LanguageItem(language: "简体中文", locale: Locale('zh', '')),
-    LanguageItem(language: "English", locale: Locale('en', 'US'))
+    LanguageItem(language: "English", locale: Locale('en', ''))
   ];
 
   final ValueNotifier<bool> _isUpdatingLanguage = ValueNotifier(false);
@@ -111,7 +111,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
     _isUpdatingLanguage.value = true;
 
     try {
-      await SharedPreferenceHelper.setString("locale", locale.toLanguageTag())
+      await SharedPreferenceHelper.setString("locale", locale.languageCode)
           .then((value) {
         VoceChatApp.of(context)?.setUILocale(locale);
       });
