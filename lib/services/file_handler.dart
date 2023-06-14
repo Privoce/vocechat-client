@@ -519,7 +519,8 @@ class FileHandler {
   /// Thumb, image use filePath as filename, instead of original filaName.
   ///
   /// Original file name can be retrieved from corresponding chat message.
-  Future<File?> getImageThumb(ChatMsgM chatMsgM) async {
+  Future<File?> getImageThumb(ChatMsgM chatMsgM,
+      {Function(int, int)? onReceiveProgress}) async {
     final chatId =
         SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
@@ -541,7 +542,8 @@ class FileHandler {
     ResourceApi resourceApi = ResourceApi();
 
     try {
-      final res = await resourceApi.getFile(filePath, true, true);
+      final res =
+          await resourceApi.getFile(filePath, true, true, onReceiveProgress);
       if (res.statusCode == 200 && res.data != null) {
         return saveImageThumb(chatId, res.data!, localMid, fileName);
       }
@@ -597,7 +599,8 @@ class FileHandler {
   /// Thumb, image use filePath as filename, instead of original filaName.
   ///
   /// Original file name can be retrieved from corresponding chat message.
-  Future<File?> getImageNormal(ChatMsgM chatMsgM) async {
+  Future<File?> getImageNormal(ChatMsgM chatMsgM,
+      {Function(int, int)? onReceiveProgress}) async {
     final chatId =
         SharedFuncs.getChatId(uid: chatMsgM.dmUid, gid: chatMsgM.gid);
     if (chatId == null) {
@@ -616,7 +619,8 @@ class FileHandler {
     }
 
     try {
-      final res = await resourceApi.getFile(filePath, false, true);
+      final res =
+          await resourceApi.getFile(filePath, false, true, onReceiveProgress);
       if (res.statusCode == 200 && res.data != null) {
         return saveImageNormal(chatId, res.data!, localMid, fileName);
       }
