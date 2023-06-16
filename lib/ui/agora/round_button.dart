@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 
 class RoundButton extends StatelessWidget {
   final IconData icon;
-
+  final Color? color;
+  final Color? backgroundColor;
   final double size;
   final double? paddingValue;
   final VoidCallback? onPressed;
@@ -11,6 +12,8 @@ class RoundButton extends StatelessWidget {
   const RoundButton(
       {Key? key,
       required this.icon,
+      this.color,
+      this.backgroundColor,
       this.size = 24,
       this.paddingValue = 16,
       this.onPressed})
@@ -24,12 +27,12 @@ class RoundButton extends StatelessWidget {
         onPressed: onPressed,
         child: Container(
             decoration: BoxDecoration(
-                color: Colors.grey[800],
+                color: backgroundColor ?? Colors.grey[800],
                 borderRadius: BorderRadius.circular(radius)),
             child: Center(
                 child: Padding(
               padding: EdgeInsets.all(paddingValue ?? 16),
-              child: Icon(icon, size: size, color: Colors.white),
+              child: Icon(icon, size: size, color: color ?? Colors.white),
             ))));
   }
 }

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/widgets/sheet_app_bar.dart';
 
 class AvActionSheet extends StatefulWidget {
-  // final List<AvActionSheetBtnItem> btnItems;
-  // final List<AvActionSheetListItem>? listItems;
   final List<Widget> btnItems;
   final List<Widget>? listItems;
 
@@ -16,10 +14,9 @@ class AvActionSheet extends StatefulWidget {
 
 class _AvActionSheetState extends State<AvActionSheet> {
   final double _dragBarHeight = 16;
-  // final double _actionBtnBarHeight = 64;
   final double _actionBtnBarTopPadding = 8;
   final double _actionBtnBarBottomPadding = 8;
-  final double _actionBtnHeight = 56;
+  final double _actionBtnHeight = 56; // 24 + 16 * 2
 
   final DraggableScrollableController draggableScrollableController =
       DraggableScrollableController();

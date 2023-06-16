@@ -37,16 +37,22 @@ class _AvChatPageState extends State<AvChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white.withAlpha((255 * 0.3).round()),
       body: Stack(
         children: [
           _buildBody(context),
           AvActionSheet(btnItems: [
             // Size must be 24, in-button padding must be 16.
             RoundButton(icon: AppIcons.video, onPressed: () {}, size: 24),
-            RoundButton(icon: AppIcons.video, onPressed: () {}, size: 24),
-            RoundButton(icon: AppIcons.video, onPressed: () {}, size: 24),
-            RoundButton(icon: AppIcons.video, onPressed: () {}, size: 24),
-            RoundButton(icon: AppIcons.video, onPressed: () {}, size: 24),
+            RoundButton(icon: AppIcons.mic, onPressed: () {}, size: 24),
+            RoundButton(icon: AppIcons.speaker, onPressed: () {}, size: 24),
+            RoundButton(
+                icon: AppIcons.screen_share, onPressed: () {}, size: 24),
+            RoundButton(
+                icon: AppIcons.call_end,
+                onPressed: () {},
+                size: 24,
+                backgroundColor: Colors.red),
           ])
         ],
       ),
@@ -95,7 +101,10 @@ class _AvChatPageState extends State<AvChatPage> {
         valueListenable: widget.groupInfoNotifier!,
         builder: (context, groupInfoM, child) {
           return Text(groupInfoM.groupInfo.name,
-              style: AppTextStyles.titleLarge,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white),
               maxLines: 1,
               overflow: TextOverflow.ellipsis);
         },
@@ -107,7 +116,10 @@ class _AvChatPageState extends State<AvChatPage> {
         valueListenable: widget.userInfoNotifier!,
         builder: (context, userInfoM, child) {
           return Text(userInfoM.userInfo.name,
-              style: AppTextStyles.titleLarge,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white),
               maxLines: 1,
               overflow: TextOverflow.ellipsis);
         },
