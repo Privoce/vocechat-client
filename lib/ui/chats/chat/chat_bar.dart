@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/ui/agora/av_chat_floating_window.dart';
 import 'package:vocechat_client/ui/agora/av_chat_page.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
@@ -198,10 +199,13 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildChannelActions(BuildContext context) {
     return [
-      CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _startAudioCall,
-          child: Icon(AppIcons.headphone, size: 20, color: AppColors.grey500)),
+      Builder(builder: (context) {
+        return CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () => _startAudioCall(context),
+            child:
+                Icon(AppIcons.headphone, size: 20, color: AppColors.grey500));
+      }),
       CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () async {
@@ -231,7 +235,7 @@ class _ChatBarState extends State<ChatBar> {
     ];
   }
 
-  void _startAudioCall() async {
+  void _startAudioCall(BuildContext context) async {
     // TODO: AVCalls: change navigation effects.
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) {
@@ -243,5 +247,6 @@ class _ChatBarState extends State<ChatBar> {
         }
       },
     ));
+    // FloatingWindowOverlay.show(context);
   }
 }
