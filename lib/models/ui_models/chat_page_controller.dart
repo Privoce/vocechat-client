@@ -500,7 +500,7 @@ class ChatPageController {
     }
   }
 
-  void clearSelection() {
+  void clearMsgsSelection() {
     for (final tileData in tileDataList) {
       tileData.selected.value = false;
     }

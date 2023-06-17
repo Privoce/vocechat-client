@@ -208,27 +208,6 @@ class SharedFuncs {
     return App.app.customConfig?.hasPreSetServerUrl ?? false;
   }
 
-  static Future<void> initLocale() async {
-    String? localLocal = await SharedPreferenceHelper.getString("locale");
-    if (localLocal != null && localLocal.isNotEmpty) {
-    } else {
-      SharedPreferenceHelper.setString("locale", Platform.localeName);
-      localLocal = Platform.localeName;
-    }
-    if (navigatorKey.currentContext != null) {
-      final split = localLocal.split("-");
-      String languageTag = "", regionTag = "";
-      try {
-        languageTag = split[0];
-        regionTag = split[2];
-      } catch (e) {
-        App.logger.warning(e);
-      }
-      final locale = Locale(languageTag, regionTag);
-      VoceChatApp.of(navigatorKey.currentContext!)?.setUILocale(locale);
-    }
-  }
-
   static bool isSelf(int? uid) {
     return uid == App.app.userDb?.uid;
   }
@@ -392,6 +371,7 @@ class SharedFuncs {
 
     if (Platform.isIOS) {
       String? info = (await DeviceInfoPlugin().iosInfo).identifierForVendor;
+
       if (info == null || info.isEmpty) {
         info = await _setDeviceId();
       }

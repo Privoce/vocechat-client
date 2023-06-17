@@ -437,7 +437,7 @@ class _VoceChatPageState extends State<VoceChatPage>
                   onPressed: () {
                     selectEnabled.value = false;
                     selectedMsgMap.clear();
-                    widget.controller.clearSelection();
+                    widget.controller.clearMsgsSelection();
                     selectedMsgCantMultipleArchive.value = false;
                   },
                   child: Icon(AppIcons.close_circle,
@@ -640,6 +640,7 @@ class _VoceChatPageState extends State<VoceChatPage>
         });
 
     selectedMsgMap.clear();
+    widget.controller.clearMsgsSelection();
     selectEnabled.value = false;
   }
 
@@ -658,6 +659,7 @@ class _VoceChatPageState extends State<VoceChatPage>
     }
 
     selectedMsgMap.clear();
+    widget.controller.clearMsgsSelection();
     selectEnabled.value = false;
   }
 
@@ -671,6 +673,7 @@ class _VoceChatPageState extends State<VoceChatPage>
     }
 
     selectedMsgMap.clear();
+    widget.controller.clearMsgsSelection();
     selectEnabled.value = false;
   }
 

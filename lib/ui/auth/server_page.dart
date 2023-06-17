@@ -123,15 +123,15 @@ class _ServerPageState extends State<ServerPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                VoceButton(
-                  normal: Text(AppLocalizations.of(context)!.clearLocalData,
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                  action: () async {
-                    await SharedFuncs.clearLocalData();
-                    return true;
-                  },
-                ),
-                Text("  |  "),
+                // VoceButton(
+                //   normal: Text(AppLocalizations.of(context)!.clearLocalData,
+                //       maxLines: 1, overflow: TextOverflow.ellipsis),
+                //   action: () async {
+                //     await SharedFuncs.clearLocalData();
+                //     return true;
+                //   },
+                // ),
+                // Text("  |  "),
                 VoceButton(
                   normal: Text(
                       AppLocalizations.of(context)!.inputInvitationLink,
@@ -538,12 +538,6 @@ class _ServerPageState extends State<ServerPage> {
   /// Server information will be saved into App object.
   /// Only successful server visits will be saved.
   Future<bool> _onUrlSubmit(String url) async {
-    // Set server in App singleton.
-    // final chatServerM = await ChatServerHelper().prepareChatServerM(url);
-    // if (chatServerM == null) return false;
-
-    // _urlFocusNode.requestFocus();
-
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => LoginPage(baseUrl: url)));
 
