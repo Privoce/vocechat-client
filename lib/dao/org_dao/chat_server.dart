@@ -168,6 +168,27 @@ class ChatServerDao extends OrgDao<ChatServerM> {
     return m;
   }
 
+  Future<ChatServerM?> updateOrgInfo(
+      {String? name, String? des, Uint8List? logoBytes}) async {
+    ChatServerM? old = await first();
+    if (old != null) {
+      final properties = old.properties;
+      if (name != null) {
+        properties.serverName = name;
+      }
+      if (des != null) {
+        properties.description = des;
+      }
+      if (logoBytes != null) {
+        old.logo = logoBytes;
+      }
+
+      old.properties = properties;
+      await super.update(old);
+    }
+    return old;
+  }
+
   Future<ChatServerM> updateUpdatedAt(ChatServerM m, int updatedAt) async {
     ChatServerM? old =
         await first(where: '${ChatServerM.F_url} = ?', whereArgs: [m.url]);

@@ -60,7 +60,7 @@ dependencies:
   saver_gallery: ^2.0.1
   connectivity_plus: 3.0.3
   flutter_svg: ^1.0.3
-  flutter_markdown: ^0.6.13+1
+  flutter_markdown: ^0.6.15
   url_launcher: ^6.1.11
   file_picker: ^5.2.5
   mime: ^1.0.4
