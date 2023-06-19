@@ -118,6 +118,9 @@ class VoceChatService {
 
   void initSse() async {
     Sse.sse.close();
+
+    await Future.delayed(Duration(milliseconds: 500));
+
     App.app.statusService?.fireSseLoading(SseStatus.connecting);
 
     if (App.app.userDb == null) {
@@ -389,23 +392,24 @@ class VoceChatService {
       // Following methods listed in alphabetical order.
       switch (type) {
         case sseKick:
-          App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
+          // App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
 
-          final context = navigatorKey.currentContext;
-          if (context != null) {
-            showAppAlert(
-                context: context,
-                title: AppLocalizations.of(context)!.loginSessionExpires,
-                content:
-                    AppLocalizations.of(context)!.loginSessionExpiresContent,
-                actions: [
-                  AppAlertDialogAction(
-                      text: AppLocalizations.of(context)!.ok,
-                      action: () => Navigator.pop(context))
-                ]);
-          }
+          // final context = navigatorKey.currentContext;
+          // if (context != null) {
+          //   showAppAlert(
+          //       context: context,
+          //       title: AppLocalizations.of(context)!.loginSessionExpires,
+          //       content:
+          //           AppLocalizations.of(context)!.loginSessionExpiresContent,
+          //       actions: [
+          //         AppAlertDialogAction(
+          //             text: AppLocalizations.of(context)!.ok,
+          //             action: () => Navigator.pop(context))
+          //       ]);
+          // }
 
-          App.app.authService?.logout(markLogout: false, isKicked: true);
+          // App.app.authService?.logout(markLogout: false, isKicked: true);
+          _handleKick();
           break;
 
         case sseHeartbeat:
@@ -650,6 +654,16 @@ class VoceChatService {
 
       await GroupInfoDao().addOrUpdate(groupInfoM).then((value) async {
         fireChannel(value, EventActions.create, afterReady);
+      });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  Future<void> _handleKick() async {
+    try {
+      await SharedFuncs.renewAuthToken(forceRefresh: true).then((value) {
+        initSse();
       });
     } catch (e) {
       App.logger.severe(e);
