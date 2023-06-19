@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/app.dart';
@@ -209,32 +211,25 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _initLocale() async {
-    String? localLocal = await SharedPreferenceHelper.getString("locale");
-    if (localLocal != null && localLocal.isNotEmpty) {
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final savedLocale = sharedPreferences.getString('locale');
+    if (savedLocale != null) {
+      setState(() {
+        _locale = Locale(savedLocale);
+      });
     } else {
-      SharedPreferenceHelper.setString("locale", Platform.localeName);
-      localLocal = Platform.localeName;
-    }
-
-    if (navigatorKey.currentContext != null) {
-      final split = localLocal.split("-");
-      String languageTag = "", regionTag = "";
-      try {
-        languageTag = split[0];
-        regionTag = split[2];
-      } catch (e) {
-        App.logger.warning(e);
-      }
-      final locale = Locale(languageTag, regionTag);
-      // VoceChatApp.of(navigatorKey.currentContext!)?.setUILocale(locale);
-      setUILocale(locale);
+      setState(() {
+        _locale = window.locale;
+      });
     }
   }
 
-  void setUILocale(Locale locale) {
+  void setUILocale(Locale newLocale) async {
+    final sharedPreferences = await SharedPreferences.getInstance();
     setState(() {
-      _locale = locale;
+      _locale = newLocale;
     });
+    await sharedPreferences.setString('locale', newLocale.languageCode);
   }
 
   @override

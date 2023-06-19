@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 
-version: 0.2.97+67
+version: 0.2.98+68
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -60,7 +60,7 @@ dependencies:
   saver_gallery: ^2.0.1
   connectivity_plus: 3.0.3
   flutter_svg: ^1.0.3
-  flutter_markdown: ^0.6.13+1
+  flutter_markdown: ^0.6.15
   url_launcher: ^6.1.11
   file_picker: ^5.2.5
   mime: ^1.0.4
@@ -94,7 +94,6 @@ dependencies:
   android_id: ^0.3.3
   photo_view: ^0.14.0
   video_thumbnail: ^0.5.3
-  agora_rtc_engine: ^6.2.0
   
   
 

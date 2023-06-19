@@ -8,6 +8,7 @@ const ssePinnedChats = "pinned_chats";
 const ssePinnedMessageUpdated = "pinned_message_updated";
 const sseReady = "ready";
 const sseRelatedGroups = "related_groups";
+const sseServerConfigChanged = "server_config_changed";
 const sseUserJoinedGroup = "user_joined_group";
 const sseUserLeavedGroup = "user_leaved_group";
 const sseUsersLog = "users_log";

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/api/models/admin/system/sys_common_info.dart';
 import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
@@ -419,6 +420,7 @@ class VoceChatService {
         case ssePinnedChats:
         case sseReady:
         case sseRelatedGroups:
+        case sseServerConfigChanged:
         case sseUserJoinedGroup:
         case sseUserLeavedGroup:
         case sseUsersLog:
@@ -469,6 +471,9 @@ class VoceChatService {
           break;
         case sseRelatedGroups:
           await _handleRelatedGroups(map);
+          break;
+        case sseServerConfigChanged:
+          await _handleServerConfigChanged(map);
           break;
         case sseUserJoinedGroup:
           await _handleUserJoinedGroup(map);
@@ -871,6 +876,61 @@ class VoceChatService {
           });
         }
       }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  Future<void> _handleServerConfigChanged(Map<String, dynamic> map) async {
+    assert(map['type'] == sseServerConfigChanged);
+
+    String? organizationName;
+    String? organizationDescription;
+    String? organizationLogo;
+    bool? showUserOnlineStatus;
+    bool? contactVerificationEnable;
+    String? chatLayoutMode;
+    String? maxFileExpiryMode;
+
+    try {
+      organizationName = map["organization_name"] as String?;
+      organizationDescription = map["organization_description"] as String?;
+      organizationLogo = map["organization_logo"] as String?;
+      showUserOnlineStatus = map["show_user_online_status"] as bool?;
+      contactVerificationEnable = map["contact_verification_enable"] as bool?;
+      chatLayoutMode = map["chat_layout_mode"] as String?;
+      maxFileExpiryMode = map["max_file_expiry_mode"] as String?;
+
+      final orgInfoNeedsUpdate = organizationName != null ||
+          organizationDescription != null ||
+          organizationLogo != null;
+
+      // Update organization info.
+      if (orgInfoNeedsUpdate) {
+        Uint8List? logoBytes;
+        if (organizationLogo != null) {
+          final logoRes = await ResourceApi().getOrgLogo();
+          if (logoRes.statusCode == 200 && logoRes.data != null) {
+            logoBytes = logoRes.data;
+          }
+        }
+        await ChatServerDao.dao.updateOrgInfo(
+            name: organizationName,
+            des: organizationDescription,
+            logoBytes: logoBytes);
+      }
+
+      final commonInfoNeedsUpdate = showUserOnlineStatus != null ||
+          contactVerificationEnable != null ||
+          chatLayoutMode != null ||
+          maxFileExpiryMode != null;
+
+      final commonInfo = AdminSystemCommonInfo(
+        showUserOnlineStatus: showUserOnlineStatus,
+        contactVerificationEnable: contactVerificationEnable,
+        chatLayoutMode: chatLayoutMode,
+        maxFileExpiryMode: maxFileExpiryMode,
+      );
     } catch (e) {
       App.logger.severe(e);
     }
