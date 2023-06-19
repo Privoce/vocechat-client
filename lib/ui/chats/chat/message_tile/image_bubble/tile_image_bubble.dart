@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
@@ -208,7 +209,36 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
         return VoceImageBubble.reply(
             imageFile: imageFile, getImageList: getImageList);
       }
-      return VoceImageBubble(imageFile: imageFile, getImageList: getImageList);
+      // return VoceImageBubble(imageFile: imageFile, getImageList: getImageList);
+      // return Container(
+      //   color: Colors.amber,
+      //   constraints: BoxConstraints(
+      //     maxHeight: 140,
+      //     minHeight: 50,
+      //     minWidth: 50,
+      //   ),
+      //   child: FittedBox(
+      //     fit: BoxFit.fitWidth,
+      //     child: Image.file(imageFile!), // Replace with your image path
+      //   ),
+      // );
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: 140,
+              minHeight: 50,
+              minWidth: constraints.maxWidth * 0.3,
+              maxWidth: constraints.maxWidth * 0.5,
+            ),
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              clipBehavior: Clip.hardEdge,
+              child: Image.file(imageFile!), // Replace with your image path
+            ),
+          );
+        },
+      );
     }
   }
 

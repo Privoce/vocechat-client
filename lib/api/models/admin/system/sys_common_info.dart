@@ -4,10 +4,10 @@ part 'sys_common_info.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class AdminSystemCommonInfo {
-  final bool showUserOnlineStatus;
-  final bool contactVerificationEnable;
-  final String chatLayoutMode;
-  final String maxFileExpiryMode;
+  final bool? showUserOnlineStatus;
+  final bool? contactVerificationEnable;
+  final String? chatLayoutMode;
+  final String? maxFileExpiryMode;
 
   AdminSystemCommonInfo({
     this.showUserOnlineStatus = true,

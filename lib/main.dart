@@ -1,16 +1,17 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:vocechat_client/app.dart';
@@ -18,6 +19,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/firebase_options.dart';
+import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
@@ -161,7 +163,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     _connectivitySubscription =
         _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-    SharedFuncs.initLocale();
+    _initLocale();
 
     _handleIncomingUniLink();
     _handleInitUniLink();
@@ -208,10 +210,26 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     }
   }
 
-  void setUILocale(Locale locale) {
+  void _initLocale() async {
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final savedLocale = sharedPreferences.getString('locale');
+    if (savedLocale != null) {
+      setState(() {
+        _locale = Locale(savedLocale);
+      });
+    } else {
+      setState(() {
+        _locale = window.locale;
+      });
+    }
+  }
+
+  void setUILocale(Locale newLocale) async {
+    final sharedPreferences = await SharedPreferences.getInstance();
     setState(() {
-      _locale = locale;
+      _locale = newLocale;
     });
+    await sharedPreferences.setString('locale', newLocale.languageCode);
   }
 
   @override
@@ -260,7 +278,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         ],
         locale: _locale,
         supportedLocales: const [
-          Locale('en', 'US'), // English, no country code
+          Locale('en', ''), // English, no country code
           Locale('zh', ''),
         ],
         home: _defaultHome,

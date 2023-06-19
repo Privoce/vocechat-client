@@ -119,17 +119,7 @@ class _ChatBarState extends State<ChatBar> {
                 VoceChannelAvatar.channel(
                     groupInfoM: widget.groupInfoNotifier!.value,
                     size: VoceAvatarSize.s36)
-              // ChannelAvatar(
-              //   avatarSize: VoceAvatarSize.s36,
-              //   avatarBytes: widget.groupInfoNotifier!.value.avatar,
-              //   name: widget.groupInfoNotifier?.value.groupInfo.name ?? "",
-              // )
               else
-                // UserAvatar(
-                //     avatarSize: VoceAvatarSize.s36,
-                //     uid: widget.userInfoNotifier!.value.uid,
-                //     name: widget.userInfoNotifier!.value.userInfo.name,
-                //     avatarBytes: widget.userInfoNotifier!.value.avatarBytes),
                 VoceUserAvatar.user(
                     userInfoM: widget.userInfoNotifier!.value,
                     size: VoceAvatarSize.s36),
@@ -168,7 +158,7 @@ class _ChatBarState extends State<ChatBar> {
                     if (widget._isGroup && !groupInfoM.isPublic)
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
-                        child: Icon(Icons.lock,
+                        child: Icon(CupertinoIcons.lock_fill,
                             size: 16, color: AppColors.grey500),
                       ),
                   ],
@@ -206,7 +196,12 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildChannelActions(BuildContext context) {
     return [
+      // CupertinoButton(
+      //     padding: EdgeInsets.zero,
+      //     onPressed: _startAudioCall,
+      //     child: Icon(AppIcons.headphone, size: 20, color: AppColors.grey500)),
       CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () async {
             Navigator.push(
                 context,
