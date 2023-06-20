@@ -73,15 +73,6 @@ Future<void> main() async {
           App.app.statusService = StatusService();
           App.app.authService = AuthService(chatServerM: App.app.chatServerM);
           App.app.chatService = VoceChatService();
-
-          await SharedFuncs.updateServerInfo(App.app.chatServerM,
-                  enableFire: true)
-              .then((value) {
-            if (value != null) {
-              App.app.chatServerM = value;
-              App.logger.info("Server info updated.");
-            }
-          });
         }
       }
     }

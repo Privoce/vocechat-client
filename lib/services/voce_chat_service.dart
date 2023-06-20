@@ -18,6 +18,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/reaction.dart';
+import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
@@ -57,7 +58,7 @@ typedef ReactionAware = Future<void> Function(
 typedef MidDeleteAware = Future<void> Function(int targetMid);
 typedef LocalmidDeleteAware = Future<void> Function(String localMid);
 typedef UserStatusAware = Future<void> Function(int uid, bool isOnline);
-typedef OrgInfoAware = Future<void> Function(ChatServerM chatServerM);
+typedef ChatServerAware = Future<void> Function(ChatServerM chatServerM);
 
 class VoceChatService {
   VoceChatService() {
@@ -86,7 +87,7 @@ class VoceChatService {
   final Set<LocalmidDeleteAware> _lmidDeleteListeners = {};
   final Set<VoidCallback> _refreshListeners = {};
   final Set<UserStatusAware> _userStatusListeners = {};
-  final Set<OrgInfoAware> _orgInfoListeners = {};
+  final Set<ChatServerAware> _chatServerListeners = {};
 
   late SseQueue sseQueue;
   late TaskQueue mainTaskQueue;
@@ -267,13 +268,13 @@ class VoceChatService {
     _userStatusListeners.remove(statusAware);
   }
 
-  void subscribeOrgInfoStatus(OrgInfoAware orgInfoAware) {
-    unsubscribeOrgInfoStatus(orgInfoAware);
-    _orgInfoListeners.add(orgInfoAware);
+  void subscribeChatServer(ChatServerAware chatServerAware) {
+    unsubscribeChatServer(chatServerAware);
+    _chatServerListeners.add(chatServerAware);
   }
 
-  void unsubscribeOrgInfoStatus(OrgInfoAware orgInfoAware) {
-    _orgInfoListeners.remove(orgInfoAware);
+  void unsubscribeChatServer(ChatServerAware chatServerAware) {
+    _chatServerListeners.remove(chatServerAware);
   }
 
   void fireUser(UserInfoM userInfoM, EventActions action, bool afterReady) {
@@ -370,10 +371,10 @@ class VoceChatService {
     }
   }
 
-  void fireOrgInfo(ChatServerM chatServerM) {
-    for (OrgInfoAware orgInfoAware in _orgInfoListeners) {
+  void fireChatServer(ChatServerM chatServerM) {
+    for (ChatServerAware chatServerAware in _chatServerListeners) {
       try {
-        orgInfoAware(chatServerM);
+        chatServerAware(chatServerM);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -901,36 +902,47 @@ class VoceChatService {
       chatLayoutMode = map["chat_layout_mode"] as String?;
       maxFileExpiryMode = map["max_file_expiry_mode"] as String?;
 
-      final orgInfoNeedsUpdate = organizationName != null ||
-          organizationDescription != null ||
-          organizationLogo != null;
+      final serverId = App.app.userDb?.chatServerId;
+      if (serverId == null) return;
+
+      ChatServerM? chatServerM =
+          await ChatServerDao.dao.getServerById(serverId);
+      if (chatServerM == null) return;
 
       // Update organization info.
-      if (orgInfoNeedsUpdate) {
-        Uint8List? logoBytes;
+      try {
         if (organizationLogo != null) {
           final logoRes = await ResourceApi().getOrgLogo();
           if (logoRes.statusCode == 200 && logoRes.data != null) {
-            logoBytes = logoRes.data;
+            chatServerM.logo = logoRes.data!;
           }
         }
-        await ChatServerDao.dao.updateOrgInfo(
-            name: organizationName,
-            des: organizationDescription,
-            logoBytes: logoBytes);
+      } catch (e) {
+        App.logger.severe(e);
       }
 
-      final commonInfoNeedsUpdate = showUserOnlineStatus != null ||
-          contactVerificationEnable != null ||
-          chatLayoutMode != null ||
-          maxFileExpiryMode != null;
+      ChatServerProperties properties = chatServerM.properties;
 
-      final commonInfo = AdminSystemCommonInfo(
-        showUserOnlineStatus: showUserOnlineStatus,
-        contactVerificationEnable: contactVerificationEnable,
-        chatLayoutMode: chatLayoutMode,
-        maxFileExpiryMode: maxFileExpiryMode,
+      properties.serverName = organizationName ?? properties.serverName;
+      properties.description =
+          organizationDescription ?? properties.description;
+
+      final newCommonInfo = AdminSystemCommonInfo(
+        showUserOnlineStatus:
+            showUserOnlineStatus ?? properties.commonInfo?.showUserOnlineStatus,
+        contactVerificationEnable: contactVerificationEnable ??
+            properties.commonInfo?.contactVerificationEnable,
+        chatLayoutMode: chatLayoutMode ?? properties.commonInfo?.chatLayoutMode,
+        maxFileExpiryMode:
+            maxFileExpiryMode ?? properties.commonInfo?.maxFileExpiryMode,
       );
+
+      properties.commonInfo = newCommonInfo;
+      chatServerM.properties = properties;
+
+      await ChatServerDao.dao.addOrUpdate(chatServerM).then((value) {
+        fireChatServer(value);
+      });
     } catch (e) {
       App.logger.severe(e);
     }

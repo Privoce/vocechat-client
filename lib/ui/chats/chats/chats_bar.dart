@@ -87,7 +87,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.subscribeTokenLoading(_onToken);
     App.app.statusService?.subscribeTaskLoading(_onTask);
 
-    App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
+    App.app.chatService.subscribeChatServer(_onServerInfo);
 
     eventBus.on<UserChangeEvent>().listen((event) {
       resubscribe();
@@ -99,7 +99,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.unsubscribeSseLoading(_onSse);
     App.app.statusService?.unsubscribeTokenLoading(_onToken);
     App.app.statusService?.unsubscribeTaskLoading(_onTask);
-    App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
+    App.app.chatService.unsubscribeChatServer(_onServerInfo);
     super.dispose();
   }
 
@@ -107,7 +107,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.unsubscribeSseLoading(_onSse);
     App.app.statusService?.unsubscribeTokenLoading(_onToken);
     App.app.statusService?.unsubscribeTaskLoading(_onTask);
-    App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
+    App.app.chatService.unsubscribeChatServer(_onServerInfo);
 
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
@@ -115,7 +115,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.subscribeSseLoading(_onSse);
     App.app.statusService?.subscribeTokenLoading(_onToken);
     App.app.statusService?.subscribeTaskLoading(_onTask);
-    App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
+    App.app.chatService.subscribeChatServer(_onServerInfo);
   }
 
   Future<void> _onSse(SseStatus status) async {
