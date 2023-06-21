@@ -27,18 +27,11 @@ class ContactTile extends StatefulWidget {
       this.enableSubtitleEmail = false,
       Key? key})
       : super(key: key) {
-    // _avatar = Avatar(size: 40, userInfoM: userInfoM);
-    // _avatar = UserAvatar(
-    //   avatarSize: avatarSize,
-    //   name: userInfoM.userInfo.name,
-    //   uid: userInfoM.uid,
-    //   avatarBytes: userInfoM.avatarBytes,
-    //   isSelf: SharedFuncs.isSelf(userInfoM.uid),
-    //   enableOnlineStatus: true,
-    //   // onlineNotifier: userInfoM.onlineNotifier
-    // );
     _avatar = VoceUserAvatar.user(
-        userInfoM: userInfoM, size: avatarSize, enableOnlineStatus: true);
+        key: ObjectKey(userInfoM),
+        userInfoM: userInfoM,
+        size: avatarSize,
+        enableOnlineStatus: true);
   }
 
   @override

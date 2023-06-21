@@ -242,6 +242,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
               file: widget.tileData.avatarFile,
               size: VoceAvatarSize.s40,
               isBot: widget.tileData.userInfoM.userInfo.isBot ?? false,
+              enableOnlineStatus: false,
             )));
   }
 

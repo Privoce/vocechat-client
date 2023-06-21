@@ -19,6 +19,11 @@ class VoceUserAvatar extends StatefulWidget {
   // General variables shared by all constructors
   final double size;
   final bool isCircle;
+
+  /// Only a mannual switch.
+  ///
+  /// Whether to show depends on the server setting. If both settings are true,
+  /// the status will be shown.
   final bool enableOnlineStatus;
   final Color? backgroundColor;
 
@@ -142,10 +147,6 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
     App.app.chatService.subscribeUsers(_onUserChanged);
     App.app.chatService.subscribeChatServer(_onChatServerChanged);
 
-    // enableOnlineStatus = widget.enableOnlineStatus &&
-    //     (App.app.chatServerM.properties.commonInfo?.showUserOnlineStatus ==
-    //         true);
-
     enableOnlineStatus.value = widget.enableOnlineStatus &&
         (App.app.chatServerM.properties.commonInfo?.showUserOnlineStatus ==
             true);
@@ -156,6 +157,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   @override
   void dispose() {
     App.app.chatService.unsubscribeUsers(_onUserChanged);
+    App.app.chatService.unsubscribeChatServer(_onChatServerChanged);
     super.dispose();
   }
 

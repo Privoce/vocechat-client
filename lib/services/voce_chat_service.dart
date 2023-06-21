@@ -101,20 +101,18 @@ class VoceChatService {
   final Map<int, ReactionM> reactionMap = {};
 
   Future<void> preSseInits() async {
-    if (enableContact) {
-      final res = await UserApi().getUserContacts();
+    final res = await UserApi().getUserContacts();
 
-      if (res.statusCode == 200 && res.data != null) {
-        final rawList = res.data!;
-        final contactList = rawList.map((e) {
-          return ContactM.fromContactInfo(e.targetUid, e.contactInfo.status,
-              e.contactInfo.createdAt, e.contactInfo.updatedAt);
-        }).toList();
+    if (res.statusCode == 200 && res.data != null) {
+      final rawList = res.data!;
+      final contactList = rawList.map((e) {
+        return ContactM.fromContactInfo(e.targetUid, e.contactInfo.status,
+            e.contactInfo.createdAt, e.contactInfo.updatedAt);
+      }).toList();
 
-        await ContactDao().batchAdd(contactList);
-      }
-      App.logger.info("Contact list initialized. total: ${res.data?.length}");
+      await ContactDao().batchAdd(contactList);
     }
+    App.logger.info("Contact list initialized. total: ${res.data?.length}");
   }
 
   void initSse() async {
@@ -941,6 +939,7 @@ class VoceChatService {
       chatServerM.properties = properties;
 
       await ChatServerDao.dao.addOrUpdate(chatServerM).then((value) {
+        App.app.chatServerM = chatServerM;
         fireChatServer(value);
       });
     } catch (e) {

@@ -178,13 +178,11 @@ class UserInfoDao extends Dao<UserInfoM> {
       App.logger.info("UserInfoM added. ${m.uid}");
     }
 
-    if (enableContact) {
-      final contactDao = ContactDao();
-      final contactInfo = await contactDao.getContactInfo(m.uid);
-      if (contactInfo != null) {
-        m.contactStatusStr = contactInfo.status;
-        m.contactUpdatedAt = contactInfo.updatedAt;
-      }
+    final contactDao = ContactDao();
+    final contactInfo = await contactDao.getContactInfo(m.uid);
+    if (contactInfo != null) {
+      m.contactStatusStr = contactInfo.status;
+      m.contactUpdatedAt = contactInfo.updatedAt;
     }
 
     return m;
@@ -266,13 +264,11 @@ class UserInfoDao extends Dao<UserInfoM> {
       old._properties = json.encode(oldProperties);
       await super.update(old);
 
-      if (enableContact) {
-        final contactDao = ContactDao();
-        final contactInfo = await contactDao.getContactInfo(uid);
-        if (contactInfo != null) {
-          old.contactStatusStr = contactInfo.status;
-          old.contactUpdatedAt = contactInfo.updatedAt;
-        }
+      final contactDao = ContactDao();
+      final contactInfo = await contactDao.getContactInfo(uid);
+      if (contactInfo != null) {
+        old.contactStatusStr = contactInfo.status;
+        old.contactUpdatedAt = contactInfo.updatedAt;
       }
 
       App.logger.info(
@@ -282,21 +278,6 @@ class UserInfoDao extends Dao<UserInfoM> {
     return old;
   }
 
-  // Future<UserInfoM?> updateLanguage(int uid, String languageTag) async {
-  //   UserInfoM? old =
-  //       await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
-  //   if (old != null) {
-  //     UserInfo userInfo = old.userInfo;
-  //     userInfo.language = languageTag;
-  //     old.info = jsonEncode(userInfo);
-
-  //     await super.update(old);
-
-  //     await UserDbMDao.dao.updateUserInfo(userInfo);
-  //   }
-  //   return old;
-  // }
-
   /// Get a list of Users in UserInfo
   ///
   /// Result shown in
@@ -305,21 +286,14 @@ class UserInfoDao extends Dao<UserInfoM> {
     String orderBy = "${UserInfoM.F_uid} ASC";
     final userList = await super.list(orderBy: orderBy);
 
-    if (enableContact) {
-      final contactDao = ContactDao();
+    final contactDao = ContactDao();
 
-      for (var user in userList) {
-        final contactInfo = await contactDao.getContactInfo(user.uid);
-        if (contactInfo != null) {
-          user.contactStatusStr = contactInfo.status;
-          user.contactUpdatedAt = contactInfo.updatedAt;
-        }
+    for (var user in userList) {
+      final contactInfo = await contactDao.getContactInfo(user.uid);
+      if (contactInfo != null) {
+        user.contactStatusStr = contactInfo.status;
+        user.contactUpdatedAt = contactInfo.updatedAt;
       }
-      return userList
-          .where((element) =>
-              element.contactStatusStr == ContactStatus.added.name ||
-              element.uid == 1)
-          .toList();
     }
 
     return userList;
@@ -337,7 +311,7 @@ class UserInfoDao extends Dao<UserInfoM> {
   Future<UserInfoM?> getUserByUid(int uid) async {
     final user =
         await super.first(where: "${UserInfoM.F_uid} = ?", whereArgs: [uid]);
-    if (user != null && enableContact) {
+    if (user != null) {
       final contactDao = ContactDao();
       final contactInfo = await contactDao.getContactInfo(user.uid);
       if (contactInfo != null) {
@@ -364,17 +338,16 @@ class UserInfoDao extends Dao<UserInfoM> {
     if (records.isNotEmpty) {
       final result = records.map((e) => UserInfoM.fromMap(e)).toList();
 
-      if (enableContact) {
-        final contactDao = ContactDao();
+      final contactDao = ContactDao();
 
-        for (var user in result) {
-          final contactInfo = await contactDao.getContactInfo(user.uid);
-          if (contactInfo != null) {
-            user.contactStatusStr = contactInfo.status;
-            user.contactUpdatedAt = contactInfo.updatedAt;
-          }
+      for (var user in result) {
+        final contactInfo = await contactDao.getContactInfo(user.uid);
+        if (contactInfo != null) {
+          user.contactStatusStr = contactInfo.status;
+          user.contactUpdatedAt = contactInfo.updatedAt;
         }
       }
+
       return result;
     }
     return null;
