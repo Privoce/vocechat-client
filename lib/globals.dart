@@ -19,8 +19,4 @@ final ValueNotifier<int> unreadCountSum = ValueNotifier(0);
 /// private channels need be deleted due to safety concerns.
 bool enablePublicChannels = true;
 
-// bool get enableContact =>
-//     App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
-//     true;
-
 EventBus eventBus = EventBus();

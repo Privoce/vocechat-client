@@ -150,34 +150,22 @@ class _ChatsPageState extends State<ChatsPage>
 
     unpinned.sort((a, b) => b.updatedAt.value - a.updatedAt.value);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Column(
-            children: List<Widget>.generate(pinned.length, (index) {
-          return VoceChatTile(
-              key: ObjectKey(pinned[index]),
-              tileData: pinned[index],
-              onTap: onTap);
-        })),
-        Flexible(
-          child: ListView.separated(
-            itemCount: unpinned.length,
-            itemBuilder: (context, index) {
-              return VoceChatTile(
-                  key: ObjectKey(unpinned[index]),
-                  tileData: unpinned[index],
-                  onTap: onTap);
-            },
-            separatorBuilder: (context, index) {
-              return Divider(
-                indent: 80,
-                color: AppColors.grey200,
-              );
-            },
-          ),
-        ),
-      ],
+    final sorted = [...pinned, ...unpinned];
+
+    return ListView.separated(
+      itemCount: sorted.length,
+      itemBuilder: (context, index) {
+        return VoceChatTile(
+            key: ObjectKey(sorted[index]),
+            tileData: sorted[index],
+            onTap: onTap);
+      },
+      separatorBuilder: (context, index) {
+        return Divider(
+          indent: 80,
+          color: AppColors.grey200,
+        );
+      },
     );
   }
 
