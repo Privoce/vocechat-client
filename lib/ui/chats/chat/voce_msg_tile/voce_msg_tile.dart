@@ -7,6 +7,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
@@ -40,8 +41,7 @@ class VoceMsgTile extends StatefulWidget {
   final ValueNotifier<bool>? enableSelection;
   final void Function(MsgTileData tileData, bool selected)? onSelectChange;
 
-  // late final bool isSelf;
-  late final bool selfRightLayout;
+  // late final bool selfRightLayout;
 
   VoceMsgTile({
     Key? key,
@@ -50,9 +50,9 @@ class VoceMsgTile extends StatefulWidget {
     this.enableSelection,
     this.onSelectChange,
   }) : super(key: key) {
-    selfRightLayout = SharedFuncs.isSelf(tileData.userInfoM.userInfo.uid) &&
-        App.app.chatServerM.properties.commonInfo?.chatLayoutMode ==
-            ChatLayoutMode.SelfRight.name;
+    // selfRightLayout = SharedFuncs.isSelf(tileData.userInfoM.userInfo.uid) &&
+    //     App.app.chatServerM.properties.commonInfo?.chatLayoutMode ==
+    //         ChatLayoutMode.SelfRight.name;
   }
 
   @override
@@ -67,14 +67,32 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   /// Selection icon size, also used for status icon size.
   final double selectSize = 36;
 
+  final ValueNotifier<ChatLayoutMode> chatLayoutMode =
+      ValueNotifier(ChatLayoutMode.SelfRight);
+
   @override
   void initState() {
     super.initState();
+
+    switch (App.app.chatServerM.properties.commonInfo?.chatLayoutMode) {
+      case "Left":
+        chatLayoutMode.value = ChatLayoutMode.Left;
+        break;
+      case "SelfRight":
+        chatLayoutMode.value = ChatLayoutMode.SelfRight;
+        break;
+      default:
+        chatLayoutMode.value = ChatLayoutMode.Left;
+        break;
+    }
+
+    App.app.chatService.subscribeChatServer(_onChatServerChange);
     widget.tileData.initAutoDeleteTimer();
   }
 
   @override
   void dispose() {
+    App.app.chatService.unsubscribeChatServer(_onChatServerChange);
     widget.tileData.autoDeleteTimer?.cancel();
 
     super.dispose();
@@ -194,31 +212,36 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   }
 
   Widget _buildContentTile(BuildContext context) {
-    if (widget.selfRightLayout) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildStatus(context),
-          const SizedBox(width: 16),
-          _buildMidCol(context),
-          const SizedBox(width: 16),
-          _buildAvatar()
-        ],
-      );
-    } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildAvatar(),
-          const SizedBox(width: 16),
-          _buildMidCol(context),
-          const SizedBox(width: 16),
-          _buildStatus(context)
-        ],
-      );
-    }
+    return ValueListenableBuilder<ChatLayoutMode>(
+      valueListenable: chatLayoutMode,
+      builder: (context, value, child) {
+        if (value == ChatLayoutMode.Left) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildAvatar(),
+              const SizedBox(width: 16),
+              _buildMidCol(context),
+              const SizedBox(width: 16),
+              _buildStatus(context)
+            ],
+          );
+        } else {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildStatus(context),
+              const SizedBox(width: 16),
+              _buildMidCol(context),
+              const SizedBox(width: 16),
+              _buildAvatar()
+            ],
+          );
+        }
+      },
+    );
   }
 
   Widget _buildAvatar() {
@@ -248,19 +271,24 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
   Widget _buildMidCol(BuildContext context) {
     return Flexible(
-      child: Column(
-        crossAxisAlignment: widget.selfRightLayout
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
-        children: [
-          _buildTitle(context),
-          const SizedBox(height: 8),
-          _buildContent(context),
-          const SizedBox(height: 8),
-          _buildReactions(context),
-          _buildAutoDeleteCountDown(context)
-        ],
-      ),
+      child: ValueListenableBuilder<ChatLayoutMode>(
+          valueListenable: chatLayoutMode,
+          builder: (context, value, child) {
+            CrossAxisAlignment crossAxisAlignment = value == ChatLayoutMode.Left
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.end;
+            return Column(
+              crossAxisAlignment: crossAxisAlignment,
+              children: [
+                _buildTitle(context),
+                const SizedBox(height: 8),
+                _buildContent(context),
+                const SizedBox(height: 8),
+                _buildReactions(context),
+                _buildAutoDeleteCountDown(context)
+              ],
+            );
+          }),
     );
   }
 
@@ -281,30 +309,39 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
               color: Color(0xFFBFBFBF)))
     ];
 
-    return Row(
-        mainAxisAlignment: widget.selfRightLayout
-            ? MainAxisAlignment.end
-            : MainAxisAlignment.start,
-        children: [
-          RichText(
-              text: TextSpan(
-                  children: widget.selfRightLayout
-                      ? spanList.reversed.toList()
-                      : spanList)),
-        ]);
+    return ValueListenableBuilder<ChatLayoutMode>(
+        valueListenable: chatLayoutMode,
+        builder: (context, layout, _) {
+          MainAxisAlignment mainAxisAlignment =
+              layout == ChatLayoutMode.SelfRight
+                  ? MainAxisAlignment.end
+                  : MainAxisAlignment.start;
+          return Row(mainAxisAlignment: mainAxisAlignment, children: [
+            RichText(
+                text: TextSpan(
+                    children: layout == ChatLayoutMode.SelfRight
+                        ? spanList.reversed.toList()
+                        : spanList)),
+          ]);
+        });
   }
 
   Widget _buildContent(BuildContext context) {
-    return Column(
-      crossAxisAlignment: widget.selfRightLayout
-          ? CrossAxisAlignment.end
-          : CrossAxisAlignment.start,
-      children: [
-        if (widget.tileData.chatMsgMNotifier.value.isReplyMsg)
-          _buildReplyBubble(),
-        _buildMainContent(),
-      ],
-    );
+    return ValueListenableBuilder<ChatLayoutMode>(
+        valueListenable: chatLayoutMode,
+        builder: (context, mode, _) {
+          CrossAxisAlignment alignment = mode == ChatLayoutMode.SelfRight
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start;
+          return Column(
+            crossAxisAlignment: alignment,
+            children: [
+              if (widget.tileData.chatMsgMNotifier.value.isReplyMsg)
+                _buildReplyBubble(),
+              _buildMainContent(),
+            ],
+          );
+        });
   }
 
   Widget _buildReactions(context) {
@@ -408,10 +445,14 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                       FileHandler.singleton.getFile(chatMsgM, onProgress));
             }
           } else if (chatMsgM.isAudioMsg) {
-            return VoceAudioBubble.tileData(
-                key: ObjectKey(widget.tileData),
-                tileData: widget.tileData,
-                isSelf: widget.selfRightLayout);
+            return ValueListenableBuilder<ChatLayoutMode>(
+                valueListenable: chatLayoutMode,
+                builder: (context, mode, _) {
+                  return VoceAudioBubble.tileData(
+                      key: ObjectKey(widget.tileData),
+                      tileData: widget.tileData,
+                      isSelf: mode == ChatLayoutMode.SelfRight);
+                });
           } else if (chatMsgM.isArchiveMsg) {
             return VoceArchiveBubble.tileData(
                 key: ObjectKey(widget.tileData), tileData: widget.tileData);
@@ -721,6 +762,20 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                   action: () => Navigator.of(context).pop())
             ]);
       }
+    }
+  }
+
+  Future<void> _onChatServerChange(ChatServerM chatServerM) async {
+    switch (chatServerM.properties.commonInfo?.chatLayoutMode) {
+      case "Left":
+        chatLayoutMode.value = ChatLayoutMode.Left;
+        break;
+      case "SelfRight":
+        chatLayoutMode.value = ChatLayoutMode.SelfRight;
+        break;
+      default:
+        chatLayoutMode.value = ChatLayoutMode.Left;
+        break;
     }
   }
 }

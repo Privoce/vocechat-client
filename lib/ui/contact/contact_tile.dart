@@ -6,6 +6,8 @@ import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class ContactTile extends StatefulWidget {
   final UserInfoM userInfoM;
   final bool isSelf;
@@ -54,10 +56,9 @@ class _ContactTileState extends State<ContactTile> {
                 style: AppTextStyles.listTileTitle,
                 children: [
                   TextSpan(text: widget.userInfoM.userInfo.name),
-                  // TextSpan(text: "ashdgoasdghsadgsdsdjkasdghsadgsdsdjkgaods"),
                   if (widget.isSelf)
                     TextSpan(
-                        text: " (you)",
+                        text: " (${AppLocalizations.of(context)!.you})",
                         style: TextStyle(
                             color: AppColors.grey700,
                             fontSize: 14,
