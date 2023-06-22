@@ -199,13 +199,13 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildChannelActions(BuildContext context) {
     return [
-      Builder(builder: (context) {
-        return CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () => _startAudioCall(context),
-            child:
-                Icon(AppIcons.headphone, size: 20, color: AppColors.grey500));
-      }),
+      // Builder(builder: (context) {
+      //   return CupertinoButton(
+      //       padding: EdgeInsets.zero,
+      //       onPressed: () => _startAudioCall(context),
+      //       child:
+      //           Icon(AppIcons.headphone, size: 20, color: AppColors.grey500));
+      // }),
       CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () async {
