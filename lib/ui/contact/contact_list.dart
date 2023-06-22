@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -51,13 +52,27 @@ class _ContactListState extends State<ContactList>
 
   bool isPreparing = false;
 
+  ValueNotifier<bool> enableContact = ValueNotifier(true);
+
   @override
   bool get wantKeepAlive => false;
 
   @override
   void initState() {
     super.initState();
-    _contactList = widget.userList;
+
+    enableContact.value =
+        App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
+            true;
+
+    if (enableContact.value) {
+      _contactList = widget.userList
+          .where((element) => element.contactStatus == ContactStatus.added)
+          .toList();
+    } else {
+      _contactList = widget.userList;
+    }
+
     _uidSet.addAll(_contactList.map((e) => e.uid));
 
     _prepareContactList();
@@ -70,6 +85,8 @@ class _ContactListState extends State<ContactList>
         }
       });
     }
+
+    App.app.chatService.subscribeChatServer(_onChatServerChange);
   }
 
   @override
@@ -82,6 +99,7 @@ class _ContactListState extends State<ContactList>
       });
     }
     App.app.chatService.unsubscribeUsers(_onUser);
+    App.app.chatService.unsubscribeChatServer(_onChatServerChange);
     super.dispose();
   }
 
@@ -203,7 +221,7 @@ class _ContactListState extends State<ContactList>
 
   Future<void> _onUser(
       UserInfoM userInfoM, EventActions action, bool afterReady) async {
-    if (enableContact) {
+    if (enableContact.value) {
       if (userInfoM.contactStatusStr != ContactStatus.added.name) {
         return;
       }
@@ -227,7 +245,7 @@ class _ContactListState extends State<ContactList>
         }
 
         // Then handle general case.
-        if (enableContact) {
+        if (enableContact.value) {
           if (userInfoM.contactStatusStr == ContactStatus.added.name) {
             _uidSet.add(userInfoM.uid);
 
@@ -269,6 +287,24 @@ class _ContactListState extends State<ContactList>
     if (afterReady) {
       _prepareContactList();
     }
+  }
+
+  Future<void> _onChatServerChange(ChatServerM chatServerM) async {
+    if (chatServerM.properties.commonInfo?.contactVerificationEnable == true) {
+      enableContact.value = true;
+    } else {
+      enableContact.value = false;
+    }
+
+    if (enableContact.value) {
+      _contactList = widget.userList
+          .where((element) => element.contactStatus == ContactStatus.added)
+          .toList();
+    } else {
+      _contactList = widget.userList;
+    }
+
+    _prepareContactList();
   }
 
   void _prepareContactList() {

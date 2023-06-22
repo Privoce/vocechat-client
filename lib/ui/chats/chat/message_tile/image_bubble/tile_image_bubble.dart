@@ -209,36 +209,25 @@ class _VoceTileImageBubbleState extends State<VoceTileImageBubble> {
         return VoceImageBubble.reply(
             imageFile: imageFile, getImageList: getImageList);
       }
-      // return VoceImageBubble(imageFile: imageFile, getImageList: getImageList);
-      // return Container(
-      //   color: Colors.amber,
-      //   constraints: BoxConstraints(
-      //     maxHeight: 140,
-      //     minHeight: 50,
-      //     minWidth: 50,
-      //   ),
-      //   child: FittedBox(
-      //     fit: BoxFit.fitWidth,
-      //     child: Image.file(imageFile!), // Replace with your image path
-      //   ),
+      return VoceImageBubble(imageFile: imageFile, getImageList: getImageList);
+
+      // return LayoutBuilder(
+      //   builder: (context, constraints) {
+      //     return Container(
+      //       constraints: BoxConstraints(
+      //         maxHeight: 140,
+      //         minHeight: 50,
+      //         minWidth: constraints.maxWidth * 0.3,
+      //         maxWidth: constraints.maxWidth * 0.5,
+      //       ),
+      //       child: FittedBox(
+      //         fit: BoxFit.fitWidth,
+      //         clipBehavior: Clip.hardEdge,
+      //         child: Image.file(imageFile!), // Replace with your image path
+      //       ),
+      //     );
+      //   },
       // );
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          return Container(
-            constraints: BoxConstraints(
-              maxHeight: 140,
-              minHeight: 50,
-              minWidth: constraints.maxWidth * 0.3,
-              maxWidth: constraints.maxWidth * 0.5,
-            ),
-            child: FittedBox(
-              fit: BoxFit.fitWidth,
-              clipBehavior: Clip.hardEdge,
-              child: Image.file(imageFile!), // Replace with your image path
-            ),
-          );
-        },
-      );
     }
   }
 

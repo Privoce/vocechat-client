@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:vocechat_client/api/models/admin/login/login_config.dart';
+import 'package:vocechat_client/api/models/admin/system/sys_common_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
@@ -184,6 +185,28 @@ class ChatServerDao extends OrgDao<ChatServerM> {
       }
 
       old.properties = properties;
+      await super.update(old);
+    }
+    return old;
+  }
+
+  Future<ChatServerM?> updateCommonInfo(
+      AdminSystemCommonInfo commonInfo) async {
+    ChatServerM? old = await first();
+    if (old != null) {
+      final oldInfo = old.properties.commonInfo;
+
+      AdminSystemCommonInfo newInfo = AdminSystemCommonInfo(
+        showUserOnlineStatus:
+            commonInfo.showUserOnlineStatus ?? oldInfo?.showUserOnlineStatus,
+        contactVerificationEnable: commonInfo.contactVerificationEnable ??
+            oldInfo?.contactVerificationEnable,
+        chatLayoutMode: commonInfo.chatLayoutMode ?? oldInfo?.chatLayoutMode,
+        maxFileExpiryMode:
+            commonInfo.maxFileExpiryMode ?? oldInfo?.maxFileExpiryMode,
+      );
+
+      old.properties = old.properties..commonInfo = newInfo;
       await super.update(old);
     }
     return old;

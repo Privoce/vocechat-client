@@ -1,6 +1,13 @@
 {   
-    "latest": {"version": "0.2.97", "build_num": 67},
+    "latest": {"version": "0.2.98", "build_num": 68},
     "logs":  [
+        {"time": 1686970439989, "version": "0.2.98", "build_num": 68, "updates": [
+            "- refactor: remove 'Clear local data' button to avoid a notification issue.",
+            "- fix: default language might be mistakenly set to Simplified Chinese.",
+            "- fix: archive content loading status issue.",
+            "- fix: some video bubble fixes.",
+            "- fix: other bug fixes."
+            ]},
         {"time": 1686678311279, "version": "0.2.97", "build_num": 67, "updates": [
             "- add: mute and pin chats.",
             "- fix: chats might be loaded slowly due to a file fetch error.",

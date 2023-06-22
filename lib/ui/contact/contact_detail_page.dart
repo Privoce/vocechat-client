@@ -40,11 +40,21 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   final ValueNotifier<UserInfoM> _userInfoMNotifier =
       ValueNotifier(UserInfoM());
 
+  final ValueNotifier<bool> enableContact = ValueNotifier<bool>(false);
+
   @override
   void initState() {
     super.initState();
 
     _userInfoMNotifier.value = widget.userInfoM;
+
+    enableContact.value =
+        App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
+            true;
+    App.app.chatService.subscribeChatServer((chatServerM) async {
+      enableContact.value =
+          chatServerM.properties.commonInfo?.contactVerificationEnable == true;
+    });
 
     App.app.chatService.subscribeUsers(_onUser);
   }
@@ -54,6 +64,10 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     super.dispose();
 
     App.app.chatService.unsubscribeUsers(_onUser);
+    App.app.chatService.unsubscribeChatServer((chatServerM) async {
+      enableContact.value =
+          chatServerM.properties.commonInfo?.contactVerificationEnable == true;
+    });
   }
 
   @override
@@ -120,8 +134,24 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               onTap: () {
                 onTapDm(userInfoM, context);
               }),
-          if (enableContact) _buildBlockBtn(context),
-          if (enableContact) _buildRemoveBtn(context),
+          ValueListenableBuilder<bool>(
+              valueListenable: enableContact,
+              builder: (context, enableContact, _) {
+                if (enableContact) {
+                  return _buildBlockBtn(context);
+                } else {
+                  return SizedBox.shrink();
+                }
+              }),
+          ValueListenableBuilder<bool>(
+              valueListenable: enableContact,
+              builder: (context, enableContact, _) {
+                if (enableContact) {
+                  return _buildRemoveBtn(context);
+                } else {
+                  return SizedBox.shrink();
+                }
+              }),
           if (isAdmin())
             Padding(
               padding: const EdgeInsets.only(top: 8),
