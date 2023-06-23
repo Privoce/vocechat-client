@@ -11,22 +11,33 @@ part 'user_settings.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserSettings {
-  final List<BurnAfterReadingGroup> burnAfterReadingGroups;
-  final List<BurnAfterReadingUser> burnAfterReadingUsers;
-  final List<MuteGroup> muteGroups;
-  final List<MuteUser> muteUsers;
-  final List<PinnedChat> pinnedChats;
-  final List<ReadIndexGroup> readIndexGroups;
-  final List<ReadIndexUser> readIndexUsers;
+  /// {gid: expiresIn(seconds)}
+  Map<int, int>? burnAfterReadingGroups;
+
+  /// {uid: expiresIn(seconds)}
+  Map<int, int>? burnAfterReadingUsers;
+
+  /// {gid: expiredAt(optional seconds)}
+  Map<int, int?>? muteGroups;
+
+  /// {uid: expiredAt(optional seconds)}
+  Map<int, int?>? muteUsers;
+
+  List<int>? pinnedGroups;
+  List<int>? pinnedUsers;
+
+  Map<int, int>? readIndexGroups;
+  Map<int, int>? readIndexUsers;
 
   UserSettings({
-    required this.burnAfterReadingGroups,
-    required this.burnAfterReadingUsers,
-    required this.muteGroups,
-    required this.muteUsers,
-    required this.pinnedChats,
-    required this.readIndexGroups,
-    required this.readIndexUsers,
+    this.burnAfterReadingGroups,
+    this.burnAfterReadingUsers,
+    this.muteGroups,
+    this.muteUsers,
+    this.pinnedGroups,
+    this.pinnedUsers,
+    this.readIndexGroups,
+    this.readIndexUsers,
   });
 
   factory UserSettings.fromJson(Map<String, dynamic> json) =>

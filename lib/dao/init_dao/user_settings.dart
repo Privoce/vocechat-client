@@ -74,4 +74,36 @@ class UserSettingsDao extends Dao<UserSettingsM> {
     }
     return null;
   }
+
+  Future<GroupSettings?> getGroupSettings(int gid) async {
+    final m = await super.first();
+    if (m != null) {
+      final settings = UserSettings.fromJson(json.decode(m.settings));
+
+      // Burn after read
+      final burnAfterReadsGroups = settings.burnAfterReadingGroups;
+      // if (burnAfterReadsGroups.con)
+
+      // final groupSettings = settings.groupSettings[gid];
+      // if (groupSettings != null) {
+      //   return groupSettings;
+      // }
+    }
+    // return GroupSettings(
+    //     0, false, false, 0); // default settings if not found in db.
+  }
+}
+
+class GroupSettings {
+  final int burnAfterReadSecond; // in seconds. <=0 means disabled.
+  final bool enableMute;
+  final bool pinned;
+  final int readIndex;
+
+  GroupSettings({
+    required this.burnAfterReadSecond,
+    required this.enableMute,
+    required this.pinned,
+    required this.readIndex,
+  });
 }

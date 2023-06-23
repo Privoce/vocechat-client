@@ -1078,7 +1078,125 @@ class VoceChatService {
   Future<void> _handleUserSettings(Map<String, dynamic> map) async {
     assert(map["type"] == sseUserSettings);
 
-    final userSettings = UserSettings.fromJson(map);
+    UserSettings userSettings = UserSettings();
+
+    {
+      // Burn after reading groups
+      final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
+      if (burnAfterReadingGroups != null) {
+        final Map<int, int> gidMap = {};
+        for (final each in burnAfterReadingGroups) {
+          final gid = each["gid"] as int?;
+          final expiresIn = each["expires_in"] as int?;
+          if (gid != null && expiresIn != null) {
+            gidMap.addAll({gid: expiresIn});
+          }
+        }
+        userSettings.burnAfterReadingGroups = gidMap;
+      }
+    }
+
+    {
+      // Burn after reading users
+      final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
+      if (burnAfterReadingUsers != null) {
+        final Map<int, int> uidMap = {};
+        for (final each in burnAfterReadingUsers) {
+          final uid = each["uid"] as int?;
+          final expiresIn = each["expires_in"] as int?;
+          if (uid != null && expiresIn != null) {
+            uidMap.addAll({uid: expiresIn});
+          }
+        }
+        userSettings.burnAfterReadingUsers = uidMap;
+      }
+    }
+
+    {
+      // Mute Groups
+      final muteGroups = map["mute_groups"] as List?;
+      if (muteGroups != null) {
+        final Map<int, int?> gidMap = {};
+        for (final each in muteGroups) {
+          final gid = each["gid"] as int?;
+          final expiredAt = each["expired_at"] as int?;
+          if (gid != null) {
+            gidMap.addAll({gid: expiredAt});
+          }
+        }
+        userSettings.muteGroups = gidMap;
+      }
+    }
+
+    {
+      // Mute Users
+      final muteUsers = map["mute_users"] as List?;
+      if (muteUsers != null) {
+        final Map<int, int?> uidMap = {};
+        for (final each in muteUsers) {
+          final uid = each["uid"] as int?;
+          final expiredAt = each["expired_at"] as int?;
+          if (uid != null) {
+            uidMap.addAll({uid: expiredAt});
+          }
+        }
+        userSettings.muteUsers = uidMap;
+      }
+    }
+
+    {
+      // Pinned chats: pinned groups + pinned users
+      final pinnedChats = map["pinned_chats"] as List?;
+      if (pinnedChats != null) {
+        final List<int> pinnedGroups = [];
+        final List<int> pinnedUsers = [];
+
+        for (final each in pinnedChats) {
+          final gid = each["target"]["gid"] as int?;
+          final uid = each["target"]["uid"] as int?;
+
+          if (gid != null) {
+            pinnedGroups.add(gid);
+          } else if (uid != null) {
+            pinnedUsers.add(uid);
+          }
+        }
+        userSettings.pinnedGroups = pinnedGroups;
+        userSettings.pinnedUsers = pinnedUsers;
+      }
+    }
+
+    {
+      // read index groups
+      final readIndexGroups = map["read_index_groups"] as List?;
+      if (readIndexGroups != null) {
+        final Map<int, int> gidMap = {};
+        for (final each in readIndexGroups) {
+          final mid = each["mid"] as int?;
+          final gid = each["gid"] as int?;
+          if (mid != null && gid != null) {
+            gidMap.addAll({gid: mid});
+          }
+        }
+        userSettings.readIndexGroups = gidMap;
+      }
+    }
+
+    {
+      // read index users
+      final readIndexUsers = map["read_index_users"] as List?;
+      if (readIndexUsers != null) {
+        final Map<int, int> uidMap = {};
+        for (final each in readIndexUsers) {
+          final mid = each["mid"] as int?;
+          final uid = each["uid"] as int?;
+          if (mid != null && uid != null) {
+            uidMap.addAll({uid: mid});
+          }
+        }
+        userSettings.readIndexUsers = uidMap;
+      }
+    }
 
     // This will only be called before 'afterReady' is pushed.
     // Thus no 'fire' event is needed.
