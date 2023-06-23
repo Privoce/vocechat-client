@@ -1,70 +1,77 @@
-// // ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names
 
-// import 'package:vocechat_client/app.dart';
-// import 'package:vocechat_client/dao/dao.dart';
+import 'dart:convert';
 
-// class UserSettingsM with M {
-//   String pinnedChats = "";
-//   String mutedChats = "";
+import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/dao.dart';
+import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/user_settings.dart';
 
-//   UserSettingsM();
+class UserSettingsM with M {
+  String settings = "";
 
-//   UserSettingsM.item(this.pinnedChats, this.mutedChats);
+  UserSettingsM();
 
-//   static UserSettingsM fromMap(Map<String, dynamic> map) {
-//     UserSettingsM m = UserSettingsM();
-//     if (map.containsKey(M.ID)) {
-//       m.id = map[M.ID];
-//     }
-//     if (map.containsKey(F_pinnedChats)) {
-//       m.pinnedChats = map[F_pinnedChats];
-//     }
-//     if (map.containsKey(F_mutedChats)) {
-//       m.mutedChats = map[F_mutedChats];
-//     }
-//     if (map.containsKey(F_createdAt)) {
-//       m.createdAt = map[F_createdAt];
-//     }
+  UserSettingsM.item(this.settings, String id, int createdAt) {
+    super.id = id;
+    super.createdAt = createdAt;
+  }
 
-//     return m;
-//   }
+  UserSettingsM.fromUserSettings(UserSettings data) {
+    settings = json.encode(data.toJson());
+  }
 
-//   static const F_tableName = 'user_settings';
-//   static const F_pinnedChats = 'pinned_chats';
-//   static const F_mutedChats = 'muted_chats';
-//   static const F_createdAt = 'created_at';
+  static UserSettingsM fromMap(Map<String, dynamic> map) {
+    UserSettingsM m = UserSettingsM();
+    if (map.containsKey(M.ID)) {
+      m.id = map[M.ID];
+    }
+    if (map.containsKey(F_settings)) {
+      m.settings = map[F_settings];
+    }
+    if (map.containsKey(F_createdAt)) {
+      m.createdAt = map[F_createdAt];
+    }
 
-//   @override
-//   Map<String, Object> get values => {
-//         UserSettingsM.F_pinnedChats: pinnedChats,
-//         UserSettingsM.F_mutedChats: mutedChats,
-//         UserSettingsM.F_createdAt: createdAt
-//       };
+    return m;
+  }
 
-//   static MMeta meta = MMeta.fromType(UserSettingsM, UserSettingsM.fromMap)
-//     ..tableName = F_tableName;
-// }
+  static const F_tableName = 'user_settings';
+  static const F_settings = 'settings';
+  static const F_createdAt = 'created_at';
 
-// class UserSettingsDao extends Dao<UserSettingsM> {
-//   UserSettingsDao() {
-//     UserSettingsM.meta;
-//   }
+  @override
+  Map<String, Object> get values => {
+        UserSettingsM.F_settings: settings,
+        UserSettingsM.F_createdAt: createdAt
+      };
 
-//   Future<UserSettingsM> addOrUpdate(UserSettingsM m) async {
-//     UserSettingsM old;
-//     final list = await super.list();
-//     if (list.isNotEmpty) {
-//       old = list.first;
+  static MMeta meta = MMeta.fromType(UserSettingsM, UserSettingsM.fromMap)
+    ..tableName = F_tableName;
+}
 
-//       m.id = old.id;
-//       await super.update(m);
-//       App.logger.info("DmInfo updated. ${m.values}");
-//     } else {
-//       await super.add(m);
-//       App.logger.info("DmInfo added. ${m.values}");
-//     }
-//     return m;
-//   }
+class UserSettingsDao extends Dao<UserSettingsM> {
+  UserSettingsDao() {
+    UserSettingsM.meta;
+  }
 
-//   Future<UserSettingsM> updatePinnedChats() async {}
-// }
+  Future<UserSettingsM> addOrUpdate(UserSettingsM m) async {
+    final old = await super.first();
+    if (old != null) {
+      m.id = old.id;
+      await super.update(m);
+      App.logger.info("UserSettings updated. ${m.values}");
+    } else {
+      await super.add(m);
+      App.logger.info("UserSettings added. ${m.values}");
+    }
+    return m;
+  }
+
+  Future<UserSettings?> getSettings() async {
+    final m = await super.first();
+    if (m != null) {
+      return UserSettings.fromJson(json.decode(m.settings));
+    }
+    return null;
+  }
+}

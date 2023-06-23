@@ -121,9 +121,9 @@ CREATE TABLE IF NOT EXISTS contacts (
   FOREIGN KEY(uid) REFERENCES user_info(uid) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE IF NOT EXISTS user_settings (
   id TEXT NOT NULL,
-  properties TEXT NOT NULL,
+  settings TEXT NOT NULL,
   created_at INTEGER NOT NULL
 );
 

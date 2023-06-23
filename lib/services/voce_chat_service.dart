@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
@@ -8,38 +9,35 @@ import 'package:vocechat_client/api/lib/resource_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/api/models/admin/system/sys_common_info.dart';
 import 'package:vocechat_client/api/models/group/group_info.dart';
-import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
 import 'package:vocechat_client/api/models/msg/chat_msg.dart';
-import 'package:vocechat_client/api/models/msg/msg_normal.dart';
+import 'package:vocechat_client/api/models/msg/msg_archive/pinned_msg.dart';
+import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
 import 'package:vocechat_client/api/models/user/contact_info.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/dao/init_dao/contacts.dart';
-import 'package:vocechat_client/dao/init_dao/dm_info.dart';
-import 'package:vocechat_client/dao/init_dao/reaction.dart';
-import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
-import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
-import 'package:vocechat_client/services/sse/sse.dart';
-import 'package:vocechat_client/services/sse/sse_queue.dart';
-import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/archive.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
+import 'package:vocechat_client/dao/init_dao/contacts.dart';
+import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
+import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/user_settings.dart';
+import 'package:vocechat_client/dao/init_dao/reaction.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_settings.dart';
+import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/globals.dart';
-import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
+import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
+import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_event_consts.dart';
-import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/services/sse/sse_queue.dart';
 import 'package:vocechat_client/services/task_queue.dart';
-import 'package:vocechat_client/dao/init_dao/open_graphic_thumbnail.dart';
-import 'package:vocechat_client/api/models/resource/open_graphic_image.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 
 import '../dao/org_dao/chat_server.dart';
 
@@ -1080,396 +1078,280 @@ class VoceChatService {
   Future<void> _handleUserSettings(Map<String, dynamic> map) async {
     assert(map["type"] == sseUserSettings);
 
-    {
-      // read index groups
-      final readIndexGroups = map["read_index_groups"] as List?;
-      if (readIndexGroups != null && readIndexGroups.isNotEmpty) {
-        for (var each in readIndexGroups) {
-          final mid = each["mid"];
-          final gid = each["gid"];
-          if (mid != null && gid != null) {
-            await GroupInfoDao()
-                .updateProperties(gid, readIndex: mid)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
-    {
-      // read index users
-      final readIndexUsers = map["read_index_users"] as List?;
-      if (readIndexUsers != null && readIndexUsers.isNotEmpty) {
-        for (var each in readIndexUsers) {
-          final mid = each["mid"];
-          final uid = each["uid"];
-          if (mid != null && uid != null) {
-            await UserInfoDao()
-                .updateProperties(uid, readIndex: mid)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
-    {
-      // add / remove mute groups
-      final muteGroups = map["mute_groups"] as List?;
-      if (muteGroups != null && muteGroups.isNotEmpty) {
-        for (var each in muteGroups) {
-          final gid = each["gid"];
-          if (gid != null) {
-            final expiredAt = each["expired_at"] as int?;
+    final userSettings = UserSettings.fromJson(map);
 
-            await GroupInfoDao()
-                .updateProperties(gid,
-                    enableMute: true, muteExpiresAt: expiredAt)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
-
-    {
-      // add mute users
-      final muteUsers = map["mute_users"] as List?;
-      if (muteUsers != null && muteUsers.isNotEmpty) {
-        for (var each in muteUsers) {
-          final expiredAt = each["expired_at"] as int?;
-          final uid = each["uid"];
-          if (uid != null) {
-            await UserInfoDao()
-                .updateProperties(uid,
-                    enableMute: true, muteExpiresAt: expiredAt)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      } else {}
-    }
-
-    {
-      // add burn_after_reading_groups
-      final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
-      if (burnAfterReadingGroups != null && burnAfterReadingGroups.isNotEmpty) {
-        for (var each in burnAfterReadingGroups) {
-          final expiresIn = each["expires_in"] as int?;
-          final gid = each["gid"];
-
-          if (expiresIn != null && gid != null) {
-            await GroupInfoDao()
-                .updateProperties(gid, burnAfterReadSecond: expiresIn)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
-
-    {
-      // add burn_after_reading_users
-      final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
-      if (burnAfterReadingUsers != null && burnAfterReadingUsers.isNotEmpty) {
-        for (var each in burnAfterReadingUsers) {
-          final expiresIn = each["expires_in"] as int?;
-          final uid = each["uid"];
-
-          if (expiresIn != null && uid != null) {
-            await UserInfoDao()
-                .updateProperties(uid, burnAfterReadSecond: expiresIn)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    // This will only be called before 'afterReady' is pushed.
+    // Thus no 'fire' event is needed.
+    await UserSettingsDao()
+        .addOrUpdate(UserSettingsM.fromUserSettings(userSettings));
   }
 
   Future<void> _handleUserSettingsChanged(Map<String, dynamic> map) async {
     assert(map['type'] == sseUserSettingsChanged);
 
-    // read index groups
-    final readIndexGroups = map["read_index_groups"] as List?;
-    if (readIndexGroups != null && readIndexGroups.isNotEmpty) {
-      for (var each in readIndexGroups) {
-        final mid = each["mid"];
-        final gid = each["gid"];
-        if (mid != null && gid != null) {
-          await GroupInfoDao()
-              .updateProperties(gid, readIndex: mid)
-              .then((value) {
-            if (value != null) {
-              fireChannel(value, EventActions.update, afterReady);
-            }
-          });
-        }
-      }
-    }
+    // // read index groups
+    // final readIndexGroups = map["read_index_groups"] as List?;
+    // if (readIndexGroups != null && readIndexGroups.isNotEmpty) {
+    //   for (var each in readIndexGroups) {
+    //     final mid = each["mid"];
+    //     final gid = each["gid"];
+    //     if (mid != null && gid != null) {
+    //       await GroupInfoDao()
+    //           .updateProperties(gid, readIndex: mid)
+    //           .then((value) {
+    //         if (value != null) {
+    //           fireChannel(value, EventActions.update, afterReady);
+    //         }
+    //       });
+    //     }
+    //   }
+    // }
 
-    // read index users
-    final readIndexUsers = map["read_index_users"] as List?;
-    if (readIndexUsers != null && readIndexUsers.isNotEmpty) {
-      for (var each in readIndexUsers) {
-        final mid = each["mid"];
-        final uid = each["uid"];
-        if (mid != null && uid != null) {
-          await UserInfoDao()
-              .updateProperties(uid, readIndex: mid)
-              .then((value) {
-            if (value != null) {
-              fireUser(value, EventActions.update, afterReady);
-            }
-          });
-        }
-      }
-    }
+    // // read index users
+    // final readIndexUsers = map["read_index_users"] as List?;
+    // if (readIndexUsers != null && readIndexUsers.isNotEmpty) {
+    //   for (var each in readIndexUsers) {
+    //     final mid = each["mid"];
+    //     final uid = each["uid"];
+    //     if (mid != null && uid != null) {
+    //       await UserInfoDao()
+    //           .updateProperties(uid, readIndex: mid)
+    //           .then((value) {
+    //         if (value != null) {
+    //           fireUser(value, EventActions.update, afterReady);
+    //         }
+    //       });
+    //     }
+    //   }
+    // }
 
-    {
-      // add mute groups
-      final muteGroups = map["add_mute_groups"] as List?;
-      if (muteGroups != null && muteGroups.isNotEmpty) {
-        for (var each in muteGroups) {
-          final expiredAt = each["expired_at"] as int?;
-          final gid = each["gid"];
-          if (gid != null) {
-            await GroupInfoDao()
-                .updateProperties(gid,
-                    enableMute: true, muteExpiresAt: expiredAt)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    // {
+    //   // add mute groups
+    //   final muteGroups = map["add_mute_groups"] as List?;
+    //   if (muteGroups != null && muteGroups.isNotEmpty) {
+    //     for (var each in muteGroups) {
+    //       final expiredAt = each["expired_at"] as int?;
+    //       final gid = each["gid"];
+    //       if (gid != null) {
+    //         await GroupInfoDao()
+    //             .updateProperties(gid,
+    //                 enableMute: true, muteExpiresAt: expiredAt)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireChannel(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
-    {
-      // add mute users
-      final muteUsers = map["add_mute_users"] as List?;
-      if (muteUsers != null && muteUsers.isNotEmpty) {
-        for (var each in muteUsers) {
-          final expiredAt = each["expired_at"] as int?;
-          final uid = each["uid"];
-          if (uid != null) {
-            await UserInfoDao()
-                .updateProperties(uid,
-                    enableMute: true, muteExpiresAt: expiredAt)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    // {
+    //   // add mute users
+    //   final muteUsers = map["add_mute_users"] as List?;
+    //   if (muteUsers != null && muteUsers.isNotEmpty) {
+    //     for (var each in muteUsers) {
+    //       final expiredAt = each["expired_at"] as int?;
+    //       final uid = each["uid"];
+    //       if (uid != null) {
+    //         await UserInfoDao()
+    //             .updateProperties(uid,
+    //                 enableMute: true, muteExpiresAt: expiredAt)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireUser(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
-    {
-      // remove mute groups
-      final muteGroups = map["remove_mute_groups"] as List?;
-      if (muteGroups != null && muteGroups.isNotEmpty) {
-        for (var gid in muteGroups) {
-          if (gid != null) {
-            GroupInfoDao()
-                .updateProperties(gid, enableMute: false, muteExpiresAt: null)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    // {
+    //   // remove mute groups
+    //   final muteGroups = map["remove_mute_groups"] as List?;
+    //   if (muteGroups != null && muteGroups.isNotEmpty) {
+    //     for (var gid in muteGroups) {
+    //       if (gid != null) {
+    //         GroupInfoDao()
+    //             .updateProperties(gid, enableMute: false, muteExpiresAt: null)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireChannel(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
-    {
-      // remove mute users
-      final muteUsers = map["remove_mute_users"] as List?;
-      if (muteUsers != null && muteUsers.isNotEmpty) {
-        for (var uid in muteUsers) {
-          if (uid != null) {
-            await UserInfoDao()
-                .updateProperties(uid, enableMute: false, muteExpiresAt: null)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    // {
+    //   // remove mute users
+    //   final muteUsers = map["remove_mute_users"] as List?;
+    //   if (muteUsers != null && muteUsers.isNotEmpty) {
+    //     for (var uid in muteUsers) {
+    //       if (uid != null) {
+    //         await UserInfoDao()
+    //             .updateProperties(uid, enableMute: false, muteExpiresAt: null)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireUser(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
-    {
-      // add burn_after_reading_groups
-      final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
-      if (burnAfterReadingGroups != null && burnAfterReadingGroups.isNotEmpty) {
-        for (var each in burnAfterReadingGroups) {
-          final expiresIn = each["expires_in"] as int?;
-          final gid = each["gid"];
+    // {
+    //   // add burn_after_reading_groups
+    //   final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
+    //   if (burnAfterReadingGroups != null && burnAfterReadingGroups.isNotEmpty) {
+    //     for (var each in burnAfterReadingGroups) {
+    //       final expiresIn = each["expires_in"] as int?;
+    //       final gid = each["gid"];
 
-          if (expiresIn != null && gid != null) {
-            await GroupInfoDao()
-                .updateProperties(gid, burnAfterReadSecond: expiresIn)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    //       if (expiresIn != null && gid != null) {
+    //         await GroupInfoDao()
+    //             .updateProperties(gid, burnAfterReadSecond: expiresIn)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireChannel(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
-    {
-      // add burn_after_reading_users
-      final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
-      if (burnAfterReadingUsers != null && burnAfterReadingUsers.isNotEmpty) {
-        for (var each in burnAfterReadingUsers) {
-          final expiresIn = each["expires_in"] as int?;
-          final uid = each["uid"];
+    // {
+    //   // add burn_after_reading_users
+    //   final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
+    //   if (burnAfterReadingUsers != null && burnAfterReadingUsers.isNotEmpty) {
+    //     for (var each in burnAfterReadingUsers) {
+    //       final expiresIn = each["expires_in"] as int?;
+    //       final uid = each["uid"];
 
-          if (expiresIn != null && uid != null) {
-            await UserInfoDao()
-                .updateProperties(uid, burnAfterReadSecond: expiresIn)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    //       if (expiresIn != null && uid != null) {
+    //         await UserInfoDao()
+    //             .updateProperties(uid, burnAfterReadSecond: expiresIn)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireUser(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
-    {
-      // handle "add_contacts"
-      final addContacts = map["add_contacts"] as List?;
-      if (addContacts != null && addContacts.isNotEmpty) {
-        final dao = ContactDao();
-        for (var contact in addContacts) {
-          final contactInfo = ContactInfo.fromJson(contact["info"]);
-          final targetUid = contact["target_uid"] as int;
-          await dao
-              .updateContactInfo(targetUid, contactInfo)
-              .then((updatedContactM) async {
-            if (updatedContactM != null) {
-              await UserInfoDao().getUserByUid(targetUid).then((userInfoM) {
-                if (userInfoM != null) {
-                  fireUser(userInfoM, EventActions.update, true);
-                }
-              });
-            }
-          });
-        }
-      }
-    }
+    // {
+    //   // handle "add_contacts"
+    //   final addContacts = map["add_contacts"] as List?;
+    //   if (addContacts != null && addContacts.isNotEmpty) {
+    //     final dao = ContactDao();
+    //     for (var contact in addContacts) {
+    //       final contactInfo = ContactInfo.fromJson(contact["info"]);
+    //       final targetUid = contact["target_uid"] as int;
+    //       await dao
+    //           .updateContactInfo(targetUid, contactInfo)
+    //           .then((updatedContactM) async {
+    //         if (updatedContactM != null) {
+    //           await UserInfoDao().getUserByUid(targetUid).then((userInfoM) {
+    //             if (userInfoM != null) {
+    //               fireUser(userInfoM, EventActions.update, true);
+    //             }
+    //           });
+    //         }
+    //       });
+    //     }
+    //   }
+    // }
 
-    {
-      // handle "remove_contacts"
-      final removeContacts = map["remove_contacts"] as List?;
-      if (removeContacts != null) {
-        final dao = ContactDao();
-        for (final uid in removeContacts) {
-          await dao
-              .updateContact((uid as int), ContactStatus.none)
-              .then((updatedContactM) async {
-            if (updatedContactM != null) {
-              await UserInfoDao().getUserByUid(uid).then((userInfoM) {
-                if (userInfoM != null) {
-                  fireUser(userInfoM, EventActions.update, true);
-                }
-              });
-            }
-          });
-        }
-      }
-    }
+    // {
+    //   // handle "remove_contacts"
+    //   final removeContacts = map["remove_contacts"] as List?;
+    //   if (removeContacts != null) {
+    //     final dao = ContactDao();
+    //     for (final uid in removeContacts) {
+    //       await dao
+    //           .updateContact((uid as int), ContactStatus.none)
+    //           .then((updatedContactM) async {
+    //         if (updatedContactM != null) {
+    //           await UserInfoDao().getUserByUid(uid).then((userInfoM) {
+    //             if (userInfoM != null) {
+    //               fireUser(userInfoM, EventActions.update, true);
+    //             }
+    //           });
+    //         }
+    //       });
+    //     }
+    //   }
+    // }
 
-    {
-      // handle "add_pin_chats"
-      final addPinChats = map["add_pin_chats"] as List?;
-      if (addPinChats != null) {
-        final userInfoDao = UserInfoDao();
-        final groupInfoDao = GroupInfoDao();
-        for (final chat in addPinChats) {
-          final uid = chat["target"]?["uid"] as int?;
-          final gid = chat["target"]?["gid"] as int?;
-          final updatedAt = chat["updated_at"] as int?;
+    // {
+    //   // handle "add_pin_chats"
+    //   final addPinChats = map["add_pin_chats"] as List?;
+    //   if (addPinChats != null) {
+    //     final userInfoDao = UserInfoDao();
+    //     final groupInfoDao = GroupInfoDao();
+    //     for (final chat in addPinChats) {
+    //       final uid = chat["target"]?["uid"] as int?;
+    //       final gid = chat["target"]?["gid"] as int?;
+    //       final updatedAt = chat["updated_at"] as int?;
 
-          if (uid != null) {
-            await userInfoDao
-                .updateProperties(uid, pinnedAt: updatedAt)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          } else if (gid != null) {
-            await groupInfoDao
-                .updateProperties(gid, pinnedAt: updatedAt)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    //       if (uid != null) {
+    //         await userInfoDao
+    //             .updateProperties(uid, pinnedAt: updatedAt)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireUser(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       } else if (gid != null) {
+    //         await groupInfoDao
+    //             .updateProperties(gid, pinnedAt: updatedAt)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireChannel(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
 
-    {
-      // handle "remove_pin_chats"
-      final removePinChats = map["remove_pin_chats"] as List?;
-      if (removePinChats != null) {
-        final userInfoDao = UserInfoDao();
-        final groupInfoDao = GroupInfoDao();
-        for (final data in removePinChats) {
-          final uid = data["uid"] as int?;
-          final gid = data["gid"] as int?;
-          const updatedAt = -1;
+    // {
+    //   // handle "remove_pin_chats"
+    //   final removePinChats = map["remove_pin_chats"] as List?;
+    //   if (removePinChats != null) {
+    //     final userInfoDao = UserInfoDao();
+    //     final groupInfoDao = GroupInfoDao();
+    //     for (final data in removePinChats) {
+    //       final uid = data["uid"] as int?;
+    //       final gid = data["gid"] as int?;
+    //       const updatedAt = -1;
 
-          if (uid != null) {
-            await userInfoDao
-                .updateProperties(uid, pinnedAt: updatedAt)
-                .then((value) {
-              if (value != null) {
-                fireUser(value, EventActions.update, afterReady);
-              }
-            });
-          } else if (gid != null) {
-            await groupInfoDao
-                .updateProperties(gid, pinnedAt: updatedAt)
-                .then((value) {
-              if (value != null) {
-                fireChannel(value, EventActions.update, afterReady);
-              }
-            });
-          }
-        }
-      }
-    }
+    //       if (uid != null) {
+    //         await userInfoDao
+    //             .updateProperties(uid, pinnedAt: updatedAt)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireUser(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       } else if (gid != null) {
+    //         await groupInfoDao
+    //             .updateProperties(gid, pinnedAt: updatedAt)
+    //             .then((value) {
+    //           if (value != null) {
+    //             fireChannel(value, EventActions.update, afterReady);
+    //           }
+    //         });
+    //       }
+    //     }
+    //   }
+    // }
   }
 
   Future<void> _handleUsersSnapshot(Map<String, dynamic> usersSnapshot) async {
