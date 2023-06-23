@@ -280,7 +280,8 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   ///
   /// To cancel [pinnedAt], set it to 0 or -1.
   Future<GroupInfoM?> updateProperties(int gid,
-      {int? burnAfterReadSecond,
+      {
+      // int? burnAfterReadSecond,
       bool? enableMute,
       int? muteExpiresAt,
       int? readIndex,
@@ -290,9 +291,9 @@ class GroupInfoDao extends Dao<GroupInfoM> {
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
     if (old != null) {
       GroupProperties oldProperties = old.properties;
-      if (burnAfterReadSecond != null) {
-        oldProperties.burnAfterReadSecond = burnAfterReadSecond;
-      }
+      // if (burnAfterReadSecond != null) {
+      //   oldProperties.burnAfterReadSecond = burnAfterReadSecond;
+      // }
 
       if (enableMute != null) {
         oldProperties.enableMute = enableMute;

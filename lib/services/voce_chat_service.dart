@@ -38,6 +38,7 @@ import 'package:vocechat_client/services/sse/sse_event_consts.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 
 import '../dao/org_dao/chat_server.dart';
 
@@ -1201,11 +1202,59 @@ class VoceChatService {
     // This will only be called before 'afterReady' is pushed.
     // Thus no 'fire' event is needed.
     await UserSettingsDao()
-        .addOrUpdate(UserSettingsM.fromUserSettings(userSettings));
+        .addOrUpdate(UserSettingsM.fromUserSettings(userSettings))
+        .then((value) {
+      globals.userSettings.value = value.settings;
+    });
   }
 
   Future<void> _handleUserSettingsChanged(Map<String, dynamic> map) async {
     assert(map['type'] == sseUserSettingsChanged);
+
+    final currentUserSettings = await UserSettingsDao().getSettings();
+    if (currentUserSettings == null) return;
+
+    {
+      // Burn after reading groups
+      final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
+      if (burnAfterReadingGroups != null) {
+        for (final each in burnAfterReadingGroups) {
+          final gid = each["gid"] as int?;
+          final expiresIn = (each["expires_in"] as int?) ?? 0;
+
+          if (gid != null) {
+            await UserSettingsDao()
+                .updateGroupSettings(gid, burnAfterReadSecond: expiresIn)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // Burn after reading users
+      final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
+      if (burnAfterReadingUsers != null) {
+        for (final each in burnAfterReadingUsers) {
+          final uid = each["uid"] as int?;
+          final expiresIn = (each["expires_in"] as int?) ?? 0;
+
+          if (uid != null) {
+            await UserSettingsDao()
+                .updateDmSettings(uid, burnAfterReadSecond: expiresIn)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
 
     // // read index groups
     // final readIndexGroups = map["read_index_groups"] as List?;

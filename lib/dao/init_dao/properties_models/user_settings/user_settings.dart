@@ -1,16 +1,10 @@
+import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/burn_after_reading_group.dart';
-import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/burn_after_reading_user.dart';
-import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/mute_group.dart';
-import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/mute_user.dart';
-import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/pinned_chat.dart';
-import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/read_index_group.dart';
-import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/read_index_user.dart';
 
 part 'user_settings.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
-class UserSettings {
+class UserSettings extends Equatable {
   /// {gid: expiresIn(seconds)}
   Map<int, int>? burnAfterReadingGroups;
 
@@ -44,4 +38,16 @@ class UserSettings {
       _$UserSettingsFromJson(json);
 
   Map<String, dynamic> toJson() => _$UserSettingsToJson(this);
+
+  @override
+  List<Object?> get props => [
+        burnAfterReadingGroups,
+        burnAfterReadingUsers,
+        muteGroups,
+        muteUsers,
+        pinnedGroups,
+        pinnedUsers,
+        readIndexGroups,
+        readIndexUsers
+      ];
 }

@@ -3,6 +3,7 @@ library globals;
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/user_settings.dart';
 
 // To use globals, import package as follow:
 // import 'package:vocechat_client/globals.dart' as globals;
@@ -18,5 +19,7 @@ final ValueNotifier<int> unreadCountSum = ValueNotifier(0);
 /// When switched from true to false, database needs to be refreshed. All
 /// private channels need be deleted due to safety concerns.
 bool enablePublicChannels = true;
+
+final ValueNotifier<UserSettings> userSettings = ValueNotifier(UserSettings());
 
 EventBus eventBus = EventBus();

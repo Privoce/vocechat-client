@@ -4,7 +4,7 @@ part 'group_properties.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class GroupProperties {
-  late int burnAfterReadSecond;
+  // late int burnAfterReadSecond;
   late bool enableMute = false;
   late int? muteExpiresAt;
 
@@ -18,8 +18,13 @@ class GroupProperties {
   /// by the server. Otherwise, the pinnedAt field will be null.
   late int? pinnedAt;
 
-  GroupProperties(this.burnAfterReadSecond, this.enableMute, this.muteExpiresAt,
-      this.readIndex, this.draft, this.pinnedAt);
+  GroupProperties(
+      // this.burnAfterReadSecond,
+      this.enableMute,
+      this.muteExpiresAt,
+      this.readIndex,
+      this.draft,
+      this.pinnedAt);
 
   GroupProperties.update(
       {int? burnAfterReadSecond,
@@ -28,7 +33,7 @@ class GroupProperties {
       int? readIndex,
       String? draft,
       this.pinnedAt}) {
-    this.burnAfterReadSecond = burnAfterReadSecond ?? 0;
+    // this.burnAfterReadSecond = burnAfterReadSecond ?? 0;
 
     this.enableMute = enableMute ?? false;
 

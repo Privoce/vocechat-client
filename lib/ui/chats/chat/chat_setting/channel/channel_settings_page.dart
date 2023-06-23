@@ -9,8 +9,10 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/user_settings.dart';
+import 'package:vocechat_client/dao/init_dao/user_settings.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 import 'package:vocechat_client/services/file_handler.dart';
-import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -299,10 +301,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   Widget _buildBurnAfterReading(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: ValueListenableBuilder<GroupInfoM>(
-          valueListenable: widget.groupInfoNotifier,
-          builder: (context, groupInfoM, _) {
-            final initExpTime = groupInfoM.properties.burnAfterReadSecond;
+      child: ValueListenableBuilder<UserSettings>(
+          valueListenable: globals.userSettings,
+          builder: (context, userSettings, _) {
+            final initExpTime = GroupSettings.fromUserSettings(
+                    userSettings, widget.groupInfoNotifier.value.gid)
+                .burnAfterReadSecond;
             return BannerTileGroup(
               bannerTileList: [
                 BannerTile(
@@ -388,11 +392,18 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     final res = await UserApi().postBurnAfterReadingSetting(
         expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
     if (res.statusCode == 200) {
-      final groupInfoM = await GroupInfoDao().updateProperties(
+      final groupSettings = await UserSettingsDao().updateGroupSettings(
           widget.groupInfoNotifier.value.gid,
           burnAfterReadSecond: expiresIn);
-      if (groupInfoM != null) {
-        App.app.chatService.fireChannel(groupInfoM, EventActions.update, true);
+      if (groupSettings != null) {
+        await UserSettingsDao()
+            .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                burnAfterReadSecond: expiresIn)
+            .then((value) {
+          if (value != null) {
+            globals.userSettings.value = value;
+          }
+        });
         return true;
       }
     }
