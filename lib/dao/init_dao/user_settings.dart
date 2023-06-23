@@ -118,12 +118,10 @@ class UserSettingsDao extends Dao<UserSettingsM> {
         settings.burnAfterReadingGroups?[gid] = burnAfterReadSecond;
       }
 
-      if (muteExpiredAt != null) {
-        if (muteExpiredAt > 0) {
-          settings.muteGroups?[gid] = muteExpiredAt;
-        } else {
-          settings.muteGroups?.remove(gid);
-        }
+      if (muteExpiredAt == null || muteExpiredAt > 0) {
+        settings.muteGroups?[gid] = muteExpiredAt;
+      } else {
+        settings.muteGroups?.remove(gid);
       }
 
       if (pinned != null) {
@@ -140,6 +138,7 @@ class UserSettingsDao extends Dao<UserSettingsM> {
 
       m._settings = json.encode(settings.toJson());
       await super.update(m);
+      App.logger.info("UserSettings updated. ${m.values}");
       return m.settings;
     }
     return null;
@@ -161,12 +160,10 @@ class UserSettingsDao extends Dao<UserSettingsM> {
         settings.burnAfterReadingUsers?[dmUid] = burnAfterReadSecond;
       }
 
-      if (muteExpiredAt != null) {
-        if (muteExpiredAt > 0) {
-          settings.muteUsers?[dmUid] = muteExpiredAt;
-        } else {
-          settings.muteUsers?.remove(dmUid);
-        }
+      if (muteExpiredAt == null || muteExpiredAt > 0) {
+        settings.muteUsers?[dmUid] = muteExpiredAt;
+      } else {
+        settings.muteUsers?.remove(dmUid);
       }
 
       if (pinned != null) {
@@ -183,6 +180,7 @@ class UserSettingsDao extends Dao<UserSettingsM> {
 
       m._settings = json.encode(settings.toJson());
       await super.update(m);
+      App.logger.info("UserSettings updated. ${m.values}");
       return m.settings;
     }
     return null;
@@ -214,6 +212,38 @@ class GroupSettings {
     final readIndex = readIndexGroups?[gid] ?? 0;
 
     return GroupSettings(
+        burnAfterReadSecond: burnAfterReadSecond,
+        enableMute: muteExpiredAt > 0,
+        pinned: pinned,
+        readIndex: readIndex);
+  }
+}
+
+class DmSettings {
+  final int burnAfterReadSecond; // in seconds. <=0 means disabled.
+  final bool enableMute;
+  final bool pinned;
+  final int readIndex;
+
+  DmSettings({
+    required this.burnAfterReadSecond,
+    required this.enableMute,
+    required this.pinned,
+    required this.readIndex,
+  });
+
+  static DmSettings fromUserSettings(UserSettings settings, int uid) {
+    final burnAfterReadsUsers = settings.burnAfterReadingUsers;
+    final muteUsers = settings.muteUsers;
+    final pinnedUsers = settings.pinnedUsers;
+    final readIndexUsers = settings.readIndexUsers;
+
+    final burnAfterReadSecond = burnAfterReadsUsers?[uid] ?? 0;
+    final muteExpiredAt = muteUsers?[uid] ?? 0;
+    final pinned = pinnedUsers?.contains(uid) ?? false;
+    final readIndex = readIndexUsers?[uid] ?? 0;
+
+    return DmSettings(
         burnAfterReadSecond: burnAfterReadSecond,
         enableMute: muteExpiredAt > 0,
         pinned: pinned,

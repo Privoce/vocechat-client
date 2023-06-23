@@ -1256,6 +1256,88 @@ class VoceChatService {
       }
     }
 
+    {
+      // Add mute groups
+      final addMuteGroups = map["add_mute_groups"] as List?;
+      if (addMuteGroups != null) {
+        for (final each in addMuteGroups) {
+          final gid = each["gid"] as int?;
+          final expiredAt = each["expired_at"] as int?;
+
+          if (gid != null) {
+            await UserSettingsDao()
+                .updateGroupSettings(gid, muteExpiredAt: expiredAt)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // Remove mute groups
+      final removeMuteGroups = map["remove_mute_groups"] as List?;
+      if (removeMuteGroups != null) {
+        for (final each in removeMuteGroups) {
+          final gid = each as int?;
+
+          if (gid != null) {
+            await UserSettingsDao()
+                .updateGroupSettings(gid, muteExpiredAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // Add mute users
+      final addMuteUsers = map["add_mute_users"] as List?;
+      if (addMuteUsers != null) {
+        for (final each in addMuteUsers) {
+          final uid = each["uid"] as int?;
+          final expiredAt = each["expired_at"] as int?;
+
+          if (uid != null) {
+            await UserSettingsDao()
+                .updateDmSettings(uid, muteExpiredAt: expiredAt)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // Remove mute users
+      final removeMuteUsers = map["remove_mute_users"] as List?;
+      if (removeMuteUsers != null) {
+        for (final each in removeMuteUsers) {
+          final uid = each as int?;
+
+          if (uid != null) {
+            await UserSettingsDao()
+                .updateDmSettings(uid, muteExpiredAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
+
     // // read index groups
     // final readIndexGroups = map["read_index_groups"] as List?;
     // if (readIndexGroups != null && readIndexGroups.isNotEmpty) {

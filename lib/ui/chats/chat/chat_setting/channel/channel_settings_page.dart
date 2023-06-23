@@ -48,14 +48,14 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
-  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
+  // final ValueNotifier<bool> _isMuted = ValueNotifier(false);
   final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
 
-    _isMuted.value = widget.groupInfoNotifier.value.properties.enableMute;
+    // _isMuted.value = widget.groupInfoNotifier.value.properties.enableMute;
     _pinned.value = widget.groupInfoNotifier.value.properties.pinnedAt != null;
   }
 
@@ -244,9 +244,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.muteNotification,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<bool>(
-                valueListenable: _isMuted,
-                builder: (context, isMuted, _) {
+            trailing: ValueListenableBuilder<UserSettings>(
+                valueListenable: globals.userSettings,
+                builder: (context, userSettings, _) {
+                  final isMuted = userSettings.muteGroups
+                          ?.containsKey(widget.groupInfoNotifier.value.gid) ??
+                      false;
                   return CupertinoSwitch(
                     value: isMuted,
                     onChanged: (value) {
@@ -337,17 +340,31 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
     try {
       if (value) {
-        await _mute().then((value) {
+        await _mute().then((value) async {
           if (value) {
-            _isMuted.value = true;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    muteExpiredAt: null)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
         });
       } else {
-        await _unMute().then((value) {
+        await _unMute().then((value) async {
           if (value) {
-            _isMuted.value = false;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    muteExpiredAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
