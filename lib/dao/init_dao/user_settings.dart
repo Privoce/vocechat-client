@@ -102,6 +102,31 @@ class UserSettingsDao extends Dao<UserSettingsM> {
     return null;
   }
 
+  Future<DmSettings?> getDmSettings(int uid) async {
+    final m = await super.first();
+    if (m != null) {
+      final settings = UserSettings.fromJson(json.decode(m._settings));
+
+      // Burn after read
+      final burnAfterReadsDms = settings.burnAfterReadingUsers;
+      final muteDms = settings.muteUsers;
+      final pinnedDms = settings.pinnedUsers;
+      final readIndexDms = settings.readIndexUsers;
+
+      final burnAfterReadSecond = burnAfterReadsDms?[uid] ?? 0;
+      final muteExpiredAt = muteDms?[uid] ?? 0;
+      final pinned = pinnedDms?.contains(uid) ?? false;
+      final readIndex = readIndexDms?[uid] ?? 0;
+
+      return DmSettings(
+          burnAfterReadSecond: burnAfterReadSecond,
+          enableMute: muteExpiredAt > 0,
+          pinned: pinned,
+          readIndex: readIndex);
+    }
+    return null;
+  }
+
   /// Updates group settings by [gid].
   ///
   /// If no local settings, returns null.
@@ -207,13 +232,14 @@ class GroupSettings {
     final readIndexGroups = settings.readIndexGroups;
 
     final burnAfterReadSecond = burnAfterReadsGroups?[gid] ?? 0;
-    final muteExpiredAt = muteGroups?[gid] ?? 0;
+    // final muteExpiredAt = muteGroups?[gid] ?? 0;
+    final enableMute = muteGroups?.containsKey(gid) ?? false;
     final pinned = pinnedGroups?.contains(gid) ?? false;
     final readIndex = readIndexGroups?[gid] ?? 0;
 
     return GroupSettings(
         burnAfterReadSecond: burnAfterReadSecond,
-        enableMute: muteExpiredAt > 0,
+        enableMute: enableMute,
         pinned: pinned,
         readIndex: readIndex);
   }
@@ -239,13 +265,13 @@ class DmSettings {
     final readIndexUsers = settings.readIndexUsers;
 
     final burnAfterReadSecond = burnAfterReadsUsers?[uid] ?? 0;
-    final muteExpiredAt = muteUsers?[uid] ?? 0;
+    final enableMute = muteUsers?.containsKey(uid) ?? false;
     final pinned = pinnedUsers?.contains(uid) ?? false;
     final readIndex = readIndexUsers?[uid] ?? 0;
 
     return DmSettings(
         burnAfterReadSecond: burnAfterReadSecond,
-        enableMute: muteExpiredAt > 0,
+        enableMute: enableMute,
         pinned: pinned,
         readIndex: readIndex);
   }

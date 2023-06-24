@@ -34,14 +34,11 @@ class DmSettingsPage extends StatefulWidget {
 class _DmSettingsPageState extends State<DmSettingsPage> {
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
-  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
   final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
-
-    _isMuted.value = widget.userInfoNotifier.value.properties.enableMute;
   }
 
   @override
@@ -139,8 +136,6 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                           } catch (e) {
                             App.logger.severe(e);
                           }
-
-                          _isMuted.value = muted;
 
                           dismissBusyDialog();
                         });

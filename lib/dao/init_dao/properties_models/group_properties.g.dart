@@ -8,8 +8,6 @@ part of 'group_properties.dart';
 
 GroupProperties _$GroupPropertiesFromJson(Map<String, dynamic> json) =>
     GroupProperties(
-      json['enable_mute'] as bool,
-      json['mute_expires_at'] as int?,
       json['read_index'] as int,
       json['draft'] as String,
       json['pinned_at'] as int?,
@@ -17,8 +15,6 @@ GroupProperties _$GroupPropertiesFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$GroupPropertiesToJson(GroupProperties instance) =>
     <String, dynamic>{
-      'enable_mute': instance.enableMute,
-      'mute_expires_at': instance.muteExpiresAt,
       'read_index': instance.readIndex,
       'draft': instance.draft,
       'pinned_at': instance.pinnedAt,

@@ -5,8 +5,8 @@ part 'group_properties.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake)
 class GroupProperties {
   // late int burnAfterReadSecond;
-  late bool enableMute = false;
-  late int? muteExpiresAt;
+  // late bool enableMute = false;
+  // late int? muteExpiresAt;
 
   /// -1 if not initialized.
   late int readIndex;
@@ -20,22 +20,22 @@ class GroupProperties {
 
   GroupProperties(
       // this.burnAfterReadSecond,
-      this.enableMute,
-      this.muteExpiresAt,
+      // this.enableMute,
+      // this.muteExpiresAt,
       this.readIndex,
       this.draft,
       this.pinnedAt);
 
   GroupProperties.update(
       {int? burnAfterReadSecond,
-      bool? enableMute,
-      this.muteExpiresAt,
+      // bool? enableMute,
+      // this.muteExpiresAt,
       int? readIndex,
       String? draft,
       this.pinnedAt}) {
     // this.burnAfterReadSecond = burnAfterReadSecond ?? 0;
 
-    this.enableMute = enableMute ?? false;
+    // this.enableMute = enableMute ?? false;
 
     this.readIndex = readIndex ?? -1;
 

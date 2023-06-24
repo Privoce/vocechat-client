@@ -229,17 +229,17 @@ class UserInfoDao extends Dao<UserInfoM> {
     if (old != null) {
       UserProperties oldProperties = old.properties;
 
-      if (burnAfterReadSecond != null) {
-        oldProperties.burnAfterReadSecond = burnAfterReadSecond;
-      }
+      // if (burnAfterReadSecond != null) {
+      //   oldProperties.burnAfterReadSecond = burnAfterReadSecond;
+      // }
 
-      if (enableMute != null) {
-        oldProperties.enableMute = enableMute;
-      }
+      // if (enableMute != null) {
+      //   oldProperties.enableMute = enableMute;
+      // }
 
-      if (muteExpiresAt != null) {
-        old.properties.muteExpiresAt = muteExpiresAt;
-      }
+      // if (muteExpiresAt != null) {
+      //   old.properties.muteExpiresAt = muteExpiresAt;
+      // }
 
       if (readIndex != null) {
         if (oldProperties.readIndex == -1) {

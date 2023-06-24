@@ -47,7 +47,7 @@ class VoceSendService {
     final fakeMid = await _getFakeMid();
     final localMid = resendLocalMid ?? uuid();
     final expiresIn =
-        (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
+        (await UserSettingsDao().getDmSettings(uid))?.burnAfterReadSecond;
 
     final chatMsgDao = ChatMsgDao();
 
@@ -100,7 +100,7 @@ class VoceSendService {
     final fakeMid = await _getFakeMid();
     final localMid = resendLocalMid ?? uuid();
     final expiresIn =
-        (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
+        (await UserSettingsDao().getDmSettings(uid))?.burnAfterReadSecond;
 
     final chatMsgDao = ChatMsgDao();
 
@@ -155,7 +155,7 @@ class VoceSendService {
     final localMid = resendLocalMid ?? uuid();
     final fakeMid = await _getFakeMid();
     final expiresIn =
-        (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
+        (await UserSettingsDao().getDmSettings(uid))?.burnAfterReadSecond;
 
     final chatMsgDao = ChatMsgDao();
 
@@ -245,7 +245,7 @@ class VoceSendService {
       {void Function(double progress)? progress}) async {
     final fakeMid = await _getFakeMid();
     final expiresIn =
-        (await UserInfoDao().getUserByUid(uid))?.properties.burnAfterReadSecond;
+        (await UserSettingsDao().getDmSettings(uid))?.burnAfterReadSecond;
 
     final chatMsgDao = ChatMsgDao();
 

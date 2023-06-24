@@ -23,6 +23,7 @@ import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 import 'package:vocechat_client/ui/chats/chats/voce_chat_tile.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 
 class ChatsPage extends StatefulWidget {
   static const route = "/chats/chats";
@@ -63,6 +64,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.subscribeGroups(_onChannel);
     App.app.chatService.subscribeUsers(_onUser);
     App.app.chatService.subscribeRefresh(_onRefresh);
+    globals.userSettings.addListener(_onUserSettingsChange);
 
     eventBus.on<UserChangeEvent>().listen((event) {
       clearChats();
@@ -75,6 +77,7 @@ class _ChatsPageState extends State<ChatsPage>
       App.app.chatService.subscribeGroups(_onChannel);
       App.app.chatService.subscribeUsers(_onUser);
       App.app.chatService.subscribeRefresh(_onRefresh);
+      globals.userSettings.addListener(_onUserSettingsChange);
     });
 
     // test
@@ -95,6 +98,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.unsubscribeGroups(_onChannel);
     App.app.chatService.unsubscribeUsers(_onUser);
     App.app.chatService.unsubscribeRefresh(_onRefresh);
+    globals.userSettings.removeListener(_onUserSettingsChange);
     super.dispose();
   }
 
@@ -267,6 +271,18 @@ class _ChatsPageState extends State<ChatsPage>
     if (afterReady) {
       setState(() {});
     }
+  }
+
+  void _onUserSettingsChange() async {
+    for (final chat in chatTileMap.values) {
+      if (chat.isChannel) {
+        await chat.setChannel();
+      } else {
+        await chat.setUser();
+      }
+    }
+
+    // setState(() {});
   }
 
   void clearChats() {
