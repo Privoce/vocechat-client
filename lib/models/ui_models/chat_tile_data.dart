@@ -89,9 +89,8 @@ class ChatTileData {
     unreadCount.value = await ChatMsgDao().getDmUnreadCount(userInfo.uid);
 
     isMuted.value = dmSettings.enableMute;
-
-    pinnedAt = properties.pinnedAt ?? -1;
-    isPinned.value = properties.pinnedAt != null && properties.pinnedAt! > 0;
+    pinnedAt = dmSettings.pinnedAt;
+    isPinned.value = pinnedAt > 0;
   }
 
   static Future<ChatTileData?> fromUid(int uid) async {
@@ -139,9 +138,8 @@ class ChatTileData {
         await ChatMsgDao().getGroupUnreadMentionCount(groupInfo.gid);
 
     isMuted.value = channelSettings.enableMute;
-
-    pinnedAt = properties.pinnedAt ?? -1;
-    isPinned.value = properties.pinnedAt != null && properties.pinnedAt! > 0;
+    pinnedAt = channelSettings.pinnedAt;
+    isPinned.value = pinnedAt > 0;
   }
 
   static Future<ChatTileData?> fromGid(int gid) async {

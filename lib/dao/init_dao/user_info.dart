@@ -194,25 +194,25 @@ class UserInfoDao extends Dao<UserInfoM> {
   /// not in [ssePinnedUidList] will be cleared.
   /// [ssePinnedUidList] is the list of uid which is pushed by server, that is, the
   /// user with a valid [pinnedAt].
-  Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedUidList) async {
-    final ssePinnedUidSet = Set<int>.from(ssePinnedUidList);
+  // Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedUidList) async {
+  //   final ssePinnedUidSet = Set<int>.from(ssePinnedUidList);
 
-    final dmInfoDao = DmInfoDao();
-    final localPinnedUids = (await dmInfoDao.getDmUserInfoMList())
-            ?.where((element) => element.properties.pinnedAt != null)
-            .map((e) => e.uid)
-            .toList() ??
-        [];
-    final complementUidList = localPinnedUids
-        .where((element) => !ssePinnedUidSet.contains(element))
-        .toList();
+  //   final dmInfoDao = DmInfoDao();
+  //   final localPinnedUids = (await dmInfoDao.getDmUserInfoMList())
+  //           ?.where((element) => element.properties.pinnedAt != null)
+  //           .map((e) => e.uid)
+  //           .toList() ??
+  //       [];
+  //   final complementUidList = localPinnedUids
+  //       .where((element) => !ssePinnedUidSet.contains(element))
+  //       .toList();
 
-    for (final uid in complementUidList) {
-      await updateProperties(uid, pinnedAt: -1);
-    }
+  //   for (final uid in complementUidList) {
+  //     await updateProperties(uid, pinnedAt: -1);
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   /// Update properties of UserInfoM.
   ///
@@ -253,13 +253,13 @@ class UserInfoDao extends Dao<UserInfoM> {
         oldProperties.draft = draft;
       }
 
-      if (pinnedAt != null) {
-        if (pinnedAt > 0) {
-          oldProperties.pinnedAt = pinnedAt;
-        } else {
-          oldProperties.pinnedAt = null;
-        }
-      }
+      // if (pinnedAt != null) {
+      //   if (pinnedAt > 0) {
+      //     oldProperties.pinnedAt = pinnedAt;
+      //   } else {
+      //     oldProperties.pinnedAt = null;
+      //   }
+      // }
 
       old._properties = json.encode(oldProperties);
       await super.update(old);

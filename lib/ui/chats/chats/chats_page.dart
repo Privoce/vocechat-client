@@ -282,7 +282,7 @@ class _ChatsPageState extends State<ChatsPage>
       }
     }
 
-    // setState(() {});
+    setState(() {});
   }
 
   void clearChats() {

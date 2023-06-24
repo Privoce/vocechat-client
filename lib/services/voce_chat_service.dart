@@ -30,6 +30,7 @@ import 'package:vocechat_client/dao/init_dao/user_settings.dart';
 import 'package:vocechat_client/dao/org_dao/properties_models/chat_server_properties.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/globals.dart';
+import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
@@ -39,6 +40,8 @@ import 'package:vocechat_client/services/sse/sse_queue.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/globals.dart' as globals;
+import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../dao/org_dao/chat_server.dart';
 
@@ -390,24 +393,24 @@ class VoceChatService {
       // Following methods listed in alphabetical order.
       switch (type) {
         case sseKick:
-          // App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
+          App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
 
-          // final context = navigatorKey.currentContext;
-          // if (context != null) {
-          //   showAppAlert(
-          //       context: context,
-          //       title: AppLocalizations.of(context)!.loginSessionExpires,
-          //       content:
-          //           AppLocalizations.of(context)!.loginSessionExpiresContent,
-          //       actions: [
-          //         AppAlertDialogAction(
-          //             text: AppLocalizations.of(context)!.ok,
-          //             action: () => Navigator.pop(context))
-          //       ]);
-          // }
+          final context = navigatorKey.currentContext;
+          if (context != null) {
+            showAppAlert(
+                context: context,
+                title: AppLocalizations.of(context)!.loginSessionExpires,
+                content:
+                    AppLocalizations.of(context)!.loginSessionExpiresContent,
+                actions: [
+                  AppAlertDialogAction(
+                      text: AppLocalizations.of(context)!.ok,
+                      action: () => Navigator.pop(context))
+                ]);
+          }
 
-          // App.app.authService?.logout(markLogout: false, isKicked: true);
-          _handleKick();
+          App.app.authService?.logout(markLogout: false, isKicked: true);
+          // _handleKick();
           break;
 
         case sseHeartbeat:
@@ -419,7 +422,7 @@ class VoceChatService {
         case sseJoinedGroup:
         case sseKickFromGroup:
         case ssePinnedMessageUpdated:
-        case ssePinnedChats:
+
         case sseReady:
         case sseRelatedGroups:
         case sseServerConfigChanged:
@@ -462,9 +465,9 @@ class VoceChatService {
         case sseKickFromGroup:
           await _handleKickFromGroup(map);
           break;
-        case ssePinnedChats:
-          await _handlePinnedChats(map);
-          break;
+        // case ssePinnedChats:
+        //   await _handlePinnedChats(map);
+        //   break;
         case ssePinnedMessageUpdated:
           await _handlePinnedMessageUpdated(map);
           break;
@@ -658,15 +661,15 @@ class VoceChatService {
     }
   }
 
-  Future<void> _handleKick() async {
-    try {
-      await SharedFuncs.renewAuthToken(forceRefresh: true).then((value) {
-        initSse();
-      });
-    } catch (e) {
-      App.logger.severe(e);
-    }
-  }
+  // Future<void> _handleKick() async {
+  //   try {
+  //     await SharedFuncs.renewAuthToken(forceRefresh: true).then((value) {
+  //       initSse();
+  //     });
+  //   } catch (e) {
+  //     App.logger.severe(e);
+  //   }
+  // }
 
   Future<void> _handleKickFromGroup(Map<String, dynamic> map) async {
     assert(map['type'] == sseKickFromGroup);
@@ -681,46 +684,46 @@ class VoceChatService {
     }
   }
 
-  Future<void> _handlePinnedChats(Map<String, dynamic> map) async {
-    assert(map["type"] == ssePinnedChats);
+  // Future<void> _handlePinnedChats(Map<String, dynamic> map) async {
+  //   assert(map["type"] == ssePinnedChats);
 
-    try {
-      // To record pinned uids and gids,
-      // compare local pinned uids and gids, take complement sets, and
-      // clear the complement's [pinnedAt] property.
-      List<int> ssePinnedUids = [];
-      List<int> ssePinnedGids = [];
+  //   try {
+  //     // To record pinned uids and gids,
+  //     // compare local pinned uids and gids, take complement sets, and
+  //     // clear the complement's [pinnedAt] property.
+  //     List<int> ssePinnedUids = [];
+  //     List<int> ssePinnedGids = [];
 
-      final userInfoDao = UserInfoDao();
-      final groupInfoDao = GroupInfoDao();
+  //     final userInfoDao = UserInfoDao();
+  //     final groupInfoDao = GroupInfoDao();
 
-      final chats = map["chats"] as List<dynamic>;
-      for (final chat in chats) {
-        final uid = chat["target"]?["uid"] as int?;
-        final gid = chat["target"]?["gid"] as int?;
-        final updatedAt = chat["updated_at"] as int?;
+  //     final chats = map["chats"] as List<dynamic>;
+  //     for (final chat in chats) {
+  //       final uid = chat["target"]?["uid"] as int?;
+  //       final gid = chat["target"]?["gid"] as int?;
+  //       final updatedAt = chat["updated_at"] as int?;
 
-        if (uid != null) {
-          ssePinnedUids.add(uid);
-          final user = await userInfoDao.getUserByUid(uid);
-          if (user != null) {
-            await userInfoDao.updateProperties(uid, pinnedAt: updatedAt);
-          }
-        } else if (gid != null) {
-          ssePinnedGids.add(gid);
-          final group = await groupInfoDao.getGroupByGid(gid);
-          if (group != null) {
-            await groupInfoDao.updateProperties(gid, pinnedAt: updatedAt);
-          }
-        }
-      }
+  //       if (uid != null) {
+  //         // ssePinnedUids.add(uid);
+  //         // final user = await userInfoDao.getUserByUid(uid);
+  //         // if (user != null) {
+  //         //   await userInfoDao.updateProperties(uid, pinnedAt: updatedAt);
+  //         // }
+  //       } else if (gid != null) {
+  //         // ssePinnedGids.add(gid);
+  //         // final group = await groupInfoDao.getGroupByGid(gid);
+  //         // if (group != null) {
+  //         //   await groupInfoDao.updateProperties(gid, pinnedAt: updatedAt);
+  //         // }
+  //       }
+  //     }
 
-      await userInfoDao.emptyUnpushedPinnedStatus(ssePinnedUids);
-      await groupInfoDao.emptyUnpushedPinnedStatus(ssePinnedGids);
-    } catch (e) {
-      App.logger.severe(e);
-    }
-  }
+  //     // await userInfoDao.emptyUnpushedPinnedStatus(ssePinnedUids);
+  //     // await groupInfoDao.emptyUnpushedPinnedStatus(ssePinnedGids);
+  //   } catch (e) {
+  //     App.logger.severe(e);
+  //   }
+  // }
 
   Future<void> _handlePinnedMessageUpdated(Map<String, dynamic> map) async {
     assert(map["type"] == ssePinnedMessageUpdated);
@@ -1381,269 +1384,116 @@ class VoceChatService {
       }
     }
 
-    // // read index groups
-    // final readIndexGroups = map["read_index_groups"] as List?;
-    // if (readIndexGroups != null && readIndexGroups.isNotEmpty) {
-    //   for (var each in readIndexGroups) {
-    //     final mid = each["mid"];
-    //     final gid = each["gid"];
-    //     if (mid != null && gid != null) {
-    //       await GroupInfoDao()
-    //           .updateProperties(gid, readIndex: mid)
-    //           .then((value) {
-    //         if (value != null) {
-    //           fireChannel(value, EventActions.update, afterReady);
-    //         }
-    //       });
-    //     }
-    //   }
-    // }
+    {
+      // add pin chats
+      final addPinChats = map["add_pin_chats"] as List?;
+      if (addPinChats != null) {
+        for (final each in addPinChats) {
+          final gid = each["target"]["gid"] as int?;
+          final uid = each["target"]["uid"] as int?;
+          final updatedAt = each["updated_at"] as int?;
 
-    // // read index users
-    // final readIndexUsers = map["read_index_users"] as List?;
-    // if (readIndexUsers != null && readIndexUsers.isNotEmpty) {
-    //   for (var each in readIndexUsers) {
-    //     final mid = each["mid"];
-    //     final uid = each["uid"];
-    //     if (mid != null && uid != null) {
-    //       await UserInfoDao()
-    //           .updateProperties(uid, readIndex: mid)
-    //           .then((value) {
-    //         if (value != null) {
-    //           fireUser(value, EventActions.update, afterReady);
-    //         }
-    //       });
-    //     }
-    //   }
-    // }
+          if (gid != null && updatedAt != null) {
+            await UserSettingsDao()
+                .updateGroupSettings(gid, pinnedAt: updatedAt)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
 
-    // {
-    //   // add mute groups
-    //   final muteGroups = map["add_mute_groups"] as List?;
-    //   if (muteGroups != null && muteGroups.isNotEmpty) {
-    //     for (var each in muteGroups) {
-    //       final expiredAt = each["expired_at"] as int?;
-    //       final gid = each["gid"];
-    //       if (gid != null) {
-    //         await GroupInfoDao()
-    //             .updateProperties(gid,
-    //                 enableMute: true, muteExpiresAt: expiredAt)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireChannel(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
+          if (uid != null && updatedAt != null) {
+            await UserSettingsDao()
+                .updateDmSettings(uid, pinnedAt: updatedAt)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
 
-    // {
-    //   // add mute users
-    //   final muteUsers = map["add_mute_users"] as List?;
-    //   if (muteUsers != null && muteUsers.isNotEmpty) {
-    //     for (var each in muteUsers) {
-    //       final expiredAt = each["expired_at"] as int?;
-    //       final uid = each["uid"];
-    //       if (uid != null) {
-    //         await UserInfoDao()
-    //             .updateProperties(uid,
-    //                 enableMute: true, muteExpiresAt: expiredAt)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireUser(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
+    {
+      // remove pin chats
+      final removePinChats = map["remove_pin_chats"] as List?;
+      if (removePinChats != null) {
+        for (final each in removePinChats) {
+          final gid = each["gid"] as int?;
+          final uid = each["uid"] as int?;
 
-    // {
-    //   // remove mute groups
-    //   final muteGroups = map["remove_mute_groups"] as List?;
-    //   if (muteGroups != null && muteGroups.isNotEmpty) {
-    //     for (var gid in muteGroups) {
-    //       if (gid != null) {
-    //         GroupInfoDao()
-    //             .updateProperties(gid, enableMute: false, muteExpiresAt: null)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireChannel(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
+          if (gid != null) {
+            await UserSettingsDao()
+                .updateGroupSettings(gid, pinnedAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
 
-    // {
-    //   // remove mute users
-    //   final muteUsers = map["remove_mute_users"] as List?;
-    //   if (muteUsers != null && muteUsers.isNotEmpty) {
-    //     for (var uid in muteUsers) {
-    //       if (uid != null) {
-    //         await UserInfoDao()
-    //             .updateProperties(uid, enableMute: false, muteExpiresAt: null)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireUser(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
+          if (uid != null) {
+            await UserSettingsDao()
+                .updateDmSettings(uid, pinnedAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
 
-    // {
-    //   // add burn_after_reading_groups
-    //   final burnAfterReadingGroups = map["burn_after_reading_groups"] as List?;
-    //   if (burnAfterReadingGroups != null && burnAfterReadingGroups.isNotEmpty) {
-    //     for (var each in burnAfterReadingGroups) {
-    //       final expiresIn = each["expires_in"] as int?;
-    //       final gid = each["gid"];
+    {
+      // add contact
+      final addContacts = map["add_contacts"] as List?;
+      if (addContacts != null) {
+        for (final each in addContacts) {
+          final uid = each["target_uid"] as int?;
+          final statusStr = each["info"]["status"] as String?;
+          final createdAt = each["info"]["created_at"] as int?;
+          final updatedAt = each["info"]["updated_at"] as int?;
 
-    //       if (expiresIn != null && gid != null) {
-    //         await GroupInfoDao()
-    //             .updateProperties(gid, burnAfterReadSecond: expiresIn)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireChannel(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
+          if (uid != null &&
+              statusStr != null &&
+              createdAt != null &&
+              updatedAt != null) {
+            final contactM =
+                ContactM.fromContactInfo(uid, statusStr, createdAt, updatedAt);
+            await ContactDao().addOrUpdate(contactM).then((value) {
+              UserInfoDao().getUserByUid(uid).then((value) {
+                if (value != null) {
+                  fireUser(value, EventActions.update, afterReady);
+                }
+              });
+            });
+          }
+        }
+      }
+    }
 
-    // {
-    //   // add burn_after_reading_users
-    //   final burnAfterReadingUsers = map["burn_after_reading_users"] as List?;
-    //   if (burnAfterReadingUsers != null && burnAfterReadingUsers.isNotEmpty) {
-    //     for (var each in burnAfterReadingUsers) {
-    //       final expiresIn = each["expires_in"] as int?;
-    //       final uid = each["uid"];
+    {
+      // remove contact
+      final removeContacts = map["remove_contacts"] as List?;
+      if (removeContacts != null) {
+        for (final each in removeContacts) {
+          final uid = each;
 
-    //       if (expiresIn != null && uid != null) {
-    //         await UserInfoDao()
-    //             .updateProperties(uid, burnAfterReadSecond: expiresIn)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireUser(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
-
-    // {
-    //   // handle "add_contacts"
-    //   final addContacts = map["add_contacts"] as List?;
-    //   if (addContacts != null && addContacts.isNotEmpty) {
-    //     final dao = ContactDao();
-    //     for (var contact in addContacts) {
-    //       final contactInfo = ContactInfo.fromJson(contact["info"]);
-    //       final targetUid = contact["target_uid"] as int;
-    //       await dao
-    //           .updateContactInfo(targetUid, contactInfo)
-    //           .then((updatedContactM) async {
-    //         if (updatedContactM != null) {
-    //           await UserInfoDao().getUserByUid(targetUid).then((userInfoM) {
-    //             if (userInfoM != null) {
-    //               fireUser(userInfoM, EventActions.update, true);
-    //             }
-    //           });
-    //         }
-    //       });
-    //     }
-    //   }
-    // }
-
-    // {
-    //   // handle "remove_contacts"
-    //   final removeContacts = map["remove_contacts"] as List?;
-    //   if (removeContacts != null) {
-    //     final dao = ContactDao();
-    //     for (final uid in removeContacts) {
-    //       await dao
-    //           .updateContact((uid as int), ContactStatus.none)
-    //           .then((updatedContactM) async {
-    //         if (updatedContactM != null) {
-    //           await UserInfoDao().getUserByUid(uid).then((userInfoM) {
-    //             if (userInfoM != null) {
-    //               fireUser(userInfoM, EventActions.update, true);
-    //             }
-    //           });
-    //         }
-    //       });
-    //     }
-    //   }
-    // }
-
-    // {
-    //   // handle "add_pin_chats"
-    //   final addPinChats = map["add_pin_chats"] as List?;
-    //   if (addPinChats != null) {
-    //     final userInfoDao = UserInfoDao();
-    //     final groupInfoDao = GroupInfoDao();
-    //     for (final chat in addPinChats) {
-    //       final uid = chat["target"]?["uid"] as int?;
-    //       final gid = chat["target"]?["gid"] as int?;
-    //       final updatedAt = chat["updated_at"] as int?;
-
-    //       if (uid != null) {
-    //         await userInfoDao
-    //             .updateProperties(uid, pinnedAt: updatedAt)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireUser(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       } else if (gid != null) {
-    //         await groupInfoDao
-    //             .updateProperties(gid, pinnedAt: updatedAt)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireChannel(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
-
-    // {
-    //   // handle "remove_pin_chats"
-    //   final removePinChats = map["remove_pin_chats"] as List?;
-    //   if (removePinChats != null) {
-    //     final userInfoDao = UserInfoDao();
-    //     final groupInfoDao = GroupInfoDao();
-    //     for (final data in removePinChats) {
-    //       final uid = data["uid"] as int?;
-    //       final gid = data["gid"] as int?;
-    //       const updatedAt = -1;
-
-    //       if (uid != null) {
-    //         await userInfoDao
-    //             .updateProperties(uid, pinnedAt: updatedAt)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireUser(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       } else if (gid != null) {
-    //         await groupInfoDao
-    //             .updateProperties(gid, pinnedAt: updatedAt)
-    //             .then((value) {
-    //           if (value != null) {
-    //             fireChannel(value, EventActions.update, afterReady);
-    //           }
-    //         });
-    //       }
-    //     }
-    //   }
-    // }
+          if (uid != null) {
+            await ContactDao().removeContact(uid).then((value) {
+              UserInfoDao().getUserByUid(uid).then((value) {
+                if (value != null) {
+                  fireUser(value, EventActions.update, afterReady);
+                }
+              });
+            });
+          }
+        }
+      }
+    }
   }
 
   Future<void> _handleUsersSnapshot(Map<String, dynamic> usersSnapshot) async {

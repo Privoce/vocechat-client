@@ -49,14 +49,14 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
   // final ValueNotifier<bool> _isMuted = ValueNotifier(false);
-  final ValueNotifier<bool> _pinned = ValueNotifier(false);
+  // final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
 
     // _isMuted.value = widget.groupInfoNotifier.value.properties.enableMute;
-    _pinned.value = widget.groupInfoNotifier.value.properties.pinnedAt != null;
+    // _pinned.value = widget.groupInfoNotifier.value.properties.pinnedAt != null;
   }
 
   @override
@@ -261,9 +261,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.pinChat,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<bool>(
-                valueListenable: _pinned,
-                builder: (context, pinned, _) {
+            trailing: ValueListenableBuilder<UserSettings>(
+                valueListenable: globals.userSettings,
+                builder: (context, userSettings, _) {
+                  final pinned = userSettings.pinnedGroups
+                          ?.containsKey(widget.groupInfoNotifier.value.gid) ??
+                      false;
                   return CupertinoSwitch(
                     value: pinned,
                     onChanged: (value) {
@@ -382,17 +385,31 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
     try {
       if (value) {
-        await _pin().then((value) {
+        await _pin().then((value) async {
           if (value) {
-            _pinned.value = true;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    pinnedAt: DateTime.now().millisecondsSinceEpoch)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
         });
       } else {
-        await _unpin().then((value) {
+        await _unpin().then((value) async {
           if (value) {
-            _pinned.value = false;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    pinnedAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }

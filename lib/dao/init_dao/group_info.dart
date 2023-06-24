@@ -315,13 +315,13 @@ class GroupInfoDao extends Dao<GroupInfoM> {
         oldProperties.draft = draft;
       }
 
-      if (pinnedAt != null) {
-        if (pinnedAt > 0) {
-          oldProperties.pinnedAt = pinnedAt;
-        } else {
-          oldProperties.pinnedAt = null;
-        }
-      }
+      // if (pinnedAt != null) {
+      //   if (pinnedAt > 0) {
+      //     oldProperties.pinnedAt = pinnedAt;
+      //   } else {
+      //     oldProperties.pinnedAt = null;
+      //   }
+      // }
 
       old._properties = json.encode(oldProperties);
       await super.update(old);
@@ -462,23 +462,23 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   /// not in [ssePinnedGidList] will be cleared.
   /// [ssePinnedGidList] is the list of uid which is pushed by server, that is, the
   /// channel with a valid [pinnedAt].
-  Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedGidList) async {
-    final ssePinnedGidSet = Set<int>.from(ssePinnedGidList);
+  // Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedGidList) async {
+  //   final ssePinnedGidSet = Set<int>.from(ssePinnedGidList);
 
-    final localPinnedGids = (await getChannelList())
-            ?.where((element) => element.properties.pinnedAt != null)
-            .map((e) => e.gid)
-            .toList() ??
-        [];
+  //   final localPinnedGids = (await getChannelList())
+  //           ?.where((element) => element.properties.pinnedAt != null)
+  //           .map((e) => e.gid)
+  //           .toList() ??
+  //       [];
 
-    final complementGidList = localPinnedGids
-        .where((element) => !ssePinnedGidSet.contains(element))
-        .toList();
+  //   final complementGidList = localPinnedGids
+  //       .where((element) => !ssePinnedGidSet.contains(element))
+  //       .toList();
 
-    for (final gid in complementGidList) {
-      await updateProperties(gid, pinnedAt: -1);
-    }
+  //   for (final gid in complementGidList) {
+  //     await updateProperties(gid, pinnedAt: -1);
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 }
