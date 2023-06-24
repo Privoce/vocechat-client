@@ -303,13 +303,13 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       //   old.properties.muteExpiresAt = muteExpiresAt;
       // }
 
-      if (readIndex != null) {
-        if (oldProperties.readIndex == -1) {
-          oldProperties.readIndex = readIndex;
-        } else {
-          oldProperties.readIndex = max(oldProperties.readIndex, readIndex);
-        }
-      }
+      // if (readIndex != null) {
+      //   if (oldProperties.readIndex == -1) {
+      //     oldProperties.readIndex = readIndex;
+      //   } else {
+      //     oldProperties.readIndex = max(oldProperties.readIndex, readIndex);
+      //   }
+      // }
 
       if (draft != null) {
         oldProperties.draft = draft;

@@ -9,7 +9,7 @@ class GroupProperties {
   // late int? muteExpiresAt;
 
   /// -1 if not initialized.
-  late int readIndex;
+  // late int readIndex;
   late String draft;
 
   /// Indicates whether the channel is pinned.
@@ -22,7 +22,7 @@ class GroupProperties {
       // this.burnAfterReadSecond,
       // this.enableMute,
       // this.muteExpiresAt,
-      this.readIndex,
+      // this.readIndex,
       this.draft,
       this.pinnedAt);
 
@@ -30,14 +30,14 @@ class GroupProperties {
       {int? burnAfterReadSecond,
       // bool? enableMute,
       // this.muteExpiresAt,
-      int? readIndex,
+      // int? readIndex,
       String? draft,
       this.pinnedAt}) {
     // this.burnAfterReadSecond = burnAfterReadSecond ?? 0;
 
     // this.enableMute = enableMute ?? false;
 
-    this.readIndex = readIndex ?? -1;
+    // this.readIndex = readIndex ?? -1;
 
     this.draft = draft ?? "";
   }

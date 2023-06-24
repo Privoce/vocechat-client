@@ -241,13 +241,13 @@ class UserInfoDao extends Dao<UserInfoM> {
       //   old.properties.muteExpiresAt = muteExpiresAt;
       // }
 
-      if (readIndex != null) {
-        if (oldProperties.readIndex == -1) {
-          oldProperties.readIndex = readIndex;
-        } else {
-          oldProperties.readIndex = max(oldProperties.readIndex, readIndex);
-        }
-      }
+      // if (readIndex != null) {
+      //   if (oldProperties.readIndex == -1) {
+      //     oldProperties.readIndex = readIndex;
+      //   } else {
+      //     oldProperties.readIndex = max(oldProperties.readIndex, readIndex);
+      //   }
+      // }
 
       if (draft != null) {
         oldProperties.draft = draft;
@@ -271,8 +271,7 @@ class UserInfoDao extends Dao<UserInfoM> {
         old.contactUpdatedAt = contactInfo.updatedAt;
       }
 
-      App.logger.info(
-          "UserInfoM properties updated. uid:$uid, burnAfterReadSecond: $burnAfterReadSecond, enableMute: $enableMute, muteExpiresAt: $muteExpiresAt, readIndex: ${old.properties.readIndex}, draft: $draft, pinnedAt: $pinnedAt");
+      App.logger.info("UserInfoM properties updated. uid:$uid, draft: $draft");
     }
 
     return old;

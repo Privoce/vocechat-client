@@ -8,14 +8,12 @@ part of 'group_properties.dart';
 
 GroupProperties _$GroupPropertiesFromJson(Map<String, dynamic> json) =>
     GroupProperties(
-      json['read_index'] as int,
       json['draft'] as String,
       json['pinned_at'] as int?,
     );
 
 Map<String, dynamic> _$GroupPropertiesToJson(GroupProperties instance) =>
     <String, dynamic>{
-      'read_index': instance.readIndex,
       'draft': instance.draft,
       'pinned_at': instance.pinnedAt,
     };

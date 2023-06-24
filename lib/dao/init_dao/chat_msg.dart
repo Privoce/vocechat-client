@@ -14,8 +14,11 @@ import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/reaction.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_settings.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/task_queue.dart';
+// import 'package:vocechat_client/globals.dart' as globals;
 
 // enum MsgType {text, markdown, image, file}
 
@@ -682,19 +685,21 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   }
 
   Future<int> getDmUnreadCount(int dmUid) async {
-    final readIndex =
-        (await UserInfoDao().getUserByUid(dmUid))?.properties.readIndex;
-    if (readIndex != null) {
-      String sqlStr =
-          'SELECT COUNT(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $dmUid AND ${ChatMsgM.F_mid}>$readIndex AND ${ChatMsgM.F_fromUid}!=${App.app.userDb!.uid}';
-      List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
-      if (records.isNotEmpty) {
-        final count = records.first["COUNT(${ChatMsgM.F_mid})"];
-        if (count != null) {
-          return count as int;
-        }
+    final dmSettings = await UserSettingsDao().getDmSettings(dmUid);
+    if (dmSettings == null) return -1;
+
+    final readIndex = dmSettings.readIndex;
+
+    String sqlStr =
+        'SELECT COUNT(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_dmUid} = $dmUid AND ${ChatMsgM.F_mid}>$readIndex AND ${ChatMsgM.F_fromUid}!=${App.app.userDb!.uid}';
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+    if (records.isNotEmpty) {
+      final count = records.first["COUNT(${ChatMsgM.F_mid})"];
+      if (count != null) {
+        return count as int;
       }
     }
+
     return -1;
   }
 
@@ -712,19 +717,21 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   }
 
   Future<int> getGroupUnreadCount(int gid) async {
-    final readIndex =
-        (await GroupInfoDao().getGroupByGid(gid))?.properties.readIndex;
-    if (readIndex != null) {
-      String sqlStr =
-          'SELECT COUNT(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid}=$gid AND ${ChatMsgM.F_mid}>$readIndex AND ${ChatMsgM.F_fromUid}!=${App.app.userDb!.uid}';
-      List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
-      if (records.isNotEmpty) {
-        final count = records.first["COUNT(${ChatMsgM.F_mid})"];
-        if (count != null) {
-          return count as int;
-        }
+    final groupSettings = await UserSettingsDao().getGroupSettings(gid);
+    if (groupSettings == null) return -1;
+
+    final readIndex = groupSettings.readIndex;
+
+    String sqlStr =
+        'SELECT COUNT(${ChatMsgM.F_mid}) FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid}=$gid AND ${ChatMsgM.F_mid}>$readIndex AND ${ChatMsgM.F_fromUid}!=${App.app.userDb!.uid}';
+    List<Map<String, Object?>> records = await db.rawQuery(sqlStr);
+    if (records.isNotEmpty) {
+      final count = records.first["COUNT(${ChatMsgM.F_mid})"];
+      if (count != null) {
+        return count as int;
       }
     }
+
     return -1;
   }
 
@@ -732,32 +739,31 @@ class ChatMsgDao extends Dao<ChatMsgM> {
   /// If there are multiple mentions inside one message, only count as mentioned once.
   Future<int> getGroupUnreadMentionCount(int gid) async {
     try {
-      final readIndex =
-          (await GroupInfoDao().getGroupByGid(gid))?.properties.readIndex;
-      // print(readIndex);
+      final groupSettings = await UserSettingsDao().getGroupSettings(gid);
+      if (groupSettings == null) return -1;
+
+      final readIndex = groupSettings.readIndex;
+
       int count = 0;
-      if (readIndex != null) {
-        // String sqlStr =
-        //     'SELECT json_extract(${ChatMsgM.F_detail}, "\$.properties.mentions") AS detail FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid}=$gid AND ${ChatMsgM.F_mid}>$readIndex AND ${ChatMsgM.F_fromUid}!=${App.app.userDb!.uid}';
-        String sqlStr =
-            'SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid}=$gid AND ${ChatMsgM.F_mid}>$readIndex AND ${ChatMsgM.F_fromUid}!=${App.app.userDb!.uid}';
 
-        List<Map<String, dynamic>> records = await db.rawQuery(sqlStr);
-        if (records.isNotEmpty) {
-          for (var record in records) {
-            final recordJson = record["detail"];
-            if (recordJson != null) {
-              final mentions =
-                  json.decode(recordJson)["properties"]?["mentions"];
+      String sqlStr =
+          'SELECT * FROM ${ChatMsgM.F_tableName} WHERE ${ChatMsgM.F_gid}=$gid AND ${ChatMsgM.F_mid}>$readIndex AND ${ChatMsgM.F_fromUid}!=${App.app.userDb!.uid}';
 
-              if (mentions != null && mentions.contains(App.app.userDb!.uid)) {
-                count += 1;
-                continue;
-              }
+      List<Map<String, dynamic>> records = await db.rawQuery(sqlStr);
+      if (records.isNotEmpty) {
+        for (var record in records) {
+          final recordJson = record["detail"];
+          if (recordJson != null) {
+            final mentions = json.decode(recordJson)["properties"]?["mentions"];
+
+            if (mentions != null && mentions.contains(App.app.userDb!.uid)) {
+              count += 1;
+              continue;
             }
           }
         }
       }
+
       return count;
     } catch (e) {
       App.logger.severe(e);
