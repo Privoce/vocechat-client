@@ -1149,17 +1149,18 @@ class VoceChatService {
       // Pinned chats: pinned groups + pinned users
       final pinnedChats = map["pinned_chats"] as List?;
       if (pinnedChats != null) {
-        final List<int> pinnedGroups = [];
-        final List<int> pinnedUsers = [];
+        final Map<int, int> pinnedGroups = {};
+        final Map<int, int> pinnedUsers = {};
 
         for (final each in pinnedChats) {
           final gid = each["target"]["gid"] as int?;
           final uid = each["target"]["uid"] as int?;
+          final pinnedAt = each["updated_at"] as int?;
 
-          if (gid != null) {
-            pinnedGroups.add(gid);
-          } else if (uid != null) {
-            pinnedUsers.add(uid);
+          if (gid != null && pinnedAt != null) {
+            pinnedGroups.addAll({gid: pinnedAt});
+          } else if (uid != null && pinnedAt != null) {
+            pinnedUsers.addAll({uid: pinnedAt});
           }
         }
         userSettings.pinnedGroups = pinnedGroups;
@@ -1328,6 +1329,48 @@ class VoceChatService {
           if (uid != null) {
             await UserSettingsDao()
                 .updateDmSettings(uid, muteExpiredAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // update read index groups
+      final readIndexGroups = map["read_index_groups"] as List?;
+      if (readIndexGroups != null) {
+        for (final each in readIndexGroups) {
+          final mid = each["mid"] as int?;
+          final gid = each["gid"] as int?;
+
+          if (mid != null && gid != null) {
+            await UserSettingsDao()
+                .updateGroupSettings(gid, readIndex: mid)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
+          }
+        }
+      }
+    }
+
+    {
+      // update read index users
+      final readIndexUsers = map["read_index_users"] as List?;
+      if (readIndexUsers != null) {
+        for (final each in readIndexUsers) {
+          final mid = each["mid"] as int?;
+          final uid = each["uid"] as int?;
+
+          if (mid != null && uid != null) {
+            await UserSettingsDao()
+                .updateDmSettings(uid, readIndex: mid)
                 .then((value) {
               if (value != null) {
                 globals.userSettings.value = value;

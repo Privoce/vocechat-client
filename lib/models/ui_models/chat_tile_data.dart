@@ -139,7 +139,6 @@ class ChatTileData {
         await ChatMsgDao().getGroupUnreadMentionCount(groupInfo.gid);
 
     isMuted.value = channelSettings.enableMute;
-    print(isMuted.value);
 
     pinnedAt = properties.pinnedAt ?? -1;
     isPinned.value = properties.pinnedAt != null && properties.pinnedAt! > 0;

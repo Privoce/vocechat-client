@@ -17,8 +17,8 @@ class UserSettings extends Equatable {
   /// {uid: expiredAt(optional seconds)}
   Map<int, int?>? muteUsers;
 
-  List<int>? pinnedGroups;
-  List<int>? pinnedUsers;
+  Map<int, int>? pinnedGroups;
+  Map<int, int>? pinnedUsers;
 
   Map<int, int>? readIndexGroups;
   Map<int, int>? readIndexUsers;

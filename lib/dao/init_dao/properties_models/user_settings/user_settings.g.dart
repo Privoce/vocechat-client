@@ -21,12 +21,12 @@ UserSettings _$UserSettingsFromJson(Map<String, dynamic> json) => UserSettings(
       muteUsers: (json['mute_users'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(int.parse(k), e as int?),
       ),
-      pinnedGroups: (json['pinned_groups'] as List<dynamic>?)
-          ?.map((e) => e as int)
-          .toList(),
-      pinnedUsers: (json['pinned_users'] as List<dynamic>?)
-          ?.map((e) => e as int)
-          .toList(),
+      pinnedGroups: (json['pinned_groups'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(int.parse(k), e as int),
+      ),
+      pinnedUsers: (json['pinned_users'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(int.parse(k), e as int),
+      ),
       readIndexGroups:
           (json['read_index_groups'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(int.parse(k), e as int),
@@ -46,8 +46,10 @@ Map<String, dynamic> _$UserSettingsToJson(UserSettings instance) =>
           instance.muteGroups?.map((k, e) => MapEntry(k.toString(), e)),
       'mute_users':
           instance.muteUsers?.map((k, e) => MapEntry(k.toString(), e)),
-      'pinned_groups': instance.pinnedGroups,
-      'pinned_users': instance.pinnedUsers,
+      'pinned_groups':
+          instance.pinnedGroups?.map((k, e) => MapEntry(k.toString(), e)),
+      'pinned_users':
+          instance.pinnedUsers?.map((k, e) => MapEntry(k.toString(), e)),
       'read_index_groups':
           instance.readIndexGroups?.map((k, e) => MapEntry(k.toString(), e)),
       'read_index_users':

@@ -90,13 +90,14 @@ class UserSettingsDao extends Dao<UserSettingsM> {
 
       final burnAfterReadSecond = burnAfterReadsGroups?[gid] ?? 0;
       final muteExpiredAt = muteGroups?[gid] ?? 0;
-      final pinned = pinnedGroups?.contains(gid) ?? false;
+      final pinnedAt = pinnedGroups?[gid] ?? 0;
+
       final readIndex = readIndexGroups?[gid] ?? 0;
 
       return GroupSettings(
           burnAfterReadSecond: burnAfterReadSecond,
           enableMute: muteExpiredAt > 0,
-          pinned: pinned,
+          pinnedAt: pinnedAt,
           readIndex: readIndex);
     }
     return null;
@@ -115,13 +116,13 @@ class UserSettingsDao extends Dao<UserSettingsM> {
 
       final burnAfterReadSecond = burnAfterReadsDms?[uid] ?? 0;
       final muteExpiredAt = muteDms?[uid] ?? 0;
-      final pinned = pinnedDms?.contains(uid) ?? false;
+      final pinnedAt = pinnedDms?[uid] ?? 0;
       final readIndex = readIndexDms?[uid] ?? 0;
 
       return DmSettings(
           burnAfterReadSecond: burnAfterReadSecond,
           enableMute: muteExpiredAt > 0,
-          pinned: pinned,
+          pinnedAt: pinnedAt,
           readIndex: readIndex);
     }
     return null;
@@ -133,7 +134,7 @@ class UserSettingsDao extends Dao<UserSettingsM> {
   Future<UserSettings?> updateGroupSettings(int gid,
       {int? burnAfterReadSecond,
       int? muteExpiredAt,
-      bool? pinned,
+      int? pinnedAt,
       int? readIndex}) async {
     final m = await super.first();
     if (m != null) {
@@ -143,18 +144,16 @@ class UserSettingsDao extends Dao<UserSettingsM> {
         settings.burnAfterReadingGroups?[gid] = burnAfterReadSecond;
       }
 
-      if (muteExpiredAt == null || muteExpiredAt > 0) {
+      if (muteExpiredAt != null && muteExpiredAt > 0) {
         settings.muteGroups?[gid] = muteExpiredAt;
       } else {
         settings.muteGroups?.remove(gid);
       }
 
-      if (pinned != null) {
-        if (pinned) {
-          settings.pinnedGroups?.add(gid);
-        } else {
-          settings.pinnedGroups?.remove(gid);
-        }
+      if (pinnedAt != null && pinnedAt > 0) {
+        settings.pinnedGroups?.addAll({gid: pinnedAt});
+      } else {
+        settings.pinnedGroups?.remove(gid);
       }
 
       if (readIndex != null) {
@@ -175,7 +174,7 @@ class UserSettingsDao extends Dao<UserSettingsM> {
   Future<UserSettings?> updateDmSettings(int dmUid,
       {int? burnAfterReadSecond,
       int? muteExpiredAt,
-      bool? pinned,
+      int? pinnedAt,
       int? readIndex}) async {
     final m = await super.first();
     if (m != null) {
@@ -185,18 +184,16 @@ class UserSettingsDao extends Dao<UserSettingsM> {
         settings.burnAfterReadingUsers?[dmUid] = burnAfterReadSecond;
       }
 
-      if (muteExpiredAt == null || muteExpiredAt > 0) {
+      if (muteExpiredAt != null && muteExpiredAt > 0) {
         settings.muteUsers?[dmUid] = muteExpiredAt;
       } else {
         settings.muteUsers?.remove(dmUid);
       }
 
-      if (pinned != null) {
-        if (pinned) {
-          settings.pinnedUsers?.add(dmUid);
-        } else {
-          settings.pinnedUsers?.remove(dmUid);
-        }
+      if (pinnedAt != null && pinnedAt > 0) {
+        settings.pinnedUsers?.addAll({dmUid: pinnedAt});
+      } else {
+        settings.pinnedUsers?.remove(dmUid);
       }
 
       if (readIndex != null) {
@@ -215,13 +212,13 @@ class UserSettingsDao extends Dao<UserSettingsM> {
 class GroupSettings {
   final int burnAfterReadSecond; // in seconds. <=0 means disabled.
   final bool enableMute;
-  final bool pinned;
+  final int pinnedAt;
   final int readIndex;
 
   GroupSettings({
     required this.burnAfterReadSecond,
     required this.enableMute,
-    required this.pinned,
+    required this.pinnedAt,
     required this.readIndex,
   });
 
@@ -232,15 +229,14 @@ class GroupSettings {
     final readIndexGroups = settings.readIndexGroups;
 
     final burnAfterReadSecond = burnAfterReadsGroups?[gid] ?? 0;
-    // final muteExpiredAt = muteGroups?[gid] ?? 0;
     final enableMute = muteGroups?.containsKey(gid) ?? false;
-    final pinned = pinnedGroups?.contains(gid) ?? false;
+    final pinnedAt = pinnedGroups?[gid] ?? 0;
     final readIndex = readIndexGroups?[gid] ?? 0;
 
     return GroupSettings(
         burnAfterReadSecond: burnAfterReadSecond,
         enableMute: enableMute,
-        pinned: pinned,
+        pinnedAt: pinnedAt,
         readIndex: readIndex);
   }
 }
@@ -248,13 +244,13 @@ class GroupSettings {
 class DmSettings {
   final int burnAfterReadSecond; // in seconds. <=0 means disabled.
   final bool enableMute;
-  final bool pinned;
+  final int pinnedAt;
   final int readIndex;
 
   DmSettings({
     required this.burnAfterReadSecond,
     required this.enableMute,
-    required this.pinned,
+    required this.pinnedAt,
     required this.readIndex,
   });
 
@@ -266,13 +262,13 @@ class DmSettings {
 
     final burnAfterReadSecond = burnAfterReadsUsers?[uid] ?? 0;
     final enableMute = muteUsers?.containsKey(uid) ?? false;
-    final pinned = pinnedUsers?.contains(uid) ?? false;
+    final pinnedAt = pinnedUsers?[uid] ?? 0;
     final readIndex = readIndexUsers?[uid] ?? 0;
 
     return DmSettings(
         burnAfterReadSecond: burnAfterReadSecond,
         enableMute: enableMute,
-        pinned: pinned,
+        pinnedAt: pinnedAt,
         readIndex: readIndex);
   }
 }
