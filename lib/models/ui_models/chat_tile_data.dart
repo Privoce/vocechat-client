@@ -72,9 +72,8 @@ class ChatTileData {
     }
     final userInfo = this.userInfoM!.value.userInfo;
     final properties = this.userInfoM!.value.properties;
-    final dmSettings = DmSettings.fromUserSettings(
-        globals.userSettings.value, this.userInfoM!.value.uid);
-
+    final dmSettings =
+        await UserSettingsDao().getDmSettings(this.userInfoM!.value.uid);
     avatarUpdatedAt.value = userInfo.avatarUpdatedAt;
 
     title.value = userInfo.name;
@@ -88,8 +87,8 @@ class ChatTileData {
     updatedAt.value = latestMsgM?.createdAt ?? 0;
     unreadCount.value = await ChatMsgDao().getDmUnreadCount(userInfo.uid);
 
-    isMuted.value = dmSettings.enableMute;
-    pinnedAt = dmSettings.pinnedAt;
+    isMuted.value = dmSettings?.enableMute ?? false;
+    pinnedAt = dmSettings?.pinnedAt ?? 0;
     isPinned.value = pinnedAt > 0;
   }
 
@@ -117,8 +116,8 @@ class ChatTileData {
     }
     final groupInfo = this.groupInfoM!.value.groupInfo;
     final properties = this.groupInfoM!.value.properties;
-    final channelSettings = GroupSettings.fromUserSettings(
-        globals.userSettings.value, this.groupInfoM!.value.gid);
+    final channelSettings =
+        await UserSettingsDao().getGroupSettings(groupInfo.gid);
 
     avatarUpdatedAt.value = groupInfo.avatarUpdatedAt;
 
@@ -137,8 +136,8 @@ class ChatTileData {
     mentionsCount.value =
         await ChatMsgDao().getGroupUnreadMentionCount(groupInfo.gid);
 
-    isMuted.value = channelSettings.enableMute;
-    pinnedAt = channelSettings.pinnedAt;
+    isMuted.value = channelSettings?.enableMute ?? false;
+    pinnedAt = channelSettings?.pinnedAt ?? 0;
     isPinned.value = pinnedAt > 0;
   }
 
