@@ -4,11 +4,13 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_settings.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 
 class ChatTileData {
   // The following variables are lists from left to right, then from top to
@@ -70,7 +72,8 @@ class ChatTileData {
     }
     final userInfo = this.userInfoM!.value.userInfo;
     final properties = this.userInfoM!.value.properties;
-
+    final dmSettings =
+        await UserSettingsDao().getDmSettings(this.userInfoM!.value.uid);
     avatarUpdatedAt.value = userInfo.avatarUpdatedAt;
 
     title.value = userInfo.name;
@@ -84,10 +87,9 @@ class ChatTileData {
     updatedAt.value = latestMsgM?.createdAt ?? 0;
     unreadCount.value = await ChatMsgDao().getDmUnreadCount(userInfo.uid);
 
-    isMuted.value = properties.enableMute;
-
-    pinnedAt = properties.pinnedAt ?? -1;
-    isPinned.value = properties.pinnedAt != null && properties.pinnedAt! > 0;
+    isMuted.value = dmSettings?.enableMute ?? false;
+    pinnedAt = dmSettings?.pinnedAt ?? 0;
+    isPinned.value = pinnedAt > 0;
   }
 
   static Future<ChatTileData?> fromUid(int uid) async {
@@ -114,6 +116,8 @@ class ChatTileData {
     }
     final groupInfo = this.groupInfoM!.value.groupInfo;
     final properties = this.groupInfoM!.value.properties;
+    final channelSettings =
+        await UserSettingsDao().getGroupSettings(groupInfo.gid);
 
     avatarUpdatedAt.value = groupInfo.avatarUpdatedAt;
 
@@ -132,10 +136,9 @@ class ChatTileData {
     mentionsCount.value =
         await ChatMsgDao().getGroupUnreadMentionCount(groupInfo.gid);
 
-    isMuted.value = properties.enableMute;
-
-    pinnedAt = properties.pinnedAt ?? -1;
-    isPinned.value = properties.pinnedAt != null && properties.pinnedAt! > 0;
+    isMuted.value = channelSettings?.enableMute ?? false;
+    pinnedAt = channelSettings?.pinnedAt ?? 0;
+    isPinned.value = pinnedAt > 0;
   }
 
   static Future<ChatTileData?> fromGid(int gid) async {

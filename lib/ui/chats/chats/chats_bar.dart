@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
@@ -74,6 +75,8 @@ class _ChatsBarState extends State<ChatsBar> {
   late String _serverName;
   late String _serverDescription;
 
+  final ValueNotifier<bool> enableContact = ValueNotifier<bool>(false);
+
   @override
   void initState() {
     super.initState();
@@ -87,7 +90,10 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.subscribeTokenLoading(_onToken);
     App.app.statusService?.subscribeTaskLoading(_onTask);
 
-    App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
+    enableContact.value =
+        App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
+            true;
+    App.app.chatService.subscribeChatServer(_onServerInfo);
 
     eventBus.on<UserChangeEvent>().listen((event) {
       resubscribe();
@@ -99,7 +105,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.unsubscribeSseLoading(_onSse);
     App.app.statusService?.unsubscribeTokenLoading(_onToken);
     App.app.statusService?.unsubscribeTaskLoading(_onTask);
-    App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
+    App.app.chatService.unsubscribeChatServer(_onServerInfo);
     super.dispose();
   }
 
@@ -107,7 +113,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.unsubscribeSseLoading(_onSse);
     App.app.statusService?.unsubscribeTokenLoading(_onToken);
     App.app.statusService?.unsubscribeTaskLoading(_onTask);
-    App.app.chatService.unsubscribeOrgInfoStatus(_onServerInfo);
+    App.app.chatService.unsubscribeChatServer(_onServerInfo);
 
     _sseStatus = SseStatus.successful;
     _tokenStatus = TokenStatus.successful;
@@ -115,7 +121,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.subscribeSseLoading(_onSse);
     App.app.statusService?.subscribeTokenLoading(_onToken);
     App.app.statusService?.subscribeTaskLoading(_onTask);
-    App.app.chatService.subscribeOrgInfoStatus(_onServerInfo);
+    App.app.chatService.subscribeChatServer(_onServerInfo);
   }
 
   Future<void> _onSse(SseStatus status) async {
@@ -154,6 +160,9 @@ class _ChatsBarState extends State<ChatsBar> {
     if (!memEquals(_logoBytes, chatServerM.logo)) {
       _logoBytes = chatServerM.logo;
     }
+
+    enableContact.value =
+        chatServerM.properties.commonInfo?.contactVerificationEnable == true;
 
     setState(() {});
   }
@@ -235,28 +244,34 @@ class _ChatsBarState extends State<ChatsBar> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (enableContact ||
-                    widget.enableDescription && _serverDescription.isNotEmpty)
-                  Text(
-                    _serverDescription,
-                    style: AppTextStyles.labelSmall,
-                  )
-                else
-                  ValueListenableBuilder<int>(
-                      valueListenable: widget.memberCountNotifier,
-                      builder: (context, memberCount, _) {
-                        String subtitle;
-                        if (memberCount > 1) {
-                          subtitle = "$memberCount members";
-                        } else {
-                          subtitle = "$memberCount member";
-                        }
-
+                ValueListenableBuilder<bool>(
+                    valueListenable: enableContact,
+                    builder: (context, enableContact, _) {
+                      if (enableContact ||
+                          widget.enableDescription &&
+                              _serverDescription.isNotEmpty) {
                         return Text(
-                          subtitle,
+                          _serverDescription,
                           style: AppTextStyles.labelSmall,
                         );
-                      })
+                      } else {
+                        return ValueListenableBuilder<int>(
+                            valueListenable: widget.memberCountNotifier,
+                            builder: (context, memberCount, _) {
+                              String subtitle;
+                              if (memberCount > 1) {
+                                subtitle = "$memberCount members";
+                              } else {
+                                subtitle = "$memberCount member";
+                              }
+
+                              return Text(
+                                subtitle,
+                                style: AppTextStyles.labelSmall,
+                              );
+                            });
+                      }
+                    })
               ],
             ),
           ),

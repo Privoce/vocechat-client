@@ -1,6 +1,12 @@
 {   
-    "latest": {"version": "0.2.98", "build_num": 68},
+    "latest": {"version": "0.2.99", "build_num": 69},
     "logs":  [
+        {"time": 1687651492128, "version": "0.2.99", "build_num": 69, "updates": [
+            "- add: new realtime response to server settings (server name, description, online status switch etc.",
+            "- refactor: new user settings read and storage strategy for better performance.",
+            "- fix: full screen image does not show up when tapped.",
+            "- fix: other bug fixes."
+            ]},
         {"time": 1686970439989, "version": "0.2.98", "build_num": 68, "updates": [
             "- refactor: remove 'Clear local data' button to avoid a notification issue.",
             "- fix: default language might be mistakenly set to Simplified Chinese.",

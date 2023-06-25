@@ -104,6 +104,8 @@ class _VoceChatPageState extends State<VoceChatPage>
   final ValueNotifier<ChatFieldReactionData> _reactionDataNotifier =
       ValueNotifier(ChatFieldReactionData(reactionType: ReactionType.normal));
 
+  final ValueNotifier<bool> enableContact = ValueNotifier(false);
+
   final ScrollController _scrollController = ScrollController();
 
   /// The animation controller for the message tile.
@@ -132,6 +134,14 @@ class _VoceChatPageState extends State<VoceChatPage>
       vsync: this,
       duration: Duration(milliseconds: 500),
     );
+
+    enableContact.value =
+        App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
+            true;
+    App.app.chatService.subscribeChatServer((chatServerM) async {
+      enableContact.value =
+          chatServerM.properties.commonInfo?.contactVerificationEnable == true;
+    });
   }
 
   @override
@@ -145,6 +155,11 @@ class _VoceChatPageState extends State<VoceChatPage>
     widget.controller.removeScrollToBottomListener(_scrollToBottom);
 
     _aniController.dispose();
+
+    App.app.chatService.unsubscribeChatServer((chatServerM) async {
+      enableContact.value =
+          chatServerM.properties.commonInfo?.contactVerificationEnable == true;
+    });
 
     super.dispose();
   }
@@ -202,72 +217,82 @@ class _VoceChatPageState extends State<VoceChatPage>
   }
 
   Widget _buildContactStatusFloating() {
-    if (widget.userInfoNotifier == null ||
-        SharedFuncs.isSelf(widget.userInfoNotifier!.value.uid) ||
-        !enableContact) {
-      return const SizedBox.shrink();
-    }
-
-    return ValueListenableBuilder<UserInfoM>(
-      valueListenable: widget.userInfoNotifier!,
-      builder: (context, userInfoM, child) {
-        Widget widget;
-        if (userInfoM.contactStatus == ContactStatus.blocked) {
-          widget = Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                child: Text(AppLocalizations.of(context)!.userBlocked,
-                    style: AppTextStyles.labelMedium),
-              ),
-              CupertinoButton(
-                  padding: const EdgeInsets.all(4.0),
-                  onPressed: () => _unblockContact(userInfoM.uid),
-                  child: _buildContactStatusActionBtn(Icons.block_flipped,
-                      AppLocalizations.of(context)!.unblock, context))
-            ],
+    return ValueListenableBuilder<bool>(
+        valueListenable: enableContact,
+        builder: (context, enableContact, _) {
+          if (widget.userInfoNotifier == null ||
+              SharedFuncs.isSelf(widget.userInfoNotifier!.value.uid) ||
+              !enableContact) {
+            return SizedBox.shrink();
+          }
+          return ValueListenableBuilder<UserInfoM>(
+            valueListenable: widget.userInfoNotifier!,
+            builder: (context, userInfoM, child) {
+              Widget widget;
+              if (userInfoM.contactStatus == ContactStatus.blocked) {
+                widget = Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
+                      child: Text(AppLocalizations.of(context)!.userBlocked,
+                          style: AppTextStyles.labelMedium),
+                    ),
+                    CupertinoButton(
+                        padding: const EdgeInsets.all(4.0),
+                        onPressed: () => _unblockContact(userInfoM.uid),
+                        child: _buildContactStatusActionBtn(Icons.block_flipped,
+                            AppLocalizations.of(context)!.unblock, context))
+                  ],
+                );
+              } else if (userInfoM.contactStatus == ContactStatus.none) {
+                widget = Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
+                      child: Text(AppLocalizations.of(context)!.userNotContact,
+                          style: AppTextStyles.labelMedium),
+                    ),
+                    Wrap(
+                      // mainAxisAlignment: MainAxisAlignment.center,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        CupertinoButton(
+                            padding: const EdgeInsets.all(4.0),
+                            onPressed: () => _addContact(userInfoM.uid),
+                            child: _buildContactStatusActionBtn(
+                                AppIcons.member_add,
+                                AppLocalizations.of(context)!.addContact,
+                                context)),
+                        CupertinoButton(
+                            padding: const EdgeInsets.all(4.0),
+                            onPressed: () => _blockContact(userInfoM.uid),
+                            child: _buildContactStatusActionBtn(
+                                Icons.block_flipped,
+                                AppLocalizations.of(context)!.block,
+                                context))
+                      ],
+                    )
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+              return Container(
+                  constraints: const BoxConstraints(minHeight: 48),
+                  width: double.maxFinite,
+                  color: Colors.grey[200],
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  child: Center(child: widget));
+            },
           );
-        } else if (userInfoM.contactStatus == ContactStatus.none) {
-          widget = Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                child: Text(AppLocalizations.of(context)!.userNotContact,
-                    style: AppTextStyles.labelMedium),
-              ),
-              Wrap(
-                // mainAxisAlignment: MainAxisAlignment.center,
-                alignment: WrapAlignment.center,
-                children: [
-                  CupertinoButton(
-                      padding: const EdgeInsets.all(4.0),
-                      onPressed: () => _addContact(userInfoM.uid),
-                      child: _buildContactStatusActionBtn(AppIcons.member_add,
-                          AppLocalizations.of(context)!.addContact, context)),
-                  CupertinoButton(
-                      padding: const EdgeInsets.all(4.0),
-                      onPressed: () => _blockContact(userInfoM.uid),
-                      child: _buildContactStatusActionBtn(Icons.block_flipped,
-                          AppLocalizations.of(context)!.block, context))
-                ],
-              )
-            ],
-          );
-        } else {
-          return const SizedBox.shrink();
-        }
-        return Container(
-            constraints: const BoxConstraints(minHeight: 48),
-            width: double.maxFinite,
-            color: Colors.grey[200],
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-            child: Center(child: widget));
-      },
-    );
+        });
   }
 
   Container _buildContactStatusActionBtn(

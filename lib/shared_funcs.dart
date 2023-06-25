@@ -542,8 +542,9 @@ class SharedFuncs {
 
   /// Get or update server information, including server name, description and
   /// logo image.
-  static Future<ChatServerM?> updateServerInfo(ChatServerM chatServerM,
-      {bool enableFire = false}) async {
+  static Future<ChatServerM?> getServerInfo(
+    ChatServerM chatServerM,
+  ) async {
     try {
       final fullUrl = chatServerM.fullUrl;
       final orgInfoRes = await AdminSystemApi(serverUrl: fullUrl).getOrgInfo();
@@ -580,10 +581,6 @@ class SharedFuncs {
 
         chatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
         await ChatServerDao.dao.addOrUpdate(chatServerM);
-
-        if (enableFire) {
-          App.app.chatService.fireOrgInfo(chatServerM);
-        }
 
         return chatServerM;
       }

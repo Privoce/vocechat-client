@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -18,6 +19,11 @@ class VoceUserAvatar extends StatefulWidget {
   // General variables shared by all constructors
   final double size;
   final bool isCircle;
+
+  /// Only a mannual switch.
+  ///
+  /// Whether to show depends on the server setting. If both settings are true,
+  /// the status will be shown.
   final bool enableOnlineStatus;
   final Color? backgroundColor;
 
@@ -132,14 +138,16 @@ class VoceUserAvatar extends StatefulWidget {
 
 class _VoceUserAvatarState extends State<VoceUserAvatar> {
   File? imageFile;
-  bool enableOnlineStatus = true;
+  // bool enableOnlineStatus = true;
+  ValueNotifier<bool> enableOnlineStatus = ValueNotifier<bool>(false);
 
   @override
   void initState() {
     super.initState();
     App.app.chatService.subscribeUsers(_onUserChanged);
+    App.app.chatService.subscribeChatServer(_onChatServerChanged);
 
-    enableOnlineStatus = widget.enableOnlineStatus &&
+    enableOnlineStatus.value = widget.enableOnlineStatus &&
         (App.app.chatServerM.properties.commonInfo?.showUserOnlineStatus ==
             true);
 
@@ -149,6 +157,7 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
   @override
   void dispose() {
     App.app.chatService.unsubscribeUsers(_onUserChanged);
+    App.app.chatService.unsubscribeChatServer(_onChatServerChanged);
     super.dispose();
   }
 
@@ -197,23 +206,32 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
     final statusIndicatorSize = widget.size / 3;
 
     Widget badge = SizedBox.shrink();
-    if (enableOnlineStatus && widget.uid != null) {
+    if (widget.enableOnlineStatus && widget.uid != null) {
       final onlineStatus = SharedFuncs.isSelf(widget.uid)
           ? ValueNotifier(true)
           : App.app.onlineStatusMap[widget.uid] ?? ValueNotifier(false);
 
       badge = ValueListenableBuilder<bool>(
-        valueListenable: onlineStatus,
-        builder: (context, isOnline, child) {
-          Color color;
-          if (isOnline) {
-            color = Color.fromRGBO(34, 197, 94, 1);
-          } else {
-            color = Color.fromRGBO(161, 161, 170, 1);
-          }
-          return Icon(Icons.circle, size: statusIndicatorSize, color: color);
-        },
-      );
+          valueListenable: enableOnlineStatus,
+          builder: (context, enabled, _) {
+            if (enabled) {
+              return ValueListenableBuilder<bool>(
+                valueListenable: onlineStatus,
+                builder: (context, isOnline, child) {
+                  Color color;
+                  if (isOnline) {
+                    color = Color.fromRGBO(34, 197, 94, 1);
+                  } else {
+                    color = Color.fromRGBO(161, 161, 170, 1);
+                  }
+                  return Icon(Icons.circle,
+                      size: statusIndicatorSize, color: color);
+                },
+              );
+            } else {
+              return SizedBox.shrink();
+            }
+          });
     } else if (widget.isBot) {
       badge = Image.asset('assets/images/bot.png',
           width: statusIndicatorSize, height: statusIndicatorSize);
@@ -277,5 +295,10 @@ class _VoceUserAvatarState extends State<VoceUserAvatar> {
             widget.userInfoM?.userInfo.avatarUpdatedAt) {
       _getImageFile();
     }
+  }
+
+  Future<void> _onChatServerChanged(ChatServerM chatServerM) async {
+    enableOnlineStatus.value =
+        chatServerM.properties.commonInfo?.showUserOnlineStatus == true;
   }
 }

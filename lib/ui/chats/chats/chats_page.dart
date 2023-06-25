@@ -23,6 +23,7 @@ import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 import 'package:vocechat_client/ui/chats/chats/voce_chat_tile.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 
 class ChatsPage extends StatefulWidget {
   static const route = "/chats/chats";
@@ -63,6 +64,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.subscribeGroups(_onChannel);
     App.app.chatService.subscribeUsers(_onUser);
     App.app.chatService.subscribeRefresh(_onRefresh);
+    globals.userSettings.addListener(_onUserSettingsChange);
 
     eventBus.on<UserChangeEvent>().listen((event) {
       clearChats();
@@ -75,6 +77,7 @@ class _ChatsPageState extends State<ChatsPage>
       App.app.chatService.subscribeGroups(_onChannel);
       App.app.chatService.subscribeUsers(_onUser);
       App.app.chatService.subscribeRefresh(_onRefresh);
+      globals.userSettings.addListener(_onUserSettingsChange);
     });
 
     // test
@@ -95,6 +98,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.unsubscribeGroups(_onChannel);
     App.app.chatService.unsubscribeUsers(_onUser);
     App.app.chatService.unsubscribeRefresh(_onRefresh);
+    globals.userSettings.removeListener(_onUserSettingsChange);
     super.dispose();
   }
 
@@ -150,34 +154,22 @@ class _ChatsPageState extends State<ChatsPage>
 
     unpinned.sort((a, b) => b.updatedAt.value - a.updatedAt.value);
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Column(
-            children: List<Widget>.generate(pinned.length, (index) {
-          return VoceChatTile(
-              key: ObjectKey(pinned[index]),
-              tileData: pinned[index],
-              onTap: onTap);
-        })),
-        Flexible(
-          child: ListView.separated(
-            itemCount: unpinned.length,
-            itemBuilder: (context, index) {
-              return VoceChatTile(
-                  key: ObjectKey(unpinned[index]),
-                  tileData: unpinned[index],
-                  onTap: onTap);
-            },
-            separatorBuilder: (context, index) {
-              return Divider(
-                indent: 80,
-                color: AppColors.grey200,
-              );
-            },
-          ),
-        ),
-      ],
+    final sorted = [...pinned, ...unpinned];
+
+    return ListView.separated(
+      itemCount: sorted.length,
+      itemBuilder: (context, index) {
+        return VoceChatTile(
+            key: ObjectKey(sorted[index]),
+            tileData: sorted[index],
+            onTap: onTap);
+      },
+      separatorBuilder: (context, index) {
+        return Divider(
+          indent: 80,
+          color: AppColors.grey200,
+        );
+      },
     );
   }
 
@@ -281,6 +273,18 @@ class _ChatsPageState extends State<ChatsPage>
     }
   }
 
+  void _onUserSettingsChange() async {
+    for (final chat in chatTileMap.values) {
+      if (chat.isChannel) {
+        await chat.setChannel();
+      } else {
+        await chat.setUser();
+      }
+    }
+
+    setState(() {});
+  }
+
   void clearChats() {
     chatTileMap.clear();
   }
@@ -317,6 +321,9 @@ class _ChatsPageState extends State<ChatsPage>
           GroupInfoDao()
               .updateProperties(tileData.groupInfoM!.value.gid, draft: draft)
               .then((updatedGroupInfoM) {
+            if (updatedGroupInfoM != null) {
+              tileData.groupInfoM!.value = updatedGroupInfoM;
+            }
             tileData.draft.value = draft ?? "";
           });
 
@@ -344,6 +351,9 @@ class _ChatsPageState extends State<ChatsPage>
           await UserInfoDao()
               .updateProperties(tileData.userInfoM!.value.uid, draft: draft)
               .then((updatedUserInfoM) {
+            if (updatedUserInfoM != null) {
+              tileData.userInfoM!.value = updatedUserInfoM;
+            }
             tileData.draft.value = draft ?? "";
           });
 

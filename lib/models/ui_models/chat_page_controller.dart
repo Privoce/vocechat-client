@@ -7,6 +7,7 @@ import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_settings.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
 import 'package:vocechat_client/services/file_handler.dart';
@@ -16,6 +17,7 @@ import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 
 class ChatPageController {
   // What do we need?
@@ -141,24 +143,22 @@ class ChatPageController {
   Future<void> updateReadIndex(int mid) async {
     if (isChannel) {
       final gid = groupInfoMNotifier!.value.gid;
-      await GroupInfoDao()
-          .updateProperties(gid, readIndex: mid)
-          .then((groupInfoM) {
-        if (groupInfoM != null) {
-          App.app.chatService
-              .fireChannel(groupInfoM, EventActions.update, true);
+      await UserSettingsDao()
+          .updateGroupSettings(gid, readIndex: mid)
+          .then((value) {
+        if (value != null) {
+          globals.userSettings.value = value;
         }
-        App.app.chatService.addGroupReadIndex(mid, gid);
       });
     } else if (isUser) {
       final uid = userInfoMNotifier!.value.uid;
-      await UserInfoDao()
-          .updateProperties(uid, readIndex: mid)
-          .then((userInfoM) {
-        if (userInfoM != null) {
-          App.app.chatService.fireUser(userInfoM, EventActions.update, true);
+
+      await UserSettingsDao()
+          .updateDmSettings(uid, readIndex: mid)
+          .then((value) {
+        if (value != null) {
+          globals.userSettings.value = value;
         }
-        App.app.chatService.addUserReadIndex(mid, uid);
       });
     } else {
       throw Exception('Neither channel nor user');

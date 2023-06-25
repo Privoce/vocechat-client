@@ -178,13 +178,11 @@ class UserInfoDao extends Dao<UserInfoM> {
       App.logger.info("UserInfoM added. ${m.uid}");
     }
 
-    if (enableContact) {
-      final contactDao = ContactDao();
-      final contactInfo = await contactDao.getContactInfo(m.uid);
-      if (contactInfo != null) {
-        m.contactStatusStr = contactInfo.status;
-        m.contactUpdatedAt = contactInfo.updatedAt;
-      }
+    final contactDao = ContactDao();
+    final contactInfo = await contactDao.getContactInfo(m.uid);
+    if (contactInfo != null) {
+      m.contactStatusStr = contactInfo.status;
+      m.contactUpdatedAt = contactInfo.updatedAt;
     }
 
     return m;
@@ -196,106 +194,54 @@ class UserInfoDao extends Dao<UserInfoM> {
   /// not in [ssePinnedUidList] will be cleared.
   /// [ssePinnedUidList] is the list of uid which is pushed by server, that is, the
   /// user with a valid [pinnedAt].
-  Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedUidList) async {
-    final ssePinnedUidSet = Set<int>.from(ssePinnedUidList);
+  // Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedUidList) async {
+  //   final ssePinnedUidSet = Set<int>.from(ssePinnedUidList);
 
-    final dmInfoDao = DmInfoDao();
-    final localPinnedUids = (await dmInfoDao.getDmUserInfoMList())
-            ?.where((element) => element.properties.pinnedAt != null)
-            .map((e) => e.uid)
-            .toList() ??
-        [];
-    final complementUidList = localPinnedUids
-        .where((element) => !ssePinnedUidSet.contains(element))
-        .toList();
+  //   final dmInfoDao = DmInfoDao();
+  //   final localPinnedUids = (await dmInfoDao.getDmUserInfoMList())
+  //           ?.where((element) => element.properties.pinnedAt != null)
+  //           .map((e) => e.uid)
+  //           .toList() ??
+  //       [];
+  //   final complementUidList = localPinnedUids
+  //       .where((element) => !ssePinnedUidSet.contains(element))
+  //       .toList();
 
-    for (final uid in complementUidList) {
-      await updateProperties(uid, pinnedAt: -1);
-    }
+  //   for (final uid in complementUidList) {
+  //     await updateProperties(uid, pinnedAt: -1);
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 
   /// Update properties of UserInfoM.
   ///
   /// To cancel [pinnedAt], set it to 0 or -1.
-  Future<UserInfoM?> updateProperties(int uid,
-      {int? burnAfterReadSecond,
-      bool? enableMute,
-      int? muteExpiresAt,
-      int? readIndex,
-      String? draft,
-      int? pinnedAt}) async {
+  Future<UserInfoM?> updateProperties(int uid, {String? draft}) async {
     UserInfoM? old =
         await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
     if (old != null) {
       UserProperties oldProperties = old.properties;
 
-      if (burnAfterReadSecond != null) {
-        oldProperties.burnAfterReadSecond = burnAfterReadSecond;
-      }
-
-      if (enableMute != null) {
-        oldProperties.enableMute = enableMute;
-      }
-
-      if (muteExpiresAt != null) {
-        old.properties.muteExpiresAt = muteExpiresAt;
-      }
-
-      if (readIndex != null) {
-        if (oldProperties.readIndex == -1) {
-          oldProperties.readIndex = readIndex;
-        } else {
-          oldProperties.readIndex = max(oldProperties.readIndex, readIndex);
-        }
-      }
-
       if (draft != null) {
         oldProperties.draft = draft;
-      }
-
-      if (pinnedAt != null) {
-        if (pinnedAt > 0) {
-          oldProperties.pinnedAt = pinnedAt;
-        } else {
-          oldProperties.pinnedAt = null;
-        }
       }
 
       old._properties = json.encode(oldProperties);
       await super.update(old);
 
-      if (enableContact) {
-        final contactDao = ContactDao();
-        final contactInfo = await contactDao.getContactInfo(uid);
-        if (contactInfo != null) {
-          old.contactStatusStr = contactInfo.status;
-          old.contactUpdatedAt = contactInfo.updatedAt;
-        }
+      final contactDao = ContactDao();
+      final contactInfo = await contactDao.getContactInfo(uid);
+      if (contactInfo != null) {
+        old.contactStatusStr = contactInfo.status;
+        old.contactUpdatedAt = contactInfo.updatedAt;
       }
 
-      App.logger.info(
-          "UserInfoM properties updated. uid:$uid, burnAfterReadSecond: $burnAfterReadSecond, enableMute: $enableMute, muteExpiresAt: $muteExpiresAt, readIndex: ${old.properties.readIndex}, draft: $draft, pinnedAt: $pinnedAt");
+      App.logger.info("UserInfoM properties updated. uid:$uid, draft: $draft");
     }
 
     return old;
   }
-
-  // Future<UserInfoM?> updateLanguage(int uid, String languageTag) async {
-  //   UserInfoM? old =
-  //       await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
-  //   if (old != null) {
-  //     UserInfo userInfo = old.userInfo;
-  //     userInfo.language = languageTag;
-  //     old.info = jsonEncode(userInfo);
-
-  //     await super.update(old);
-
-  //     await UserDbMDao.dao.updateUserInfo(userInfo);
-  //   }
-  //   return old;
-  // }
 
   /// Get a list of Users in UserInfo
   ///
@@ -305,21 +251,14 @@ class UserInfoDao extends Dao<UserInfoM> {
     String orderBy = "${UserInfoM.F_uid} ASC";
     final userList = await super.list(orderBy: orderBy);
 
-    if (enableContact) {
-      final contactDao = ContactDao();
+    final contactDao = ContactDao();
 
-      for (var user in userList) {
-        final contactInfo = await contactDao.getContactInfo(user.uid);
-        if (contactInfo != null) {
-          user.contactStatusStr = contactInfo.status;
-          user.contactUpdatedAt = contactInfo.updatedAt;
-        }
+    for (var user in userList) {
+      final contactInfo = await contactDao.getContactInfo(user.uid);
+      if (contactInfo != null) {
+        user.contactStatusStr = contactInfo.status;
+        user.contactUpdatedAt = contactInfo.updatedAt;
       }
-      return userList
-          .where((element) =>
-              element.contactStatusStr == ContactStatus.added.name ||
-              element.uid == 1)
-          .toList();
     }
 
     return userList;
@@ -337,7 +276,7 @@ class UserInfoDao extends Dao<UserInfoM> {
   Future<UserInfoM?> getUserByUid(int uid) async {
     final user =
         await super.first(where: "${UserInfoM.F_uid} = ?", whereArgs: [uid]);
-    if (user != null && enableContact) {
+    if (user != null) {
       final contactDao = ContactDao();
       final contactInfo = await contactDao.getContactInfo(user.uid);
       if (contactInfo != null) {
@@ -364,17 +303,16 @@ class UserInfoDao extends Dao<UserInfoM> {
     if (records.isNotEmpty) {
       final result = records.map((e) => UserInfoM.fromMap(e)).toList();
 
-      if (enableContact) {
-        final contactDao = ContactDao();
+      final contactDao = ContactDao();
 
-        for (var user in result) {
-          final contactInfo = await contactDao.getContactInfo(user.uid);
-          if (contactInfo != null) {
-            user.contactStatusStr = contactInfo.status;
-            user.contactUpdatedAt = contactInfo.updatedAt;
-          }
+      for (var user in result) {
+        final contactInfo = await contactDao.getContactInfo(user.uid);
+        if (contactInfo != null) {
+          user.contactStatusStr = contactInfo.status;
+          user.contactUpdatedAt = contactInfo.updatedAt;
         }
       }
+
       return result;
     }
     return null;
