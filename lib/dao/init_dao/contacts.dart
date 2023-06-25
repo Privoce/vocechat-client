@@ -146,4 +146,16 @@ class ContactDao extends Dao<ContactM> {
       return null;
     }
   }
+
+  Future<bool> removeContact(int uid) async {
+    try {
+      await db.rawDelete(
+          "DELETE FROM ${ContactM.F_tableName} WHERE ${ContactM.F_uid} = ?",
+          [uid]);
+      return true;
+    } catch (e) {
+      App.logger.severe("Error removing contact. $e");
+    }
+    return false;
+  }
 }

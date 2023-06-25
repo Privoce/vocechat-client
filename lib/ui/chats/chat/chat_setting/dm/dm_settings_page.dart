@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
+import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/user_settings.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/dao/init_dao/user_settings.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -16,7 +18,7 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
-
+import 'package:vocechat_client/globals.dart' as globals;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile_group.dart';
 
@@ -32,14 +34,11 @@ class DmSettingsPage extends StatefulWidget {
 class _DmSettingsPageState extends State<DmSettingsPage> {
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
-  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
-  final ValueNotifier<bool> _pinned = ValueNotifier(false);
+  // final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
-
-    _isMuted.value = widget.userInfoNotifier.value.properties.enableMute;
   }
 
   @override
@@ -112,41 +111,47 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             )
           ]),
           SizedBox(height: 8),
-          // BannerTileGroup(bannerTileList: [
-          //   BannerTile(
-          //     title: AppLocalizations.of(context)!.muteNotification,
-          //     keepTrailingArrow: false,
-          //     trailing: ValueListenableBuilder<bool>(
-          //         valueListenable: _isMuted,
-          //         builder: (context, isMuted, _) {
-          //           return CupertinoSwitch(
-          //               value: isMuted,
-          //               onChanged: (muted) async {
-          //                 showBusyDialog();
+          BannerTileGroup(bannerTileList: [
+            BannerTile(
+              title: AppLocalizations.of(context)!.muteNotification,
+              keepTrailingArrow: false,
+              trailing: ValueListenableBuilder<UserSettings>(
+                  valueListenable: globals.userSettings,
+                  builder: (context, userSettings, _) {
+                    final isMuted = userSettings.muteUsers
+                            ?.containsKey(widget.userInfoNotifier.value.uid) ??
+                        false;
 
-          //                 try {
-          //                   if (muted) {
-          //                     await _mute();
-          //                   } else {
-          //                     await _unMute();
-          //                   }
-          //                 } catch (e) {
-          //                   App.logger.severe(e);
-          //                 }
+                    return CupertinoSwitch(
+                        value: isMuted,
+                        onChanged: (muted) async {
+                          showBusyDialog();
 
-          //                 _isMuted.value = muted;
+                          try {
+                            if (muted) {
+                              await _mute();
+                            } else {
+                              await _unMute();
+                            }
+                          } catch (e) {
+                            App.logger.severe(e);
+                          }
 
-          //                 dismissBusyDialog();
-          //               });
-          //         }),
-          //   )
-          // ]),
+                          dismissBusyDialog();
+                        });
+                  }),
+            )
+          ]),
           BannerTile(
             title: AppLocalizations.of(context)!.pinChat,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<bool>(
-                valueListenable: _pinned,
-                builder: (context, pinned, _) {
+            trailing: ValueListenableBuilder<UserSettings>(
+                valueListenable: globals.userSettings,
+                builder: (context, userSettings, _) {
+                  final pinned = DmSettings.fromUserSettings(
+                              userSettings, widget.userInfoNotifier.value.uid)
+                          .pinnedAt >
+                      0;
                   return CupertinoSwitch(
                     value: pinned,
                     onChanged: (value) {
@@ -157,13 +162,15 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
           ),
           SizedBox(height: 8),
           if (widget.userInfoNotifier.value.uid != App.app.userDb?.uid)
-            ValueListenableBuilder<UserInfoM>(
-                valueListenable: widget.userInfoNotifier,
-                builder: (context, userInfoM, _) {
+            ValueListenableBuilder<UserSettings>(
+                valueListenable: globals.userSettings,
+                builder: (context, userSettings, _) {
+                  print("here");
                   // This is not the read burn_after_read, but is auto-deletion.
                   // Name is consistant with server names.
-                  final burnAfterReadSecond =
-                      userInfoM.properties.burnAfterReadSecond;
+                  final burnAfterReadSecond = DmSettings.fromUserSettings(
+                          userSettings, widget.userInfoNotifier.value.uid)
+                      .burnAfterReadSecond;
 
                   return BannerTileGroup(bannerTileList: [
                     BannerTile(
@@ -196,13 +203,15 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
     final res = await UserApi().postBurnAfterReadingSetting(
         uid: widget.userInfoNotifier.value.uid, expiresIn: expiresIn);
     if (res.statusCode == 200) {
-      final userInfoM = await UserInfoDao().updateProperties(
-          widget.userInfoNotifier.value.uid,
-          burnAfterReadSecond: expiresIn);
-      if (userInfoM != null) {
-        App.app.chatService.fireUser(userInfoM, EventActions.update, true);
-        return true;
-      }
+      await UserSettingsDao()
+          .updateDmSettings(widget.userInfoNotifier.value.uid,
+              burnAfterReadSecond: expiresIn)
+          .then((value) {
+        if (value != null) {
+          globals.userSettings.value = value;
+        }
+      });
+      return true;
     }
 
     return false;
@@ -213,17 +222,31 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
 
     try {
       if (value) {
-        await _pin().then((value) {
+        await _pin().then((value) async {
           if (value) {
-            _pinned.value = true;
+            await UserSettingsDao()
+                .updateDmSettings(widget.userInfoNotifier.value.uid,
+                    pinnedAt: DateTime.now().millisecondsSinceEpoch)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
         });
       } else {
-        await _unpin().then((value) {
+        await _unpin().then((value) async {
           if (value) {
-            _pinned.value = false;
+            await UserSettingsDao()
+                .updateDmSettings(widget.userInfoNotifier.value.uid,
+                    pinnedAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
@@ -274,8 +297,14 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
       final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
-        // await App.app.chatService
-        //     .mute(uid: widget.userInfoNotifier.value.uid, expiredAt: expiredAt);
+        await UserSettingsDao()
+            .updateDmSettings(widget.userInfoNotifier.value.uid,
+                muteExpiredAt: null)
+            .then((value) {
+          if (value != null) {
+            globals.userSettings.value = value;
+          }
+        });
         return true;
       }
     } catch (e) {
@@ -293,8 +322,14 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
       final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
-        // await App.app.chatService
-        //     .mute(uid: widget.userInfoNotifier.value.uid, unmute: true);
+        await UserSettingsDao()
+            .updateDmSettings(widget.userInfoNotifier.value.uid,
+                muteExpiredAt: 0)
+            .then((value) {
+          if (value != null) {
+            globals.userSettings.value = value;
+          }
+        });
         return true;
       }
     } catch (e) {

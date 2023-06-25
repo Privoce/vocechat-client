@@ -279,47 +279,14 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   /// Update properties of GroupInfoM.
   ///
   /// To cancel [pinnedAt], set it to 0 or -1.
-  Future<GroupInfoM?> updateProperties(int gid,
-      {int? burnAfterReadSecond,
-      bool? enableMute,
-      int? muteExpiresAt,
-      int? readIndex,
-      String? draft,
-      int? pinnedAt}) async {
+  Future<GroupInfoM?> updateProperties(int gid, {String? draft}) async {
     GroupInfoM? old =
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
     if (old != null) {
       GroupProperties oldProperties = old.properties;
-      if (burnAfterReadSecond != null) {
-        oldProperties.burnAfterReadSecond = burnAfterReadSecond;
-      }
-
-      if (enableMute != null) {
-        oldProperties.enableMute = enableMute;
-      }
-
-      if (muteExpiresAt != null) {
-        old.properties.muteExpiresAt = muteExpiresAt;
-      }
-
-      if (readIndex != null) {
-        if (oldProperties.readIndex == -1) {
-          oldProperties.readIndex = readIndex;
-        } else {
-          oldProperties.readIndex = max(oldProperties.readIndex, readIndex);
-        }
-      }
 
       if (draft != null) {
         oldProperties.draft = draft;
-      }
-
-      if (pinnedAt != null) {
-        if (pinnedAt > 0) {
-          oldProperties.pinnedAt = pinnedAt;
-        } else {
-          oldProperties.pinnedAt = null;
-        }
       }
 
       old._properties = json.encode(oldProperties);
@@ -461,23 +428,23 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   /// not in [ssePinnedGidList] will be cleared.
   /// [ssePinnedGidList] is the list of uid which is pushed by server, that is, the
   /// channel with a valid [pinnedAt].
-  Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedGidList) async {
-    final ssePinnedGidSet = Set<int>.from(ssePinnedGidList);
+  // Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedGidList) async {
+  //   final ssePinnedGidSet = Set<int>.from(ssePinnedGidList);
 
-    final localPinnedGids = (await getChannelList())
-            ?.where((element) => element.properties.pinnedAt != null)
-            .map((e) => e.gid)
-            .toList() ??
-        [];
+  //   final localPinnedGids = (await getChannelList())
+  //           ?.where((element) => element.properties.pinnedAt != null)
+  //           .map((e) => e.gid)
+  //           .toList() ??
+  //       [];
 
-    final complementGidList = localPinnedGids
-        .where((element) => !ssePinnedGidSet.contains(element))
-        .toList();
+  //   final complementGidList = localPinnedGids
+  //       .where((element) => !ssePinnedGidSet.contains(element))
+  //       .toList();
 
-    for (final gid in complementGidList) {
-      await updateProperties(gid, pinnedAt: -1);
-    }
+  //   for (final gid in complementGidList) {
+  //     await updateProperties(gid, pinnedAt: -1);
+  //   }
 
-    return true;
-  }
+  //   return true;
+  // }
 }

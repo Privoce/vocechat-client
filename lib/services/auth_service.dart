@@ -59,33 +59,6 @@ class AuthService {
   // ignore: unused_field
   int _expiredIn = 0;
 
-  // void _setTimer(int expiredIn) {
-  //   if (_timer != null) {
-  //     _timer!.cancel();
-  //   }
-  //   // Check if token needs refreshing every 10 seconds.
-  //   const interval = 10;
-
-  //   _expiredIn = expiredIn;
-
-  //   _timer = Timer.periodic(Duration(seconds: interval), (_timer) async {
-  //     // App.logger.config("Current token expires in $_expiredIn seconds");
-
-  //     if (_expiredIn < 0) {
-  //       // token expires.
-  //       _timer.cancel();
-  //     }
-  //     if (_expiredIn <= threshold && _expiredIn >= threshold - 5) {
-  //       if (await SharedFuncs.renewAuthToken()) {
-  //         if (Sse.sse.isClosed()) {
-  //           Sse.sse.connect();
-  //         }
-  //       }
-  //     }
-  //     _expiredIn -= interval;
-  //   });
-  // }
-
   void dispose() {
     // disableAuthTimer();
   }

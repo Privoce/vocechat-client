@@ -9,8 +9,10 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
+import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/user_settings.dart';
+import 'package:vocechat_client/dao/init_dao/user_settings.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 import 'package:vocechat_client/services/file_handler.dart';
-import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -46,15 +48,15 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
-  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
-  final ValueNotifier<bool> _pinned = ValueNotifier(false);
+  // final ValueNotifier<bool> _isMuted = ValueNotifier(false);
+  // final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
 
-    _isMuted.value = widget.groupInfoNotifier.value.properties.enableMute;
-    _pinned.value = widget.groupInfoNotifier.value.properties.pinnedAt != null;
+    // _isMuted.value = widget.groupInfoNotifier.value.properties.enableMute;
+    // _pinned.value = widget.groupInfoNotifier.value.properties.pinnedAt != null;
   }
 
   @override
@@ -242,9 +244,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.muteNotification,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<bool>(
-                valueListenable: _isMuted,
-                builder: (context, isMuted, _) {
+            trailing: ValueListenableBuilder<UserSettings>(
+                valueListenable: globals.userSettings,
+                builder: (context, userSettings, _) {
+                  final isMuted = userSettings.muteGroups
+                          ?.containsKey(widget.groupInfoNotifier.value.gid) ??
+                      false;
                   return CupertinoSwitch(
                     value: isMuted,
                     onChanged: (value) {
@@ -256,9 +261,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.pinChat,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<bool>(
-                valueListenable: _pinned,
-                builder: (context, pinned, _) {
+            trailing: ValueListenableBuilder<UserSettings>(
+                valueListenable: globals.userSettings,
+                builder: (context, userSettings, _) {
+                  final pinned = userSettings.pinnedGroups
+                          ?.containsKey(widget.groupInfoNotifier.value.gid) ??
+                      false;
                   return CupertinoSwitch(
                     value: pinned,
                     onChanged: (value) {
@@ -272,37 +280,15 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     );
   }
 
-  // Widget _buildPin() {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(bottom: 8.0),
-  //     child: BannerTileGroup(
-  //       bannerTileList: [
-  //         BannerTile(
-  //           title: AppLocalizations.of(context)!.pinChat,
-  //           keepTrailingArrow: false,
-  //           trailing: ValueListenableBuilder<bool>(
-  //               valueListenable: _pinned,
-  //               builder: (context, pinned, _) {
-  //                 return CupertinoSwitch(
-  //                   value: pinned,
-  //                   onChanged: (value) {
-  //                     _changePinSettings(value);
-  //                   },
-  //                 );
-  //               }),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildBurnAfterReading(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
-      child: ValueListenableBuilder<GroupInfoM>(
-          valueListenable: widget.groupInfoNotifier,
-          builder: (context, groupInfoM, _) {
-            final initExpTime = groupInfoM.properties.burnAfterReadSecond;
+      child: ValueListenableBuilder<UserSettings>(
+          valueListenable: globals.userSettings,
+          builder: (context, userSettings, _) {
+            final initExpTime = GroupSettings.fromUserSettings(
+                    userSettings, widget.groupInfoNotifier.value.gid)
+                .burnAfterReadSecond;
             return BannerTileGroup(
               bannerTileList: [
                 BannerTile(
@@ -333,17 +319,31 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
     try {
       if (value) {
-        await _mute().then((value) {
+        await _mute().then((value) async {
           if (value) {
-            _isMuted.value = true;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    muteExpiredAt: null)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
         });
       } else {
-        await _unMute().then((value) {
+        await _unMute().then((value) async {
           if (value) {
-            _isMuted.value = false;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    muteExpiredAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
@@ -361,17 +361,31 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
     try {
       if (value) {
-        await _pin().then((value) {
+        await _pin().then((value) async {
           if (value) {
-            _pinned.value = true;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    pinnedAt: DateTime.now().millisecondsSinceEpoch)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
         });
       } else {
-        await _unpin().then((value) {
+        await _unpin().then((value) async {
           if (value) {
-            _pinned.value = false;
+            await UserSettingsDao()
+                .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+                    pinnedAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
@@ -388,13 +402,15 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     final res = await UserApi().postBurnAfterReadingSetting(
         expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
     if (res.statusCode == 200) {
-      final groupInfoM = await GroupInfoDao().updateProperties(
-          widget.groupInfoNotifier.value.gid,
-          burnAfterReadSecond: expiresIn);
-      if (groupInfoM != null) {
-        App.app.chatService.fireChannel(groupInfoM, EventActions.update, true);
-        return true;
-      }
+      await UserSettingsDao()
+          .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+              burnAfterReadSecond: expiresIn)
+          .then((value) {
+        if (value != null) {
+          globals.userSettings.value = value;
+        }
+      });
+      return true;
     }
     return false;
   }

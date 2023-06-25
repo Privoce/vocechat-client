@@ -76,7 +76,7 @@ class ChatServerHelper {
 
     try {
       chatServerM =
-          (await SharedFuncs.updateServerInfo(chatServerM)) ?? chatServerM;
+          (await SharedFuncs.getServerInfo(chatServerM)) ?? chatServerM;
     } catch (e) {
       App.logger.severe(e);
       if (showAlert && context != null) {
