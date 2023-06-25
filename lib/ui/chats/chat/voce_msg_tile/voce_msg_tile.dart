@@ -41,8 +41,6 @@ class VoceMsgTile extends StatefulWidget {
   final ValueNotifier<bool>? enableSelection;
   final void Function(MsgTileData tileData, bool selected)? onSelectChange;
 
-  // late final bool selfRightLayout;
-
   VoceMsgTile({
     Key? key,
     required this.tileData,
@@ -69,6 +67,9 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
   final ValueNotifier<ChatLayoutMode> chatLayoutMode =
       ValueNotifier(ChatLayoutMode.SelfRight);
+
+  late final bool isSelf =
+      SharedFuncs.isSelf(widget.tileData.userInfoM.userInfo.uid);
 
   @override
   void initState() {
@@ -215,19 +216,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return ValueListenableBuilder<ChatLayoutMode>(
       valueListenable: chatLayoutMode,
       builder: (context, value, child) {
-        if (value == ChatLayoutMode.Left) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildAvatar(),
-              const SizedBox(width: 16),
-              _buildMidCol(context),
-              const SizedBox(width: 16),
-              _buildStatus(context)
-            ],
-          );
-        } else {
+        if (value == ChatLayoutMode.SelfRight && isSelf) {
           return Row(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,6 +226,18 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
               _buildMidCol(context),
               const SizedBox(width: 16),
               _buildAvatar()
+            ],
+          );
+        } else {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildAvatar(),
+              const SizedBox(width: 16),
+              _buildMidCol(context),
+              const SizedBox(width: 16),
+              _buildStatus(context)
             ],
           );
         }
@@ -274,9 +275,10 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
       child: ValueListenableBuilder<ChatLayoutMode>(
           valueListenable: chatLayoutMode,
           builder: (context, value, child) {
-            CrossAxisAlignment crossAxisAlignment = value == ChatLayoutMode.Left
-                ? CrossAxisAlignment.start
-                : CrossAxisAlignment.end;
+            CrossAxisAlignment crossAxisAlignment =
+                (value == ChatLayoutMode.SelfRight && isSelf)
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start;
             return Column(
               crossAxisAlignment: crossAxisAlignment,
               children: [
@@ -313,13 +315,13 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
         valueListenable: chatLayoutMode,
         builder: (context, layout, _) {
           MainAxisAlignment mainAxisAlignment =
-              layout == ChatLayoutMode.SelfRight
+              (layout == ChatLayoutMode.SelfRight && isSelf)
                   ? MainAxisAlignment.end
                   : MainAxisAlignment.start;
           return Row(mainAxisAlignment: mainAxisAlignment, children: [
             RichText(
                 text: TextSpan(
-                    children: layout == ChatLayoutMode.SelfRight
+                    children: (layout == ChatLayoutMode.SelfRight && isSelf)
                         ? spanList.reversed.toList()
                         : spanList)),
           ]);
@@ -330,9 +332,10 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
     return ValueListenableBuilder<ChatLayoutMode>(
         valueListenable: chatLayoutMode,
         builder: (context, mode, _) {
-          CrossAxisAlignment alignment = mode == ChatLayoutMode.SelfRight
-              ? CrossAxisAlignment.end
-              : CrossAxisAlignment.start;
+          CrossAxisAlignment alignment =
+              (mode == ChatLayoutMode.SelfRight && isSelf)
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start;
           return Column(
             crossAxisAlignment: alignment,
             children: [
@@ -451,7 +454,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                   return VoceAudioBubble.tileData(
                       key: ObjectKey(widget.tileData),
                       tileData: widget.tileData,
-                      isSelf: mode == ChatLayoutMode.SelfRight);
+                      rightAlign: mode == ChatLayoutMode.SelfRight && isSelf);
                 });
           } else if (chatMsgM.isArchiveMsg) {
             return VoceArchiveBubble.tileData(

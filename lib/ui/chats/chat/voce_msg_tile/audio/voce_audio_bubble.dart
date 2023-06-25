@@ -10,18 +10,18 @@ class VoceAudioBubble extends StatefulWidget {
 
   final AudioInfo? audioInfo;
 
-  final bool isSelf;
+  final bool rightAlign;
 
   final double? height;
 
   VoceAudioBubble.tileData(
-      {Key? key, required MsgTileData this.tileData, this.isSelf = false})
+      {Key? key, required MsgTileData this.tileData, this.rightAlign = false})
       : height = null,
         audioInfo = tileData.audioInfo,
         super(key: key);
 
   const VoceAudioBubble.data(
-      {Key? key, this.audioInfo, this.isSelf = false, this.height = 36})
+      {Key? key, this.audioInfo, this.rightAlign = false, this.height = 36})
       : tileData = null,
         super(key: key);
 
@@ -75,7 +75,7 @@ class _VoceAudioBubbleState extends State<VoceAudioBubble>
   }
 
   AlignmentGeometry getTextAlignment() {
-    if (widget.tileData != null && widget.isSelf) {
+    if (widget.tileData != null && widget.rightAlign) {
       return Alignment.centerRight;
     }
     return Alignment.centerLeft;

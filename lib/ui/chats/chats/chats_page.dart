@@ -321,6 +321,9 @@ class _ChatsPageState extends State<ChatsPage>
           GroupInfoDao()
               .updateProperties(tileData.groupInfoM!.value.gid, draft: draft)
               .then((updatedGroupInfoM) {
+            if (updatedGroupInfoM != null) {
+              tileData.groupInfoM!.value = updatedGroupInfoM;
+            }
             tileData.draft.value = draft ?? "";
           });
 
@@ -348,6 +351,9 @@ class _ChatsPageState extends State<ChatsPage>
           await UserInfoDao()
               .updateProperties(tileData.userInfoM!.value.uid, draft: draft)
               .then((updatedUserInfoM) {
+            if (updatedUserInfoM != null) {
+              tileData.userInfoM!.value = updatedUserInfoM;
+            }
             tileData.draft.value = draft ?? "";
           });
 
