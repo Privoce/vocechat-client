@@ -34,7 +34,7 @@ class DmSettingsPage extends StatefulWidget {
 class _DmSettingsPageState extends State<DmSettingsPage> {
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
-  final ValueNotifier<bool> _pinned = ValueNotifier(false);
+  // final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
@@ -145,9 +145,13 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.pinChat,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<bool>(
-                valueListenable: _pinned,
-                builder: (context, pinned, _) {
+            trailing: ValueListenableBuilder<UserSettings>(
+                valueListenable: globals.userSettings,
+                builder: (context, userSettings, _) {
+                  final pinned = DmSettings.fromUserSettings(
+                              userSettings, widget.userInfoNotifier.value.uid)
+                          .pinnedAt >
+                      0;
                   return CupertinoSwitch(
                     value: pinned,
                     onChanged: (value) {
@@ -161,6 +165,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             ValueListenableBuilder<UserSettings>(
                 valueListenable: globals.userSettings,
                 builder: (context, userSettings, _) {
+                  print("here");
                   // This is not the read burn_after_read, but is auto-deletion.
                   // Name is consistant with server names.
                   final burnAfterReadSecond = DmSettings.fromUserSettings(
@@ -198,13 +203,15 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
     final res = await UserApi().postBurnAfterReadingSetting(
         uid: widget.userInfoNotifier.value.uid, expiresIn: expiresIn);
     if (res.statusCode == 200) {
-      final userInfoM = await UserInfoDao().updateProperties(
-          widget.userInfoNotifier.value.uid,
-          burnAfterReadSecond: expiresIn);
-      if (userInfoM != null) {
-        App.app.chatService.fireUser(userInfoM, EventActions.update, true);
-        return true;
-      }
+      await UserSettingsDao()
+          .updateDmSettings(widget.userInfoNotifier.value.uid,
+              burnAfterReadSecond: expiresIn)
+          .then((value) {
+        if (value != null) {
+          globals.userSettings.value = value;
+        }
+      });
+      return true;
     }
 
     return false;
@@ -215,17 +222,31 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
 
     try {
       if (value) {
-        await _pin().then((value) {
+        await _pin().then((value) async {
           if (value) {
-            _pinned.value = true;
+            await UserSettingsDao()
+                .updateDmSettings(widget.userInfoNotifier.value.uid,
+                    pinnedAt: DateTime.now().millisecondsSinceEpoch)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }
         });
       } else {
-        await _unpin().then((value) {
+        await _unpin().then((value) async {
           if (value) {
-            _pinned.value = false;
+            await UserSettingsDao()
+                .updateDmSettings(widget.userInfoNotifier.value.uid,
+                    pinnedAt: 0)
+                .then((value) {
+              if (value != null) {
+                globals.userSettings.value = value;
+              }
+            });
           } else {
             showNetworkErrorBar();
           }

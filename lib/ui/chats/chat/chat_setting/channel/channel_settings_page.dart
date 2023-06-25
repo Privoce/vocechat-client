@@ -280,30 +280,6 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     );
   }
 
-  // Widget _buildPin() {
-  //   return Padding(
-  //     padding: const EdgeInsets.only(bottom: 8.0),
-  //     child: BannerTileGroup(
-  //       bannerTileList: [
-  //         BannerTile(
-  //           title: AppLocalizations.of(context)!.pinChat,
-  //           keepTrailingArrow: false,
-  //           trailing: ValueListenableBuilder<bool>(
-  //               valueListenable: _pinned,
-  //               builder: (context, pinned, _) {
-  //                 return CupertinoSwitch(
-  //                   value: pinned,
-  //                   onChanged: (value) {
-  //                     _changePinSettings(value);
-  //                   },
-  //                 );
-  //               }),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   Widget _buildBurnAfterReading(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -426,20 +402,15 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
     final res = await UserApi().postBurnAfterReadingSetting(
         expiresIn: expiresIn, gid: widget.groupInfoNotifier.value.gid);
     if (res.statusCode == 200) {
-      final groupSettings = await UserSettingsDao().updateGroupSettings(
-          widget.groupInfoNotifier.value.gid,
-          burnAfterReadSecond: expiresIn);
-      if (groupSettings != null) {
-        await UserSettingsDao()
-            .updateGroupSettings(widget.groupInfoNotifier.value.gid,
-                burnAfterReadSecond: expiresIn)
-            .then((value) {
-          if (value != null) {
-            globals.userSettings.value = value;
-          }
-        });
-        return true;
-      }
+      await UserSettingsDao()
+          .updateGroupSettings(widget.groupInfoNotifier.value.gid,
+              burnAfterReadSecond: expiresIn)
+          .then((value) {
+        if (value != null) {
+          globals.userSettings.value = value;
+        }
+      });
+      return true;
     }
     return false;
   }

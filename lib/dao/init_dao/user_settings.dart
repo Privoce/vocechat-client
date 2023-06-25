@@ -144,16 +144,21 @@ class UserSettingsDao extends Dao<UserSettingsM> {
         settings.burnAfterReadingGroups?[gid] = burnAfterReadSecond;
       }
 
-      if (muteExpiredAt != null && muteExpiredAt > 0) {
-        settings.muteGroups?[gid] = muteExpiredAt;
-      } else {
-        settings.muteGroups?.remove(gid);
+      // Must check != null first, as update data does not contain all properties.
+      if (muteExpiredAt != null) {
+        if (muteExpiredAt > 0) {
+          settings.muteGroups?[gid] = muteExpiredAt;
+        } else {
+          settings.muteGroups?.remove(gid);
+        }
       }
 
-      if (pinnedAt != null && pinnedAt > 0) {
-        settings.pinnedGroups?.addAll({gid: pinnedAt});
-      } else {
-        settings.pinnedGroups?.remove(gid);
+      if (pinnedAt != null) {
+        if (pinnedAt > 0) {
+          settings.pinnedGroups?.addAll({gid: pinnedAt});
+        } else {
+          settings.pinnedGroups?.remove(gid);
+        }
       }
 
       if (readIndex != null) {
@@ -184,16 +189,20 @@ class UserSettingsDao extends Dao<UserSettingsM> {
         settings.burnAfterReadingUsers?[dmUid] = burnAfterReadSecond;
       }
 
-      if (muteExpiredAt != null && muteExpiredAt > 0) {
-        settings.muteUsers?[dmUid] = muteExpiredAt;
-      } else {
-        settings.muteUsers?.remove(dmUid);
+      if (muteExpiredAt != null) {
+        if (muteExpiredAt > 0) {
+          settings.muteUsers?[dmUid] = muteExpiredAt;
+        } else {
+          settings.muteUsers?.remove(dmUid);
+        }
       }
 
-      if (pinnedAt != null && pinnedAt > 0) {
-        settings.pinnedUsers?.addAll({dmUid: pinnedAt});
-      } else {
-        settings.pinnedUsers?.remove(dmUid);
+      if (pinnedAt != null) {
+        if (pinnedAt > 0) {
+          settings.pinnedUsers?.addAll({dmUid: pinnedAt});
+        } else {
+          settings.pinnedUsers?.remove(dmUid);
+        }
       }
 
       if (readIndex != null) {

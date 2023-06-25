@@ -217,49 +217,15 @@ class UserInfoDao extends Dao<UserInfoM> {
   /// Update properties of UserInfoM.
   ///
   /// To cancel [pinnedAt], set it to 0 or -1.
-  Future<UserInfoM?> updateProperties(int uid,
-      {int? burnAfterReadSecond,
-      bool? enableMute,
-      int? muteExpiresAt,
-      int? readIndex,
-      String? draft,
-      int? pinnedAt}) async {
+  Future<UserInfoM?> updateProperties(int uid, {String? draft}) async {
     UserInfoM? old =
         await first(where: '${UserInfoM.F_uid} = ?', whereArgs: [uid]);
     if (old != null) {
       UserProperties oldProperties = old.properties;
 
-      // if (burnAfterReadSecond != null) {
-      //   oldProperties.burnAfterReadSecond = burnAfterReadSecond;
-      // }
-
-      // if (enableMute != null) {
-      //   oldProperties.enableMute = enableMute;
-      // }
-
-      // if (muteExpiresAt != null) {
-      //   old.properties.muteExpiresAt = muteExpiresAt;
-      // }
-
-      // if (readIndex != null) {
-      //   if (oldProperties.readIndex == -1) {
-      //     oldProperties.readIndex = readIndex;
-      //   } else {
-      //     oldProperties.readIndex = max(oldProperties.readIndex, readIndex);
-      //   }
-      // }
-
       if (draft != null) {
         oldProperties.draft = draft;
       }
-
-      // if (pinnedAt != null) {
-      //   if (pinnedAt > 0) {
-      //     oldProperties.pinnedAt = pinnedAt;
-      //   } else {
-      //     oldProperties.pinnedAt = null;
-      //   }
-      // }
 
       old._properties = json.encode(oldProperties);
       await super.update(old);
