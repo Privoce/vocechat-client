@@ -57,8 +57,9 @@ class _ChatBarState extends State<ChatBar> {
         elevation: 0,
         backgroundColor: AppColors.barBg,
         titleSpacing: 0,
-        leadingWidth: 74,
+        leadingWidth: 80,
         leading: CupertinoButton(
+            padding: EdgeInsets.only(left: 16, right: 4),
             onPressed: () {
               widget.onPop();
             },
@@ -81,6 +82,7 @@ class _ChatBarState extends State<ChatBar> {
                             if (unreadCount > 99) {
                               text = "99+";
                             }
+
                             return Text(
                               text,
                               maxLines: 1,
@@ -121,11 +123,11 @@ class _ChatBarState extends State<ChatBar> {
               if (widget._isGroup)
                 VoceChannelAvatar.channel(
                     groupInfoM: widget.groupInfoNotifier!.value,
-                    size: VoceAvatarSize.s36)
+                    size: VoceAvatarSize.s32)
               else
                 VoceUserAvatar.user(
                     userInfoM: widget.userInfoNotifier!.value,
-                    size: VoceAvatarSize.s36),
+                    size: VoceAvatarSize.s32),
               SizedBox(width: 10),
               Expanded(
                 child: _buildTitles(),
