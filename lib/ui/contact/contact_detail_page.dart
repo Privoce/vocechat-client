@@ -5,6 +5,7 @@ import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
+import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
@@ -250,6 +251,16 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               builder: (context) => VoceChatPage.user(
                   mentionsKey: mentionsKey,
                   controller: controller))).then((value) async {
+        final draft = mentionsKey.currentState?.controller?.text.trim();
+
+        await UserInfoDao()
+            .updateProperties(_userInfoMNotifier.value.uid, draft: draft)
+            .then((updatedUserInfoM) {
+          if (updatedUserInfoM != null) {
+            App.app.chatService
+                .fireUser(updatedUserInfoM, EventActions.update, true);
+          }
+        });
         controller.dispose();
       });
     });
