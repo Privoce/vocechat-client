@@ -832,7 +832,7 @@ class _VoceChatPageState extends State<VoceChatPage>
             );
 
             return GestureDetector(
-                key: msgTile.key,
+                key: ObjectKey(tileData),
                 onLongPress: () {
                   showModalBottomSheet(
                     context: context,
