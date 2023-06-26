@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
@@ -19,11 +20,13 @@ import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 import 'package:vocechat_client/ui/chats/chats/voce_chat_tile.dart';
 import 'package:vocechat_client/globals.dart' as globals;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatsPage extends StatefulWidget {
   static const route = "/chats/chats";
@@ -159,10 +162,8 @@ class _ChatsPageState extends State<ChatsPage>
     return ListView.separated(
       itemCount: sorted.length,
       itemBuilder: (context, index) {
-        return VoceChatTile(
-            key: ObjectKey(sorted[index]),
-            tileData: sorted[index],
-            onTap: onTap);
+        final data = sorted[index];
+        return VoceChatTile(key: ObjectKey(data), tileData: data, onTap: onTap);
       },
       separatorBuilder: (context, index) {
         return Divider(

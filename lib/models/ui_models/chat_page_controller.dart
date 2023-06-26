@@ -143,6 +143,8 @@ class ChatPageController {
   Future<void> updateReadIndex(int mid) async {
     if (isChannel) {
       final gid = groupInfoMNotifier!.value.gid;
+      App.app.chatService.addGroupReadIndex(mid, gid);
+
       await UserSettingsDao()
           .updateGroupSettings(gid, readIndex: mid)
           .then((value) {
@@ -152,6 +154,7 @@ class ChatPageController {
       });
     } else if (isUser) {
       final uid = userInfoMNotifier!.value.uid;
+      App.app.chatService.addUserReadIndex(mid, uid);
 
       await UserSettingsDao()
           .updateDmSettings(uid, readIndex: mid)
