@@ -1,7 +1,7 @@
 {   
-    "latest": {"version": "0.2.99", "build_num": 69},
+    "latest": {"version": "0.2.100", "build_num": 70},
     "logs":  [
-        {"time": 1687651492128, "version": "0.2.99", "build_num": 69, "updates": [
+        {"time": 1687740444611, "version": "0.2.100", "build_num": 70, "updates": [
             "- add: new realtime response to server settings (server name, description, online status switch etc.",
             "- refactor: new user settings read and storage strategy for better performance.",
             "- fix: full screen image does not show up when tapped.",
