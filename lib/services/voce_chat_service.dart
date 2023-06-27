@@ -817,6 +817,12 @@ class VoceChatService {
     await ChatMsgDao().batchAdd(msgMap.values.toList()).then((succeed) {
       if (succeed) {
         App.logger.info("Chat messages saved. total: ${msgMap.length}");
+
+        if (_msgListeners.isNotEmpty) {
+          for (final msg in msgMap.values) {
+            fireMsg(msg, true);
+          }
+        }
         msgMap.clear();
       }
     });
