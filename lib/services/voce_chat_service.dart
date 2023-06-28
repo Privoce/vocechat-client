@@ -684,47 +684,6 @@ class VoceChatService {
     }
   }
 
-  // Future<void> _handlePinnedChats(Map<String, dynamic> map) async {
-  //   assert(map["type"] == ssePinnedChats);
-
-  //   try {
-  //     // To record pinned uids and gids,
-  //     // compare local pinned uids and gids, take complement sets, and
-  //     // clear the complement's [pinnedAt] property.
-  //     List<int> ssePinnedUids = [];
-  //     List<int> ssePinnedGids = [];
-
-  //     final userInfoDao = UserInfoDao();
-  //     final groupInfoDao = GroupInfoDao();
-
-  //     final chats = map["chats"] as List<dynamic>;
-  //     for (final chat in chats) {
-  //       final uid = chat["target"]?["uid"] as int?;
-  //       final gid = chat["target"]?["gid"] as int?;
-  //       final updatedAt = chat["updated_at"] as int?;
-
-  //       if (uid != null) {
-  //         // ssePinnedUids.add(uid);
-  //         // final user = await userInfoDao.getUserByUid(uid);
-  //         // if (user != null) {
-  //         //   await userInfoDao.updateProperties(uid, pinnedAt: updatedAt);
-  //         // }
-  //       } else if (gid != null) {
-  //         // ssePinnedGids.add(gid);
-  //         // final group = await groupInfoDao.getGroupByGid(gid);
-  //         // if (group != null) {
-  //         //   await groupInfoDao.updateProperties(gid, pinnedAt: updatedAt);
-  //         // }
-  //       }
-  //     }
-
-  //     // await userInfoDao.emptyUnpushedPinnedStatus(ssePinnedUids);
-  //     // await groupInfoDao.emptyUnpushedPinnedStatus(ssePinnedGids);
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
-
   Future<void> _handlePinnedMessageUpdated(Map<String, dynamic> map) async {
     assert(map["type"] == ssePinnedMessageUpdated);
 
