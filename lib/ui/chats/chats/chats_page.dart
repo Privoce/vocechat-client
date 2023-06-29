@@ -163,7 +163,7 @@ class _ChatsPageState extends State<ChatsPage>
       itemCount: sorted.length,
       itemBuilder: (context, index) {
         final data = sorted[index];
-        return VoceChatTile(key: ObjectKey(data), tileData: data, onTap: onTap);
+        return _buildChatTile(data);
       },
       separatorBuilder: (context, index) {
         return Divider(
@@ -173,6 +173,71 @@ class _ChatsPageState extends State<ChatsPage>
       },
     );
   }
+
+  Widget _buildChatTile(ChatTileData data) {
+    const actionWidth = 95;
+
+    List<Widget> children = [
+      SlidableAction(
+          flex: 1,
+          autoClose: true,
+          onPressed: (context) {},
+          icon: Icons.visibility_off_rounded,
+          backgroundColor: Colors.red,
+          label: AppLocalizations.of(context)!.hide),
+      ValueListenableBuilder<bool>(
+          valueListenable: data.isPinned,
+          builder: (context, isPinned, _) {
+            return SlidableAction(
+                flex: 1,
+                autoClose: true,
+                onPressed: (context) {},
+                icon: AppIcons.pin,
+                backgroundColor: Colors.red,
+                label: isPinned
+                    ? AppLocalizations.of(context)!.unpin
+                    : AppLocalizations.of(context)!.pin);
+          }),
+    ];
+
+    if (data.isUser) {
+      children.add(SlidableAction(
+          flex: 1,
+          autoClose: true,
+          onPressed: (context) {},
+          icon: Icons.visibility_off,
+          backgroundColor: Colors.red,
+          label: AppLocalizations.of(context)!.hide));
+    }
+
+    double extentRatio =
+        children.length * actionWidth / MediaQuery.of(context).size.width;
+    if (extentRatio > 1) {
+      extentRatio = 1;
+    }
+
+    return Slidable(
+        key: ObjectKey(data),
+        endActionPane: ActionPane(
+            extentRatio: extentRatio,
+            motion: DrawerMotion(),
+            children: children),
+        child: VoceChatTile(tileData: data, onTap: onTap));
+  }
+
+  // Widget _buildSlidableAction(
+  //     {required IconData icon,
+  //     required String label,
+  //     required Color backgroundColor,
+  //     required Function(BuildContext) onPressed}) {
+  //   return Container(
+  //     color: backgroundColor,
+  //     child: IconButton(
+  //       icon: Icon(icon),
+  //       onPressed: () => onPressed(context),
+  //     ),
+  //   );
+  // }
 
   /// [VoceChatService] Message listener
   ///

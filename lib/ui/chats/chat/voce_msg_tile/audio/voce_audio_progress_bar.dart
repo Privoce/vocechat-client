@@ -1,6 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/services/voce_audio_service.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 
 class VoceProgressBar extends StatefulWidget {
   final int duration;
@@ -116,7 +117,7 @@ class _VoceProgressBarState extends State<VoceProgressBar>
                         topLeft: Radius.circular(5.0),
                         bottomLeft: Radius.circular(5.0),
                       ),
-                      color: Colors.blue[200],
+                      color: AppColors.primary400,
                     ),
                   ),
                 ),

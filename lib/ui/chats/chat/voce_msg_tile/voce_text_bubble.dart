@@ -61,7 +61,7 @@ class VoceTextBubble extends StatelessWidget {
         if (url != null && url.isNotEmpty) {
           children.add(TextSpan(
               text: url,
-              style: TextStyle(color: Colors.blue),
+              style: TextStyle(color: AppColors.primary400),
               recognizer: TapGestureRecognizer()
                 ..onTap = () async {
                   String url0 = url;

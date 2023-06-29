@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 
 class AvChatFloatingWindow extends StatefulWidget {
   const AvChatFloatingWindow({super.key});
@@ -41,7 +42,7 @@ class _AvChatFloatingWindowState extends State<AvChatFloatingWindow> {
         child: Container(
           width: width,
           height: height,
-          color: Colors.blue,
+          color: AppColors.primary400,
           child: Center(
             child: Text(
               'Floating Window',

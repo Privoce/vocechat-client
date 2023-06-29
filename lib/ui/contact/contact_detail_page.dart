@@ -131,7 +131,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         children: [
           AppBannerButton(
               title: titleText,
-              textColor: Colors.blue.shade800,
+              textColor: AppColors.primary400,
               onTap: () {
                 onTapDm(userInfoM, context);
               }),
@@ -139,7 +139,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               valueListenable: enableContact,
               builder: (context, enableContact, _) {
                 if (enableContact) {
-                  return _buildBlockBtn(context);
+                  return _buildRemoveBtn(context);
                 } else {
                   return SizedBox.shrink();
                 }
@@ -148,7 +148,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               valueListenable: enableContact,
               builder: (context, enableContact, _) {
                 if (enableContact) {
-                  return _buildRemoveBtn(context);
+                  return _buildBlockBtn(context);
                 } else {
                   return SizedBox.shrink();
                 }
@@ -214,7 +214,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         padding: const EdgeInsets.only(top: 8),
         child: AppBannerButton(
             title: AppLocalizations.of(context)!.addContact,
-            textColor: Colors.green,
+            textColor: AppColors.primary400,
             onTap: () {
               onTapAdd(context);
             }),

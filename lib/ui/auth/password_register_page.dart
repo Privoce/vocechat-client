@@ -106,7 +106,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-              color: Colors.blue, borderRadius: BorderRadius.circular(16)),
+              color: AppColors.primary400,
+              borderRadius: BorderRadius.circular(16)),
           contentPadding: EdgeInsets.zero,
           normal: Center(
             child: const Icon(
@@ -139,7 +140,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: Colors.blue.shade700))
+                color: AppColors.primary400))
       ])),
       Text(widget.chatServer.fullUrlWithoutPort,
           style: TextStyle(
@@ -360,8 +361,8 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
     final registerReq = RegisterRequest(
         email: email, password: password, magicToken: magicToken);
     Navigator.of(context).push(MaterialPageRoute(
-        builder: ((context) =>
-            RegisterNamingPage(registerReq, rememberMe, widget.chatServer, widget.invitationLink))));
+        builder: ((context) => RegisterNamingPage(registerReq, rememberMe,
+            widget.chatServer, widget.invitationLink))));
   }
 
   void _showEmailFormattingErrorSnack() {

@@ -44,9 +44,7 @@ class TextBubble extends StatefulWidget {
         color: AppColors.coolGrey700,
         fontWeight: FontWeight.w400);
     _mentionStyle = TextStyle(
-        fontSize: 16,
-        color: AppColors.primaryHover,
-        fontWeight: FontWeight.w400);
+        fontSize: 16, color: AppColors.primary400, fontWeight: FontWeight.w400);
   }
 
   @override
@@ -68,7 +66,7 @@ class _TextBubbleState extends State<TextBubble> {
           //     widget.content, widget.chatMsgM!.localMid, widget.chatMsgM);
           children.add(TextSpan(
               text: url,
-              style: TextStyle(color: Colors.blue),
+              style: TextStyle(color: AppColors.primary400),
               recognizer: TapGestureRecognizer()
                 ..onTap = () async {
                   String _url = url;
@@ -107,7 +105,7 @@ class _TextBubbleState extends State<TextBubble> {
                           children: [
                             Text(
                               title,
-                              style: TextStyle(color: Colors.blue),
+                              style: TextStyle(color: AppColors.primary400),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),

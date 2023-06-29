@@ -99,7 +99,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
           title: lang.language,
           keepTrailingArrow: false,
           trailing: selected
-              ? Icon(AppIcons.select, color: Colors.blue)
+              ? Icon(AppIcons.select, color: AppColors.primary400)
               : SizedBox.shrink(),
           onTap: () => _onTapLanguage(lang.locale),
         );

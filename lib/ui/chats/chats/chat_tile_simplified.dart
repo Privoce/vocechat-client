@@ -65,7 +65,7 @@ class _ChatTileSimplifiedState extends State<ChatTileSimplified> {
                                   constraints: BoxConstraints(minWidth: 16),
                                   height: 16,
                                   decoration: BoxDecoration(
-                                      color: AppColors.primaryHover,
+                                      color: AppColors.primary400,
                                       borderRadius: BorderRadius.circular(8)),
                                   child: Center(
                                     child: Padding(
