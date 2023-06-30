@@ -291,7 +291,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
 
   Future<bool> _mute({int? expiredAt}) async {
     final reqMap = {
-      "add_mute_users": [
+      "add_users": [
         {"uid": widget.userInfoNotifier.value.uid, "expired_at": expiredAt}
       ]
     };
