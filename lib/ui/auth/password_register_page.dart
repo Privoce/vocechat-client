@@ -106,7 +106,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-              color: AppColors.primary400,
+              color: AppColors.primary500,
               borderRadius: BorderRadius.circular(16)),
           contentPadding: EdgeInsets.zero,
           normal: Center(
@@ -140,7 +140,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary400))
+                color: AppColors.primary500))
       ])),
       Text(widget.chatServer.fullUrlWithoutPort,
           style: TextStyle(
@@ -274,6 +274,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
                 Spacer(),
                 CupertinoSwitch(
                     value: rememberMe,
+                    activeColor: AppColors.primary400,
                     onChanged: (value) => setState(() {
                           rememberMe = value;
                         }))

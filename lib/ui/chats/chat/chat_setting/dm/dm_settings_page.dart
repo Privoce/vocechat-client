@@ -124,6 +124,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
 
                     return CupertinoSwitch(
                         value: isMuted,
+                        activeColor: AppColors.primary400,
                         onChanged: (muted) async {
                           showBusyDialog();
 
@@ -154,6 +155,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                       0;
                   return CupertinoSwitch(
                     value: pinned,
+                    activeColor: AppColors.primary400,
                     onChanged: (value) {
                       _changePinSettings(value);
                     },

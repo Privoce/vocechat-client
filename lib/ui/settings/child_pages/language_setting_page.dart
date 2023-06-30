@@ -74,7 +74,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
         //           style: TextStyle(
         //               fontWeight: FontWeight.w400,
         //               fontSize: 17,
-        //               color: AppColors.primary400)))
+        //               color: AppColors.primary500)))
         // ],
       ),
       body: SafeArea(
@@ -99,7 +99,7 @@ class _LanguageSettingPageState extends State<LanguageSettingPage> {
           title: lang.language,
           keepTrailingArrow: false,
           trailing: selected
-              ? Icon(AppIcons.select, color: AppColors.primary400)
+              ? Icon(AppIcons.select, color: AppColors.primary500)
               : SizedBox.shrink(),
           onTap: () => _onTapLanguage(lang.locale),
         );

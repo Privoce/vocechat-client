@@ -110,7 +110,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                       width: double.maxFinite,
                       contentColor: Colors.white,
                       decoration: BoxDecoration(
-                          color: AppColors.primary400,
+                          color: AppColors.primary500,
                           borderRadius: BorderRadius.circular(8)),
                       normal: Text(
                         AppLocalizations.of(context)!.chatsDrawerAddNewAccount,
@@ -128,7 +128,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                       width: double.maxFinite,
                       contentColor: Colors.white,
                       decoration: BoxDecoration(
-                          color: AppColors.primary400,
+                          color: AppColors.primary500,
                           borderRadius: BorderRadius.circular(8)),
                       normal: Text(
                         AppLocalizations.of(context)!.inputInvitationLink,

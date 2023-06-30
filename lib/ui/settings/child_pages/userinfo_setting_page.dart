@@ -72,7 +72,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
                             style: TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 17,
-                                color: AppColors.primary400)));
+                                color: AppColors.primary500)));
                   }
                   return SizedBox.shrink();
                 })
@@ -115,7 +115,7 @@ class _UserInfoSettingPageState extends State<UserInfoSettingPage> {
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 16,
-                          color: AppColors.primary400)),
+                          color: AppColors.primary500)),
                 );
               })),
     );

@@ -78,7 +78,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
                           style: TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 17,
-                              color: AppColors.primary400)));
+                              color: AppColors.primary500)));
                 })
           ],
         ),

@@ -74,7 +74,7 @@ class _NewPrivateChannelSelectPageState
                       style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 17,
-                          color: AppColors.primary400)))
+                          color: AppColors.primary500)))
               : AbsorbPointer(
                   child: CupertinoButton(
                       onPressed: () {},

@@ -80,7 +80,7 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
                             fontWeight: FontWeight.w400,
                             fontSize: 17,
                             color: enable
-                                ? AppColors.primary400
+                                ? AppColors.primary500
                                 : AppColors.grey300)));
               })
         ],
@@ -102,7 +102,7 @@ class _AutoDeleteSettingsPageState extends State<AutoDeleteSettingsPage> {
           title: title,
           keepTrailingArrow: false,
           trailing: time == _selectedTime
-              ? Icon(AppIcons.select, color: AppColors.primary400)
+              ? Icon(AppIcons.select, color: AppColors.primary500)
               : SizedBox.shrink(),
           onTap: () => _selectTime(time),
         );

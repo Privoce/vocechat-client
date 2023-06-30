@@ -71,14 +71,14 @@ class _VoceArchiveContentBubbleState extends State<VoceArchiveContentBubble> {
           }
           return VoceUserAvatar.name(
               name: widget.archiveUser.name,
-              backgroundColor: AppColors.primary400,
+              backgroundColor: AppColors.primary500,
               size: VoceAvatarSize.s18);
         },
       );
     } else {
       return VoceAvatar.name(
           name: widget.archiveUser.name,
-          backgroundColor: AppColors.primary400,
+          backgroundColor: AppColors.primary500,
           size: VoceAvatarSize.s18);
     }
   }

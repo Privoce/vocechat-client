@@ -98,7 +98,7 @@ class _ServerInfoSettingsPageState extends State<ServerInfoSettingsPage> {
                             style: TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 15,
-                                color: AppColors.primary400)),
+                                color: AppColors.primary500)),
                       )
                     : SizedBox.shrink()),
           ),

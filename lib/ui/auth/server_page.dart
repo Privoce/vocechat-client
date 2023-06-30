@@ -177,7 +177,7 @@ class _ServerPageState extends State<ServerPage> {
                 height: 30,
                 width: 30,
                 decoration: BoxDecoration(
-                    color: AppColors.primary400,
+                    color: AppColors.primary500,
                     borderRadius: BorderRadius.circular(30)),
                 padding: const EdgeInsets.all(3),
                 child: Icon(
@@ -253,7 +253,7 @@ class _ServerPageState extends State<ServerPage> {
                     ),
                     IconButton(
                         icon: Icon(Icons.qr_code_scanner_rounded,
-                            color: AppColors.primary400, size: 30),
+                            color: AppColors.primary500, size: 30),
                         onPressed: () {
                           final route = PageRouteBuilder(
                             pageBuilder:
@@ -316,7 +316,7 @@ class _ServerPageState extends State<ServerPage> {
       contentPadding: EdgeInsets.all(4),
       enabled: _isUrlValid,
       decoration: BoxDecoration(
-          color: AppColors.primary400,
+          color: AppColors.primary500,
           borderRadius: BorderRadius.circular(radius)),
       normal: Icon(
         Icons.arrow_forward,

@@ -94,7 +94,7 @@ class AvatarInfoTile extends StatelessWidget {
                     style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 17,
-                        color: AppColors.primary400),
+                        color: AppColors.primary500),
                   ),
                   onPressed: () {
                     if (enableEdit && onTap != null) {

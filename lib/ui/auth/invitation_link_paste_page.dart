@@ -124,7 +124,7 @@ class InvitationLinkPastePage extends StatelessWidget {
                     }),
                 IconButton(
                     icon: Icon(Icons.qr_code_scanner_rounded,
-                        color: AppColors.primary400, size: 30),
+                        color: AppColors.primary500, size: 30),
                     onPressed: () async {
                       final route = PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
@@ -186,7 +186,7 @@ class InvitationLinkPastePage extends StatelessWidget {
                   height: height,
                   width: height,
                   decoration: BoxDecoration(
-                      color: AppColors.primary400,
+                      color: AppColors.primary500,
                       borderRadius: BorderRadius.circular(btnRadius)),
                   child: icon,
                 );
@@ -200,7 +200,7 @@ class InvitationLinkPastePage extends StatelessWidget {
         //   width: height,
         //   contentPadding: EdgeInsets.all(4),
         //   decoration: BoxDecoration(
-        //       color: AppColors.primary400,
+        //       color: AppColors.primary500,
         //       borderRadius: BorderRadius.circular(btnRadius)),
         //   normal: Icon(
         //     Icons.arrow_forward,
@@ -381,7 +381,7 @@ class InvitationLinkPastePage extends StatelessWidget {
         height: 32,
         width: 32,
         decoration: BoxDecoration(
-            color: AppColors.primary400,
+            color: AppColors.primary500,
             borderRadius: BorderRadius.circular(16)),
         contentPadding: EdgeInsets.zero,
         normal: Center(
@@ -417,7 +417,7 @@ class InvitationLinkPastePage extends StatelessWidget {
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary400),
+                color: AppColors.primary500),
           ),
         ],
       )),

@@ -178,13 +178,19 @@ class _ChatsPageState extends State<ChatsPage>
     const actionWidth = 95;
 
     List<Widget> children = [
-      SlidableAction(
-          flex: 1,
-          autoClose: true,
-          onPressed: (context) {},
-          icon: Icons.visibility_off_rounded,
-          backgroundColor: Colors.red,
-          label: AppLocalizations.of(context)!.hide),
+      ValueListenableBuilder<bool>(
+        valueListenable: data.isMuted,
+        builder: (context, isMuted, child) {
+          return SlidableAction(
+              flex: 1,
+              autoClose: true,
+              onPressed: (context) {},
+              backgroundColor: AppColors.grey700,
+              label: isMuted
+                  ? AppLocalizations.of(context)!.unmute
+                  : AppLocalizations.of(context)!.mute);
+        },
+      ),
       ValueListenableBuilder<bool>(
           valueListenable: data.isPinned,
           builder: (context, isPinned, _) {
@@ -192,8 +198,7 @@ class _ChatsPageState extends State<ChatsPage>
                 flex: 1,
                 autoClose: true,
                 onPressed: (context) {},
-                icon: AppIcons.pin,
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.grey500,
                 label: isPinned
                     ? AppLocalizations.of(context)!.unpin
                     : AppLocalizations.of(context)!.pin);
@@ -205,7 +210,6 @@ class _ChatsPageState extends State<ChatsPage>
           flex: 1,
           autoClose: true,
           onPressed: (context) {},
-          icon: Icons.visibility_off,
           backgroundColor: Colors.red,
           label: AppLocalizations.of(context)!.hide));
     }

@@ -45,7 +45,7 @@ class AppQrScanPage extends StatelessWidget {
               height: 32,
               width: 32,
               decoration: BoxDecoration(
-                  color: AppColors.primary400,
+                  color: AppColors.primary500,
                   borderRadius: BorderRadius.circular(16)),
               contentPadding: EdgeInsets.zero,
               normal: const Center(

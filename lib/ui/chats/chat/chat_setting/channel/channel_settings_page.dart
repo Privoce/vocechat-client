@@ -160,7 +160,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                      color: AppColors.primary400,
+                      color: AppColors.primary500,
                       borderRadius: BorderRadius.circular(8)),
                   child: Center(
                     child: Text(
@@ -252,6 +252,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                       false;
                   return CupertinoSwitch(
                     value: isMuted,
+                    activeColor: AppColors.primary400,
                     onChanged: (value) {
                       _changeMuteSettings(value);
                     },
@@ -269,6 +270,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                       false;
                   return CupertinoSwitch(
                     value: pinned,
+                    activeColor: AppColors.primary400,
                     onChanged: (value) {
                       _changePinSettings(value);
                     },
@@ -436,6 +438,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                     keepTrailingArrow: false,
                     trailing: CupertinoSwitch(
                         value: isPublic,
+                        activeColor: AppColors.primary400,
                         onChanged: (isPublic) async {
                           await _changeChannelVisibility(isPublic);
                           setState(() {});
