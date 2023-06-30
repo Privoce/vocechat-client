@@ -9,6 +9,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/extensions.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/full_text_page.dart';
 
@@ -77,7 +78,7 @@ class _TextBubbleState extends State<TextBubble> {
                   }
 
                   try {
-                    await launchUrl(Uri.parse(_url));
+                    await SharedFuncs.appLaunchUrl(Uri.parse(_url));
                   } catch (e) {
                     App.logger.severe(e);
                     throw "error: $_url";
@@ -120,7 +121,8 @@ class _TextBubbleState extends State<TextBubble> {
                                   onTap: () async {
                                     String url0 = url;
                                     try {
-                                      await launchUrl(Uri.parse(url0));
+                                      await SharedFuncs.appLaunchUrl(
+                                          Uri.parse(url0));
                                     } catch (e) {
                                       App.logger.severe(e);
                                       throw "error: $url0";
@@ -162,7 +164,7 @@ class _TextBubbleState extends State<TextBubble> {
                 // boxShadow: const [BoxShadow(blurRadius: 3, color: Colors.grey)],
                 onTap: () async {
                   try {
-                    await launchUrl(Uri.parse(url));
+                    await SharedFuncs.appLaunchUrl(Uri.parse(url));
                   } catch (e) {
                     App.logger.severe(e);
                     throw "error: $url";

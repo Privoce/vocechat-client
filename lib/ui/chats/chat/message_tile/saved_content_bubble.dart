@@ -99,14 +99,6 @@ class SavedContentBubble extends StatelessWidget {
                     archiveMsg.fileId!,
                     name,
                     onProgress);
-                // String url = App.app.chatServerM.fullUrl;
-                // url += "/api/resource/archive/attachment?file_path=$archiveId";
-                // url += "&attachment_id=${archiveMsg.fileId!}&download=true";
-                // try {
-                //   await launchUrlString(url);
-                // } catch (e) {
-                //   App.logger.warning(e);
-                // }
               },
             );
           }
