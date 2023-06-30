@@ -34,11 +34,17 @@ class DmSettingsPage extends StatefulWidget {
 class _DmSettingsPageState extends State<DmSettingsPage> {
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
-  // final ValueNotifier<bool> _pinned = ValueNotifier(false);
+  final ValueNotifier<bool> _pinned = ValueNotifier(false);
+  final ValueNotifier<bool> _muted = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
+
+    final dmSettings = DmSettings.fromUserSettings(
+        globals.userSettings.value, widget.userInfoNotifier.value.uid);
+    _muted.value = dmSettings.enableMute;
+    _pinned.value = dmSettings.pinnedAt > 0;
   }
 
   @override
@@ -115,15 +121,11 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             BannerTile(
               title: AppLocalizations.of(context)!.muteNotification,
               keepTrailingArrow: false,
-              trailing: ValueListenableBuilder<UserSettings>(
-                  valueListenable: globals.userSettings,
-                  builder: (context, userSettings, _) {
-                    final isMuted = userSettings.muteUsers
-                            ?.containsKey(widget.userInfoNotifier.value.uid) ??
-                        false;
-
+              trailing: ValueListenableBuilder<bool>(
+                  valueListenable: _muted,
+                  builder: (context, muted, _) {
                     return CupertinoSwitch(
-                        value: isMuted,
+                        value: muted,
                         activeColor: AppColors.primary400,
                         onChanged: (muted) async {
                           showBusyDialog();
@@ -131,8 +133,10 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                           try {
                             if (muted) {
                               await _mute();
+                              _muted.value = true;
                             } else {
                               await _unMute();
+                              _muted.value = false;
                             }
                           } catch (e) {
                             App.logger.severe(e);
@@ -146,13 +150,9 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.pinChat,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<UserSettings>(
-                valueListenable: globals.userSettings,
-                builder: (context, userSettings, _) {
-                  final pinned = DmSettings.fromUserSettings(
-                              userSettings, widget.userInfoNotifier.value.uid)
-                          .pinnedAt >
-                      0;
+            trailing: ValueListenableBuilder<bool>(
+                valueListenable: _pinned,
+                builder: (context, pinned, _) {
                   return CupertinoSwitch(
                     value: pinned,
                     activeColor: AppColors.primary400,
@@ -167,7 +167,6 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
             ValueListenableBuilder<UserSettings>(
                 valueListenable: globals.userSettings,
                 builder: (context, userSettings, _) {
-                  print("here");
                   // This is not the read burn_after_read, but is auto-deletion.
                   // Name is consistant with server names.
                   final burnAfterReadSecond = DmSettings.fromUserSettings(
@@ -234,6 +233,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                 globals.userSettings.value = value;
               }
             });
+            _pinned.value = true;
           } else {
             showNetworkErrorBar();
           }
@@ -249,6 +249,7 @@ class _DmSettingsPageState extends State<DmSettingsPage> {
                 globals.userSettings.value = value;
               }
             });
+            _pinned.value = false;
           } else {
             showNetworkErrorBar();
           }

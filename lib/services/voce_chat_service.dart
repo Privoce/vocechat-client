@@ -1861,41 +1861,41 @@ class VoceChatService {
     return true;
   }
 
-  Future<void> mute(
-      {int? gid, int? uid, bool unmute = false, int? expiredAt}) async {
-    Map<String, dynamic> map = {};
+  // Future<void> mute(
+  //     {int? gid, int? uid, bool unmute = false, int? expiredAt}) async {
+  //   Map<String, dynamic> map = {};
 
-    if (gid != null) {
-      if (unmute) {
-        map = {
-          "remove_mute_groups": [gid]
-        };
-      } else {
-        map = {
-          "add_mute_groups": [
-            {"expired_at": expiredAt, "gid": gid}
-          ]
-        };
-      }
-    } else if (uid != null) {
-      if (unmute) {
-        map = {
-          "remove_mute_users": [uid]
-        };
-      } else {
-        map = {
-          "add_mute_users": [
-            {"expired_at": expiredAt, "uid": uid}
-          ]
-        };
-      }
-    }
-    map.addAll({"type": 'user_settings_changed'});
+  //   if (gid != null) {
+  //     if (unmute) {
+  //       map = {
+  //         "remove_mute_groups": [gid]
+  //       };
+  //     } else {
+  //       map = {
+  //         "add_mute_groups": [
+  //           {"expired_at": expiredAt, "gid": gid}
+  //         ]
+  //       };
+  //     }
+  //   } else if (uid != null) {
+  //     if (unmute) {
+  //       map = {
+  //         "remove_mute_users": [uid]
+  //       };
+  //     } else {
+  //       map = {
+  //         "add_mute_users": [
+  //           {"expired_at": expiredAt, "uid": uid}
+  //         ]
+  //       };
+  //     }
+  //   }
+  //   map.addAll({"type": 'user_settings_changed'});
 
-    if (map.isNotEmpty) {
-      _handleUserSettingsChanged(map);
-    }
-  }
+  //   if (map.isNotEmpty) {
+  //     _handleUserSettingsChanged(map);
+  //   }
+  // }
 
   Future getOpenGraphicParse(url) async {
     final resourceApi = ResourceApi();
