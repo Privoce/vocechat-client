@@ -106,7 +106,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-              color: AppColors.primary500,
+              color: AppColors.primaryBlue,
               borderRadius: BorderRadius.circular(16)),
           contentPadding: EdgeInsets.zero,
           normal: Center(
@@ -140,7 +140,7 @@ class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
             style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primary500))
+                color: AppColors.primaryBlue))
       ])),
       Text(widget.chatServer.fullUrlWithoutPort,
           style: TextStyle(

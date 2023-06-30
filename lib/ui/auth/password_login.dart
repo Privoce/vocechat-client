@@ -147,7 +147,7 @@ class _PasswordLoginState extends State<PasswordLogin> {
                 child: CupertinoSwitch(
                     value: rememberMe,
                     activeColor:
-                        widget.enable ? AppColors.primary500 : Colors.grey,
+                        widget.enable ? AppColors.primaryBlue : Colors.grey,
                     trackColor: widget.enable ? null : Colors.grey,
                     onChanged: (value) => setState(() {
                           rememberMe = value;

@@ -107,7 +107,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
           height: 32,
           width: 32,
           decoration: BoxDecoration(
-              color: AppColors.primary500,
+              color: AppColors.primaryBlue,
               borderRadius: BorderRadius.circular(16)),
           contentPadding: EdgeInsets.zero,
           normal: Center(
@@ -143,7 +143,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary500),
+                  color: AppColors.primaryBlue),
             ),
           ],
         ),

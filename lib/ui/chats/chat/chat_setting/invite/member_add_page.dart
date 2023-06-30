@@ -182,7 +182,7 @@ class _MemberAddPageState extends State<MemberAddPage>
                 style: TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 17,
-                    color: AppColors.primary500),
+                    color: AppColors.primaryBlue),
               ));
         });
   }

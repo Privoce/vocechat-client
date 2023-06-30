@@ -42,7 +42,7 @@ class _AvChatFloatingWindowState extends State<AvChatFloatingWindow> {
         child: Container(
           width: width,
           height: height,
-          color: AppColors.primary500,
+          color: AppColors.primaryBlue,
           child: Center(
             child: Text(
               'Floating Window',

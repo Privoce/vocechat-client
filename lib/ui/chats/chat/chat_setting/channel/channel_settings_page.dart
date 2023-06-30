@@ -162,7 +162,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                      color: AppColors.primary500,
+                      color: AppColors.primaryBlue,
                       borderRadius: BorderRadius.circular(8)),
                   child: Center(
                     child: Text(

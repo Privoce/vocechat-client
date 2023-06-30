@@ -125,7 +125,7 @@ class _ContactListState extends State<ContactList>
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-                color: AppColors.primary500,
+                color: AppColors.primaryBlue,
                 borderRadius: BorderRadius.circular(10)),
             child: Center(
               child: SvgPicture.asset("assets/images/owner.svg",

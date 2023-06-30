@@ -109,7 +109,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
                 style: TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 16,
-                    color: AppColors.primary500),
+                    color: AppColors.primaryBlue),
               );
               break;
             case ButtonStatus.inProgress:
@@ -130,7 +130,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
                 style: TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 16,
-                    color: AppColors.primary500),
+                    color: AppColors.primaryBlue),
               );
           }
           return CupertinoButton(

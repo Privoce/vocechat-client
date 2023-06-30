@@ -163,7 +163,7 @@ class _VoiceButtonState extends State<VoiceButton> {
                 return Container(
                     height: 40,
                     decoration: BoxDecoration(
-                      color: AppColors.primary500,
+                      color: AppColors.primaryBlue,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Center(

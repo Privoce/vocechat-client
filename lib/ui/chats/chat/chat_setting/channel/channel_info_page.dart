@@ -73,7 +73,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
                             style: TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 17,
-                                color: AppColors.primary500)));
+                                color: AppColors.primaryBlue)));
                   }
 
                   return SizedBox.shrink();
@@ -117,7 +117,7 @@ class _ChannelInfoPageState extends State<ChannelInfoPage> {
                   style: TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: 15,
-                      color: AppColors.primary500)),
+                      color: AppColors.primaryBlue)),
             );
           }),
     );

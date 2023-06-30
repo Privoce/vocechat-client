@@ -87,7 +87,7 @@ class _NewChannelPageState extends State<NewChannelPage> {
                         style: TextStyle(
                             fontWeight: FontWeight.w400,
                             fontSize: 17,
-                            color: AppColors.primary500)))
+                            color: AppColors.primaryBlue)))
                 : CupertinoButton(
                     onPressed: () {
                       createChannel();
@@ -96,7 +96,7 @@ class _NewChannelPageState extends State<NewChannelPage> {
                         style: TextStyle(
                             fontWeight: FontWeight.w400,
                             fontSize: 17,
-                            color: AppColors.primary500))),
+                            color: AppColors.primaryBlue))),
           ],
         ),
         body: SafeArea(

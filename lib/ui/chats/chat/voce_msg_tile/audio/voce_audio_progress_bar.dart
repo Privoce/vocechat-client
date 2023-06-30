@@ -117,7 +117,7 @@ class _VoceProgressBarState extends State<VoceProgressBar>
                         topLeft: Radius.circular(5.0),
                         bottomLeft: Radius.circular(5.0),
                       ),
-                      color: AppColors.primary500,
+                      color: AppColors.primaryBlue,
                     ),
                   ),
                 ),

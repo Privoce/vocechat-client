@@ -61,7 +61,7 @@ class VoceTextBubble extends StatelessWidget {
         if (url != null && url.isNotEmpty) {
           children.add(TextSpan(
               text: url,
-              style: TextStyle(color: AppColors.primary500),
+              style: TextStyle(color: AppColors.primaryBlue),
               recognizer: TapGestureRecognizer()
                 ..onTap = () async {
                   String url0 = url;
@@ -70,7 +70,8 @@ class VoceTextBubble extends StatelessWidget {
                   }
 
                   try {
-                    await launchUrl(Uri.parse(url0));
+                    await launchUrl(Uri.parse(url0),
+                        mode: LaunchMode.externalApplication);
                   } catch (e) {
                     App.logger.severe(e);
                     throw "error: $url0";

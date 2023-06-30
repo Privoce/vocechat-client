@@ -179,7 +179,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
                 style: TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 17,
-                    color: AppColors.primary500),
+                    color: AppColors.primaryBlue),
               ));
         });
   }

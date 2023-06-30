@@ -131,7 +131,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         children: [
           AppBannerButton(
               title: titleText,
-              textColor: AppColors.primary500,
+              textColor: AppColors.primaryBlue,
               onTap: () {
                 onTapDm(userInfoM, context);
               }),
@@ -214,7 +214,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
         padding: const EdgeInsets.only(top: 8),
         child: AppBannerButton(
             title: AppLocalizations.of(context)!.addContact,
-            textColor: AppColors.primary500,
+            textColor: AppColors.primaryBlue,
             onTap: () {
               onTapAdd(context);
             }),
