@@ -65,7 +65,7 @@ class _ContactListState extends State<ContactList>
         App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
             true;
 
-    if (enableContact.value) {
+    if (App.app.userDb?.userInfo.isAdmin != true && enableContact.value) {
       _contactList = widget.userList
           .where((element) => element.contactStatus == ContactStatus.added)
           .toList();
@@ -221,12 +221,6 @@ class _ContactListState extends State<ContactList>
 
   Future<void> _onUser(
       UserInfoM userInfoM, EventActions action, bool afterReady) async {
-    if (enableContact.value) {
-      if (userInfoM.contactStatusStr != ContactStatus.added.name) {
-        return;
-      }
-    }
-
     switch (action) {
       case EventActions.create:
       case EventActions.update:
@@ -245,7 +239,7 @@ class _ContactListState extends State<ContactList>
         }
 
         // Then handle general case.
-        if (enableContact.value) {
+        if (enableContact.value && App.app.userDb?.userInfo.isAdmin != true) {
           if (userInfoM.contactStatusStr == ContactStatus.added.name) {
             _uidSet.add(userInfoM.uid);
 

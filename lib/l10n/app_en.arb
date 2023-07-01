@@ -253,6 +253,7 @@
     "userBlocked":"This user has been blocked by you.",
     "userEmail":"User Email",
     "userId":"User ID",
+    "userName": "User Name",
     "userNotContact":"This user is not in your contact list.",
     "userSearchNoResult":"User does not exist, or is not allowed to be searched.",
     "version": "Version",
