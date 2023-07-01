@@ -421,8 +421,8 @@ class VoceChatService {
         case sseGroupChanged:
         case sseJoinedGroup:
         case sseKickFromGroup:
+        case sseMessageCleared:
         case ssePinnedMessageUpdated:
-
         case sseReady:
         case sseRelatedGroups:
         case sseServerConfigChanged:
@@ -465,9 +465,9 @@ class VoceChatService {
         case sseKickFromGroup:
           await _handleKickFromGroup(map);
           break;
-        // case ssePinnedChats:
-        //   await _handlePinnedChats(map);
-        //   break;
+        case sseMessageCleared:
+          await _handleMessageCleared(map);
+          break;
         case ssePinnedMessageUpdated:
           await _handlePinnedMessageUpdated(map);
           break;
@@ -661,16 +661,6 @@ class VoceChatService {
     }
   }
 
-  // Future<void> _handleKick() async {
-  //   try {
-  //     await SharedFuncs.renewAuthToken(forceRefresh: true).then((value) {
-  //       initSse();
-  //     });
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
-
   Future<void> _handleKickFromGroup(Map<String, dynamic> map) async {
     assert(map['type'] == sseKickFromGroup);
     try {
@@ -679,6 +669,18 @@ class VoceChatService {
           fireChannel(value, EventActions.delete, afterReady);
         }
       });
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  Future<void> _handleMessageCleared(Map<String, dynamic> map) async {
+    assert(map["type"] == sseMessageCleared);
+
+    try {
+      final latestDeletedMid = map["latest_deleted_mid"] as int;
+      await ChatMsgDao().clearChatMsgTable();
+      await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, latestDeletedMid);
     } catch (e) {
       App.logger.severe(e);
     }
@@ -1860,42 +1862,6 @@ class VoceChatService {
 
     return true;
   }
-
-  // Future<void> mute(
-  //     {int? gid, int? uid, bool unmute = false, int? expiredAt}) async {
-  //   Map<String, dynamic> map = {};
-
-  //   if (gid != null) {
-  //     if (unmute) {
-  //       map = {
-  //         "remove_mute_groups": [gid]
-  //       };
-  //     } else {
-  //       map = {
-  //         "add_mute_groups": [
-  //           {"expired_at": expiredAt, "gid": gid}
-  //         ]
-  //       };
-  //     }
-  //   } else if (uid != null) {
-  //     if (unmute) {
-  //       map = {
-  //         "remove_mute_users": [uid]
-  //       };
-  //     } else {
-  //       map = {
-  //         "add_mute_users": [
-  //           {"expired_at": expiredAt, "uid": uid}
-  //         ]
-  //       };
-  //     }
-  //   }
-  //   map.addAll({"type": 'user_settings_changed'});
-
-  //   if (map.isNotEmpty) {
-  //     _handleUserSettingsChanged(map);
-  //   }
-  // }
 
   Future getOpenGraphicParse(url) async {
     final resourceApi = ResourceApi();
