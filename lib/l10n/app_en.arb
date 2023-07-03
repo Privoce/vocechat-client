@@ -148,6 +148,8 @@
     "male":"Male",
     "markdown":"Markdown",
     "message": "Message",
+    "messageClearTitle":"Clear Messages",
+    "messageClearDes":"Your server admin cleared all messages in server. Your local messages will be cleared as well.",
     "messageWQuantifier":"Message",
     "messagesWQuantifier":"Messages",
     "messageDetail":"Message Detail",

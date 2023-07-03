@@ -151,6 +151,8 @@
     "male":"男",
     "markdown":"Markdown",
     "message": "发消息",
+    "messageClearTitle":"清空消息",
+    "messageClearDes":"您的服务端管理员清空了消息，您的本地消息也将一并清除。",
     "messageWQuantifier":"条消息",
     "messagesWQuantifier":"条消息",
     "messageDetail":"消息全文",

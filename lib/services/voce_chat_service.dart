@@ -679,8 +679,26 @@ class VoceChatService {
 
     try {
       final latestDeletedMid = map["latest_deleted_mid"] as int;
-      await ChatMsgDao().clearChatMsgTable();
-      await UserDbMDao.dao.updateMaxMid(App.app.userDb!.id, latestDeletedMid);
+
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        await showAppAlert(
+            context: context,
+            title: AppLocalizations.of(context)!.messageClearTitle,
+            content: AppLocalizations.of(context)!.messageClearDes,
+            actions: [
+              AppAlertDialogAction(
+                  text: AppLocalizations.of(context)!.ok,
+                  action: () {
+                    Navigator.of(context).pop();
+                  })
+            ]).then((_) async {
+          await ChatMsgDao().clearChatMsgTable();
+          await DmInfoDao().removeAll();
+          await UserDbMDao.dao
+              .updateMaxMid(App.app.userDb!.id, latestDeletedMid);
+        });
+      }
     } catch (e) {
       App.logger.severe(e);
     }
