@@ -1,6 +1,14 @@
 {   
-    "latest": {"version": "0.2.101", "build_num": 71},
+    "latest": {"version": "0.2.102", "build_num": 72},
     "logs":  [
+        {"time": 1688437475039, "version": "0.2.102", "build_num": 72, "updates": [
+            "- add: Swipe left (iOS) or Long Press (Android) actions to chat tiles.",
+            "- add: Search by name in contact search.",
+            "- fix: chat update issue before initial connection completes.",
+            "- fix: minor UI color changes.",
+            "- fix: mute setting might not work correctly.",
+            "- fix: other known issue fixes."
+            ]},
         {"time": 1687812347466, "version": "0.2.101", "build_num": 71, "updates": [
             "- fix: information updating issue in chats which are pushed from contact detail page.",
             "- fix: unread count display issue in chat bar.",
