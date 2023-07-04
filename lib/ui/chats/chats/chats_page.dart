@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -53,6 +54,8 @@ class _ChatsPageState extends State<ChatsPage>
 
   int count = 0;
 
+  Offset _tapPosition = Offset.zero;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -66,7 +69,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.subscribeMsg(_onMessage);
     App.app.chatService.subscribeGroups(_onChannel);
     App.app.chatService.subscribeUsers(_onUser);
-    App.app.chatService.subscribeRefresh(_onRefresh);
+    App.app.chatService.subscribeReady(_onReady);
     globals.userSettings.addListener(_onUserSettingsChange);
 
     eventBus.on<UserChangeEvent>().listen((event) {
@@ -79,7 +82,7 @@ class _ChatsPageState extends State<ChatsPage>
       App.app.chatService.subscribeMsg(_onMessage);
       App.app.chatService.subscribeGroups(_onChannel);
       App.app.chatService.subscribeUsers(_onUser);
-      App.app.chatService.subscribeRefresh(_onRefresh);
+      App.app.chatService.subscribeReady(_onReady);
       globals.userSettings.addListener(_onUserSettingsChange);
     });
 
@@ -100,7 +103,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.unsubscribeMsg(_onMessage);
     App.app.chatService.unsubscribeGroups(_onChannel);
     App.app.chatService.unsubscribeUsers(_onUser);
-    App.app.chatService.unsubscribeRefresh(_onRefresh);
+    App.app.chatService.unsubscribeReady(_onReady);
     globals.userSettings.removeListener(_onUserSettingsChange);
     super.dispose();
   }
@@ -163,7 +166,7 @@ class _ChatsPageState extends State<ChatsPage>
       itemCount: sorted.length,
       itemBuilder: (context, index) {
         final data = sorted[index];
-        return VoceChatTile(key: ObjectKey(data), tileData: data, onTap: onTap);
+        return _buildChatTile(data);
       },
       separatorBuilder: (context, index) {
         return Divider(
@@ -172,6 +175,167 @@ class _ChatsPageState extends State<ChatsPage>
         );
       },
     );
+  }
+
+  Widget _buildChatTile(ChatTileData data) {
+    if (Platform.isIOS) {
+      const actionWidth = 95;
+
+      List<Widget> children = [
+        ValueListenableBuilder<bool>(
+          valueListenable: data.isMuted,
+          builder: (context, isMuted, child) {
+            return SlidableAction(
+                flex: 1,
+                autoClose: true,
+                onPressed: (context) async {
+                  if (isMuted) {
+                    await data.unmute();
+                  } else {
+                    await data.mute();
+                  }
+                },
+                backgroundColor: Colors.blue.shade600,
+                label: isMuted
+                    ? AppLocalizations.of(context)!.unmute
+                    : AppLocalizations.of(context)!.mute);
+          },
+        ),
+        ValueListenableBuilder<bool>(
+            valueListenable: data.isPinned,
+            builder: (context, isPinned, _) {
+              return SlidableAction(
+                  flex: 1,
+                  autoClose: true,
+                  onPressed: (context) {
+                    if (isPinned) {
+                      data.unpin();
+                    } else {
+                      data.pin();
+                    }
+                  },
+                  backgroundColor: Colors.grey.shade600,
+                  label: isPinned
+                      ? AppLocalizations.of(context)!.unpin
+                      : AppLocalizations.of(context)!.pin);
+            }),
+      ];
+
+      if (data.isUser) {
+        children.add(SlidableAction(
+            flex: 1,
+            autoClose: true,
+            onPressed: (context) {
+              final dmUid = data.userInfoM!.value.uid;
+              DmInfoDao().removeByDmUid(dmUid).then((value) {
+                if (value > 0) {
+                  chatTileMap.remove(SharedFuncs.getChatId(uid: dmUid));
+                  setState(() {});
+                }
+              });
+            },
+            backgroundColor: Colors.red,
+            label: AppLocalizations.of(context)!.hide));
+      }
+
+      double extentRatio =
+          children.length * actionWidth / MediaQuery.of(context).size.width;
+      if (extentRatio > 1) {
+        extentRatio = 1;
+      }
+
+      return Slidable(
+          key: ObjectKey(data),
+          endActionPane: ActionPane(
+              extentRatio: extentRatio,
+              motion: DrawerMotion(),
+              children: children),
+          child: VoceChatTile(tileData: data, onTap: onTap));
+    } else {
+      return GestureDetector(
+          onTapDown: _getTapPosition,
+          onLongPress: () {
+            _showContextMenu(context, data);
+          },
+          child: VoceChatTile(tileData: data, onTap: onTap));
+    }
+  }
+
+  void _getTapPosition(TapDownDetails details) {
+    final RenderBox referenceBox = context.findRenderObject() as RenderBox;
+    setState(() {
+      _tapPosition = referenceBox.globalToLocal(details.globalPosition);
+    });
+  }
+
+  void _showContextMenu(BuildContext context, ChatTileData data) async {
+    final RenderObject? overlay =
+        Overlay.of(context).context.findRenderObject();
+
+    List<PopupMenuEntry<String>> items = [
+      PopupMenuItem(
+        value: 'mute',
+        child: Text(
+          data.isMuted.value
+              ? AppLocalizations.of(context)!.unmute
+              : AppLocalizations.of(context)!.mute,
+        ),
+      ),
+      PopupMenuItem(
+        value: 'pin',
+        child: Text(
+          data.isPinned.value
+              ? AppLocalizations.of(context)!.unpin
+              : AppLocalizations.of(context)!.pin,
+        ),
+      ),
+    ];
+    if (data.isUser) {
+      items.add(PopupMenuItem(
+        value: 'hide',
+        child: Text(AppLocalizations.of(context)!.hide,
+            style: TextStyle(color: Colors.red)),
+      ));
+    }
+
+    final result = await showMenu(
+        context: context,
+
+        // Show the context menu at the tap location
+        position: RelativeRect.fromRect(
+            Rect.fromLTWH(_tapPosition.dx, _tapPosition.dy, 30, 30),
+            Rect.fromLTWH(0, 0, overlay!.paintBounds.size.width,
+                overlay.paintBounds.size.height)),
+
+        // set a list of choices for the context menu
+        items: items);
+
+    // Implement the logic for each choice here
+    switch (result) {
+      case 'mute':
+        if (data.isMuted.value) {
+          await data.unmute();
+        } else {
+          await data.mute();
+        }
+        break;
+      case 'pin':
+        if (data.isPinned.value) {
+          data.unpin();
+        } else {
+          data.pin();
+        }
+        break;
+      case 'hide':
+        final dmUid = data.userInfoM!.value.uid;
+        DmInfoDao().removeByDmUid(dmUid).then((value) {
+          if (value > 0) {
+            chatTileMap.remove(SharedFuncs.getChatId(uid: dmUid));
+            setState(() {});
+          }
+        });
+        break;
+    }
   }
 
   /// [VoceChatService] Message listener
@@ -206,7 +370,12 @@ class _ChatsPageState extends State<ChatsPage>
     }
   }
 
-  void _onRefresh() {
+  Future<void> _onReady({bool clearAll = false}) async {
+    if (clearAll) {
+      for (final each in chatTileMap.values) {
+        each.clearSnippet();
+      }
+    }
     prepareChats();
   }
 

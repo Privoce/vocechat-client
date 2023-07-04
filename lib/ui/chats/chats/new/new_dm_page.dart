@@ -18,19 +18,13 @@ class NewDmPage extends StatefulWidget {
 }
 
 class _NewDmPageState extends State<NewDmPage> {
-  final List<UserInfoM> _contactList = [];
-  final Set<int> _uidSet = {};
-
   @override
   void initState() {
     super.initState();
-    _getContactList();
-    App.app.chatService.subscribeUsers(_onUser);
   }
 
   @override
   void dispose() {
-    App.app.chatService.unsubscribeUsers(_onUser);
     super.dispose();
   }
 
@@ -51,99 +45,21 @@ class _NewDmPageState extends State<NewDmPage> {
             },
             child: Icon(Icons.close, color: AppColors.grey97)),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-                child: ContactList(
-                    userList: _contactList,
-                    onTap: (user) {
-                      Navigator.of(context).pop(user);
-                    }))
-          ],
-        ),
-      ),
+      body: FutureBuilder<List<UserInfoM>?>(
+          future: UserInfoDao().getUserList(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CupertinoActivityIndicator());
+            }
+
+            final userList = snapshot.data ?? [];
+
+            return ContactList(
+                userList: userList,
+                onTap: (user) {
+                  Navigator.of(context).pop(user);
+                });
+          }),
     );
-  }
-
-  Widget _buildSusWidget(String susTag) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15.0),
-      height: 20,
-      width: double.infinity,
-      alignment: Alignment.centerLeft,
-      child: Row(
-        children: <Widget>[
-          Text(
-            susTag,
-            textScaleFactor: 1.2,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _onUser(
-      UserInfoM userInfoM, EventActions action, bool afterReady) async {
-    switch (action) {
-      case EventActions.create:
-        if (!_uidSet.contains(userInfoM.uid)) {
-          _uidSet.add(userInfoM.uid);
-          _contactList.add(userInfoM);
-        }
-
-        break;
-      case EventActions.update:
-        if (!_uidSet.contains(userInfoM.uid)) {
-          _uidSet.add(userInfoM.uid);
-          App.logger.severe("User with uid: ${userInfoM.uid} not found in UI.");
-        }
-
-        _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-        _contactList.add(userInfoM);
-
-        break;
-      case EventActions.delete:
-        if (_uidSet.contains(userInfoM.uid)) {
-          _uidSet.remove(userInfoM.uid);
-          _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-        } else {
-          App.logger.severe("User with uid: ${userInfoM.uid} not found in UI.");
-        }
-        break;
-      default:
-        break;
-    }
-
-    if (mounted && afterReady) {
-      setState(() {});
-    }
-  }
-
-  void _getContactList() async {
-    try {
-      final contactList = await UserInfoDao().getUserList();
-      if (contactList != null && contactList.isNotEmpty) {
-        if (contactList.length == _uidSet.length) {
-          return;
-        }
-        for (var contact in contactList) {
-          if (_uidSet.contains(contact.uid)) {
-            continue;
-          }
-          _uidSet.add(contact.uid);
-          _contactList.add(contact);
-        }
-
-        // A-Z sort.
-        SuspensionUtil.sortListBySuspensionTag(_contactList);
-
-        // show sus tag.
-        SuspensionUtil.setShowSuspensionStatus(_contactList);
-      }
-      setState(() {});
-    } catch (e) {
-      App.logger.severe(e);
-    }
   }
 }

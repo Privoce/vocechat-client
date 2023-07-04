@@ -412,8 +412,6 @@ class ChatPageController {
       {bool? snippetOnly}) async {
     if (snippetOnly ?? false) return;
 
-    // TODO: handle afterReady.
-
     if (isChannel && chatMsgM.gid == groupInfoMNotifier!.value.gid ||
         isUser && chatMsgM.dmUid == userInfoMNotifier!.value.uid) {
       final tileData = await prepareTileData(chatMsgM);

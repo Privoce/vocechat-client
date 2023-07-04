@@ -162,7 +162,7 @@ class AuthService {
         device: await SharedFuncs.prepareDeviceInfo(),
         credential: credential,
         deviceToken: deviceToken);
-    // final req = TokenLoginRequest(device: device, credential: credential);
+    
     return req;
   }
 

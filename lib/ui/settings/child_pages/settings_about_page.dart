@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
@@ -198,13 +199,16 @@ class SettingsAboutPage extends StatelessWidget {
     List<AppAlertDialogAction> actions = [];
     if (Platform.isIOS) {
       actions.add(AppAlertDialogAction(
-          text: "App Store", action: (() => launchUrlString(appStoreUrl))));
+          text: "App Store",
+          action: (() => SharedFuncs.appLaunchUrl(Uri.parse(appStoreUrl)))));
     } else if (Platform.isAndroid) {
       actions.addAll([
-        // AppAlertDialogAction(
-        //     text: "Play Store", action: (() => launchUrlString(googlePlayUrl))),
         AppAlertDialogAction(
-            text: "Voce.Chat", action: (() => launchUrlString(vocechatUrl)))
+            text: "Play Store",
+            action: (() => SharedFuncs.appLaunchUrl(Uri.parse(googlePlayUrl)))),
+        AppAlertDialogAction(
+            text: "Voce.Chat",
+            action: (() => SharedFuncs.appLaunchUrl(Uri.parse(vocechatUrl))))
       ]);
     }
 

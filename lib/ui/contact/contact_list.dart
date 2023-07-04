@@ -26,6 +26,7 @@ class ContactList extends StatefulWidget {
   final List<int>? preSelectUidList;
   final bool enablePreSelectAction;
   final bool enableUserUpdate;
+  final bool showAll;
   final int? ownerUid;
 
   const ContactList(
@@ -37,6 +38,7 @@ class ContactList extends StatefulWidget {
       this.preSelectUidList,
       this.enablePreSelectAction = true,
       this.enableUserUpdate = true,
+      this.showAll = false,
       this.ownerUid,
       Key? key})
       : super(key: key);
@@ -65,10 +67,13 @@ class _ContactListState extends State<ContactList>
         App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
             true;
 
-    if (enableContact.value) {
-      _contactList = widget.userList
-          .where((element) => element.contactStatus == ContactStatus.added)
-          .toList();
+    if (App.app.userDb?.userInfo.isAdmin != true &&
+        enableContact.value &&
+        !widget.showAll) {
+      _contactList = widget.userList.where((element) {
+        return element.contactStatus == ContactStatus.added ||
+            element.uid == App.app.userDb?.uid;
+      }).toList();
     } else {
       _contactList = widget.userList;
     }
@@ -79,11 +84,7 @@ class _ContactListState extends State<ContactList>
 
     if (widget.enableUserUpdate) {
       App.app.chatService.subscribeUsers(_onUser);
-      App.app.chatService.subscribeRefresh(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
+      App.app.chatService.subscribeReady(_onReady);
     }
 
     App.app.chatService.subscribeChatServer(_onChatServerChange);
@@ -92,11 +93,7 @@ class _ContactListState extends State<ContactList>
   @override
   void dispose() {
     if (widget.enableUserUpdate) {
-      App.app.chatService.unsubscribeRefresh(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
+      App.app.chatService.unsubscribeReady(_onReady);
     }
     App.app.chatService.unsubscribeUsers(_onUser);
     App.app.chatService.unsubscribeChatServer(_onChatServerChange);
@@ -112,6 +109,7 @@ class _ContactListState extends State<ContactList>
   Widget _buildContactList() {
     return AzListView(
       data: _contactList,
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       itemCount: _contactList.length,
       itemBuilder: (context, index) {
         final user = _contactList[index];
@@ -125,7 +123,7 @@ class _ContactListState extends State<ContactList>
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-                color: AppColors.primary500,
+                color: AppColors.primaryBlue,
                 borderRadius: BorderRadius.circular(10)),
             child: Center(
               child: SvgPicture.asset("assets/images/owner.svg",
@@ -221,12 +219,6 @@ class _ContactListState extends State<ContactList>
 
   Future<void> _onUser(
       UserInfoM userInfoM, EventActions action, bool afterReady) async {
-    if (enableContact.value) {
-      if (userInfoM.contactStatusStr != ContactStatus.added.name) {
-        return;
-      }
-    }
-
     switch (action) {
       case EventActions.create:
       case EventActions.update:
@@ -245,7 +237,9 @@ class _ContactListState extends State<ContactList>
         }
 
         // Then handle general case.
-        if (enableContact.value) {
+        if (enableContact.value &&
+            App.app.userDb?.userInfo.isAdmin != true &&
+            !widget.showAll) {
           if (userInfoM.contactStatusStr == ContactStatus.added.name) {
             _uidSet.add(userInfoM.uid);
 
@@ -296,7 +290,7 @@ class _ContactListState extends State<ContactList>
       enableContact.value = false;
     }
 
-    if (enableContact.value) {
+    if (enableContact.value && !widget.showAll) {
       _contactList = widget.userList
           .where((element) => element.contactStatus == ContactStatus.added)
           .toList();
@@ -327,5 +321,11 @@ class _ContactListState extends State<ContactList>
       App.logger.severe(e);
     }
     isPreparing = false;
+  }
+
+  Future<void> _onReady({bool clearAll = false}) async {
+    if (mounted) {
+      setState(() {});
+    }
   }
 }

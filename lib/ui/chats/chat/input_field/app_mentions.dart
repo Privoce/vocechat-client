@@ -798,7 +798,7 @@ class OptionList extends StatelessWidget {
                       ? suggestionBuilder!(data[index])
                       : Container(
                           width: double.infinity,
-                          color: Colors.blue,
+                          color: AppColors.primaryBlue,
                           padding: EdgeInsets.all(20.0),
                           child: Text(
                             data[index]['display'],

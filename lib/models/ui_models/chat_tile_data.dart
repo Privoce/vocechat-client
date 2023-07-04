@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
@@ -316,5 +319,145 @@ class ChatTileData {
 
   Future<void> setDraft(String draft) async {
     this.draft.value = draft;
+  }
+
+  Future<void> mute() async {
+    if (isChannel) {
+      final gid = groupInfoM!.value.gid;
+      final reqMap = {
+        "add_groups": [
+          {"gid": gid}
+        ]
+      };
+      await UserApi().mute(json.encode(reqMap)).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateGroupSettings(gid, mute: true)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    } else {
+      final uid = userInfoM!.value.uid;
+      final reqMap = {
+        "add_users": [
+          {"uid": uid}
+        ]
+      };
+      await UserApi().mute(json.encode(reqMap)).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateDmSettings(uid, mute: true)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    }
+  }
+
+  Future<void> unmute() async {
+    if (isChannel) {
+      final gid = groupInfoM!.value.gid;
+      final reqMap = {
+        "remove_groups": [gid]
+      };
+      await UserApi().mute(json.encode(reqMap)).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateGroupSettings(gid, mute: false)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    } else {
+      final uid = userInfoM!.value.uid;
+      final reqMap = {
+        "remove_users": [uid]
+      };
+      await UserApi().mute(json.encode(reqMap)).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateDmSettings(uid, mute: false)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    }
+  }
+
+  Future<void> pin() async {
+    if (isChannel) {
+      await UserApi().pinChat(gid: groupInfoM!.value.gid).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateGroupSettings(groupInfoM!.value.gid,
+                  pinnedAt: DateTime.now().millisecondsSinceEpoch)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    } else if (isUser) {
+      await UserApi().pinChat(uid: userInfoM!.value.uid).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateDmSettings(userInfoM!.value.uid,
+                  pinnedAt: DateTime.now().millisecondsSinceEpoch)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    }
+  }
+
+  Future<void> unpin() async {
+    if (isChannel) {
+      await UserApi().unpinChat(gid: groupInfoM!.value.gid).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateGroupSettings(groupInfoM!.value.gid, pinnedAt: null)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    } else if (isUser) {
+      await UserApi().unpinChat(uid: userInfoM!.value.uid).then((res) async {
+        if (res.statusCode == 200) {
+          await UserSettingsDao()
+              .updateDmSettings(userInfoM!.value.uid, pinnedAt: null)
+              .then((value) {
+            if (value != null) {
+              globals.userSettings.value = value;
+            }
+          });
+        }
+      });
+    }
+  }
+
+  void clearSnippet() {
+    snippet.value = "";
+    unreadCount.value = 0;
+    mentionsCount.value = 0;
   }
 }

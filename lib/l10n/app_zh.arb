@@ -122,6 +122,7 @@
     "gender":"性别",
     "goToSettings":"前往设置",
 
+    "hide":"隐藏",
     "holdAndSpeak":"按住说话",
     "hour":"小时",
     "hours":"小时",
@@ -150,6 +151,8 @@
     "male":"男",
     "markdown":"Markdown",
     "message": "发消息",
+    "messageClearTitle":"清空消息",
+    "messageClearDes":"您的服务端管理员清空了消息，您的本地消息也将一并清除。",
     "messageWQuantifier":"条消息",
     "messagesWQuantifier":"条消息",
     "messageDetail":"消息全文",
@@ -163,7 +166,7 @@
     "mute" : "静音",
     "muteNotification": "静默通知",
     
-    "name":"用户名",
+    "name":"名字",
     "networkError":"网络错误",
     "networkErrorDes":"请检查您的网络设置。",
     "newPrivateChannel":"新私有频道",
@@ -253,6 +256,7 @@
     "userBlocked":"该用户已被您屏蔽。",
     "userEmail":"用户邮箱",
     "userId":"用户ID",
+    "userName": "用户名",
     "userNotContact":"该用户不在您的联系人列表中。",
     "userSearchNoResult":"用户不存在，或者不允许被搜索。",
     "version": "版本",

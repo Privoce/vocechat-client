@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static Color blackAlmost = Color.fromRGBO(28, 28, 30, 1);
+  static Color primaryBlue = Color(0xFF06B6D4);
   static Color coolGrey200 = Color.fromRGBO(229, 231, 235, 1);
   static Color coolGrey500 = Color.fromRGBO(107, 114, 128, 1);
   static Color coolGrey700 = Color.fromRGBO(55, 65, 81, 1);

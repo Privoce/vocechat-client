@@ -13,7 +13,7 @@ class InviteBarBottom extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return TabBar(
-        labelColor: AppColors.primary400,
+        labelColor: AppColors.primaryBlue,
         labelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         unselectedLabelColor: AppColors.grey600,
         unselectedLabelStyle:

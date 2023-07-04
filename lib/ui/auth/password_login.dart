@@ -4,6 +4,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/services/auth_service.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:voce_widgets/voce_widgets.dart';
@@ -145,7 +146,8 @@ class _PasswordLoginState extends State<PasswordLogin> {
                 absorbing: !widget.enable,
                 child: CupertinoSwitch(
                     value: rememberMe,
-                    activeColor: widget.enable ? null : Colors.grey,
+                    activeColor:
+                        widget.enable ? AppColors.primaryBlue : Colors.grey,
                     trackColor: widget.enable ? null : Colors.grey,
                     onChanged: (value) => setState(() {
                           rememberMe = value;

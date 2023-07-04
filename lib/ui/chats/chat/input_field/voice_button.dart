@@ -12,6 +12,7 @@ import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/voce_send_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 
 enum VoiceButtonType { recording, cancelling, normal }
 
@@ -162,7 +163,7 @@ class _VoiceButtonState extends State<VoiceButton> {
                 return Container(
                     height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.blue[200],
+                      color: AppColors.primaryBlue,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Center(

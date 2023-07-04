@@ -265,7 +265,7 @@ class _LoginPageState extends State<LoginPage> {
                       height: 32,
                       width: 32,
                       decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: AppColors.primaryBlue,
                           borderRadius: BorderRadius.circular(16)),
                       contentPadding: EdgeInsets.zero,
                       normal: Center(
@@ -284,7 +284,7 @@ class _LoginPageState extends State<LoginPage> {
                       height: 32,
                       width: 32,
                       decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: AppColors.primaryBlue,
                           borderRadius: BorderRadius.circular(16)),
                       contentPadding: EdgeInsets.zero,
                       normal: Center(
@@ -337,7 +337,7 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Colors.blue.shade700),
+                              color: AppColors.primaryBlue),
                         ),
                       ],
                     )),

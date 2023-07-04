@@ -926,6 +926,15 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     }
   }
 
+  Future<void> clearChatMsgTable() async {
+    try {
+      await db.delete(ChatMsgM.F_tableName);
+      App.logger.info("ChatMsg table cleared.");
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
   @override
   Future<PageData<ChatMsgM>> paginate(PageMeta pageMeta,
       {String? where, List<Object?>? whereArgs, String? orderBy}) async {

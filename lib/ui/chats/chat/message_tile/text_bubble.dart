@@ -9,6 +9,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/extensions.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/full_text_page.dart';
 
@@ -45,7 +46,7 @@ class TextBubble extends StatefulWidget {
         fontWeight: FontWeight.w400);
     _mentionStyle = TextStyle(
         fontSize: 16,
-        color: AppColors.primaryHover,
+        color: AppColors.primaryBlue,
         fontWeight: FontWeight.w400);
   }
 
@@ -68,7 +69,7 @@ class _TextBubbleState extends State<TextBubble> {
           //     widget.content, widget.chatMsgM!.localMid, widget.chatMsgM);
           children.add(TextSpan(
               text: url,
-              style: TextStyle(color: Colors.blue),
+              style: TextStyle(color: AppColors.primaryBlue),
               recognizer: TapGestureRecognizer()
                 ..onTap = () async {
                   String _url = url;
@@ -77,7 +78,7 @@ class _TextBubbleState extends State<TextBubble> {
                   }
 
                   try {
-                    await launchUrl(Uri.parse(_url));
+                    await SharedFuncs.appLaunchUrl(Uri.parse(_url));
                   } catch (e) {
                     App.logger.severe(e);
                     throw "error: $_url";
@@ -107,7 +108,7 @@ class _TextBubbleState extends State<TextBubble> {
                           children: [
                             Text(
                               title,
-                              style: TextStyle(color: Colors.blue),
+                              style: TextStyle(color: AppColors.primaryBlue),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -120,7 +121,8 @@ class _TextBubbleState extends State<TextBubble> {
                                   onTap: () async {
                                     String url0 = url;
                                     try {
-                                      await launchUrl(Uri.parse(url0));
+                                      await SharedFuncs.appLaunchUrl(
+                                          Uri.parse(url0));
                                     } catch (e) {
                                       App.logger.severe(e);
                                       throw "error: $url0";
@@ -162,7 +164,7 @@ class _TextBubbleState extends State<TextBubble> {
                 // boxShadow: const [BoxShadow(blurRadius: 3, color: Colors.grey)],
                 onTap: () async {
                   try {
-                    await launchUrl(Uri.parse(url));
+                    await SharedFuncs.appLaunchUrl(Uri.parse(url));
                   } catch (e) {
                     App.logger.severe(e);
                     throw "error: $url";

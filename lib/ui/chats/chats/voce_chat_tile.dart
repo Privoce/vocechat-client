@@ -184,7 +184,7 @@ class VoceChatTile extends StatelessWidget {
                               margin: const EdgeInsets.only(left: 4),
                               height: 16,
                               decoration: BoxDecoration(
-                                  color: AppColors.primaryHover,
+                                  color: AppColors.primary400,
                                   borderRadius: BorderRadius.circular(8)),
                               child: Center(
                                 child: Padding(
