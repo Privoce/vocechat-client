@@ -56,6 +56,7 @@ typedef MsgAware = Future<void> Function(ChatMsgM chatMsgM, bool afterReady,
     {bool? snippetOnly});
 typedef ReactionAware = Future<void> Function(
     ReactionM reaction, bool afterReady);
+typedef ReadyAware = Future<void> Function({bool clearAll});
 
 typedef MidDeleteAware = Future<void> Function(int targetMid);
 typedef LocalmidDeleteAware = Future<void> Function(String localMid);
@@ -87,7 +88,7 @@ class VoceChatService {
   final Set<ReactionAware> _reactionListeners = {};
   final Set<MidDeleteAware> _midDeleteListeners = {};
   final Set<LocalmidDeleteAware> _lmidDeleteListeners = {};
-  final Set<VoidCallback> _refreshListeners = {};
+  final Set<ReadyAware> _readyListeners = {};
   final Set<UserStatusAware> _userStatusListeners = {};
   final Set<ChatServerAware> _chatServerListeners = {};
 
@@ -253,13 +254,13 @@ class VoceChatService {
     _lmidDeleteListeners.remove(deleteAware);
   }
 
-  void subscribeRefresh(VoidCallback refreshAware) {
-    unsubscribeRefresh(refreshAware);
-    _refreshListeners.add(refreshAware);
+  void subscribeReady(ReadyAware readyAware) {
+    unsubscribeReady(readyAware);
+    _readyListeners.add(readyAware);
   }
 
-  void unsubscribeRefresh(VoidCallback readyAware) {
-    _refreshListeners.remove(readyAware);
+  void unsubscribeReady(ReadyAware readyAware) {
+    _readyListeners.remove(readyAware);
   }
 
   void subscribeUserStatus(UserStatusAware statusAware) {
@@ -354,10 +355,10 @@ class VoceChatService {
     }
   }
 
-  void fireReady() {
-    for (VoidCallback refreshAware in _refreshListeners) {
+  void fireReady({bool clearAll = false}) {
+    for (ReadyAware readyAware in _readyListeners) {
       try {
-        refreshAware();
+        readyAware(clearAll: clearAll);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -694,9 +695,9 @@ class VoceChatService {
                   })
             ]).then((_) async {
           await ChatMsgDao().clearChatMsgTable();
-          await DmInfoDao().removeAll();
           await UserDbMDao.dao
               .updateMaxMid(App.app.userDb!.id, latestDeletedMid);
+          fireReady(clearAll: true);
         });
       }
     } catch (e) {

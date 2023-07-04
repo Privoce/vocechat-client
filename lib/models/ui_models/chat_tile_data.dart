@@ -454,4 +454,10 @@ class ChatTileData {
       });
     }
   }
+
+  void clearSnippet() {
+    snippet.value = "";
+    unreadCount.value = 0;
+    mentionsCount.value = 0;
+  }
 }

@@ -69,7 +69,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.subscribeMsg(_onMessage);
     App.app.chatService.subscribeGroups(_onChannel);
     App.app.chatService.subscribeUsers(_onUser);
-    App.app.chatService.subscribeRefresh(_onRefresh);
+    App.app.chatService.subscribeReady(_onReady);
     globals.userSettings.addListener(_onUserSettingsChange);
 
     eventBus.on<UserChangeEvent>().listen((event) {
@@ -82,7 +82,7 @@ class _ChatsPageState extends State<ChatsPage>
       App.app.chatService.subscribeMsg(_onMessage);
       App.app.chatService.subscribeGroups(_onChannel);
       App.app.chatService.subscribeUsers(_onUser);
-      App.app.chatService.subscribeRefresh(_onRefresh);
+      App.app.chatService.subscribeReady(_onReady);
       globals.userSettings.addListener(_onUserSettingsChange);
     });
 
@@ -103,7 +103,7 @@ class _ChatsPageState extends State<ChatsPage>
     App.app.chatService.unsubscribeMsg(_onMessage);
     App.app.chatService.unsubscribeGroups(_onChannel);
     App.app.chatService.unsubscribeUsers(_onUser);
-    App.app.chatService.unsubscribeRefresh(_onRefresh);
+    App.app.chatService.unsubscribeReady(_onReady);
     globals.userSettings.removeListener(_onUserSettingsChange);
     super.dispose();
   }
@@ -370,7 +370,12 @@ class _ChatsPageState extends State<ChatsPage>
     }
   }
 
-  void _onRefresh() {
+  Future<void> _onReady({bool clearAll = false}) async {
+    if (clearAll) {
+      for (final each in chatTileMap.values) {
+        each.clearSnippet();
+      }
+    }
     prepareChats();
   }
 

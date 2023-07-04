@@ -84,11 +84,7 @@ class _ContactListState extends State<ContactList>
 
     if (widget.enableUserUpdate) {
       App.app.chatService.subscribeUsers(_onUser);
-      App.app.chatService.subscribeRefresh(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
+      App.app.chatService.subscribeReady(_onReady);
     }
 
     App.app.chatService.subscribeChatServer(_onChatServerChange);
@@ -97,11 +93,7 @@ class _ContactListState extends State<ContactList>
   @override
   void dispose() {
     if (widget.enableUserUpdate) {
-      App.app.chatService.unsubscribeRefresh(() {
-        if (mounted) {
-          setState(() {});
-        }
-      });
+      App.app.chatService.unsubscribeReady(_onReady);
     }
     App.app.chatService.unsubscribeUsers(_onUser);
     App.app.chatService.unsubscribeChatServer(_onChatServerChange);
@@ -329,5 +321,11 @@ class _ContactListState extends State<ContactList>
       App.logger.severe(e);
     }
     isPreparing = false;
+  }
+
+  Future<void> _onReady({bool clearAll = false}) async {
+    if (mounted) {
+      setState(() {});
+    }
   }
 }
