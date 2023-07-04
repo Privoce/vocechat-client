@@ -926,9 +926,15 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     }
   }
 
-  Future<void> clearChatMsgTable() async {
+  /// [beforeMid]: this mid is included, will also be deleted.
+  Future<void> clearChatMsgTable({int? beforeMid}) async {
     try {
-      await db.delete(ChatMsgM.F_tableName);
+      if (beforeMid != null) {
+        await db.delete(ChatMsgM.F_tableName,
+            where: "${ChatMsgM.F_mid} < ?", whereArgs: [beforeMid]);
+      } else {
+        await db.delete(ChatMsgM.F_tableName);
+      }
       App.logger.info("ChatMsg table cleared.");
     } catch (e) {
       App.logger.severe(e);

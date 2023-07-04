@@ -694,7 +694,7 @@ class VoceChatService {
                     Navigator.of(context).pop();
                   })
             ]).then((_) async {
-          await ChatMsgDao().clearChatMsgTable();
+          await ChatMsgDao().clearChatMsgTable(beforeMid: latestDeletedMid);
           await UserDbMDao.dao
               .updateMaxMid(App.app.userDb!.id, latestDeletedMid);
           fireReady(clearAll: true);
