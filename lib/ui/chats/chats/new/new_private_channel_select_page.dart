@@ -86,36 +86,33 @@ class _NewPrivateChannelSelectPageState
                 ),
         ],
       ),
-      body: SafeArea(
-        child: ContactList(
-            userList: widget.userList,
-            selectNotifier: widget.selectedNotifier,
-            onTap: (userInfoM) {
-              if (widget.selectedNotifier.value.contains(userInfoM.uid)) {
-                widget.selectedNotifier.value =
-                    List.from(widget.selectedNotifier.value)
-                      ..remove(userInfoM.uid);
-              } else {
-                widget.selectedNotifier.value =
-                    List.from(widget.selectedNotifier.value)
-                      ..add(userInfoM.uid);
-              }
+      body: ContactList(
+          userList: widget.userList,
+          selectNotifier: widget.selectedNotifier,
+          onTap: (userInfoM) {
+            if (widget.selectedNotifier.value.contains(userInfoM.uid)) {
+              widget.selectedNotifier.value =
+                  List.from(widget.selectedNotifier.value)
+                    ..remove(userInfoM.uid);
+            } else {
+              widget.selectedNotifier.value =
+                  List.from(widget.selectedNotifier.value)..add(userInfoM.uid);
+            }
 
-              if (widget.selectedNotifier.value.length > 1) {
-                setState(() {
-                  _enableDoneBtn = true;
-                });
-              } else {
-                setState(() {
-                  _enableDoneBtn = false;
-                });
-              }
-            },
-            enablePreSelectAction: false,
-            preSelectUidList: preSelected,
-            enableSelect: true,
-            enableUserUpdate: true),
-      ),
+            if (widget.selectedNotifier.value.length > 1) {
+              setState(() {
+                _enableDoneBtn = true;
+              });
+            } else {
+              setState(() {
+                _enableDoneBtn = false;
+              });
+            }
+          },
+          enablePreSelectAction: false,
+          preSelectUidList: preSelected,
+          enableSelect: true,
+          enableUserUpdate: true),
     );
   }
 

@@ -79,35 +79,33 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
                 })
           ],
         ),
-        body: SafeArea(
-          child: FutureBuilder<List<UserInfoM>?>(
-              future: _getUsers(),
-              builder: ((context, snapshot) {
-                if (snapshot.hasData) {
-                  return ContactList(
-                    userList: snapshot.data!,
-                    ownerUid: widget.groupInfoM.groupInfo.owner,
-                    onTap: (userInfoM) {
-                      if (_selectNotifier.value.contains(userInfoM.uid)) {
-                        _selectNotifier.value = [];
-                      } else {
-                        _selectNotifier.value = [userInfoM.uid];
-                      }
-                    },
-                    preSelectUidList: [widget.groupInfoM.groupInfo.owner ?? -1],
-                    enablePreSelectAction: false,
-                    enableSelect: true,
-                    enableUserUpdate: false,
-                    selectNotifier: _selectNotifier,
-                  );
-                } else if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  return Center(child: CupertinoActivityIndicator());
-                } else {
-                  return SizedBox.shrink();
-                }
-              })),
-        ));
+        body: FutureBuilder<List<UserInfoM>?>(
+            future: _getUsers(),
+            builder: ((context, snapshot) {
+              if (snapshot.hasData) {
+                return ContactList(
+                  userList: snapshot.data!,
+                  ownerUid: widget.groupInfoM.groupInfo.owner,
+                  showAll: true,
+                  onTap: (userInfoM) {
+                    if (_selectNotifier.value.contains(userInfoM.uid)) {
+                      _selectNotifier.value = [];
+                    } else {
+                      _selectNotifier.value = [userInfoM.uid];
+                    }
+                  },
+                  preSelectUidList: [widget.groupInfoM.groupInfo.owner ?? -1],
+                  enablePreSelectAction: false,
+                  enableSelect: true,
+                  enableUserUpdate: false,
+                  selectNotifier: _selectNotifier,
+                );
+              } else if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CupertinoActivityIndicator());
+              } else {
+                return SizedBox.shrink();
+              }
+            })));
   }
 
   Future<List<UserInfoM>?> _getUsers() async {

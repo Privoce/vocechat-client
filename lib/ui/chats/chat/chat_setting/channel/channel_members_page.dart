@@ -31,29 +31,27 @@ class ChannelMembersPage extends StatelessWidget {
             },
             child: Icon(Icons.arrow_back_ios_new, color: AppColors.grey97)),
       ),
-      body: SafeArea(
-        child: FutureBuilder<List<UserInfoM>?>(
-          future: GroupInfoDao().getUserListByGid(groupInfoM.gid,
-              groupInfoM.isPublic, groupInfoM.groupInfo.members ?? []),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return ContactList(
-                  userList: snapshot.data!,
-                  avatarSize: VoceAvatarSize.s36,
-                  ownerUid: groupInfoM.groupInfo.owner,
-                  onTap: (user) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            ContactDetailPage(userInfoM: user),
-                      ),
-                    );
-                    ;
-                  });
-            }
-            return SizedBox.shrink();
-          },
-        ),
+      body: FutureBuilder<List<UserInfoM>?>(
+        future: GroupInfoDao().getUserListByGid(groupInfoM.gid,
+            groupInfoM.isPublic, groupInfoM.groupInfo.members ?? []),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return ContactList(
+                userList: snapshot.data!,
+                avatarSize: VoceAvatarSize.s36,
+                ownerUid: groupInfoM.groupInfo.owner,
+                showAll: true,
+                onTap: (user) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ContactDetailPage(userInfoM: user),
+                    ),
+                  );
+                  ;
+                });
+          }
+          return SizedBox.shrink();
+        },
       ),
     );
   }

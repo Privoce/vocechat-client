@@ -26,6 +26,7 @@ class ContactList extends StatefulWidget {
   final List<int>? preSelectUidList;
   final bool enablePreSelectAction;
   final bool enableUserUpdate;
+  final bool showAll;
   final int? ownerUid;
 
   const ContactList(
@@ -37,6 +38,7 @@ class ContactList extends StatefulWidget {
       this.preSelectUidList,
       this.enablePreSelectAction = true,
       this.enableUserUpdate = true,
+      this.showAll = false,
       this.ownerUid,
       Key? key})
       : super(key: key);
@@ -65,10 +67,13 @@ class _ContactListState extends State<ContactList>
         App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
             true;
 
-    if (App.app.userDb?.userInfo.isAdmin != true && enableContact.value) {
-      _contactList = widget.userList
-          .where((element) => element.contactStatus == ContactStatus.added)
-          .toList();
+    if (App.app.userDb?.userInfo.isAdmin != true &&
+        enableContact.value &&
+        !widget.showAll) {
+      _contactList = widget.userList.where((element) {
+        return element.contactStatus == ContactStatus.added ||
+            element.uid == App.app.userDb?.uid;
+      }).toList();
     } else {
       _contactList = widget.userList;
     }
@@ -112,6 +117,7 @@ class _ContactListState extends State<ContactList>
   Widget _buildContactList() {
     return AzListView(
       data: _contactList,
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       itemCount: _contactList.length,
       itemBuilder: (context, index) {
         final user = _contactList[index];
@@ -239,7 +245,9 @@ class _ContactListState extends State<ContactList>
         }
 
         // Then handle general case.
-        if (enableContact.value && App.app.userDb?.userInfo.isAdmin != true) {
+        if (enableContact.value &&
+            App.app.userDb?.userInfo.isAdmin != true &&
+            !widget.showAll) {
           if (userInfoM.contactStatusStr == ContactStatus.added.name) {
             _uidSet.add(userInfoM.uid);
 
@@ -290,7 +298,7 @@ class _ContactListState extends State<ContactList>
       enableContact.value = false;
     }
 
-    if (enableContact.value) {
+    if (enableContact.value && !widget.showAll) {
       _contactList = widget.userList
           .where((element) => element.contactStatus == ContactStatus.added)
           .toList();

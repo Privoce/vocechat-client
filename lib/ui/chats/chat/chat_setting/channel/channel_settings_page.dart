@@ -574,7 +574,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         content: content,
         primaryAction: AppAlertDialogAction(
           text: isOwner
-              ? AppLocalizations.of(context)!.call
+              ? AppLocalizations.of(context)!.continueStr
               : AppLocalizations.of(context)!.leave,
           isDangerAction: !isOwner,
           action: () async {

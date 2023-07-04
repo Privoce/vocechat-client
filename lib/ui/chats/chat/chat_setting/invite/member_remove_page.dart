@@ -33,8 +33,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Column(
+    return Column(
       children: [
         SheetAppBar(
           title: Text(
@@ -56,6 +55,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
                   return ContactList(
                     userList: snapshot.data!,
                     ownerUid: widget.groupInfoMNotifier.value.groupInfo.owner,
+                    showAll: true,
                     onTap: (user) {
                       if (selectNotifier.value.contains(user.uid)) {
                         selectNotifier.value = List<int>.from(
@@ -78,58 +78,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
               }),
         )
       ],
-    ));
-    // return Container(
-    //   decoration: BoxDecoration(
-    //       color: Colors.white,
-    //       borderRadius: BorderRadius.only(
-    //           topLeft: Radius.circular(8), topRight: Radius.circular(8))),
-    //   child: Scaffold(
-    //     appBar: AppBar(
-    //       toolbarHeight: 70,
-    //       elevation: 0,
-    //       backgroundColor: Colors.white,
-    //       title: Text(
-    //         AppLocalizations.of(context)!.memberRemovePageTitle,
-    //         style: AppTextStyles.titleLarge,
-    //       ),
-    //       leading: CupertinoButton(
-    //           onPressed: () {
-    //             Navigator.pop(context);
-    //           },
-    //           child: Icon(Icons.close, color: AppColors.grey97)),
-    //       actions: [_buildSendBtn()],
-    //     ),
-    //     body: SafeArea(
-    //         child: FutureBuilder<List<UserInfoM>?>(
-    //             future: membersFuture,
-    //             builder: (context, snapshot) {
-    //               if (snapshot.hasData) {
-    //                 return ContactList(
-    //                   userList: snapshot.data!,
-    //                   ownerUid: widget.groupInfoMNotifier.value.groupInfo.owner,
-    //                   onTap: (user) {
-    //                     if (selectNotifier.value.contains(user.uid)) {
-    //                       selectNotifier.value = List<int>.from(
-    //                           selectNotifier.value..remove(user.uid));
-    //                     } else {
-    //                       selectNotifier.value = List<int>.from(
-    //                           selectNotifier.value..add(user.uid));
-    //                     }
-    //                   },
-    //                   preSelectUidList: {
-    //                     App.app.userDb!.uid,
-    //                     widget.groupInfoMNotifier.value.groupInfo.owner!
-    //                   }.toList(),
-    //                   selectNotifier: selectNotifier,
-    //                   enableSelect: true,
-    //                   enablePreSelectAction: false,
-    //                 );
-    //               }
-    //               return SizedBox.shrink();
-    //             })),
-    //   ),
-    // );
+    );
   }
 
   Future<List<UserInfoM>?> prepareUserList() async {

@@ -57,54 +57,24 @@ class _MemberAddPageState extends State<MemberAddPage>
       tabViews.insert(0, _buildMembersTab());
     }
 
-    return SafeArea(
-      child: Column(
-        children: [
-          SheetAppBar(
-            title: Text(
-              AppLocalizations.of(context)!.memberAddPageTitle,
-              style: AppTextStyles.titleLarge,
-            ),
-            leading: CupertinoButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Icon(Icons.close, color: AppColors.grey97)),
-            actions: [_buildAddBtn()],
+    return Column(
+      children: [
+        SheetAppBar(
+          title: Text(
+            AppLocalizations.of(context)!.memberAddPageTitle,
+            style: AppTextStyles.titleLarge,
           ),
-          Flexible(child: _buildMembersTab())
-        ],
-      ),
+          leading: CupertinoButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Icon(Icons.close, color: AppColors.grey97)),
+          actions: [_buildAddBtn()],
+        ),
+        Flexible(child: _buildMembersTab())
+      ],
     );
   }
-
-  // Scaffold(
-  //   appBar: AppBar(
-  //     toolbarHeight: 70,
-  //     elevation: 0,
-  //     backgroundColor: Colors.white,
-  //     title: Text(
-  //       AppLocalizations.of(context)!.memberAddPageTitle,
-  //       style: AppTextStyles.titleLarge,
-  //     ),
-  //     leading: CupertinoButton(
-  //         onPressed: () {
-  //           Navigator.pop(context);
-  //         },
-  //         child: Icon(Icons.close, color: AppColors.grey97)),
-  //     actions: [_buildAddBtn()],
-  //     bottom: tabCount > 1
-  //         ? InviteBarBottom(
-  //             controller: _tabController,
-  //             tabs: tabs,
-  //           )
-  //         : null,
-  //   ),
-  //   body: SafeArea(
-  //       child: tabCount > 1
-  //           ? TabBarView(controller: _tabController, children: tabViews)
-  //           : tabViews.first),
-  // ),
 
   Widget _buildMembersTab() {
     return FutureBuilder<List<UserInfoM>?>(
