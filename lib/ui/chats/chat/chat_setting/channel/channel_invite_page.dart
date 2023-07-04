@@ -137,7 +137,7 @@ class _ChannelInvitePageState extends State<ChannelInvitePage> {
             padding: const EdgeInsets.symmetric(horizontal: 48),
             child: QrImageView(
               data: _invitationLink ?? "",
-              // foregroundColor: Colors.blue.shade900,
+              // foregroundColor: AppColors.primaryBlue.shade900,
             )),
         SizedBox(height: 8),
         Padding(

@@ -3,16 +3,10 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/shared_funcs.dart';
-import 'package:vocechat_client/ui/app_alert_dialog.dart';
-import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
-import 'package:vocechat_client/ui/auth/password_register_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 
 // ignore: must_be_immutable
 class AppQrScanPage extends StatelessWidget {
@@ -51,7 +45,8 @@ class AppQrScanPage extends StatelessWidget {
               height: 32,
               width: 32,
               decoration: BoxDecoration(
-                  color: Colors.blue, borderRadius: BorderRadius.circular(16)),
+                  color: AppColors.primaryBlue,
+                  borderRadius: BorderRadius.circular(16)),
               contentPadding: EdgeInsets.zero,
               normal: const Center(
                 child: Icon(

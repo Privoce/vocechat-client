@@ -212,6 +212,14 @@ class SharedFuncs {
     return uid == App.app.userDb?.uid;
   }
 
+  static Future<bool> appLaunchUrl(Uri uri) async {
+    if (Platform.isIOS) {
+      return launchUrl(uri);
+    } else {
+      return launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   static Future<void> parseUniLink(Uri uri) async {
     if (!uri.queryParameters.containsKey("magic_link")) {
       return;

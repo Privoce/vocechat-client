@@ -57,7 +57,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
                   style: TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: 17,
-                      color: AppColors.primary400)))
+                      color: AppColors.primaryBlue)))
         ],
       ),
       body: SafeArea(
@@ -73,6 +73,7 @@ class _FirebaseSettingPageState extends State<FirebaseSettingPage> {
               keepTrailingArrow: false,
               trailing: CupertinoSwitch(
                   value: _enabled,
+                  activeColor: AppColors.primary400,
                   onChanged: (value) {
                     setState(() {
                       _enabled = value;

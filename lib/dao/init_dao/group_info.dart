@@ -391,7 +391,6 @@ class GroupInfoDao extends Dao<GroupInfoM> {
 
       for (final uid in memberList) {
         final user = await UserInfoDao().getUserByUid(uid);
-        // print("$uid, $user");
 
         if (user == null) {
           continue;

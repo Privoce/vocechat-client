@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-enum ContactSearchType { id, email }
+enum ContactSearchType { name, id, email }
 
 class ContactsAddSegmentedControl extends StatefulWidget
     implements PreferredSizeWidget {
@@ -33,6 +33,8 @@ class _ContactsAddSegmentedControlState
       padding: const EdgeInsets.only(bottom: 16),
       child: CupertinoSegmentedControl<ContactSearchType>(
           children: <ContactSearchType, Widget>{
+            ContactSearchType.name:
+                _buildOptionButton(AppLocalizations.of(context)!.userName),
             ContactSearchType.id:
                 _buildOptionButton(AppLocalizations.of(context)!.userId),
             ContactSearchType.email:

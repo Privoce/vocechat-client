@@ -48,15 +48,17 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
 
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
 
-  // final ValueNotifier<bool> _isMuted = ValueNotifier(false);
-  // final ValueNotifier<bool> _pinned = ValueNotifier(false);
+  final ValueNotifier<bool> _isMuted = ValueNotifier(false);
+  final ValueNotifier<bool> _pinned = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
 
-    // _isMuted.value = widget.groupInfoNotifier.value.properties.enableMute;
-    // _pinned.value = widget.groupInfoNotifier.value.properties.pinnedAt != null;
+    final groupSettings = GroupSettings.fromUserSettings(
+        globals.userSettings.value, widget.groupInfoNotifier.value.gid);
+    _isMuted.value = groupSettings.enableMute;
+    _pinned.value = groupSettings.pinnedAt > 0;
   }
 
   @override
@@ -160,7 +162,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                      color: AppColors.primary400,
+                      color: AppColors.primaryBlue,
                       borderRadius: BorderRadius.circular(8)),
                   child: Center(
                     child: Text(
@@ -244,14 +246,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.muteNotification,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<UserSettings>(
-                valueListenable: globals.userSettings,
-                builder: (context, userSettings, _) {
-                  final isMuted = userSettings.muteGroups
-                          ?.containsKey(widget.groupInfoNotifier.value.gid) ??
-                      false;
+            trailing: ValueListenableBuilder<bool>(
+                valueListenable: _isMuted,
+                builder: (context, isMuted, _) {
                   return CupertinoSwitch(
                     value: isMuted,
+                    activeColor: AppColors.primary400,
                     onChanged: (value) {
                       _changeMuteSettings(value);
                     },
@@ -261,14 +261,12 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           BannerTile(
             title: AppLocalizations.of(context)!.pinChat,
             keepTrailingArrow: false,
-            trailing: ValueListenableBuilder<UserSettings>(
-                valueListenable: globals.userSettings,
-                builder: (context, userSettings, _) {
-                  final pinned = userSettings.pinnedGroups
-                          ?.containsKey(widget.groupInfoNotifier.value.gid) ??
-                      false;
+            trailing: ValueListenableBuilder<bool>(
+                valueListenable: _pinned,
+                builder: (context, pinned, _) {
                   return CupertinoSwitch(
                     value: pinned,
+                    activeColor: AppColors.primary400,
                     onChanged: (value) {
                       _changePinSettings(value);
                     },
@@ -323,12 +321,13 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           if (value) {
             await UserSettingsDao()
                 .updateGroupSettings(widget.groupInfoNotifier.value.gid,
-                    muteExpiredAt: null)
+                    mute: true)
                 .then((value) {
               if (value != null) {
                 globals.userSettings.value = value;
               }
             });
+            _isMuted.value = true;
           } else {
             showNetworkErrorBar();
           }
@@ -338,12 +337,13 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
           if (value) {
             await UserSettingsDao()
                 .updateGroupSettings(widget.groupInfoNotifier.value.gid,
-                    muteExpiredAt: 0)
+                    mute: false)
                 .then((value) {
               if (value != null) {
                 globals.userSettings.value = value;
               }
             });
+            _isMuted.value = false;
           } else {
             showNetworkErrorBar();
           }
@@ -371,6 +371,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                 globals.userSettings.value = value;
               }
             });
+            _pinned.value = true;
           } else {
             showNetworkErrorBar();
           }
@@ -386,6 +387,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                 globals.userSettings.value = value;
               }
             });
+            _pinned.value = false;
           } else {
             showNetworkErrorBar();
           }
@@ -436,6 +438,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                     keepTrailingArrow: false,
                     trailing: CupertinoSwitch(
                         value: isPublic,
+                        activeColor: AppColors.primary400,
                         onChanged: (isPublic) async {
                           await _changeChannelVisibility(isPublic);
                           setState(() {});
@@ -571,7 +574,7 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
         content: content,
         primaryAction: AppAlertDialogAction(
           text: isOwner
-              ? AppLocalizations.of(context)!.call
+              ? AppLocalizations.of(context)!.continueStr
               : AppLocalizations.of(context)!.leave,
           isDangerAction: !isOwner,
           action: () async {
@@ -688,8 +691,6 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
       final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
-        await App.app.chatService.mute(
-            gid: widget.groupInfoNotifier.value.gid, expiredAt: expiredAt);
         return true;
       }
     } catch (e) {
@@ -706,8 +707,6 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
       final userApi = UserApi();
       final res = await userApi.mute(json.encode(reqMap));
       if (res.statusCode == 200) {
-        await App.app.chatService
-            .mute(gid: widget.groupInfoNotifier.value.gid, unmute: true);
         return true;
       }
     } catch (e) {

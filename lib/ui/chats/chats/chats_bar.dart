@@ -437,7 +437,7 @@ class _ChatsBarState extends State<ChatsBar> {
       // considerd as a potential invitation link.
       await _onInvitationLinkDetected(modifiedUri);
     } else {
-      if (!await launchUrl(uri)) {
+      if (!await SharedFuncs.appLaunchUrl(uri)) {
         throw Exception('Could not launch $uri');
       }
     }

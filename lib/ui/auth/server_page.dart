@@ -18,6 +18,7 @@ import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
@@ -176,7 +177,7 @@ class _ServerPageState extends State<ServerPage> {
                 height: 30,
                 width: 30,
                 decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: AppColors.primaryBlue,
                     borderRadius: BorderRadius.circular(30)),
                 padding: const EdgeInsets.all(3),
                 child: Icon(
@@ -252,7 +253,7 @@ class _ServerPageState extends State<ServerPage> {
                     ),
                     IconButton(
                         icon: Icon(Icons.qr_code_scanner_rounded,
-                            color: Colors.blue, size: 30),
+                            color: AppColors.primaryBlue, size: 30),
                         onPressed: () {
                           final route = PageRouteBuilder(
                             pageBuilder:
@@ -315,7 +316,8 @@ class _ServerPageState extends State<ServerPage> {
       contentPadding: EdgeInsets.all(4),
       enabled: _isUrlValid,
       decoration: BoxDecoration(
-          color: Colors.blue, borderRadius: BorderRadius.circular(radius)),
+          color: AppColors.primaryBlue,
+          borderRadius: BorderRadius.circular(radius)),
       normal: Icon(
         Icons.arrow_forward,
         color: Colors.white,

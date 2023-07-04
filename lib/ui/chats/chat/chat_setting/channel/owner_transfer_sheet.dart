@@ -33,8 +33,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Column(
+    return Column(
       children: [
         SheetAppBar(
           title: Text(AppLocalizations.of(context)!.transferOwnership,
@@ -78,7 +77,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
                           style: TextStyle(
                               fontWeight: FontWeight.w400,
                               fontSize: 17,
-                              color: AppColors.primary400)));
+                              color: AppColors.primaryBlue)));
                 })
           ],
         ),
@@ -90,6 +89,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
                   return ContactList(
                     userList: snapshot.data!,
                     ownerUid: widget.groupInfoM.groupInfo.owner,
+                    showAll: true,
                     onTap: (userInfoM) {
                       if (_selectNotifier.value.contains(userInfoM.uid)) {
                         _selectNotifier.value = [];
@@ -112,7 +112,7 @@ class _OwnerTransferSheetState extends State<OwnerTransferSheet> {
               })),
         ),
       ],
-    ));
+    );
   }
 
   Future<List<UserInfoM>?> _getUsers() async {

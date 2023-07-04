@@ -108,7 +108,7 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
                 constraints: BoxConstraints(minWidth: 20),
                 height: 20,
                 decoration: BoxDecoration(
-                    color: AppColors.primaryHover,
+                    color: AppColors.primary400,
                     borderRadius: BorderRadius.circular(10)),
                 child: Center(
                   child: Padding(

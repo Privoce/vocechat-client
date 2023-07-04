@@ -89,14 +89,14 @@ class UserSettingsDao extends Dao<UserSettingsM> {
       final readIndexGroups = settings.readIndexGroups;
 
       final burnAfterReadSecond = burnAfterReadsGroups?[gid] ?? 0;
-      final muteExpiredAt = muteGroups?[gid] ?? 0;
+      // final muteExpiredAt = muteGroups?[gid] ?? 0;
       final pinnedAt = pinnedGroups?[gid] ?? 0;
-
+      final enableMute = muteGroups?.containsKey(gid) ?? false;
       final readIndex = readIndexGroups?[gid] ?? 0;
 
       return GroupSettings(
           burnAfterReadSecond: burnAfterReadSecond,
-          enableMute: muteExpiredAt > 0,
+          enableMute: enableMute,
           pinnedAt: pinnedAt,
           readIndex: readIndex);
     }
@@ -115,13 +115,14 @@ class UserSettingsDao extends Dao<UserSettingsM> {
       final readIndexDms = settings.readIndexUsers;
 
       final burnAfterReadSecond = burnAfterReadsDms?[uid] ?? 0;
-      final muteExpiredAt = muteDms?[uid] ?? 0;
+      // final muteExpiredAt = muteDms?[uid] ?? 0;
+      final enableMute = muteDms?.containsKey(uid) ?? false;
       final pinnedAt = pinnedDms?[uid] ?? 0;
       final readIndex = readIndexDms?[uid] ?? 0;
 
       return DmSettings(
           burnAfterReadSecond: burnAfterReadSecond,
-          enableMute: muteExpiredAt > 0,
+          enableMute: enableMute,
           pinnedAt: pinnedAt,
           readIndex: readIndex);
     }
@@ -134,6 +135,7 @@ class UserSettingsDao extends Dao<UserSettingsM> {
   Future<UserSettings?> updateGroupSettings(int gid,
       {int? burnAfterReadSecond,
       int? muteExpiredAt,
+      bool? mute,
       int? pinnedAt,
       int? readIndex}) async {
     final m = await super.first();
@@ -147,7 +149,15 @@ class UserSettingsDao extends Dao<UserSettingsM> {
       // Must check != null first, as update data does not contain all properties.
       if (muteExpiredAt != null) {
         if (muteExpiredAt > 0) {
-          settings.muteGroups?[gid] = muteExpiredAt;
+          settings.muteGroups?.addAll({gid: muteExpiredAt});
+        } else {
+          settings.muteGroups?.remove(gid);
+        }
+      }
+
+      if (mute != null) {
+        if (mute) {
+          settings.muteGroups?.addAll({gid: null});
         } else {
           settings.muteGroups?.remove(gid);
         }
@@ -179,6 +189,7 @@ class UserSettingsDao extends Dao<UserSettingsM> {
   Future<UserSettings?> updateDmSettings(int dmUid,
       {int? burnAfterReadSecond,
       int? muteExpiredAt,
+      bool? mute,
       int? pinnedAt,
       int? readIndex}) async {
     final m = await super.first();
@@ -192,6 +203,14 @@ class UserSettingsDao extends Dao<UserSettingsM> {
       if (muteExpiredAt != null) {
         if (muteExpiredAt > 0) {
           settings.muteUsers?[dmUid] = muteExpiredAt;
+        } else {
+          settings.muteUsers?.remove(dmUid);
+        }
+      }
+
+      if (mute != null) {
+        if (mute) {
+          settings.muteUsers?.addAll({dmUid: null});
         } else {
           settings.muteUsers?.remove(dmUid);
         }

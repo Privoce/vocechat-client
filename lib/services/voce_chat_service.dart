@@ -56,6 +56,7 @@ typedef MsgAware = Future<void> Function(ChatMsgM chatMsgM, bool afterReady,
     {bool? snippetOnly});
 typedef ReactionAware = Future<void> Function(
     ReactionM reaction, bool afterReady);
+typedef ReadyAware = Future<void> Function({bool clearAll});
 
 typedef MidDeleteAware = Future<void> Function(int targetMid);
 typedef LocalmidDeleteAware = Future<void> Function(String localMid);
@@ -87,7 +88,7 @@ class VoceChatService {
   final Set<ReactionAware> _reactionListeners = {};
   final Set<MidDeleteAware> _midDeleteListeners = {};
   final Set<LocalmidDeleteAware> _lmidDeleteListeners = {};
-  final Set<VoidCallback> _refreshListeners = {};
+  final Set<ReadyAware> _readyListeners = {};
   final Set<UserStatusAware> _userStatusListeners = {};
   final Set<ChatServerAware> _chatServerListeners = {};
 
@@ -253,13 +254,13 @@ class VoceChatService {
     _lmidDeleteListeners.remove(deleteAware);
   }
 
-  void subscribeRefresh(VoidCallback refreshAware) {
-    unsubscribeRefresh(refreshAware);
-    _refreshListeners.add(refreshAware);
+  void subscribeReady(ReadyAware readyAware) {
+    unsubscribeReady(readyAware);
+    _readyListeners.add(readyAware);
   }
 
-  void unsubscribeRefresh(VoidCallback readyAware) {
-    _refreshListeners.remove(readyAware);
+  void unsubscribeReady(ReadyAware readyAware) {
+    _readyListeners.remove(readyAware);
   }
 
   void subscribeUserStatus(UserStatusAware statusAware) {
@@ -354,10 +355,10 @@ class VoceChatService {
     }
   }
 
-  void fireReady() {
-    for (VoidCallback refreshAware in _refreshListeners) {
+  void fireReady({bool clearAll = false}) {
+    for (ReadyAware readyAware in _readyListeners) {
       try {
-        refreshAware();
+        readyAware(clearAll: clearAll);
       } catch (e) {
         App.logger.severe(e);
       }
@@ -421,8 +422,8 @@ class VoceChatService {
         case sseGroupChanged:
         case sseJoinedGroup:
         case sseKickFromGroup:
+        case sseMessageCleared:
         case ssePinnedMessageUpdated:
-
         case sseReady:
         case sseRelatedGroups:
         case sseServerConfigChanged:
@@ -465,9 +466,9 @@ class VoceChatService {
         case sseKickFromGroup:
           await _handleKickFromGroup(map);
           break;
-        // case ssePinnedChats:
-        //   await _handlePinnedChats(map);
-        //   break;
+        case sseMessageCleared:
+          await _handleMessageCleared(map);
+          break;
         case ssePinnedMessageUpdated:
           await _handlePinnedMessageUpdated(map);
           break;
@@ -661,16 +662,6 @@ class VoceChatService {
     }
   }
 
-  // Future<void> _handleKick() async {
-  //   try {
-  //     await SharedFuncs.renewAuthToken(forceRefresh: true).then((value) {
-  //       initSse();
-  //     });
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
-
   Future<void> _handleKickFromGroup(Map<String, dynamic> map) async {
     assert(map['type'] == sseKickFromGroup);
     try {
@@ -684,46 +675,35 @@ class VoceChatService {
     }
   }
 
-  // Future<void> _handlePinnedChats(Map<String, dynamic> map) async {
-  //   assert(map["type"] == ssePinnedChats);
+  Future<void> _handleMessageCleared(Map<String, dynamic> map) async {
+    assert(map["type"] == sseMessageCleared);
 
-  //   try {
-  //     // To record pinned uids and gids,
-  //     // compare local pinned uids and gids, take complement sets, and
-  //     // clear the complement's [pinnedAt] property.
-  //     List<int> ssePinnedUids = [];
-  //     List<int> ssePinnedGids = [];
+    try {
+      final latestDeletedMid = map["latest_deleted_mid"] as int;
 
-  //     final userInfoDao = UserInfoDao();
-  //     final groupInfoDao = GroupInfoDao();
-
-  //     final chats = map["chats"] as List<dynamic>;
-  //     for (final chat in chats) {
-  //       final uid = chat["target"]?["uid"] as int?;
-  //       final gid = chat["target"]?["gid"] as int?;
-  //       final updatedAt = chat["updated_at"] as int?;
-
-  //       if (uid != null) {
-  //         // ssePinnedUids.add(uid);
-  //         // final user = await userInfoDao.getUserByUid(uid);
-  //         // if (user != null) {
-  //         //   await userInfoDao.updateProperties(uid, pinnedAt: updatedAt);
-  //         // }
-  //       } else if (gid != null) {
-  //         // ssePinnedGids.add(gid);
-  //         // final group = await groupInfoDao.getGroupByGid(gid);
-  //         // if (group != null) {
-  //         //   await groupInfoDao.updateProperties(gid, pinnedAt: updatedAt);
-  //         // }
-  //       }
-  //     }
-
-  //     // await userInfoDao.emptyUnpushedPinnedStatus(ssePinnedUids);
-  //     // await groupInfoDao.emptyUnpushedPinnedStatus(ssePinnedGids);
-  //   } catch (e) {
-  //     App.logger.severe(e);
-  //   }
-  // }
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        await showAppAlert(
+            context: context,
+            title: AppLocalizations.of(context)!.messageClearTitle,
+            content: AppLocalizations.of(context)!.messageClearDes,
+            actions: [
+              AppAlertDialogAction(
+                  text: AppLocalizations.of(context)!.ok,
+                  action: () {
+                    Navigator.of(context).pop();
+                  })
+            ]).then((_) async {
+          await ChatMsgDao().clearChatMsgTable(beforeMid: latestDeletedMid);
+          await UserDbMDao.dao
+              .updateMaxMid(App.app.userDb!.id, latestDeletedMid);
+          fireReady(clearAll: true);
+        });
+      }
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
 
   Future<void> _handlePinnedMessageUpdated(Map<String, dynamic> map) async {
     assert(map["type"] == ssePinnedMessageUpdated);
@@ -817,6 +797,12 @@ class VoceChatService {
     await ChatMsgDao().batchAdd(msgMap.values.toList()).then((succeed) {
       if (succeed) {
         App.logger.info("Chat messages saved. total: ${msgMap.length}");
+
+        if (_msgListeners.isNotEmpty) {
+          for (final msg in msgMap.values) {
+            fireMsg(msg, true);
+          }
+        }
         msgMap.clear();
       }
     });
@@ -1894,42 +1880,6 @@ class VoceChatService {
     }
 
     return true;
-  }
-
-  Future<void> mute(
-      {int? gid, int? uid, bool unmute = false, int? expiredAt}) async {
-    Map<String, dynamic> map = {};
-
-    if (gid != null) {
-      if (unmute) {
-        map = {
-          "remove_mute_groups": [gid]
-        };
-      } else {
-        map = {
-          "add_mute_groups": [
-            {"expired_at": expiredAt, "gid": gid}
-          ]
-        };
-      }
-    } else if (uid != null) {
-      if (unmute) {
-        map = {
-          "remove_mute_users": [uid]
-        };
-      } else {
-        map = {
-          "add_mute_users": [
-            {"expired_at": expiredAt, "uid": uid}
-          ]
-        };
-      }
-    }
-    map.addAll({"type": 'user_settings_changed'});
-
-    if (map.isNotEmpty) {
-      _handleUserSettingsChanged(map);
-    }
   }
 
   Future getOpenGraphicParse(url) async {

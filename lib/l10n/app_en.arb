@@ -118,7 +118,8 @@
 
     "gender":"Gender",
     "goToSettings":"Go to Settings",
-
+    
+    "hide":"Hide",
     "holdAndSpeak":"Hold and Speak",
     "hour":"hour",
     "hours":"hours",
@@ -147,6 +148,8 @@
     "male":"Male",
     "markdown":"Markdown",
     "message": "Message",
+    "messageClearTitle":"Clear Messages",
+    "messageClearDes":"Your server admin cleared all messages in server. Your local messages will be cleared as well.",
     "messageWQuantifier":"Message",
     "messagesWQuantifier":"Messages",
     "messageDetail":"Message Detail",
@@ -252,6 +255,7 @@
     "userBlocked":"This user has been blocked by you.",
     "userEmail":"User Email",
     "userId":"User ID",
+    "userName": "User Name",
     "userNotContact":"This user is not in your contact list.",
     "userSearchNoResult":"User does not exist, or is not allowed to be searched.",
     "version": "Version",

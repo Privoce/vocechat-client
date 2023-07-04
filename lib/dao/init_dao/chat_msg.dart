@@ -926,6 +926,21 @@ class ChatMsgDao extends Dao<ChatMsgM> {
     }
   }
 
+  /// [beforeMid]: this mid is included, will also be deleted.
+  Future<void> clearChatMsgTable({int? beforeMid}) async {
+    try {
+      if (beforeMid != null) {
+        await db.delete(ChatMsgM.F_tableName,
+            where: "${ChatMsgM.F_mid} < ?", whereArgs: [beforeMid]);
+      } else {
+        await db.delete(ChatMsgM.F_tableName);
+      }
+      App.logger.info("ChatMsg table cleared.");
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
   @override
   Future<PageData<ChatMsgM>> paginate(PageMeta pageMeta,
       {String? where, List<Object?>? whereArgs, String? orderBy}) async {

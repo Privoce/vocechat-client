@@ -6,6 +6,7 @@ import 'package:vocechat_client/api/models/msg/msg_archive/archive_user.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
 import 'package:vocechat_client/services/file_handler.dart';
+import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/tile_image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_file_bubble.dart';
@@ -70,14 +71,14 @@ class _VoceArchiveContentBubbleState extends State<VoceArchiveContentBubble> {
           }
           return VoceUserAvatar.name(
               name: widget.archiveUser.name,
-              backgroundColor: Colors.blue,
+              backgroundColor: AppColors.primaryBlue,
               size: VoceAvatarSize.s18);
         },
       );
     } else {
       return VoceAvatar.name(
           name: widget.archiveUser.name,
-          backgroundColor: Colors.blue,
+          backgroundColor: AppColors.primaryBlue,
           size: VoceAvatarSize.s18);
     }
   }

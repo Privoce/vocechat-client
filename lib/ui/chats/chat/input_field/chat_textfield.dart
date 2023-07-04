@@ -283,8 +283,8 @@ class _ChatTextFieldState extends State<ChatTextField> {
                 mentions: [
                   Mention(
                       trigger: '@',
-                      style: const TextStyle(
-                        color: Colors.blue,
+                      style: TextStyle(
+                        color: AppColors.primaryBlue,
                       ),
                       data: memberList,
                       matchAll: false,
@@ -302,7 +302,7 @@ class _ChatTextFieldState extends State<ChatTextField> {
                                   isCircle: useCircleAvatar,
                                   name: data['display'] ?? "",
                                   avatarBytes: data["photo"],
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor: AppColors.primaryBlue,
                                   fontColor: AppColors.grey200),
                               const SizedBox(width: 16),
                               Flexible(
