@@ -530,9 +530,9 @@ class _VoceChatPageState extends State<VoceChatPage>
     return ValueListenableBuilder<UserInfoM>(
         valueListenable: widget.userInfoNotifier!,
         builder: (context, userInfoM, _) {
-          // if (userInfoM.contactStatus == ContactInfoStatus.blocked.name) {
-          //   return _buildBlockedBottomBar();
-          // }
+          if (userInfoM.contactStatus == ContactStatus.blocked) {
+            return _buildBlockedBottomBar();
+          }
           return _buildTextField();
         });
   }
