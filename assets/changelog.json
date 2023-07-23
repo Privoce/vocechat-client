@@ -1,6 +1,13 @@
 {   
-    "latest": {"version": "0.2.102", "build_num": 72},
+    "latest": {"version": "0.2.103", "build_num": 73},
     "logs":  [
+        {"time": 1690146946396, "version": "0.2.103", "build_num": 73, "updates": [
+            "- refactor: swipe left / long press to chat UX improved.",
+            "- refactor: error message display improvements.",
+            "- fix: disable textfield if user is blocked.",
+            "- fix: user list not complete issue.",
+            "- fix: other known issue fixes."
+            ]},
         {"time": 1688437475039, "version": "0.2.102", "build_num": 72, "updates": [
             "- add: Swipe left (iOS) or Long Press (Android) actions to chat tiles.",
             "- add: Search by name in contact search.",
