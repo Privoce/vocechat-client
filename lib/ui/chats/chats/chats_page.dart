@@ -56,6 +56,8 @@ class _ChatsPageState extends State<ChatsPage>
 
   Offset _tapPosition = Offset.zero;
 
+  ValueNotifier<bool> drawerOpenNotifier = ValueNotifier(false);
+
   @override
   bool get wantKeepAlive => true;
 
@@ -162,18 +164,20 @@ class _ChatsPageState extends State<ChatsPage>
 
     final sorted = [...pinned, ...unpinned];
 
-    return ListView.separated(
-      itemCount: sorted.length,
-      itemBuilder: (context, index) {
-        final data = sorted[index];
-        return _buildChatTile(data);
-      },
-      separatorBuilder: (context, index) {
-        return Divider(
-          indent: 80,
-          color: AppColors.grey200,
-        );
-      },
+    return SlidableAutoCloseBehavior(
+      child: ListView.separated(
+        itemCount: sorted.length,
+        itemBuilder: (context, index) {
+          final data = sorted[index];
+          return _buildChatTile(data);
+        },
+        separatorBuilder: (context, index) {
+          return Divider(
+            indent: 80,
+            color: AppColors.grey200,
+          );
+        },
+      ),
     );
   }
 

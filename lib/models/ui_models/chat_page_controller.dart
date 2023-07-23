@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
@@ -268,7 +269,8 @@ class ChatPageController {
       msgList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
       if (msgList.isNotEmpty) {
-        final maxMid = msgList.first.mid;
+        final midList = msgList.map((e) => e.mid).toList();
+        final maxMid = midList.reduce(max);
         await updateReadIndex(maxMid);
       }
 

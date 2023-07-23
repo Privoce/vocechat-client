@@ -99,18 +99,24 @@ class ChatServerHelper {
 
     final adminSystemApi = AdminSystemApi(serverUrl: chatServerM.fullUrl);
 
-    // Check if server has been initialized
-    final initializedRes = await adminSystemApi.getInitialized();
-    if (initializedRes.statusCode == 200 && initializedRes.data != true) {
+    try {
+      // Check if server has been initialized
+      final initializedRes = await adminSystemApi.getInitialized();
+      if (initializedRes.statusCode == 200 && initializedRes.data != true) {
+        return ServerStatusWithChatServerM(
+            status: ServerStatus.uninitialized, chatServerM: chatServerM);
+      } else if (initializedRes.statusCode != 200) {
+        return ServerStatusWithChatServerM(
+            status: ServerStatus.error, chatServerM: chatServerM);
+      }
+
       return ServerStatusWithChatServerM(
-          status: ServerStatus.uninitialized, chatServerM: chatServerM);
-    } else if (initializedRes.statusCode != 200) {
+          status: ServerStatus.available, chatServerM: chatServerM);
+    } catch (e) {
+      App.logger.severe(e);
       return ServerStatusWithChatServerM(
           status: ServerStatus.error, chatServerM: chatServerM);
     }
-
-    return ServerStatusWithChatServerM(
-        status: ServerStatus.available, chatServerM: chatServerM);
   }
 
   Future<void> _showServerUninitializedError(
