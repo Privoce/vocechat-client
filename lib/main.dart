@@ -18,7 +18,9 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/event_bus_objects/push_to_chat_event.dart';
 import 'package:vocechat_client/firebase_options.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
@@ -311,7 +313,28 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _handleRemoteNotificationMessage(RemoteMessage message) async {
-    print(message.data);
+    print("here11");
+    print("###### message.data: ${message.data}");
+    final notificationServerId = message.data['vocechat_server_id'];
+
+    // [currentServerId] might be empty.
+    final currentServerId = App.app.chatServerM.serverId;
+
+    print("######### currentServerId: $currentServerId");
+
+    if (currentServerId.isEmpty) return;
+
+    print("here12");
+
+    final uid = message.data['vocechat_to_uid'] as int?;
+    final gid = message.data['vocechat_to_gid'] as int?;
+
+    if (notificationServerId != currentServerId) {
+      // TODO: server switch
+    } else {
+      print("here13");
+      eventBus.fire(PushToChatEvent(uid: uid, gid: gid));
+    }
   }
 
   void _handleIncomingUniLink() async {

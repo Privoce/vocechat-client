@@ -902,6 +902,7 @@ class VoceChatService {
       chatLayoutMode = map["chat_layout_mode"] as String?;
       maxFileExpiryMode = map["max_file_expiry_mode"] as String?;
 
+      // This server id is not the backend one, but the id of local database.
       final serverId = App.app.userDb?.chatServerId;
       if (serverId == null) return;
 

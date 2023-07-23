@@ -13,6 +13,7 @@ import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
+import 'package:vocechat_client/event_bus_objects/push_to_chat_event.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
@@ -96,6 +97,38 @@ class _ChatsPageState extends State<ChatsPage>
 
     eventBus.on<PrivateChannelInvitationLinkEvent>().listen((event) {
       handleInvitationLink(event.uri);
+    });
+
+    eventBus.on<PushToChatEvent>().listen((event) async {
+      print("PushToChatEvent listener");
+      final chatId = SharedFuncs.getChatId(uid: event.uid, gid: event.gid);
+      if (chatId == null || chatId.isEmpty) return;
+
+      print("here2");
+
+      final chatTileData = chatTileMap[chatId];
+      if (chatTileData == null) {
+        print("here3");
+        if (event.uid != null) {
+          print("here4");
+          final userInfoM = await UserInfoDao().getUserByUid(event.uid!);
+          if (userInfoM != null) {
+            print("here5");
+            final tileData = await ChatTileData.fromUser(userInfoM);
+            chatTileMap.addAll({chatId: tileData});
+            onTap(tileData);
+          }
+        } else if (event.gid != null) {
+          final groupInfoM = await GroupInfoDao().getGroupByGid(event.gid!);
+          if (groupInfoM != null) {
+            final tileData = await ChatTileData.fromChannel(groupInfoM);
+            chatTileMap.addAll({chatId: tileData});
+            onTap(tileData);
+          }
+        }
+      } else {
+        onTap(chatTileData);
+      }
     });
   }
 

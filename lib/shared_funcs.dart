@@ -550,9 +550,7 @@ class SharedFuncs {
 
   /// Get or update server information, including server name, description and
   /// logo image.
-  static Future<ChatServerM?> getServerInfo(
-    ChatServerM chatServerM,
-  ) async {
+  static Future<ChatServerM?> getServerInfo(ChatServerM chatServerM) async {
     try {
       final fullUrl = chatServerM.fullUrl;
       final orgInfoRes = await AdminSystemApi(serverUrl: fullUrl).getOrgInfo();
