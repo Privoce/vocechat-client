@@ -290,7 +290,9 @@ class _ContactListState extends State<ContactList>
       enableContact.value = false;
     }
 
-    if (enableContact.value && !widget.showAll) {
+    if (enableContact.value &&
+        !widget.showAll &&
+        App.app.userDb?.userInfo.isAdmin != true) {
       _contactList = widget.userList
           .where((element) => element.contactStatus == ContactStatus.added)
           .toList();

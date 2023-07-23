@@ -337,7 +337,7 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.primaryBlue),
+                              color: Color.fromRGBO(5, 100, 242, 1)),
                         ),
                       ],
                     )),
@@ -369,7 +369,11 @@ class _LoginPageState extends State<LoginPage> {
                           color: AppColors.grey500));
 
                 default:
-                  return Text(widget.baseUrl,
+                  String? url = _chatServerM?.fullUrl;
+                  if (url == null || url.isEmpty) {
+                    url = widget.baseUrl;
+                  }
+                  return Text(url,
                       style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w400,

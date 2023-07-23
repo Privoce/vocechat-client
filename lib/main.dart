@@ -282,11 +282,12 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
-      _handleMessage(initialMessage);
+      _handleRemoteNotificationMessage(initialMessage);
     }
 
     // notification from background, but not terminated state.
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+    FirebaseMessaging.onMessageOpenedApp
+        .listen(_handleRemoteNotificationMessage);
   }
 
   /// Currently do nothing to foreground notifications,
@@ -309,7 +310,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     });
   }
 
-  void _handleMessage(RemoteMessage message) async {
+  void _handleRemoteNotificationMessage(RemoteMessage message) async {
     print(message.data);
   }
 
