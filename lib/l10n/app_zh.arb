@@ -174,6 +174,7 @@
     "next": "下一步",
     "nickname":"昵称",  
     "noContent":"没有内容",
+    "noQrCodeDetected":"没有检测到二维码，请检查原图或将原图转换成jpg格式尝试。",
     "notificationLanguage":"通知语言",
     "open":"打开",
     "openWithOtherApps":"用其他 App 打开",

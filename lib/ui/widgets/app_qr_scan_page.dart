@@ -3,12 +3,16 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:image/image.dart';
 
 // ignore: must_be_immutable
 class AppQrScanPage extends StatefulWidget {
@@ -158,11 +162,6 @@ class _AppQrScanPageState extends State<AppQrScanPage> {
 
   void _galleryQrScan(BuildContext context) async {
     await cameraController.stop().then((_) async {
-      // assets list
-      List<AssetEntity> assets = <AssetEntity>[];
-
-      // config picker assets max count
-
       final List<AssetEntity>? assetsResult = await AssetPicker.pickAssets(
         context,
         pickerConfig: AssetPickerConfig(
@@ -175,15 +174,27 @@ class _AppQrScanPageState extends State<AppQrScanPage> {
       final asset = assetsResult?.first;
       if (asset == null) {
       } else {
-        final path = (await asset.originFile)?.path;
+        String? path = (await asset.originFile)?.path;
         if (path == null) {
         } else {
+          // Convert non-jpeg images to jpg.
+          final mime = lookupMimeType(path);
+          if (mime != "image/jpg" && mime != "image/jpeg") {
+            // try to convert image to jpg.
+            final tempPath = (await getTemporaryDirectory()).path;
+
+            final img = decodeImage(await File(path).readAsBytes());
+            await File("$tempPath/temp.jpg").writeAsBytes(encodeJpg(img!));
+            path = "$tempPath/temp.jpg";
+          }
+
           await cameraController.analyzeImage(path).then((value) async {
             if (value) {
               App.logger.info("qr code found in image");
             } else {
-              // no bar code found.
-              App.logger.info("qr code not found");
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(AppLocalizations.of(context)!.noQrCodeDetected),
+                  duration: Duration(seconds: 3)));
             }
           });
         }

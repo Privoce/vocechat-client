@@ -9,6 +9,7 @@ import 'package:saver_gallery/saver_gallery.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/main.dart';
+import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
@@ -134,7 +135,6 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildQrButton(),
-          SizedBox(width: 8),
           _buildShareButton(),
           SizedBox(width: 8),
           _buildSaveButton()
@@ -148,9 +148,23 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
         future: hasQrCode(),
         builder: (context, snapshot) {
           if (snapshot.data == null || snapshot.data!.isEmpty) {
-            return Text("No QR", style: TextStyle(color: Colors.white));
+            return SizedBox.shrink();
           }
-          return Text("QR", style: TextStyle(color: Colors.white));
+          return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => SharedFuncs.onQrCodeDetected(snapshot.data!),
+                  child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppColors.grey600,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Center(
+                          child: Icon(CupertinoIcons.qrcode,
+                              size: 20, color: Colors.white)))));
         });
   }
 
@@ -178,7 +192,6 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
           final String code = barcode.rawValue!;
           App.logger.info('Barcode found! $code');
           return completer.complete(code);
-          // _onQrCodeDetected(code, context);
         }
       }
       return completer.complete(null);
