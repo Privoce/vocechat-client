@@ -171,6 +171,7 @@
     "next": "Next",
     "nickname":"Nick name",  
     "noContent":"No Content",
+    "noQrCodeDetected":"No QR Code Detected. Please check original image, or convert it to .jpg format.",
     "notificationLanguage":"Notification Language",
     "other":"Other",
 
