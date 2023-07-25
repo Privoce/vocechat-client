@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -33,6 +35,8 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
   final ValueNotifier<ButtonStatus> _saveBtnStatus =
       ValueNotifier(ButtonStatus.normal);
 
+  final ValueNotifier<String> imagePath = ValueNotifier("");
+
   bool _enablePageView = true;
 
   @override
@@ -57,7 +61,7 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
     _controller.addListener(() {
       final decimal = _controller.page! - _controller.page!.truncate();
 
-      _showButtons.value = decimal <= 0.5 || decimal >= 0.95;
+      _showButtons.value = decimal <= 0.05 || decimal >= 0.95;
     });
   }
 
@@ -128,9 +132,61 @@ class _ImageGalleryPageState extends State<ImageGalleryPage>
       right: 24,
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [_buildShareButton(), SizedBox(width: 8), _buildSaveButton()],
+        children: [
+          _buildQrButton(),
+          SizedBox(width: 8),
+          _buildShareButton(),
+          SizedBox(width: 8),
+          _buildSaveButton()
+        ],
       ),
     );
+  }
+
+  Widget _buildQrButton() {
+    return FutureBuilder<String?>(
+        future: hasQrCode(),
+        builder: (context, snapshot) {
+          if (snapshot.data == null || snapshot.data!.isEmpty) {
+            return Text("No QR", style: TextStyle(color: Colors.white));
+          }
+          return Text("QR", style: TextStyle(color: Colors.white));
+        });
+  }
+
+  Future<String?> hasQrCode() async {
+    final Completer<String?> completer = Completer();
+
+    final index = _controller.page?.round() ?? widget.data.initialPage;
+    final singleImageData = await _imageList[index].getLocalImageFile();
+
+    if (singleImageData == null) return null;
+
+    final image = singleImageData.imageFile;
+    final path = image.path;
+    final controller = MobileScannerController();
+
+    controller.barcodes.listen((capture) {
+      App.logger.info("Barcodes detected");
+      final barcodes = capture.barcodes;
+
+      if (barcodes.isNotEmpty) {
+        final barcode = barcodes.first;
+        if (barcode.rawValue == null) {
+          App.logger.warning('Failed to scan Barcode');
+        } else {
+          final String code = barcode.rawValue!;
+          App.logger.info('Barcode found! $code');
+          return completer.complete(code);
+          // _onQrCodeDetected(code, context);
+        }
+      }
+      return completer.complete(null);
+    });
+
+    await controller.analyzeImage(path);
+
+    return completer.future;
   }
 
   Widget _buildShareButton() {

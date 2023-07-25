@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_gallery_page.dart';
 
 class SingleImageGetters {
-  // final ChatMsgM chatMsgM;
-
   bool isOriginal = false;
 
   late Future<SingleImageData?> Function() getLocalImageFile;
