@@ -75,6 +75,15 @@ class App {
     authService = AuthService(chatServerM: chatServerM);
     chatService = VoceChatService();
 
+    final navigator = navigatorKey.currentState;
+
+    if (navigator != null) {
+      navigator.popUntil((route) => route.isFirst);
+      navigator.pushReplacement(MaterialPageRoute(
+        builder: (context) => ChatsMainPage(),
+      ));
+    }
+
     eventBus.fire(UserChangeEvent(userDbM));
 
     // connect

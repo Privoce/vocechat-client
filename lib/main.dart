@@ -329,13 +329,19 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     final gid = gidStr == null ? null : int.tryParse(gidStr);
 
     if (notificationServerId != currentServerId) {
-      // final userDbs = await UserDbMDao.dao.getList();
-      // if (userDbs == null) return;
-      // for (final userDb in userDbs) {
-      //   if (userDb.dbName.split("_").first == notificationServerId) {
-      //     await App.app.changeUser(userDb);
-      //   }
-      // }
+      final userDbs = await UserDbMDao.dao.getList();
+      if (userDbs == null) return;
+      for (final userDb in userDbs) {
+        if (userDb.dbName.split("_").first == notificationServerId) {
+          await App.app.changeUser(userDb).then((_) {
+            // TODO: change to: waiting for sse ready.
+            Future.delayed(Duration(milliseconds: 1000)).then((value) {
+              eventBus.fire(PushToChatEvent(uid: uid, gid: gid));
+            });
+          });
+          return;
+        }
+      }
     } else {
       eventBus.fire(PushToChatEvent(uid: uid, gid: gid));
     }

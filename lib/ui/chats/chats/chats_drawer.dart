@@ -216,11 +216,11 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
   }
 
   void _jumpToMainPage() async {
-    Navigator.pop(context);
-    if (widget.afterDrawerPop != null) {
-      await Future.delayed(Duration(milliseconds: 300));
-      widget.afterDrawerPop!();
-    }
+    // Navigator.pop(context);
+    // if (widget.afterDrawerPop != null) {
+    //   await Future.delayed(Duration(milliseconds: 300));
+    //   widget.afterDrawerPop!();
+    // }
   }
 
   Future<void> _getServerData() async {
