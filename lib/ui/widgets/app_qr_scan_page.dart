@@ -12,7 +12,7 @@ import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:image/image.dart';
+import 'package:image/image.dart' as image;
 
 // ignore: must_be_immutable
 class AppQrScanPage extends StatefulWidget {
@@ -183,8 +183,17 @@ class _AppQrScanPageState extends State<AppQrScanPage> {
             // try to convert image to jpg.
             final tempPath = (await getTemporaryDirectory()).path;
 
-            final img = decodeImage(await File(path).readAsBytes());
-            await File("$tempPath/temp.jpg").writeAsBytes(encodeJpg(img!));
+            final originalImage =
+                image.decodeImage(await File(path).readAsBytes());
+            final jpgImage = image.Image(
+                originalImage!.width, originalImage.height,
+                channels: image.Channels.rgb);
+            image.fill(jpgImage, image.getColor(255, 255, 255));
+
+            image.copyInto(jpgImage, originalImage, dstX: 0, dstY: 0);
+
+            await File("$tempPath/temp.jpg")
+                .writeAsBytes(image.encodeJpg(jpgImage));
             path = "$tempPath/temp.jpg";
           }
 
