@@ -313,29 +313,35 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _handleRemoteNotificationMessage(RemoteMessage message) async {
-    print("here11");
-    print("###### message.data: ${message.data}");
     final notificationServerId = message.data['vocechat_server_id'];
 
     // [currentServerId] might be empty.
-    final currentServerId = App.app.chatServerM.serverId;
+    // TODO: change to more formal way of storaging server id.
+    // final currentServerId = App.app.chatServerM.serverId;
 
-    print("######### currentServerId: $currentServerId");
+    final currentServerId = App.app.userDb!.dbName.split("_").first;
 
     if (currentServerId.isEmpty) return;
 
-    print("here12");
-
-    final uid = message.data['vocechat_to_uid'] as int?;
-    final gid = message.data['vocechat_to_gid'] as int?;
+    final uidStr = message.data['vocechat_to_uid'] as String?;
+    final gidStr = message.data['vocechat_to_gid'] as String?;
+    final uid = uidStr == null ? null : int.tryParse(uidStr);
+    final gid = gidStr == null ? null : int.tryParse(gidStr);
 
     if (notificationServerId != currentServerId) {
-      // TODO: server switch
+      // final userDbs = await UserDbMDao.dao.getList();
+      // if (userDbs == null) return;
+      // for (final userDb in userDbs) {
+      //   if (userDb.dbName.split("_").first == notificationServerId) {
+      //     await App.app.changeUser(userDb);
+      //   }
+      // }
     } else {
-      print("here13");
       eventBus.fire(PushToChatEvent(uid: uid, gid: gid));
     }
   }
+
+  void switchServerOnNotification(String serverId, int? uid, int? gid) async {}
 
   void _handleIncomingUniLink() async {
     uriLinkStream.listen((Uri? uri) async {
