@@ -221,21 +221,30 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
   }
 
   Widget _buildInvitition(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: BannerTileGroup(
-        bannerTileList: [
-          BannerTile(
-              onTap: () async {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: ((context) {
-                  return ChannelInvitePage(widget.groupInfoNotifier.value.gid);
-                })));
-              },
-              title: AppLocalizations.of(context)!.invitationLink),
-        ],
-      ),
-    );
+    bool isAdmin = App.app.userDb?.userInfo.isAdmin ?? false;
+    bool isOwner =
+        App.app.userDb?.uid == widget.groupInfoNotifier.value.groupInfo.owner;
+
+    if (isAdmin || isOwner) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: BannerTileGroup(
+          bannerTileList: [
+            BannerTile(
+                onTap: () async {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: ((context) {
+                    return ChannelInvitePage(
+                        widget.groupInfoNotifier.value.gid);
+                  })));
+                },
+                title: AppLocalizations.of(context)!.invitationLink),
+          ],
+        ),
+      );
+    } else {
+      return SizedBox.shrink();
+    }
   }
 
   Widget _buildSwitches() {
