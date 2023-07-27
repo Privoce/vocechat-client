@@ -7,6 +7,7 @@ create table if not exists chat_server (
     url text not null,
     port integer not null,
     tls integer not null,
+    server_id text not null,
     created_at integer not null,
     updated_at integer not null,
     properties text not null

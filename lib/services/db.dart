@@ -14,6 +14,52 @@ late Database db;
 late Database orgDb;
 final _logger = SimpleLogger();
 
+// Future<void> initServerDb() async {
+//   const serverDbName = 'app_db.db';
+
+//   try {
+//     String databasesPath = await getDatabasesPath();
+//     {
+//       // org db
+//       String path = p.join(databasesPath, serverDbName);
+//       await Directory(databasesPath)
+//           .create(recursive: true); // App will terminate if create fails.
+//       orgDb = await databaseFactory.openDatabase(
+//         path,
+//         options: OpenDatabaseOptions(
+//           version: 1,
+//           onCreate: (db, version) async {
+//             // Check if db table has been created.
+//             int? count = firstIntValue(await db.query('sqlite_master',
+//                 columns: ['COUNT(*)'],
+//                 where: 'type = ?',
+//                 whereArgs: ['table']));
+//             if (count == null || count < 3) {
+//               // Multiple sql strings are not supported in Android, thus change to single
+//               // sql string and execute one after another.
+//               List<String> sqlList =
+//                   (await _initSql('assets/app_db.sql')).split(';');
+//               Batch batch = db.batch();
+//               for (String sql in sqlList) {
+//                 sql = sql.trim();
+//                 if (sql.isNotEmpty) {
+//                   batch.execute(sql);
+//                 }
+//               }
+//               batch.commit();
+//             }
+
+//             // orgDb = db;
+//           },
+//           onUpgrade: (db, oldVersion, newVersion) {},
+//         ),
+//       );
+//     }
+//   } catch (e) {
+//     _logger.severe(e);
+//   }
+// }
+
 /// Initialize App DB
 ///
 /// This method is called only once when main executes. It creates db if
@@ -29,7 +75,7 @@ Future<void> initDb({String? dbFileName}) async {
       orgDb = await databaseFactory.openDatabase(
         path,
         options: OpenDatabaseOptions(
-          version: 4,
+          version: 5,
           onCreate: (db, version) async {
             // Check if db table has been created.
             int? count = firstIntValue(await db.query('sqlite_master',
@@ -75,6 +121,15 @@ Future<void> initDb({String? dbFileName}) async {
             if (oldVersion < newVersion && oldVersion < 4) {
               try {
                 db.execute("ALTER TABLE user_db DROP COLUMN avatar_bytes");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+
+            if (oldVersion < newVersion && oldVersion < 5) {
+              try {
+                db.execute(
+                    "ALTER TABLE chat_server ADD COLUMN server_id TEXT NOT NULL DEFAULT ''");
               } catch (e) {
                 App.logger.warning(e);
               }

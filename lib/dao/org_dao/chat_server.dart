@@ -20,6 +20,8 @@ class ChatServerM with M {
 
   int tls = 0;
 
+  String serverId = "";
+
   /// Timestamp this server was created at in this App.
   @override
   int createdAt = 0;
@@ -34,23 +36,23 @@ class ChatServerM with M {
   }
 
   String get fullUrl {
-    String _url = url + ':$port';
+    String url0 = '$url:$port';
     if (tls == 0) {
-      _url = 'http://' + _url;
+      url0 = 'http://$url0';
     } else {
-      _url = 'https://' + _url;
+      url0 = 'https://$url0';
     }
-    return _url;
+    return url0;
   }
 
   String get fullUrlWithoutPort {
-    String _url = url;
+    String url0 = url;
     if (tls == 0) {
-      _url = 'http://' + _url;
+      url0 = 'http://$url0';
     } else {
-      _url = 'https://' + _url;
+      url0 = 'https://$url0';
     }
-    return _url;
+    return url0;
   }
 
   ChatServerProperties get properties {
@@ -103,6 +105,7 @@ class ChatServerM with M {
   static const F_url = "url";
   static const F_port = "port";
   static const F_tls = "tls";
+  static const F_serverId = "server_id";
   static const F_createdAt = "created_at";
   static const F_updatedAt = "updated_at";
   static const F_properties = "properties";
@@ -113,6 +116,7 @@ class ChatServerM with M {
         ChatServerM.F_url: url,
         ChatServerM.F_port: port,
         ChatServerM.F_tls: tls,
+        ChatServerM.F_serverId: serverId,
         ChatServerM.F_createdAt: createdAt,
         ChatServerM.F_updatedAt: updatedAt,
         ChatServerM.F_properties: _properties,
@@ -156,6 +160,7 @@ class ChatServerDao extends OrgDao<ChatServerM> {
     if (old != null) {
       m.id = old.id;
       m.createdAt = old.createdAt;
+      m.serverId = old.serverId;
 
       if (m.logo.isEmpty) {
         m.logo = old.logo;
@@ -165,13 +170,23 @@ class ChatServerDao extends OrgDao<ChatServerM> {
       await super.add(m);
     }
     App.logger.info(
-        "ChatServerM saved. Id: ${m.id}, common info: ${m.properties.commonInfo?.toJson()}");
+        "ChatServerM saved. Id: ${m.id}, serverId: ${m.serverId}, common info: ${m.properties.commonInfo?.toJson()}");
     return m;
+  }
+
+  Future<ChatServerM?> updateServerId(String serverId) async {
+    // ChatServerM? old = await first();
+    ChatServerM? old = await getServerById(App.app.chatServerM.id);
+    if (old != null) {
+      old.serverId = serverId;
+      await super.update(old);
+    }
+    return old;
   }
 
   Future<ChatServerM?> updateOrgInfo(
       {String? name, String? des, Uint8List? logoBytes}) async {
-    ChatServerM? old = await first();
+    ChatServerM? old = await getServerById(App.app.chatServerM.id);
     if (old != null) {
       final properties = old.properties;
       if (name != null) {
@@ -192,7 +207,7 @@ class ChatServerDao extends OrgDao<ChatServerM> {
 
   Future<ChatServerM?> updateCommonInfo(
       AdminSystemCommonInfo commonInfo) async {
-    ChatServerM? old = await first();
+    ChatServerM? old = await getServerById(App.app.chatServerM.id);
     if (old != null) {
       final oldInfo = old.properties.commonInfo;
 

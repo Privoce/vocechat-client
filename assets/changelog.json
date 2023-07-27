@@ -1,6 +1,11 @@
 {   
-    "latest": {"version": "0.2.103", "build_num": 73},
+    "latest": {"version": "0.2.104", "build_num": 74},
     "logs":  [
+        {"time": 1690146946396, "version": "0.2.104", "build_num": 74, "updates": [
+            "- feature: QR code scanning supported with images in chats and from phone gallery.",
+            "- feature: jump to corresponding server and chat when jumping from push notifications.",
+            "- fix: some known bug fixes."
+            ]},
         {"time": 1690146946396, "version": "0.2.103", "build_num": 73, "updates": [
             "- refactor: swipe left / long press to chat UX improved.",
             "- refactor: error message display improvements.",

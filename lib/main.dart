@@ -18,7 +18,9 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
+import 'package:vocechat_client/event_bus_objects/push_to_chat_event.dart';
 import 'package:vocechat_client/firebase_options.dart';
+import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/helpers/shared_preference_helper.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
@@ -311,8 +313,45 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   }
 
   void _handleRemoteNotificationMessage(RemoteMessage message) async {
-    print(message.data);
+    final notificationServerId = message.data['vocechat_server_id'];
+
+    // [currentServerId] might be empty.
+    // TODO: change to more formal way of storaging server id.
+    // final currentServerId = App.app.chatServerM.serverId;
+
+    final currentServerId = App.app.userDb!.dbName.split("_").first;
+
+    if (currentServerId.isEmpty) return;
+
+    int? uid, gid;
+    if (message.data.containsKey("vocechat_to_gid")) {
+      // channel notification
+      gid = int.tryParse(message.data['vocechat_to_gid'] as String? ?? "");
+    } else {
+      // private notification
+      uid = int.tryParse(message.data['vocechat_from_uid'] as String? ?? "");
+    }
+
+    if (notificationServerId != currentServerId) {
+      final userDbs = await UserDbMDao.dao.getList();
+      if (userDbs == null) return;
+      for (final userDb in userDbs) {
+        if (userDb.dbName.split("_").first == notificationServerId) {
+          await App.app.changeUser(userDb).then((_) {
+            // TODO: change to: waiting for sse ready.
+            Future.delayed(Duration(milliseconds: 1000)).then((value) {
+              eventBus.fire(PushToChatEvent(uid: uid, gid: gid));
+            });
+          });
+          return;
+        }
+      }
+    } else {
+      eventBus.fire(PushToChatEvent(uid: uid, gid: gid));
+    }
   }
+
+  void switchServerOnNotification(String serverId, int? uid, int? gid) async {}
 
   void _handleIncomingUniLink() async {
     uriLinkStream.listen((Uri? uri) async {

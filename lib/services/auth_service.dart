@@ -28,6 +28,7 @@ import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
+import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 
 class AuthService {
   static final AuthService _service = AuthService._internal();
@@ -162,7 +163,7 @@ class AuthService {
         device: await SharedFuncs.prepareDeviceInfo(),
         credential: credential,
         deviceToken: deviceToken);
-    
+
     return req;
   }
 
@@ -311,6 +312,14 @@ class AuthService {
 
       final userInfoM = UserInfoM.fromUserInfo(userInfo, "");
       await UserInfoDao().addOrReplace(userInfoM);
+
+      // Update chatServerM
+      await ChatServerDao.dao.updateServerId(serverId).then((value) {
+        if (value != null) {
+          App.app.chatServerM = value;
+          print("auth_service serverId: ${App.app.chatServerM.serverId}");
+        }
+      });
 
       App.app.chatService = VoceChatService();
       App.app.statusService = StatusService();

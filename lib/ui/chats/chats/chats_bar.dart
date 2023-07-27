@@ -372,7 +372,8 @@ class _ChatsBarState extends State<ChatsBar> {
                   case AddActions.scan:
                     final route = PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          AppQrScanPage(onQrCodeDetected: _onQrCodeDetected),
+                          AppQrScanPage(
+                              onQrCodeDetected: SharedFuncs.onQrCodeDetected),
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {
                         const begin = Offset(0.0, 1.0);
@@ -420,75 +421,6 @@ class _ChatsBarState extends State<ChatsBar> {
       // bottom: tabBar
       // bottom: AppSearchField(AppLocalizations.of(context)!.chatsPageSearchHint),
     );
-  }
-
-  void _onQrCodeDetected(String link) async {
-    final uri = Uri.parse(link);
-
-    if (uri.scheme != "http" && uri.scheme != "https") {
-      return;
-    }
-
-    final modifiedLink = link.replaceFirst("/#", "");
-    final modifiedUri = Uri.parse(modifiedLink).replace(fragment: '');
-
-    // Handle invitation link
-    if (modifiedUri.queryParameters.containsKey("magic_token")) {
-      // considerd as a potential invitation link.
-      await _onInvitationLinkDetected(modifiedUri);
-    } else {
-      if (!await SharedFuncs.appLaunchUrl(uri)) {
-        throw Exception('Could not launch $uri');
-      }
-    }
-  }
-
-  Future<void> _onInvitationLinkDetected(Uri uri) async {
-    // _isBusy.value = true;
-    await SharedFuncs.parseInvitationUri(uri).then((res) {
-      App.logger.info("Invitation link preparation status: ${res.status}");
-      switch (res.status) {
-        case InvitationLinkPreparationStatus.successful:
-          final route = PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PasswordRegisterPage(
-                    chatServer: res.chatServerM!,
-                    magicToken: res.magicToken!,
-                    invitationLink: res.uri),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              const begin = Offset(0.0, 1.0);
-              const end = Offset.zero;
-              const curve = Curves.fastOutSlowIn;
-
-              var tween =
-                  Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-              return SlideTransition(
-                position: animation.drive(tween),
-                child: child,
-              );
-            },
-          );
-          Navigator.of(context).push(route);
-
-          break;
-        case InvitationLinkPreparationStatus.networkError:
-          // _isBusy.value = false;
-          // _showNetworkErrorWarning(context);
-          break;
-        case InvitationLinkPreparationStatus.invalid:
-          // _isBusy.value = false;
-          // _showInvalidInvitationLinkWarning(context);
-          break;
-        default:
-      }
-    }).onError((error, stackTrace) {
-      // _isBusy.value = false;
-      App.logger.severe(error);
-    });
-
-    // _isBusy.value = false;
   }
 
   bool _isInitial() {
