@@ -234,7 +234,10 @@ class _ChannelInvitePageState extends State<ChannelInvitePage> {
 
     final uri = Uri.parse(originalLink);
 
-    final newUrl = "${uri.scheme}://${uri.host}/#${uri.fragment}?${uri.query}";
+    final port = uri.hasPort ? ":${uri.port}" : "";
+
+    final newUrl =
+        "${uri.scheme}://${uri.host}$port/#${uri.fragment}?${uri.query}";
 
     // final wrappedUrl = "https://voce.chat/url?i=${Uri.encodeComponent(newUrl)}";
 

@@ -164,7 +164,9 @@ class _ChatsBarState extends State<ChatsBar> {
     enableContact.value =
         chatServerM.properties.commonInfo?.contactVerificationEnable == true;
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   /// Compares two [Uint8List]s by comparing 8 bytes at a time.

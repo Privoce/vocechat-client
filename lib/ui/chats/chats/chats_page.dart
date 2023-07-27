@@ -489,7 +489,9 @@ class _ChatsPageState extends State<ChatsPage>
       }
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void clearChats() {
