@@ -100,32 +100,32 @@ class _ChatsPageState extends State<ChatsPage>
     });
 
     eventBus.on<PushToChatEvent>().listen((event) async {
-      print("PushToChatEvent listener");
       final chatId = SharedFuncs.getChatId(uid: event.uid, gid: event.gid);
       if (chatId == null || chatId.isEmpty) return;
 
-      print("here2");
-
-      final chatTileData = chatTileMap[chatId];
+      ChatTileData? chatTileData = chatTileMap[chatId];
       if (chatTileData == null) {
-        print("here3");
         if (event.uid != null) {
-          print("here4");
           final userInfoM = await UserInfoDao().getUserByUid(event.uid!);
           if (userInfoM != null) {
-            print("here5");
-            final tileData = await ChatTileData.fromUser(userInfoM);
-            chatTileMap.addAll({chatId: tileData});
-            onTap(tileData);
+            chatTileData = await ChatTileData.fromUser(userInfoM);
+            chatTileMap.addAll({chatId: chatTileData});
           }
         } else if (event.gid != null) {
           final groupInfoM = await GroupInfoDao().getGroupByGid(event.gid!);
           if (groupInfoM != null) {
-            final tileData = await ChatTileData.fromChannel(groupInfoM);
-            chatTileMap.addAll({chatId: tileData});
-            onTap(tileData);
+            chatTileData = await ChatTileData.fromChannel(groupInfoM);
+            chatTileMap.addAll({chatId: chatTileData});
           }
         }
+      }
+
+      if (chatTileData == null) return;
+
+      if (!initialListDataCompleter.isCompleted) {
+        await initialListDataCompleter.future.then((_) {
+          onTap(chatTileData!);
+        });
       } else {
         onTap(chatTileData);
       }

@@ -323,10 +323,14 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
 
     if (currentServerId.isEmpty) return;
 
-    final uidStr = message.data['vocechat_to_uid'] as String?;
-    final gidStr = message.data['vocechat_to_gid'] as String?;
-    final uid = uidStr == null ? null : int.tryParse(uidStr);
-    final gid = gidStr == null ? null : int.tryParse(gidStr);
+    int? uid, gid;
+    if (message.data.containsKey("vocechat_to_gid")) {
+      // channel notification
+      gid = int.tryParse(message.data['vocechat_to_gid'] as String? ?? "");
+    } else {
+      // private notification
+      uid = int.tryParse(message.data['vocechat_from_uid'] as String? ?? "");
+    }
 
     if (notificationServerId != currentServerId) {
       final userDbs = await UserDbMDao.dao.getList();

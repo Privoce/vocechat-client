@@ -457,4 +457,9 @@ class ChatTileData {
     unreadCount.value = 0;
     mentionsCount.value = 0;
   }
+
+  void clearUnreadCount() {
+    unreadCount.value = 0;
+    mentionsCount.value = 0;
+  }
 }
