@@ -109,7 +109,7 @@
 
     "female":"女",
     "fetchingServerInfo":"正在获取服务器信息",
-    "fetchingServerInfoError":"服务器信息获取失败，请检查网络状况。",
+    "fetchingServerInfoError":"服务器信息获取失败，请检查服务器URL及网络状况。",
     "file":"文件",
     "fileUploadError":"文件上传错误",
     "fileSizeTooLargeDes":"文件大小超过服务端设置。",

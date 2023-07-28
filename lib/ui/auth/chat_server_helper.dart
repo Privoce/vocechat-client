@@ -19,6 +19,9 @@ class ChatServerHelper {
   /// No http / https required.
   Future<ChatServerM?> prepareChatServerM(String url,
       {bool showAlert = true}) async {
+    final bool isValidUrl = Uri.tryParse(url)?.isAbsolute ?? false;
+    if (!isValidUrl) return null;
+
     final context = navigatorKey.currentContext;
 
     ChatServerM chatServerM = ChatServerM();
