@@ -126,24 +126,29 @@ class ChatServerM with M {
     ..tableName = F_tableName;
 
   bool setByUrl(String url) {
-    Uri uri = Uri.parse(url);
-    if (uri.host.isEmpty) {
+    try {
+      Uri uri = Uri.parse(url);
+      if (uri.host.isEmpty) {
+        return false;
+      }
+      // name = url;
+      this.url = uri.host;
+      if (url.isEmpty) {
+        url = '127.0.0.1';
+      }
+      port = uri.port;
+      if (uri.scheme == 'https') {
+        tls = 1;
+      } else {
+        tls = 0;
+      }
+      // id = url;
+      createdAt = DateTime.now().millisecondsSinceEpoch;
+      return true;
+    } catch (e) {
+      App.logger.warning(e);
       return false;
     }
-    // name = url;
-    this.url = uri.host;
-    if (url.isEmpty) {
-      url = '127.0.0.1';
-    }
-    port = uri.port;
-    if (uri.scheme == 'https') {
-      tls = 1;
-    } else {
-      tls = 0;
-    }
-    // id = url;
-    createdAt = DateTime.now().millisecondsSinceEpoch;
-    return true;
   }
 }
 
