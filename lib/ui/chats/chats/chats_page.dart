@@ -267,7 +267,10 @@ class _ChatsPageState extends State<ChatsPage>
               DmInfoDao().removeByDmUid(dmUid).then((value) {
                 if (value > 0) {
                   chatTileMap.remove(SharedFuncs.getChatId(uid: dmUid));
-                  setState(() {});
+
+                  if (mounted) {
+                    setState(() {});
+                  }
                 }
               });
             },
@@ -300,9 +303,12 @@ class _ChatsPageState extends State<ChatsPage>
 
   void _getTapPosition(TapDownDetails details) {
     final RenderBox referenceBox = context.findRenderObject() as RenderBox;
-    setState(() {
-      _tapPosition = referenceBox.globalToLocal(details.globalPosition);
-    });
+
+    if (mounted) {
+      setState(() {
+        _tapPosition = referenceBox.globalToLocal(details.globalPosition);
+      });
+    }
   }
 
   void _showContextMenu(BuildContext context, ChatTileData data) async {
@@ -368,7 +374,9 @@ class _ChatsPageState extends State<ChatsPage>
         DmInfoDao().removeByDmUid(dmUid).then((value) {
           if (value > 0) {
             chatTileMap.remove(SharedFuncs.getChatId(uid: dmUid));
-            setState(() {});
+            if (mounted) {
+              setState(() {});
+            }
           }
         });
         break;
@@ -442,7 +450,7 @@ class _ChatsPageState extends State<ChatsPage>
 
     calUnreadCountSum();
 
-    if (afterReady) {
+    if (afterReady && mounted) {
       setState(() {});
     }
   }
@@ -475,7 +483,7 @@ class _ChatsPageState extends State<ChatsPage>
     calUnreadCountSum();
     getMemberCount();
 
-    if (afterReady) {
+    if (afterReady && mounted) {
       setState(() {});
     }
   }
