@@ -1,9 +1,10 @@
 {   
     "latest": {"version": "0.2.105", "build_num": 75},
     "logs":  [
-        {"time": 1690585228238, "version": "0.2.105", "build_num": 75, "updates": [
+        {"time": 1690587709862, "version": "0.2.105", "build_num": 75, "updates": [
             "- fix: channel invitation link generation permissions and link port display issue.",
             "- fix: server URL validation issue.",
+            "- fix: channel members page might show an incomplete member list.",
             "- fix: some other known bug fixes."
             ]},
         {"time": 1690585098674, "version": "0.2.104", "build_num": 74, "updates": [
