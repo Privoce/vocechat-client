@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.105", "build_num": 75},
+    "latest": {"version": "0.2.106", "build_num": 76},
     "logs":  [
+        {"time": 1691434491740, "version": "0.2.106", "build_num": 76, "updates": [
+            "- fix: possible avatar error in server switch drawer."
+            ]},
         {"time": 1690587709862, "version": "0.2.105", "build_num": 75, "updates": [
             "- fix: channel invitation link generation permissions and link port display issue.",
             "- fix: server URL validation issue.",

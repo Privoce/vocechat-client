@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
@@ -14,6 +15,7 @@ import 'package:vocechat_client/ui/settings/child_pages/firebase_settings_page.d
 import 'package:vocechat_client/ui/settings/child_pages/language_setting_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart';
+import 'package:vocechat_client/ui/settings/child_pages/userinfo_detail_setting_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/userinfo_setting_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
@@ -82,49 +84,116 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Widget _buildUserInfo() {
-    return AvatarInfoTile(
-      avatar: FutureBuilder<UserInfoM?>(
-          future: UserInfoDao().getUserByUid(App.app.userDb!.uid),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return VoceUserAvatar.user(
-                  key: UniqueKey(),
-                  userInfoM: snapshot.data!,
-                  size: VoceAvatarSize.s84);
-            } else {
-              return const VoceUserAvatar.deleted(size: VoceAvatarSize.s84);
-            }
-          }),
-      titleWidget: ValueListenableBuilder<UserInfoM?>(
-          valueListenable: userInfoNotifier,
-          builder: (context, userInfoM, _) {
-            if (userInfoM != null) {
-              final userInfo = userInfoM.userInfo;
-              return Text(userInfo.name,
-                  textAlign: TextAlign.center, style: AppTextStyles.titleLarge);
-            } else {
-              return Text("");
-            }
-          }),
-      subtitleWidget: ValueListenableBuilder<UserInfoM?>(
-          valueListenable: userInfoNotifier,
-          builder: (context, userInfoM, _) {
-            if (userInfoM != null) {
-              final userInfo = userInfoM.userInfo;
-              return Text(userInfo.email!,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.labelMedium);
-            } else {
-              return Text("");
-            }
-          }),
-      enableEdit: true,
-      onTap: () {
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: () {
         Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
-          return UserInfoSettingPage(userInfoNotifier);
+          return UserInfoSettingPage(userInfoNotifier: userInfoNotifier);
         })));
       },
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: FutureBuilder<UserInfoM?>(
+                  future: UserInfoDao().getUserByUid(App.app.userDb!.uid),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return VoceUserAvatar.user(
+                          key: UniqueKey(),
+                          userInfoM: snapshot.data!,
+                          size: VoceAvatarSize.s60);
+                    } else {
+                      return const VoceUserAvatar.deleted(
+                          size: VoceAvatarSize.s60);
+                    }
+                  }),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ValueListenableBuilder<UserInfoM?>(
+                      valueListenable: userInfoNotifier,
+                      builder: (context, userInfoM, _) {
+                        if (userInfoM != null) {
+                          final userInfo = userInfoM.userInfo;
+                          return Text(userInfo.name,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.titleLarge);
+                        } else {
+                          return Text("");
+                        }
+                      }),
+                  ValueListenableBuilder<UserInfoM?>(
+                      valueListenable: userInfoNotifier,
+                      builder: (context, userInfoM, _) {
+                        if (userInfoM != null) {
+                          final userInfo = userInfoM.userInfo;
+                          return Text(userInfo.email!,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.labelMedium);
+                        } else {
+                          return Text("");
+                        }
+                      }),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios,
+                color: AppColors.labelColorLightTri, size: 16)
+          ],
+        ),
+      ),
     );
+    // return AvatarInfoTile(
+    //   avatar: FutureBuilder<UserInfoM?>(
+    //       future: UserInfoDao().getUserByUid(App.app.userDb!.uid),
+    //       builder: (context, snapshot) {
+    //         if (snapshot.hasData) {
+    //           return VoceUserAvatar.user(
+    //               key: UniqueKey(),
+    //               userInfoM: snapshot.data!,
+    //               size: VoceAvatarSize.s84);
+    //         } else {
+    //           return const VoceUserAvatar.deleted(size: VoceAvatarSize.s84);
+    //         }
+    //       }),
+    //   titleWidget: ValueListenableBuilder<UserInfoM?>(
+    //       valueListenable: userInfoNotifier,
+    //       builder: (context, userInfoM, _) {
+    //         if (userInfoM != null) {
+    //           final userInfo = userInfoM.userInfo;
+    //           return Text(userInfo.name,
+    //               textAlign: TextAlign.center, style: AppTextStyles.titleLarge);
+    //         } else {
+    //           return Text("");
+    //         }
+    //       }),
+    //   subtitleWidget: ValueListenableBuilder<UserInfoM?>(
+    //       valueListenable: userInfoNotifier,
+    //       builder: (context, userInfoM, _) {
+    //         if (userInfoM != null) {
+    //           final userInfo = userInfoM.userInfo;
+    //           return Text(userInfo.email!,
+    //               textAlign: TextAlign.center,
+    //               style: AppTextStyles.labelMedium);
+    //         } else {
+    //           return Text("");
+    //         }
+    //       }),
+    //   enableEdit: true,
+    //   onTap: () {
+    //     Navigator.of(context).push(MaterialPageRoute(builder: ((context) {
+    //       return UserInfoSettingPage(userInfoNotifier);
+    //     })));
+    //   },
+    // );
   }
 
   Widget _buildServer(BuildContext context) {
