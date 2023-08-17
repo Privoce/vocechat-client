@@ -79,6 +79,9 @@ class DioUtil {
       await _retry(response.requestOptions, response.requestOptions.baseUrl)
           .then((res) {
         handler.resolve(res);
+      }).onError((error, stackTrace) {
+        handler.reject(
+            DioError(requestOptions: response.requestOptions, error: error));
       });
     } else {
       App.logger.severe("Token refresh failed");

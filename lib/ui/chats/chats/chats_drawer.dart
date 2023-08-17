@@ -92,6 +92,7 @@ class _ChatsDrawerState extends State<ChatsDrawer> {
                   itemBuilder: (context, index) {
                     final accountData = accountList[index];
                     return CupertinoButton(
+                        key: ObjectKey(accountData),
                         padding: EdgeInsets.zero,
                         onPressed: () => _switchUser(accountData.value),
                         child: ServerAccountTile(
