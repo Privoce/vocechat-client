@@ -80,6 +80,7 @@
     "call" : "语音通话",
     "cancel": "取消",
     "changePassword":"更改密码",
+    "changePasswordFail":"更改密码失败,请检查旧密码或网络状况。",
     "channel":"频道",
     "confirmPassword": "确认密码",
     "copy":"复制",
@@ -243,6 +244,7 @@
     "signIn": "登入",
     "signUp": "注册",
     "signUpTo": "注册",
+    "tick":"✓",
     "switchServer": "切换服务器",
 
     "tapForMore":"点按查看更多",

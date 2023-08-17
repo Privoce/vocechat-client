@@ -17,7 +17,7 @@ class PasswordSettingPage extends StatefulWidget {
 
 class _PasswordSettingPageState extends State<PasswordSettingPage> {
   final ValueNotifier<bool> _isBusy = ValueNotifier(false);
-  final ValueNotifier<bool> _enableDoneBtn = ValueNotifier(true);
+  final ValueNotifier<bool> _enableDoneBtn = ValueNotifier(false);
 
   final TextEditingController _oldPswdCtlr = TextEditingController();
   final TextEditingController _newPswdCtlr = TextEditingController();
@@ -51,10 +51,19 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
                 if (enable) {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8.0),
-                    child: CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Text(AppLocalizations.of(context)!.done),
-                        onPressed: () {}),
+                    child: ValueListenableBuilder<bool>(
+                        valueListenable: _isBusy,
+                        builder: (context, isBusy, child) {
+                          if (isBusy) {
+                            return CupertinoActivityIndicator();
+                          }
+                          return CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              child: Text(AppLocalizations.of(context)!.done),
+                              onPressed: () {
+                                onDone();
+                              });
+                        }),
                   );
                 } else {
                   return SizedBox.shrink();
@@ -177,16 +186,31 @@ class _PasswordSettingPageState extends State<PasswordSettingPage> {
     if (_isBusy.value) return;
 
     _isBusy.value = true;
-    _enableDoneBtn.value = false;
 
     final oldPswd = _oldPswdCtlr.text.trim();
     final newPswd = _newPswdCtlr.text.trim();
 
-    final res = await UserApi().changePassword(oldPswd, newPswd);
-    if (res.statusCode == 200) {
-      // success
-    } else {
-      // fail.
+    try {
+      await UserApi().changePassword(oldPswd, newPswd).then((res) {
+        if (res.statusCode == 200) {
+          _isBusy.value = false;
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(AppLocalizations.of(context)!.tick)));
+            Future.delayed(Duration(seconds: 1)).then((value) {
+              Navigator.pop(context);
+            });
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(AppLocalizations.of(context)!.tick)));
+        }
+      });
+    } catch (e) {
+      _isBusy.value = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.error)));
     }
   }
 }

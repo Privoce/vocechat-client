@@ -521,7 +521,7 @@ class UserApi {
   }
 
   Future<Response> changePassword(String oldPswd, String newPswd) async {
-    final dio = DioUtil.token(baseUrl: _baseUrl);
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
     dio.options.headers["content-type"] = "application/json";
 
     return dio.post("/change_password",

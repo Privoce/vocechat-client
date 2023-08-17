@@ -78,6 +78,7 @@
     "call" : "Call",
     "cancel": "Cancel",
     "changePassword":"Change Password",
+    "changePasswordFail":"Failed to change password. Please check old password or network condition.",
     "channel":"Channel",
     "clearLocalData": "Clear local data",
     "clearLocalDataContent": "VoceChat will be terminated. All your data will be deleted locally.",
@@ -242,6 +243,7 @@
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "signUpTo": "Sign Up to",
+    "tick":"✓",
     "switchServer": "Switch Server",
 
     "tapForMore":"Tap for more",

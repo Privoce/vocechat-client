@@ -15,13 +15,11 @@ import 'package:vocechat_client/ui/settings/child_pages/firebase_settings_page.d
 import 'package:vocechat_client/ui/settings/child_pages/language_setting_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/server_info_settings_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/settings_about_page.dart';
-import 'package:vocechat_client/ui/settings/child_pages/userinfo_detail_setting_page.dart';
 import 'package:vocechat_client/ui/settings/child_pages/userinfo_setting_page.dart';
 import 'package:vocechat_client/ui/settings/settings_bar.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
-import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 
 class SettingPage extends StatefulWidget {
@@ -107,7 +105,8 @@ class _SettingPageState extends State<SettingPage> {
                       return VoceUserAvatar.user(
                           key: UniqueKey(),
                           userInfoM: snapshot.data!,
-                          size: VoceAvatarSize.s60);
+                          size: VoceAvatarSize.s60,
+                          enableOnlineStatus: false);
                     } else {
                       return const VoceUserAvatar.deleted(
                           size: VoceAvatarSize.s60);
