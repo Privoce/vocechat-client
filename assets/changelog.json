@@ -1,7 +1,17 @@
 {   
-    "latest": {"version": "0.2.104", "build_num": 74},
+    "latest": {"version": "0.2.106", "build_num": 76},
     "logs":  [
-        {"time": 1690146946396, "version": "0.2.104", "build_num": 74, "updates": [
+        {"time": 1692251129635, "version": "0.2.106", "build_num": 76, "updates": [
+            "- fix: possible avatar error in server switch drawer.",
+            "- feature: change password in settings."
+            ]},
+        {"time": 1690587709862, "version": "0.2.105", "build_num": 75, "updates": [
+            "- fix: channel invitation link generation permissions and link port display issue.",
+            "- fix: server URL validation issue.",
+            "- fix: channel members page might show an incomplete member list.",
+            "- fix: some other known bug fixes."
+            ]},
+        {"time": 1690585098674, "version": "0.2.104", "build_num": 74, "updates": [
             "- feature: QR code scanning supported with images in chats and from phone gallery.",
             "- feature: jump to corresponding server and chat when jumping from push notifications.",
             "- fix: some known bug fixes."

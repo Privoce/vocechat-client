@@ -232,9 +232,19 @@ class _ChannelInvitePageState extends State<ChannelInvitePage> {
           originalLink.replaceFirst(pattern, App.app.chatServerM.fullUrl);
     }
 
-    final uri = Uri.parse(originalLink);
+    final serverLinkUri = Uri.parse(originalLink);
+    final localLinkUri = Uri.parse(App.app.chatServerM.fullUrl);
 
-    final newUrl = "${uri.scheme}://${uri.host}/#${uri.fragment}?${uri.query}";
+    // Special case for dev.voce.chat server.
+    String host = localLinkUri.host;
+    if (host == "dev.voce.chat") {
+      host = "privoce.voce.chat";
+    }
+
+    final port = localLinkUri.hasPort ? ":${localLinkUri.port}" : "";
+
+    final newUrl =
+        "${localLinkUri.scheme}://$host$port/#${serverLinkUri.fragment}?${serverLinkUri.query}";
 
     // final wrappedUrl = "https://voce.chat/url?i=${Uri.encodeComponent(newUrl)}";
 

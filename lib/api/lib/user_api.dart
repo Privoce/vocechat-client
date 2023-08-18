@@ -519,4 +519,12 @@ class UserApi {
     }
     return newRes;
   }
+
+  Future<Response> changePassword(String oldPswd, String newPswd) async {
+    final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
+    dio.options.headers["content-type"] = "application/json";
+
+    return dio.post("/change_password",
+        data: json.encode({"old_password": oldPswd, "new_password": newPswd}));
+  }
 }

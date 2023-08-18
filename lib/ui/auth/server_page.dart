@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:voce_widgets/voce_widgets.dart';
-import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -21,7 +19,6 @@ import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
@@ -124,15 +121,6 @@ class _ServerPageState extends State<ServerPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // VoceButton(
-                //   normal: Text(AppLocalizations.of(context)!.clearLocalData,
-                //       maxLines: 1, overflow: TextOverflow.ellipsis),
-                //   action: () async {
-                //     await SharedFuncs.clearLocalData();
-                //     return true;
-                //   },
-                // ),
-                // Text("  |  "),
                 VoceButton(
                   normal: Text(
                       AppLocalizations.of(context)!.inputInvitationLink,

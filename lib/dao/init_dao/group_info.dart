@@ -371,7 +371,7 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   /// Returns all members if [batchSize] is 0.
   Future<List<UserInfoM>?> getUserListByGid(
       int gid, bool isPublic, List<int> memberList,
-      {int batchSize = 20}) async {
+      {int batchSize = 0}) async {
     List<UserInfoM> users = [];
     if (isPublic) {
       String sqlStr;
