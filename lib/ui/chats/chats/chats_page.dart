@@ -464,10 +464,7 @@ class _ChatsPageState extends State<ChatsPage>
         break;
       case EventActions.update:
         if (chatId != null) {
-          if (!chatTileMap.containsKey(chatId)) {
-            final tileData = await ChatTileData.fromUser(userInfoM);
-            chatTileMap.addAll({chatId: tileData});
-          } else {
+          if (chatTileMap.containsKey(chatId)) {
             await chatTileMap[chatId]?.setUser(userInfoM: userInfoM);
           }
         }
