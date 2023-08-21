@@ -87,7 +87,7 @@ class _NewPrivateChannelSelectPageState
         ],
       ),
       body: ContactList(
-          userList: widget.userList,
+          initUserList: widget.userList,
           selectNotifier: widget.selectedNotifier,
           onTap: (userInfoM) {
             if (widget.selectedNotifier.value.contains(userInfoM.uid)) {
@@ -112,7 +112,7 @@ class _NewPrivateChannelSelectPageState
           enablePreSelectAction: false,
           preSelectUidList: preSelected,
           enableSelect: true,
-          enableUserUpdate: true),
+          enableUpdate: true),
     );
   }
 

@@ -290,7 +290,7 @@ class _ChatSelectionSheetState extends State<ChatSelectionSheet> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return ContactList(
-              userList: snapshot.data!,
+              initUserList: snapshot.data!,
               enableSelect: true,
               selectNotifier: uidNotifier,
               onTap: (userInfoM) {

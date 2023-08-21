@@ -82,7 +82,7 @@ class _MemberAddPageState extends State<MemberAddPage>
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ContactList(
-                userList: snapshot.data!,
+                initUserList: snapshot.data!,
                 ownerUid: widget.groupInfoMNotifier.value.groupInfo.owner,
                 onTap: (user) {
                   if (selectNotifier.value.contains(user.uid)) {

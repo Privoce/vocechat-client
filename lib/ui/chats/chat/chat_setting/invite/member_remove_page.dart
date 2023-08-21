@@ -53,7 +53,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return ContactList(
-                    userList: snapshot.data!,
+                    initUserList: snapshot.data!,
                     ownerUid: widget.groupInfoMNotifier.value.groupInfo.owner,
                     showAll: true,
                     onTap: (user) {

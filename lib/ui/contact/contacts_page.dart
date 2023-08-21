@@ -53,7 +53,7 @@ class _ContactsPageState extends State<ContactsPage>
                   snapshot.hasData) {
                 return ContactList(
                     key: Key(App.app.userDb!.dbName),
-                    userList: snapshot.data!,
+                    initUserList: snapshot.data!,
                     onTap: (userInfoM) => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) =>

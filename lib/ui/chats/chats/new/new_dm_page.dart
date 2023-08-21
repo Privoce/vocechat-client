@@ -55,7 +55,7 @@ class _NewDmPageState extends State<NewDmPage> {
             final userList = snapshot.data ?? [];
 
             return ContactList(
-                userList: userList,
+                initUserList: userList,
                 onTap: (user) {
                   Navigator.of(context).pop(user);
                 });

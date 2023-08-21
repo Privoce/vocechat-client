@@ -37,7 +37,7 @@ class ChannelMembersPage extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ContactList(
-                userList: snapshot.data!,
+                initUserList: snapshot.data!,
                 avatarSize: VoceAvatarSize.s36,
                 ownerUid: groupInfoM.groupInfo.owner,
                 showAll: true,

@@ -18,26 +18,43 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 class ContactList extends StatefulWidget {
   static const route = "/contacts";
 
-  final List<UserInfoM> userList;
+  /// The initial contact list.
+  ///
+  /// It could be set empty.
+  final List<UserInfoM> initUserList;
   final Function(UserInfoM userInfoM) onTap;
   final bool enableSelect;
   final double avatarSize;
   final ValueNotifier<List<int>>? selectNotifier;
   final List<int>? preSelectUidList;
   final bool enablePreSelectAction;
-  final bool enableUserUpdate;
+
+  /// Whether to enable contact list update.
+  ///
+  /// If enabled, any change to the contact list, including user adding, updating
+  /// or deleting will appear. If not, contact list will be static.
+  ///
+  /// Set to true by default.
+  final bool enableUpdate;
+
+  /// Whether to include all users from [initUserList].
+  ///
+  /// In channel member lists, we need to show all users from [initUserList], but
+  /// some users may not be in contact list, if contact mode is enabled in server
+  /// settings. However, in Contacts Page, we only need to show users in contact
+  /// list. In this case, we need to set [showAll] to false.
   final bool showAll;
   final int? ownerUid;
 
   const ContactList(
-      {required this.userList,
+      {required this.initUserList,
       required this.onTap,
       this.avatarSize = VoceAvatarSize.s36,
       this.enableSelect = false,
       this.selectNotifier,
       this.preSelectUidList,
       this.enablePreSelectAction = true,
-      this.enableUserUpdate = true,
+      this.enableUpdate = true,
       this.showAll = false,
       this.ownerUid,
       Key? key})
@@ -54,6 +71,7 @@ class _ContactListState extends State<ContactList>
 
   bool isPreparing = false;
 
+  /// Whether contact mode is enabled in server settings.
   ValueNotifier<bool> enableContact = ValueNotifier(true);
 
   @override
@@ -67,22 +85,20 @@ class _ContactListState extends State<ContactList>
         App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
             true;
 
-    if (App.app.userDb?.userInfo.isAdmin != true &&
-        enableContact.value &&
-        !widget.showAll) {
-      _contactList = widget.userList.where((element) {
+    if (_shouldOnlyShowContacts) {
+      _contactList = widget.initUserList.where((element) {
         return element.contactStatus == ContactStatus.added ||
             element.uid == App.app.userDb?.uid;
       }).toList();
     } else {
-      _contactList = widget.userList;
+      _contactList = widget.initUserList;
     }
 
     _uidSet.addAll(_contactList.map((e) => e.uid));
 
-    _prepareContactList();
+    _sortList();
 
-    if (widget.enableUserUpdate) {
+    if (widget.enableUpdate) {
       App.app.chatService.subscribeUsers(_onUser);
       App.app.chatService.subscribeReady(_onReady);
     }
@@ -90,9 +106,24 @@ class _ContactListState extends State<ContactList>
     App.app.chatService.subscribeChatServer(_onChatServerChange);
   }
 
+  /// If the contact list only contains contacts of the current user.
+  ///
+  /// It should fulfill the following conditions:
+  /// 1. Contact mode is enabled in server settings.
+  /// 2. Current user is not admin.
+  /// 3. [widget.showAll] is false (please refer to showAll description for
+  /// its meaning).
+  ///
+  /// Admins can always see all users in the server.
+  bool get _shouldOnlyShowContacts {
+    return App.app.userDb?.userInfo.isAdmin != true &&
+        enableContact.value &&
+        !widget.showAll;
+  }
+
   @override
   void dispose() {
-    if (widget.enableUserUpdate) {
+    if (widget.enableUpdate) {
       App.app.chatService.unsubscribeReady(_onReady);
     }
     App.app.chatService.unsubscribeUsers(_onUser);
@@ -219,28 +250,12 @@ class _ContactListState extends State<ContactList>
 
   Future<void> _onUser(
       UserInfoM userInfoM, EventActions action, bool afterReady) async {
-    switch (action) {
-      case EventActions.create:
-      case EventActions.update:
-        // Should handle one special case: add self to contact list anyway.
-        if (SharedFuncs.isSelf(userInfoM.uid)) {
-          _uidSet.add(userInfoM.uid);
-
-          final index = _contactList
-              .indexWhere((element) => element.uid == userInfoM.uid);
-          if (index > -1) {
-            _contactList[index] = userInfoM;
-          } else {
-            _contactList.add(userInfoM);
-          }
-          break;
-        }
-
-        // Then handle general case.
-        if (enableContact.value &&
-            App.app.userDb?.userInfo.isAdmin != true &&
-            !widget.showAll) {
-          if (userInfoM.contactStatusStr == ContactStatus.added.name) {
+    try {
+      switch (action) {
+        case EventActions.create:
+        case EventActions.update:
+          // Should handle one special case: add self to contact list anyway.
+          if (SharedFuncs.isSelf(userInfoM.uid)) {
             _uidSet.add(userInfoM.uid);
 
             final index = _contactList
@@ -250,60 +265,81 @@ class _ContactListState extends State<ContactList>
             } else {
               _contactList.add(userInfoM);
             }
+            break;
+          }
+
+          // Then handle general case.
+          if (enableContact.value &&
+              App.app.userDb?.userInfo.isAdmin != true &&
+              !widget.showAll) {
+            if (userInfoM.contactStatusStr == ContactStatus.added.name) {
+              _uidSet.add(userInfoM.uid);
+
+              final index = _contactList
+                  .indexWhere((element) => element.uid == userInfoM.uid);
+              if (index > -1) {
+                _contactList[index] = userInfoM;
+              } else {
+                _contactList.add(userInfoM);
+              }
+            } else {
+              _uidSet.remove(userInfoM.uid);
+              _contactList
+                  .removeWhere((element) => element.uid == userInfoM.uid);
+            }
           } else {
+            _uidSet.add(userInfoM.uid);
+
+            final index = _contactList
+                .indexWhere((element) => element.uid == userInfoM.uid);
+            if (index > -1) {
+              _contactList[index] = userInfoM;
+            } else {
+              _contactList.add(userInfoM);
+            }
+          }
+          break;
+        case EventActions.delete:
+          if (_uidSet.contains(userInfoM.uid)) {
             _uidSet.remove(userInfoM.uid);
             _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-          }
-        } else {
-          _uidSet.add(userInfoM.uid);
-
-          final index = _contactList
-              .indexWhere((element) => element.uid == userInfoM.uid);
-          if (index > -1) {
-            _contactList[index] = userInfoM;
           } else {
-            _contactList.add(userInfoM);
+            App.logger
+                .severe("User with uid: ${userInfoM.uid} not found in UI.");
           }
-        }
-        break;
-      case EventActions.delete:
-        if (_uidSet.contains(userInfoM.uid)) {
-          _uidSet.remove(userInfoM.uid);
-          _contactList.removeWhere((element) => element.uid == userInfoM.uid);
-        } else {
-          App.logger.severe("User with uid: ${userInfoM.uid} not found in UI.");
-        }
-        break;
-      default:
-        break;
-    }
+          break;
+        default:
+          break;
+      }
 
-    if (afterReady) {
-      _prepareContactList();
+      if (afterReady) {
+        _sortList();
+      }
+    } catch (e) {
+      App.logger.severe(e);
     }
   }
 
   Future<void> _onChatServerChange(ChatServerM chatServerM) async {
-    if (chatServerM.properties.commonInfo?.contactVerificationEnable == true) {
-      enableContact.value = true;
-    } else {
-      enableContact.value = false;
-    }
+    enableContact.value =
+        chatServerM.properties.commonInfo?.contactVerificationEnable == true;
 
-    if (enableContact.value &&
-        !widget.showAll &&
-        App.app.userDb?.userInfo.isAdmin != true) {
-      _contactList = widget.userList
+    if (_shouldOnlyShowContacts) {
+      _contactList = widget.initUserList
           .where((element) => element.contactStatus == ContactStatus.added)
           .toList();
     } else {
-      _contactList = widget.userList;
+      _contactList = widget.initUserList;
     }
 
-    _prepareContactList();
+    _sortList();
   }
 
-  void _prepareContactList() {
+  /// Sort the contact list by A-Z tag.
+  ///
+  /// TODO: order might not be consistent if Pinyin is involved. Should be
+  /// optimized in the future.
+  void _sortList() {
     if (isPreparing) {
       return;
     }

@@ -285,6 +285,7 @@ class VoceChatService {
     if (userInfoM.uid == App.app.userDb?.uid) {
       App.app.userDb!.info = userInfoM.info;
     }
+
     for (UsersAware userAware in _userListeners) {
       try {
         userAware(userInfoM, action, afterReady);

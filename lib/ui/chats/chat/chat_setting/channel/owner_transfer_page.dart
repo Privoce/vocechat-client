@@ -84,7 +84,7 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
             builder: ((context, snapshot) {
               if (snapshot.hasData) {
                 return ContactList(
-                  userList: snapshot.data!,
+                  initUserList: snapshot.data!,
                   ownerUid: widget.groupInfoM.groupInfo.owner,
                   showAll: true,
                   onTap: (userInfoM) {
@@ -97,7 +97,7 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
                   preSelectUidList: [widget.groupInfoM.groupInfo.owner ?? -1],
                   enablePreSelectAction: false,
                   enableSelect: true,
-                  enableUserUpdate: false,
+                  enableUpdate: false,
                   selectNotifier: _selectNotifier,
                 );
               } else if (snapshot.connectionState == ConnectionState.waiting) {
