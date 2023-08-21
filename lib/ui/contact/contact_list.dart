@@ -275,6 +275,9 @@ class _ContactListState extends State<ContactList>
               App.app.userDb?.userInfo.isAdmin == true) {
             _contactMap.addAll({userInfoM.uid: userInfoM});
             break;
+          } else if (userInfoM.contactStatus != ContactStatus.added) {
+            _contactMap.remove(userInfoM.uid);
+            break;
           } else {
             break;
           }
