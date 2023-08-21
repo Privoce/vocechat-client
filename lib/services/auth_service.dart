@@ -317,7 +317,6 @@ class AuthService {
       await ChatServerDao.dao.updateServerId(serverId).then((value) {
         if (value != null) {
           App.app.chatServerM = value;
-          print("auth_service serverId: ${App.app.chatServerM.serverId}");
         }
       });
 
