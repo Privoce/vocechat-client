@@ -55,7 +55,7 @@ class _MemberRemovePageState extends State<MemberRemovePage>
                   return ContactList(
                     initUserList: snapshot.data!,
                     ownerUid: widget.groupInfoMNotifier.value.groupInfo.owner,
-                    showAll: true,
+                    onlyShowInitList: true,
                     onTap: (user) {
                       if (selectNotifier.value.contains(user.uid)) {
                         selectNotifier.value = List<int>.from(

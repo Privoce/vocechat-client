@@ -40,7 +40,7 @@ class ChannelMembersPage extends StatelessWidget {
                 initUserList: snapshot.data!,
                 avatarSize: VoceAvatarSize.s36,
                 ownerUid: groupInfoM.groupInfo.owner,
-                showAll: true,
+                onlyShowInitList: true,
                 onTap: (user) {
                   Navigator.of(context).push(
                     MaterialPageRoute(

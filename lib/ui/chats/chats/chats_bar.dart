@@ -282,12 +282,6 @@ class _ChatsBarState extends State<ChatsBar> {
       ),
       centerTitle: false,
       actions: [
-        // CupertinoButton(
-        //     child: Text("test"),
-        //     onPressed: () async {
-        //       final data = await UserInfoDao().getUserList();
-        //       print(data?.length);
-        //     }),
         Padding(
             padding: const EdgeInsets.only(right: 10),
             child: PopupMenuButton(

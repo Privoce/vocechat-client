@@ -18,11 +18,12 @@ class ContactsPage extends StatefulWidget {
 }
 
 class _ContactsPageState extends State<ContactsPage>
-    with AutomaticKeepAliveClientMixin {
-  bool keepAlive = true;
+// with AutomaticKeepAliveClientMixin
+{
+  // bool keepAlive = true;
 
-  @override
-  bool get wantKeepAlive => keepAlive;
+  // @override
+  // bool get wantKeepAlive => keepAlive;
 
   @override
   void initState() {
@@ -40,13 +41,12 @@ class _ContactsPageState extends State<ContactsPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    // super.build(context);
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: const ContactsBar(),
         body: SafeArea(
           child: FutureBuilder<List<UserInfoM>?>(
-            // future: enableContact ? getContactList() : getUserList(),
             future: getUserList(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.done &&

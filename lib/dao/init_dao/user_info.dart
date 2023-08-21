@@ -188,32 +188,6 @@ class UserInfoDao extends Dao<UserInfoM> {
     return m;
   }
 
-  /// Empty pinned status of UserInfoM.
-  ///
-  /// If [ssePinnedUidList] is not empty, the pinned status of UserInfoM whose uid is
-  /// not in [ssePinnedUidList] will be cleared.
-  /// [ssePinnedUidList] is the list of uid which is pushed by server, that is, the
-  /// user with a valid [pinnedAt].
-  // Future<bool> emptyUnpushedPinnedStatus(List<int> ssePinnedUidList) async {
-  //   final ssePinnedUidSet = Set<int>.from(ssePinnedUidList);
-
-  //   final dmInfoDao = DmInfoDao();
-  //   final localPinnedUids = (await dmInfoDao.getDmUserInfoMList())
-  //           ?.where((element) => element.properties.pinnedAt != null)
-  //           .map((e) => e.uid)
-  //           .toList() ??
-  //       [];
-  //   final complementUidList = localPinnedUids
-  //       .where((element) => !ssePinnedUidSet.contains(element))
-  //       .toList();
-
-  //   for (final uid in complementUidList) {
-  //     await updateProperties(uid, pinnedAt: -1);
-  //   }
-
-  //   return true;
-  // }
-
   /// Update properties of UserInfoM.
   ///
   /// To cancel [pinnedAt], set it to 0 or -1.
@@ -243,21 +217,70 @@ class UserInfoDao extends Dao<UserInfoM> {
     return old;
   }
 
-  /// Get a list of Users in UserInfo
+  /// Get the contact list.
   ///
-  /// Result shown in
-  /// uid, ascending order
+  /// This function automatically checks whether to return the full contact list
+  /// (everyone in the server), or just the 'friends' list.
+  ///
+  /// Check criteria:
+  /// if contact mode is disabled in server settings,
+  /// || if the current user is an admin.
   Future<List<UserInfoM>?> getUserList() async {
-    String orderBy = "${UserInfoM.F_uid} ASC";
-    final userList = await super.list(orderBy: orderBy);
+    final contactVerificationEnabled =
+        App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
+            true;
+    final isAdmin = App.app.userDb?.userInfo.isAdmin == true;
 
+    final shouldGetAllUsers = !contactVerificationEnabled || isAdmin;
+
+    List<UserInfoM> userList = [];
+
+    String orderBy = "${UserInfoM.F_uid} ASC";
     final contactDao = ContactDao();
 
-    for (var user in userList) {
-      final contactInfo = await contactDao.getContactInfo(user.uid);
-      if (contactInfo != null) {
-        user.contactStatusStr = contactInfo.status;
-        user.contactUpdatedAt = contactInfo.updatedAt;
+    if (shouldGetAllUsers) {
+      userList = await super.list(orderBy: orderBy);
+    } else {
+      // the following users should be included:
+      // 1. admins
+      // 2. contacts of mine
+      // Please note that these user might overlap. [uidSet] is introduced to
+      // avoid duplication.
+      final uidSet = <int>{};
+      final contactList = await contactDao.list();
+
+      for (var contact in contactList) {
+        final user = await getUserByUid(contact.uid);
+        if (user != null) {
+          user.contactStatusStr = contact.status;
+          user.contactUpdatedAt = contact.updatedAt;
+          uidSet.add(user.uid);
+          userList.add(user);
+        }
+      }
+
+      // Add myself's userInfoM, together with contact status, to the list,
+      // as it is not in the contact list.
+      final myselfInfoM = await getUserByUid(App.app.userDb!.userInfo.uid);
+      if (myselfInfoM != null && !uidSet.contains(myselfInfoM.uid)) {
+        myselfInfoM.contactStatusStr = ContactStatus.added.name;
+        myselfInfoM.contactUpdatedAt = DateTime.now().millisecondsSinceEpoch;
+        uidSet.add(myselfInfoM.uid);
+        userList.add(myselfInfoM);
+      }
+
+      // Add admins
+      const sqlStr =
+          "SELECT * FROM ${UserInfoM.F_tableName} WHERE json_extract(${UserInfoM.F_info}, '\$.isAdmin') = 1";
+      final records = await db.rawQuery(sqlStr);
+      if (records.isNotEmpty) {
+        final admins = records.map((e) => UserInfoM.fromMap(e)).toList();
+        for (var admin in admins) {
+          if (!uidSet.contains(admin.uid)) {
+            userList.add(admin);
+            uidSet.add(admin.uid);
+          }
+        }
       }
     }
 

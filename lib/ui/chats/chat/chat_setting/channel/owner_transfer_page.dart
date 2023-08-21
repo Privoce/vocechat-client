@@ -86,7 +86,7 @@ class _OwnerTransferPageState extends State<OwnerTransferPage> {
                 return ContactList(
                   initUserList: snapshot.data!,
                   ownerUid: widget.groupInfoM.groupInfo.owner,
-                  showAll: true,
+                  onlyShowInitList: true,
                   onTap: (userInfoM) {
                     if (_selectNotifier.value.contains(userInfoM.uid)) {
                       _selectNotifier.value = [];
