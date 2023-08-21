@@ -249,14 +249,16 @@ class _ChatsBarState extends State<ChatsBar> {
                 ValueListenableBuilder<bool>(
                     valueListenable: enableContact,
                     builder: (context, enableContact, _) {
-                      if (enableContact ||
-                          widget.enableDescription &&
-                              _serverDescription.isNotEmpty) {
+                      bool showMemberCount = !enableContact;
+                      bool showDescription = enableContact &&
+                          (widget.enableDescription &&
+                              _serverDescription.isNotEmpty);
+                      if (showDescription) {
                         return Text(
                           _serverDescription,
                           style: AppTextStyles.labelSmall,
                         );
-                      } else {
+                      } else if (showMemberCount) {
                         return ValueListenableBuilder<int>(
                             valueListenable: widget.memberCountNotifier,
                             builder: (context, memberCount, _) {
@@ -272,6 +274,8 @@ class _ChatsBarState extends State<ChatsBar> {
                                 style: AppTextStyles.labelSmall,
                               );
                             });
+                      } else {
+                        return const SizedBox.shrink();
                       }
                     })
               ],
