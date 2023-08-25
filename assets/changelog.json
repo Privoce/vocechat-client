@@ -1,6 +1,10 @@
 {   
-    "latest": {"version": "0.2.106", "build_num": 76},
+    "latest": {"version": "0.2.107", "build_num": 77},
     "logs":  [
+        {"time": 1692923579847, "version": "0.2.107", "build_num": 77, "updates": [
+            "- fix: some contact list updating and display issues.",
+            "- fix: minor UI fixes."
+            ]},
         {"time": 1692251129635, "version": "0.2.106", "build_num": 76, "updates": [
             "- fix: possible avatar error in server switch drawer.",
             "- feature: change password in settings."
