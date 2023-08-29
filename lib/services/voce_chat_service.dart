@@ -1607,7 +1607,13 @@ class VoceChatService {
 
         if (targetMid == null) return;
 
-        if (afterReady) {
+        // If 'afterReady' is false, we need more thorough handling.
+        // If the to-be-deleted message is in 'msgMap', we need to remove it.
+        // Thus the message won't be added to database and won't be pushed
+        // to UI.
+        // If the message is not in 'msgMap', we still need to delete it from
+        // database and push the delete instruction to UI.
+        if (afterReady || !msgMap.containsKey(targetMid)) {
           ChatMsgDao().deleteMsgByMid(targetMid).then((mid) async {
             if (mid < 0) return;
 
@@ -1654,6 +1660,7 @@ class VoceChatService {
           msgMap.remove(targetMid);
         }
       } else {
+        // Normal reaction messages (reaction type apart from 'delete')
         final reactionM = ReactionM.fromChatMsg(chatMsg);
         if (reactionM != null) {
           if (afterReady) {
