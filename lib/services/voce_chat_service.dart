@@ -1661,6 +1661,9 @@ class VoceChatService {
         }
       } else {
         // Normal reaction messages (reaction type apart from 'delete')
+        // We do not need similar handling as above, as 'delete' will delete
+        // the original message.
+        // 'Reaction' is still adding info instead of deleting.
         final reactionM = ReactionM.fromChatMsg(chatMsg);
         if (reactionM != null) {
           if (afterReady) {
