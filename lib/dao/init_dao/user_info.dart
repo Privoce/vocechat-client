@@ -43,16 +43,21 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   }
 
   String get initial {
-    String initial;
+    try {
+      String initial;
 
-    initial = PinyinHelper.getFirstWordPinyin(userInfo.name)
-        .substring(0, 1)
-        .toUpperCase();
+      initial = PinyinHelper.getFirstWordPinyin(userInfo.name)
+          .substring(0, 1)
+          .toUpperCase();
 
-    if (!RegExp("[A-Z]").hasMatch(initial)) {
-      initial = "#";
+      if (!RegExp("[A-Z]").hasMatch(initial)) {
+        initial = "#";
+      }
+      return initial;
+    } catch (e) {
+      App.logger.severe(e);
+      return "#";
     }
-    return initial;
   }
 
   ValueNotifier<bool> onlineNotifier = ValueNotifier(false);

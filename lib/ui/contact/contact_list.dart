@@ -66,8 +66,6 @@ class ContactList extends StatefulWidget {
 
 class _ContactListState extends State<ContactList>
     with AutomaticKeepAliveClientMixin {
-  // List<UserInfoM> _contactList = [];
-  // final Set<int> _uidSet = {};
   Map<int, UserInfoM> _contactMap = {};
 
   bool isPreparing = false;
@@ -86,14 +84,6 @@ class _ContactListState extends State<ContactList>
         App.app.chatServerM.properties.commonInfo?.contactVerificationEnable ==
             true;
 
-    // if (_shouldOnlyShowContacts) {
-    //   _contactList = widget.initUserList.where((element) {
-    //     return element.contactStatus == ContactStatus.added ||
-    //         element.uid == App.app.userDb?.uid;
-    //   }).toList();
-    // } else {
-    //   _contactList = widget.initUserList;
-    // }
     _contactMap = {for (var e in widget.initUserList) e.uid: e};
 
     if (widget.enableUpdate) {
@@ -102,17 +92,6 @@ class _ContactListState extends State<ContactList>
     }
 
     App.app.chatService.subscribeChatServer(_onChatServerChange);
-  }
-
-  /// If the contact list only contains contacts of the current user.
-  ///
-  /// It should fulfill the following conditions:
-  /// 1. Contact mode is enabled in server settings.
-  /// 2. Current user is not admin.
-  ///
-  /// Admins can always see all users in the server.
-  bool get _shouldInclude {
-    return App.app.userDb?.userInfo.isAdmin != true && enableContact.value;
   }
 
   @override
@@ -194,6 +173,7 @@ class _ContactListState extends State<ContactList>
               ContactTile(
                 user,
                 isSelf,
+                key: ObjectKey(user),
                 disabled: preSelected,
                 avatarSize: widget.avatarSize,
                 mark: ownerMark,
