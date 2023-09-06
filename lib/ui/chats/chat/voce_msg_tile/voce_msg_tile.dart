@@ -105,39 +105,32 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
 
     return SizeTransition(
       sizeFactor: widget.sizeFactor,
-      child: GestureDetector(
-        // onTap: () {
-        //   print(widget.tileData.chatMsgMNotifier.value.values);
-        //   // print(widget.tileData.imageFile?.path);
-        //   // print(widget.tileData.needSecondaryPrepare);
-        // },
-        child: ValueListenableBuilder<UserInfoM?>(
-            key: widget.key,
-            valueListenable: widget.tileData.pinnedByUserInfoM,
-            builder: (context, pinnedBy, _) {
-              final isPinned = pinnedBy != null;
-              return ValueListenableBuilder<bool>(
-                  valueListenable: widget.tileData.isAutoDeleteN,
-                  builder: (context, isAutoDelete, _) {
-                    return Container(
-                        decoration: BoxDecoration(
-                          color: _getMsgTileBgColor(
-                              isPinned: isPinned, isAutoDelete: isAutoDelete),
-                        ),
-                        constraints: BoxConstraints(
-                            minHeight: avatarSize, maxWidth: width),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (isPinned) _buildPinnedBy(pinnedBy),
-                            _buildTileWithSelectionIcon(),
-                          ],
-                        ));
-                  });
-            }),
-      ),
+      child: ValueListenableBuilder<UserInfoM?>(
+          key: widget.key,
+          valueListenable: widget.tileData.pinnedByUserInfoM,
+          builder: (context, pinnedBy, _) {
+            final isPinned = pinnedBy != null;
+            return ValueListenableBuilder<bool>(
+                valueListenable: widget.tileData.isAutoDeleteN,
+                builder: (context, isAutoDelete, _) {
+                  return Container(
+                      decoration: BoxDecoration(
+                        color: _getMsgTileBgColor(
+                            isPinned: isPinned, isAutoDelete: isAutoDelete),
+                      ),
+                      constraints: BoxConstraints(
+                          minHeight: avatarSize, maxWidth: width),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isPinned) _buildPinnedBy(pinnedBy),
+                          _buildTileWithSelectionIcon(),
+                        ],
+                      ));
+                });
+          }),
     );
   }
 
@@ -295,16 +288,20 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
   }
 
   Widget _buildTitle(BuildContext context) {
-    List<InlineSpan> spanList = [
-      TextSpan(
-          text: widget.tileData.name,
+    List<Widget> titleRowWidgets = [
+      Flexible(
+        child: Text(
+          widget.tileData.name,
           style: const TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 14,
-              color: Color(0xFF344054))),
-      WidgetSpan(child: SizedBox(width: 4)),
-      TextSpan(
-          text: " ${widget.tileData.time.toChatTime24StrEn(context)}",
+              color: Color(0xFF344054)),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+      SizedBox(width: 4),
+      Text(" ${widget.tileData.time.toChatTime24StrEn(context)}",
           style: const TextStyle(
               fontWeight: FontWeight.w500,
               fontSize: 12,
@@ -318,13 +315,11 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
               (layout == ChatLayoutMode.SelfRight && isSelf)
                   ? MainAxisAlignment.end
                   : MainAxisAlignment.start;
-          return Row(mainAxisAlignment: mainAxisAlignment, children: [
-            RichText(
-                text: TextSpan(
-                    children: (layout == ChatLayoutMode.SelfRight && isSelf)
-                        ? spanList.reversed.toList()
-                        : spanList)),
-          ]);
+          return Row(
+              mainAxisAlignment: mainAxisAlignment,
+              children: layout == ChatLayoutMode.SelfRight && isSelf
+                  ? titleRowWidgets.reversed.toList()
+                  : titleRowWidgets);
         });
   }
 
