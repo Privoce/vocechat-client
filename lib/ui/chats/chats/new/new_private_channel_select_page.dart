@@ -117,41 +117,42 @@ class _NewPrivateChannelSelectPageState
   }
 
   void createChannel() async {
-    // try {
-    String name = widget.nameController.text.trim();
-    if (name.isEmpty) {
-      name = AppLocalizations.of(context)!.newPrivateChannel;
-    }
-
-    String description = widget.desController.text.trim();
-    List<int>? members = widget.selectedNotifier.value;
-
-    if (members.length < 2) {
-      App.logger.severe("Member count not enough: ${members.length}");
-      return;
-    }
-
-    final req = GroupCreateRequest(
-        name: name,
-        description: description,
-        isPublic: false,
-        members: members);
-
-    final serverVersionRes = await AdminSystemApi().getServerVersion();
-    if (serverVersionRes.statusCode == 200) {
-      final serverVersion = serverVersionRes.data!;
-
-      if (isVersionNumberGreaterThan("0.3.3", serverVersion)) {
-        await _createGroupBfe033(req);
-      } else {
-        await _createGroupAft033(req);
+    try {
+      String name = widget.nameController.text.trim();
+      if (name.isEmpty) {
+        name = AppLocalizations.of(context)!.newPrivateChannel;
       }
-    } else {
-      return;
+
+      String description = widget.desController.text.trim();
+      List<int>? members = widget.selectedNotifier.value;
+
+      if (members.length < 2) {
+        App.logger.severe("Member count not enough: ${members.length}");
+        return;
+      }
+
+      final req = GroupCreateRequest(
+          name: name,
+          description: description,
+          isPublic: false,
+          members: members);
+
+      final serverVersionRes = await AdminSystemApi().getServerVersion();
+      if (serverVersionRes.statusCode == 200) {
+        final serverVersion = serverVersionRes.data!;
+
+        if (isVersionNumberGreaterThan("0.3.3", serverVersion)) {
+          await _createGroupBfe033(req);
+        } else {
+          await _createGroupAft033(req);
+        }
+      } else {
+        return;
+      }
+    } catch (e) {
+      App.logger.severe(e);
     }
-    // } catch (e) {
-    //   App.logger.severe(e);
-    // }
+    return;
   }
 
   bool isVersionNumberGreaterThan(String version1, String version2) {
