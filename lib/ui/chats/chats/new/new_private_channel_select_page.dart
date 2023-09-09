@@ -117,41 +117,53 @@ class _NewPrivateChannelSelectPageState
   }
 
   void createChannel() async {
-    try {
-      String name = widget.nameController.text.trim();
-      if (name.isEmpty) {
-        name = AppLocalizations.of(context)!.newPrivateChannel;
-      }
-
-      String description = widget.desController.text.trim();
-      List<int>? members = widget.selectedNotifier.value;
-
-      if (members.length < 2) {
-        App.logger.severe("Member count not enough: ${members.length}");
-        return;
-      }
-
-      final req = GroupCreateRequest(
-          name: name,
-          description: description,
-          isPublic: false,
-          members: members);
-
-      final serverVersionRes = await AdminSystemApi().getServerVersion();
-      if (serverVersionRes.statusCode == 200) {
-        final serverVersion = serverVersionRes.data!;
-
-        if ("0.3.3".compareTo(serverVersion) > 0) {
-          await _createGroupBfe033(req);
-        } else {
-          await _createGroupAft033(req);
-        }
-      } else {
-        return;
-      }
-    } catch (e) {
-      App.logger.severe(e);
+    // try {
+    String name = widget.nameController.text.trim();
+    if (name.isEmpty) {
+      name = AppLocalizations.of(context)!.newPrivateChannel;
     }
+
+    String description = widget.desController.text.trim();
+    List<int>? members = widget.selectedNotifier.value;
+
+    if (members.length < 2) {
+      App.logger.severe("Member count not enough: ${members.length}");
+      return;
+    }
+
+    final req = GroupCreateRequest(
+        name: name,
+        description: description,
+        isPublic: false,
+        members: members);
+
+    final serverVersionRes = await AdminSystemApi().getServerVersion();
+    if (serverVersionRes.statusCode == 200) {
+      final serverVersion = serverVersionRes.data!;
+
+      if (isVersionNumberGreaterThan("0.3.3", serverVersion)) {
+        await _createGroupBfe033(req);
+      } else {
+        await _createGroupAft033(req);
+      }
+    } else {
+      return;
+    }
+    // } catch (e) {
+    //   App.logger.severe(e);
+    // }
+  }
+
+  bool isVersionNumberGreaterThan(String version1, String version2) {
+    final version1List = version1.split(".");
+    final version2List = version2.split(".");
+
+    for (int i = 0; i < version1List.length; i++) {
+      if (int.parse(version1List[i]) > int.parse(version2List[i])) {
+        return true;
+      }
+    }
+    return false;
   }
 
   Future<int?> createGroupBfe033(GroupCreateRequest req) async {
