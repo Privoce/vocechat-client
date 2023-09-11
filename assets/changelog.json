@@ -1,9 +1,10 @@
 {   
     "latest": {"version": "0.2.108", "build_num": 78},
     "logs":  [
-        {"time": 1694017332753, "version": "0.2.108", "build_num": 78, "updates": [
-            "- attampt fix: potential contact list crash.",
-            "- fix: username overflow in message tiles."
+        {"time": 1694224576381, "version": "0.2.108", "build_num": 78, "updates": [
+            "- attempt fix: potential contact list crash.",
+            "- fix: username overflow in message tiles.",
+            "- fix: an issue in server version comparator."
             ]},
         {"time": 1692923579847, "version": "0.2.107", "build_num": 77, "updates": [
             "- fix: some contact list updating and display issues.",
