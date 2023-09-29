@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:vocechat_client/api/lib/dio_retry/options.dart';
 import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
@@ -47,6 +51,16 @@ class DioUtil {
               RetryOptions(retries: 0, retryInterval: Duration(seconds: 1))));
     }
     _dio.options.baseUrl = baseUrl;
+
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      validateCertificate: (certificate, host, port) => true,
+      // onHttpClientCreate: (client) {
+      //   client.badCertificateCallback =
+      //       (X509Certificate cert, String host, int port) => true;
+      //   return client;
+      // },
+    );
+
     // _dio.options.connectTimeout = 5000; //5s
   }
 

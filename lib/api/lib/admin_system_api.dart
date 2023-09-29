@@ -113,7 +113,7 @@ class AdminSystemApi {
 
   Future<Response<bool>> getInitialized({bool enableRetry = false}) async {
     final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
-    dio.options.connectTimeout = 5000;
+    dio.options.connectTimeout = Duration(milliseconds: 5000);
 
     final res = await dio.get("/initialized");
 

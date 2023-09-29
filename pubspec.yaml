@@ -49,7 +49,7 @@ dependencies:
   convert: ^3.0.1 
   intl: any
   json_annotation: ^4.4.0
-  dio: ^4.0.6
+  dio: ^5.3.3
   image_picker: ^0.8.7+1
   flutter_image_compress: ^1.1.0
   package_info_plus: ^3.0.2

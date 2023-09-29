@@ -30,9 +30,9 @@ class RetryOptions {
   /// Returns [true] only if the response hasn't been cancelled or got
   /// a bas status code.
   static FutureOr<bool> defaultRetryEvaluator(
-      DioError error, ErrorInterceptorHandler handler) {
-    return error.type != DioErrorType.cancel &&
-        error.type != DioErrorType.response;
+      DioException exception, ErrorInterceptorHandler handler) {
+    return exception.type != DioExceptionType.cancel &&
+        exception.type != DioExceptionType.badResponse;
   }
 
   factory RetryOptions.fromExtra(RequestOptions request, RetryOptions options) {

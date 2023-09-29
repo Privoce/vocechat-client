@@ -1,9 +1,8 @@
 import 'dart:math';
 import 'dart:typed_data';
-import 'package:http_parser/http_parser.dart';
+
 import 'package:dio/dio.dart';
-import 'package:vocechat_client/api/lib/dio_retry/options.dart';
-import 'package:vocechat_client/api/lib/dio_retry/retry_interceptor.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:vocechat_client/api/models/resource/file_upload_response.dart';
 import 'package:vocechat_client/app.dart';
 
@@ -21,7 +20,7 @@ class FileUploader {
     //     dio: _dio, options: RetryOptions(retryInterval: Duration(seconds: 2))));
 
     _dio.options.baseUrl = "${App.app.chatServerM.fullUrl}/api/resource";
-    _dio.options.connectTimeout = 5000; //5s
+    _dio.options.connectTimeout = Duration(milliseconds: 5000); //5s
 
     // _dio.options.receiveTimeout = 10000;
     _dio.options.headers["accept"] = "application/json";

@@ -82,6 +82,7 @@ Future<void> main() async {
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((value) {
+    HttpOverrides.global = MyHttpOverrides();
     runApp(VoceChatApp(defaultHome: defaultHome));
   });
 }
@@ -462,3 +463,13 @@ class UniLinkData {
 }
 
 enum UniLinkType { login, register }
+
+// A temp solution related to SSL/TLS certificate
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}

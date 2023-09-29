@@ -96,7 +96,7 @@ class GroupApi {
         base64.encode(utf8.encode(json.encode(properties)));
     dio.options.headers["content-type"] = typeText;
     // dio.options.receiveTimeout = Duration(milliseconds: 10000);
-    dio.options.receiveTimeout = 10000;
+    dio.options.receiveTimeout = Duration(milliseconds: 10000);
 
     Map<String, dynamic> refererHeader = {
       'referer': App.app.chatServerM.fullUrl

@@ -50,7 +50,7 @@ class TokenApi {
 
   Future<Response<TokenRenewResponse>> renewToken(TokenRenewRequest req) async {
     final dio = DioUtil(baseUrl: _baseUrl, enableRetry: false);
-    dio.options.sendTimeout = 3000;
+    dio.options.sendTimeout = Duration(milliseconds: 3000);
 
     dio.options.validateStatus = (status) {
       // return status != null && status < 500;

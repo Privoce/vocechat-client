@@ -11,13 +11,15 @@ class RetryInterceptor extends Interceptor {
   RetryInterceptor({required this.dio, required this.options});
 
   @override
-  Future<dynamic> onError(DioError err, ErrorInterceptorHandler handler) async {
+  Future<dynamic> onError(
+      DioException err, ErrorInterceptorHandler handler) async {
     var extra = RetryOptions.fromExtra(err.requestOptions, options);
 
     var shouldRetry = extra.retries > 0 &&
         (options.retryEvaluator != null
             ? await options.retryEvaluator!(err, handler)
             : await RetryOptions.defaultRetryEvaluator(err, handler));
+
     if (shouldRetry) {
       if (extra.retryInterval.inMilliseconds > 0) {
         await Future.delayed(extra.retryInterval);

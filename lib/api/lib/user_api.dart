@@ -311,7 +311,7 @@ class UserApi {
       {bool enableRetry = false}) async {
     final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);
     dio.options.headers["content-type"] = "application/json";
-    dio.options.connectTimeout = 2000;
+    dio.options.connectTimeout = Duration(milliseconds: 2000);
 
     final res = await dio.post("/check_magic_token",
         data: json.encode({"magic_token": magicToken}));
