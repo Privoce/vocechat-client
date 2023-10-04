@@ -452,19 +452,14 @@ class SharedFuncs {
 
     if (Platform.isIOS) {
       String? info = (await DeviceInfoPlugin().iosInfo).identifierForVendor;
-
-      if (info == null || info.isEmpty) {
-        info = await _setDeviceId();
-      }
+      info = await _setGetDeviceId(deviceId: info);
       device = "iOS:$info";
     } else if (Platform.isAndroid) {
       String? info = (await AndroidId().getId());
-      if (info == null || info.isEmpty) {
-        info = await _setDeviceId();
-      }
+      info = await _setGetDeviceId(deviceId: info);
       device = "Android:$info";
     } else {
-      String info = await _setDeviceId();
+      String info = await _setGetDeviceId();
       device = "Mobile:$info";
     }
 
@@ -568,15 +563,22 @@ class SharedFuncs {
     App.app.statusService?.fireTokenLoading(TokenStatus.successful);
   }
 
-  static Future<String> _setDeviceId() async {
-    final deviceId = await SharedPreferenceHelper.getString("device_id");
-    if (deviceId == null || deviceId.isEmpty) {
-      final deviceId = uuid();
-      await SharedPreferenceHelper.setString("device_id", deviceId);
-      return deviceId;
-    } else {
-      return deviceId;
+  /// Set or get device id from shared preference.
+  ///
+  /// If there is an old device id, return it.
+  /// If there is no old device id, and [deviceId] is empty, generate a new
+  /// device id and save it to shared preference.
+  /// If [deviceId] is not empty, save it to shared preference and return it.
+  static Future<String> _setGetDeviceId({String? deviceId}) async {
+    final oldDeviceId = await SharedPreferenceHelper.getString("device_id");
+
+    if (oldDeviceId != null && oldDeviceId.isNotEmpty) {
+      return oldDeviceId;
+    } else if (deviceId == null || deviceId.isEmpty) {
+      deviceId = uuid();
     }
+    await SharedPreferenceHelper.setString("device_id", deviceId);
+    return deviceId;
   }
 
   /// Translate the number of seconds to minutes (hours or days).
