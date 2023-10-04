@@ -185,15 +185,13 @@ class _AppQrScanPageState extends State<AppQrScanPage> {
 
             final originalImage =
                 image.decodeImage(await File(path).readAsBytes());
-            final jpgImage = image.Image(
-                originalImage!.width, originalImage.height,
-                channels: image.Channels.rgb);
-            image.fill(jpgImage, image.getColor(255, 255, 255));
-
-            image.copyInto(jpgImage, originalImage, dstX: 0, dstY: 0);
+            final imageDest = image.copyResize(originalImage!,
+                width: originalImage.width, height: originalImage.height);
+            imageDest.clear(image.ColorRgb8(255, 255, 255));
+            image.compositeImage(imageDest, originalImage);
 
             await File("$tempPath/temp.jpg")
-                .writeAsBytes(image.encodeJpg(jpgImage));
+                .writeAsBytes(image.encodeJpg(imageDest));
             path = "$tempPath/temp.jpg";
           }
 
