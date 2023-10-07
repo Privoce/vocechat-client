@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:universal_html/html.dart';
-import 'package:vocechat_client/app.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/shared_funcs.dart';

@@ -17,14 +17,14 @@ class _AvChatFloatingWindowState extends State<AvChatFloatingWindow> {
 
   // Finger position within the floating window when dragging starts,
   // value is the difference between finger position and the top left corner of the widget
-  double _xOffset = 0;
-  double _yOffset = 0;
+  // double _xOffset = 0;
+  // double _yOffset = 0;
 
   @override
   Widget build(BuildContext context) {
-    final topOffset = MediaQuery.of(context).padding.top;
-    final bottomOffset = MediaQuery.of(context).padding.bottom;
-    const leftOffset = 8, rightOffset = 8;
+    // final topOffset = MediaQuery.of(context).padding.top;
+    // final bottomOffset = MediaQuery.of(context).padding.bottom;
+    // const leftOffset = 8, rightOffset = 8;
 
     return Positioned(
       left: _xPos,

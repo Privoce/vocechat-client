@@ -2,7 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:image/image.dart' as image;
 import 'package:mime/mime.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,8 +12,6 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:image/image.dart' as image;
 
 // ignore: must_be_immutable
 class AppQrScanPage extends StatefulWidget {

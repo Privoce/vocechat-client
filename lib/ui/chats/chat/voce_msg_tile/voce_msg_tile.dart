@@ -3,12 +3,12 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
-import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/helpers/time_helper.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
 import 'package:vocechat_client/services/file_handler.dart';
@@ -20,18 +20,16 @@ import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/tile_image_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_reply_bubble.dart';
-import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/audio/voce_audio_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_archive_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_file_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_markdown_bubble.dart';
+import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_text_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_video_bubble.dart';
 import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoceMsgTile extends StatefulWidget {
   final MsgTileData tileData;

@@ -1,10 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/image_bubble/image_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/empty_data_placeholder.dart';
-import 'package:vocechat_client/ui/widgets/empty_content_placeholder.dart';
 
 class VoceZoomImageBubble extends StatefulWidget {
   final Future<ImageGalleryData> Function() getImageList;

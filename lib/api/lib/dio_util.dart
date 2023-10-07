@@ -91,8 +91,8 @@ class DioUtil {
           .then((res) {
         handler.resolve(res);
       }).onError((error, stackTrace) {
-        handler.reject(
-            DioError(requestOptions: response.requestOptions, error: error));
+        handler.reject(DioException(
+            requestOptions: response.requestOptions, error: error));
       });
     } else {
       App.logger.severe("Token refresh failed");

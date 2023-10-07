@@ -8,7 +8,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
@@ -19,7 +18,6 @@ import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/pdf_page.dart';
 import 'package:vocechat_client/ui/chats/chat/message_tile/tile_pages/video_page.dart';
-import 'package:voce_widgets/voce_widgets.dart';
 
 enum FilePageStatus { download, open, openWithOtherApp, downloading }
 
@@ -218,8 +216,8 @@ class _FilePageState extends State<FilePage> {
     try {
       await Permission.storage.request().isGranted.then((value) async {
         if (value) {
-          final externalFile = await _localFile!
-              .copy("$downloadsPath/${widget.fileName}.${widget.extension}");
+          // final externalFile = await _localFile!
+          //     .copy("$downloadsPath/${widget.fileName}.${widget.extension}");
 
           return true;
         } else {
