@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
-import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_settings.dart';
+import 'package:vocechat_client/globals.dart' as globals;
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/models/ui_models/msg_tile_data.dart';
 import 'package:vocechat_client/services/file_handler.dart';
@@ -16,9 +16,7 @@ import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
 import 'package:vocechat_client/services/file_handler/user_avatar_handler.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
-import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
-import 'package:vocechat_client/globals.dart' as globals;
 
 class ChatPageController {
   // What do we need?

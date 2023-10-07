@@ -4,7 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/api/models/admin/agora/agora_config.dart';
 import 'package:vocechat_client/api/models/admin/agora/agora_token_response.dart';
-import 'package:vocechat_client/api/models/admin/smtp/smtp.dart';
 import 'package:vocechat_client/app.dart';
 
 class AdminAgoraApi {

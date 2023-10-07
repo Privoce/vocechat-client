@@ -2,7 +2,7 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:vocechat_client/api/models/admin/login/login_config.dart';
+
 import 'package:vocechat_client/api/models/admin/system/sys_common_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';

@@ -32,7 +32,6 @@ import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/auth/server_page.dart';
-import 'package:vocechat_client/ui/chats/chats/chats_bar.dart';
 
 import 'models/local_kits.dart';
 

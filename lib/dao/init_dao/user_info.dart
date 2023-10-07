@@ -1,23 +1,19 @@
 // ignore_for_file: constant_identifier_names
 
 import 'dart:convert';
-import 'dart:math';
+
 import 'package:azlistview/azlistview.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:lpinyin/lpinyin.dart';
+import 'package:sqflite/utils/utils.dart';
 import 'package:vocechat_client/api/models/user/contact_info.dart';
-import 'package:vocechat_client/api/models/user/user_contact.dart';
 import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
-import 'package:vocechat_client/dao/init_dao/dm_info.dart';
 import 'package:vocechat_client/dao/init_dao/properties_models/user_properties.dart';
-import 'package:sqflite/utils/utils.dart';
-import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/globals.dart';
 
 class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   int uid = -1;
