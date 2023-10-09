@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/cupertino.dart';
@@ -50,12 +52,23 @@ class DioUtil {
     _dio.options.baseUrl = baseUrl;
 
     _dio.httpClientAdapter = IOHttpClientAdapter(
-      validateCertificate: (certificate, host, port) => true,
-      // onHttpClientCreate: (client) {
-      //   client.badCertificateCallback =
-      //       (X509Certificate cert, String host, int port) => true;
-      //   return client;
-      // },
+      createHttpClient: () {
+        // print("************** createHttpClient");
+        // Don't trust any certificate just because their root cert is trusted.
+        final HttpClient client =
+            HttpClient(context: SecurityContext(withTrustedRoots: false));
+        // You can test the intermediate / root cert here. We just ignore it.
+        client.badCertificateCallback = (cert, host, port) {
+          // print("************** badCertificateCallback");
+          return true;
+        };
+
+        return client;
+      },
+      validateCertificate: (certificate, host, port) {
+        // print("************** validateCertificate");
+        return true;
+      },
     );
 
     // _dio.options.connectTimeout = 5000; //5s

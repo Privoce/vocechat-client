@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+// import 'dart:io';
 import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -23,6 +23,7 @@ import 'package:vocechat_client/firebase_options.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
@@ -61,7 +62,8 @@ Future<void> main() async {
       await initCurrentDb(App.app.userDb!.dbName);
 
       if (userDb.loggedIn != 1) {
-        Sse.sse.close();
+        // Sse.sse.close();
+        VoceWebSocket().close();
         defaultHome = await SharedFuncs.getDefaultHomePage();
       } else {
         final chatServerM =
@@ -81,7 +83,6 @@ Future<void> main() async {
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((value) {
-    HttpOverrides.global = MyHttpOverrides();
     runApp(VoceChatApp(defaultHome: defaultHome));
   });
 }
@@ -436,7 +437,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
             _firstTimeRefreshSinceAppOpens = false;
             App.app.chatService.initSse();
           } else {
-            Sse.sse.close();
+            // Sse.sse.close();
+            VoceWebSocket().close();
           }
         }
       }
@@ -464,11 +466,11 @@ class UniLinkData {
 enum UniLinkType { login, register }
 
 // A temp solution related to SSL/TLS certificate
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-  }
-}
+// class MyHttpOverrides extends HttpOverrides {
+//   @override
+//   HttpClient createHttpClient(SecurityContext? context) {
+//     return super.createHttpClient(context)
+//       ..badCertificateCallback =
+//           (X509Certificate cert, String host, int port) => true;
+//   }
+// }

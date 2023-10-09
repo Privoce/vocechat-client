@@ -106,7 +106,7 @@ class GroupApi {
     }
     dio.options.headers.addAll(refererHeader);
 
-    print("headers: ${dio.options.headers}");
+    // print("headers: ${dio.options.headers}");
 
     final res = await dio.post("/$gid/send", data: msg);
 

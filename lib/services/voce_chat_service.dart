@@ -35,6 +35,7 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
+import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/sse/sse_event_consts.dart';
 import 'package:vocechat_client/services/sse/sse_queue.dart';
@@ -78,7 +79,8 @@ class VoceChatService {
     mainTaskQueue.cancel();
     sseQueue.clear();
     readIndexTimer.cancel();
-    Sse.sse.close();
+    // Sse.sse.close();
+    VoceWebSocket().close();
   }
 
   final Set<UsersAware> _userListeners = {};
@@ -118,7 +120,8 @@ class VoceChatService {
   }
 
   void initSse() async {
-    Sse.sse.close();
+    // Sse.sse.close();
+    VoceWebSocket().close();
 
     await Future.delayed(Duration(milliseconds: 500));
 
@@ -130,13 +133,16 @@ class VoceChatService {
       return;
     }
 
-    Sse.sse.subscribeSseEvent(handleSseEvent);
-    Sse.sse.subscribeReady((ready) {
-      afterReady = ready;
-    });
+    // Sse.sse.subscribeSseEvent(handleSseEvent);
+    // Sse.sse.subscribeReady((ready) {
+    //   afterReady = ready;
+    // });
+
+    VoceWebSocket().subscribeServerEvent(handleSseEvent);
 
     try {
-      preSseInits().then((_) => Sse.sse.connect());
+      // preSseInits().then((_) => Sse.sse.connect());
+      preSseInits().then((_) => VoceWebSocket().connect());
     } catch (e) {
       App.logger.severe(e);
     }

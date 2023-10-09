@@ -23,6 +23,7 @@ import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
 import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
@@ -357,7 +358,8 @@ class AuthService {
 
   Future<bool> logout({bool markLogout = true, bool isKicked = false}) async {
     try {
-      Sse.sse.close();
+      // Sse.sse.close();
+      VoceWebSocket().close();
 
       final curUserDb = App.app.userDb!;
 

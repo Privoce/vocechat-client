@@ -34,7 +34,7 @@ class VoceAudioService {
     await controller.resume();
 
     controller.onPlayerStateChanged.listen((event) {
-      print(event);
+      // print(event);
     });
   }
 
