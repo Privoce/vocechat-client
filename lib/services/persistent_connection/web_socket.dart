@@ -49,7 +49,6 @@ class VoceWebSocket {
         fireServerEvent(event);
       }, onError: (error) {
         onError(error);
-        App.app.statusService?.fireSseLoading(SseStatus.disconnected);
       });
     } catch (error) {
       onError(error);
@@ -58,6 +57,7 @@ class VoceWebSocket {
 
   void onError(dynamic e) {
     App.logger.info("Error connecting to websocket: $e");
+    App.app.statusService?.fireSseLoading(SseStatus.disconnected);
     isConnecting = false;
     close();
     tryReconnection();
