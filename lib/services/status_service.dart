@@ -40,7 +40,7 @@ class StatusService {
     _sseListeners.remove(sseAware);
   }
 
-  void fireSseLoading(SseStatus status) {
+  void fireSseLoading(PersConnStatus status) {
     for (SseAware sseAware in _sseListeners) {
       try {
         sseAware(status);

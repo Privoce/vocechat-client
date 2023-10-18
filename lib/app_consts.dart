@@ -19,7 +19,7 @@ enum MsgStatus { fail, success, sending, readyToSend, deleted }
 
 enum LoadingStatus { loading, success, disconnected }
 
-enum SseStatus { init, connecting, successful, disconnected }
+enum PersConnStatus { init, connecting, successful, disconnected }
 
 enum TokenStatus { init, connecting, successful, unauthorized, disconnected }
 
@@ -31,7 +31,7 @@ enum InvitationLinkPreparationStatus { successful, networkError, invalid }
 enum ChatLayoutMode { Left, SelfRight }
 
 typedef LoadingAware = Future<void> Function(LoadingStatus status);
-typedef SseAware = Future<void> Function(SseStatus status);
+typedef SseAware = Future<void> Function(PersConnStatus status);
 typedef TokenAware = Future<void> Function(TokenStatus status);
 
 /// [MsgContentType] is consistant with server definition.

@@ -24,7 +24,6 @@ import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
-import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -211,7 +210,7 @@ class AuthService {
         final data = res.data!;
         if (await initServices(data, rememberPswd,
             rememberPswd ? req.credential.password : null)) {
-          App.app.chatService.initSse();
+          await App.app.chatService.initPersistentConnection();
           return true;
         } else {
           errorContent =

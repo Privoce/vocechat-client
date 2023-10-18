@@ -35,10 +35,10 @@ import 'package:vocechat_client/main.dart';
 import 'package:vocechat_client/models/local_kits.dart';
 import 'package:vocechat_client/services/file_handler.dart';
 import 'package:vocechat_client/services/file_handler/audio_file_handler.dart';
+import 'package:vocechat_client/services/persistent_connection/sse.dart';
 import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
-import 'package:vocechat_client/services/sse/sse.dart';
-import 'package:vocechat_client/services/sse/sse_event_consts.dart';
-import 'package:vocechat_client/services/sse/sse_queue.dart';
+import 'package:vocechat_client/services/sse/server_event_consts.dart';
+import 'package:vocechat_client/services/sse/server_event_queue.dart';
 import 'package:vocechat_client/services/task_queue.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
@@ -67,8 +67,8 @@ class VoceChatService {
   VoceChatService() {
     setReadIndexTimer();
 
-    sseQueue = SseQueue(
-        closure: handleSseStream,
+    eventQueue = EventQueue(
+        closure: handleEventStream,
         afterTaskCheck: () async {
           // _handleReady();
         });
@@ -77,10 +77,10 @@ class VoceChatService {
 
   void dispose() {
     mainTaskQueue.cancel();
-    sseQueue.clear();
+    eventQueue.clear();
     readIndexTimer.cancel();
-    // Sse.sse.close();
     VoceWebSocket().close();
+    VoceSse().close();
   }
 
   final Set<UsersAware> _userListeners = {};
@@ -93,7 +93,7 @@ class VoceChatService {
   final Set<UserStatusAware> _userStatusListeners = {};
   final Set<ChatServerAware> _chatServerListeners = {};
 
-  late SseQueue sseQueue;
+  late EventQueue eventQueue;
   late TaskQueue mainTaskQueue;
   late Timer readIndexTimer;
 
@@ -104,7 +104,7 @@ class VoceChatService {
   final Map<int, ChatMsgM> msgMap = {};
   final Map<int, ReactionM> reactionMap = {};
 
-  Future<void> preSseInits() async {
+  Future<void> prePersistentConnectionInits() async {
     final res = await UserApi().getUserContacts();
 
     if (res.statusCode == 200 && res.data != null) {
@@ -119,30 +119,38 @@ class VoceChatService {
     App.logger.info("Contact list initialized. total: ${res.data?.length}");
   }
 
-  void initSse() async {
-    // Sse.sse.close();
-    VoceWebSocket().close();
-
-    await Future.delayed(Duration(milliseconds: 500));
-
-    App.app.statusService?.fireSseLoading(SseStatus.connecting);
-
-    if (App.app.userDb == null) {
-      App.logger.warning("App.app.userDb null. SSE not subscribed.");
-      App.app.statusService?.fireSseLoading(SseStatus.disconnected);
-      return;
+  Future<void> initPersistentConnection() async {
+    final isWSAvailable = await VoceWebSocket().checkAvailability();
+    if (isWSAvailable) {
+      await _initWebSocket();
+    } else {
+      await _initSse();
     }
+  }
 
-    // Sse.sse.subscribeSseEvent(handleSseEvent);
-    // Sse.sse.subscribeReady((ready) {
-    //   afterReady = ready;
-    // });
-
+  Future<void> _initWebSocket() async {
     VoceWebSocket().subscribeServerEvent(handleSseEvent);
+    VoceWebSocket().subscribeReady((ready) {
+      afterReady = ready;
+    });
 
     try {
-      // preSseInits().then((_) => Sse.sse.connect());
-      preSseInits().then((_) => VoceWebSocket().connect());
+      await prePersistentConnectionInits();
+      await VoceWebSocket().connect();
+    } catch (e) {
+      App.logger.severe(e);
+    }
+  }
+
+  Future<void> _initSse() async {
+    VoceSse().subscribeServerEvent(handleSseEvent);
+    VoceSse().subscribeReady((ready) {
+      afterReady = ready;
+    });
+
+    try {
+      await prePersistentConnectionInits();
+      await VoceSse().connect();
     } catch (e) {
       App.logger.severe(e);
     }
@@ -399,7 +407,7 @@ class VoceChatService {
 
       // Following methods listed in alphabetical order.
       switch (type) {
-        case sseKick:
+        case kickEvent:
           App.app.statusService?.fireTokenLoading(TokenStatus.unauthorized);
 
           final context = navigatorKey.currentContext;
@@ -420,28 +428,28 @@ class VoceChatService {
           // _handleKick();
           break;
 
-        case sseHeartbeat:
-          App.app.statusService?.fireSseLoading(SseStatus.successful);
+        case heartbeatEvent:
+          App.app.statusService?.fireSseLoading(PersConnStatus.successful);
           break;
 
-        case sseChat:
-        case sseGroupChanged:
-        case sseJoinedGroup:
-        case sseKickFromGroup:
-        case sseMessageCleared:
-        case ssePinnedMessageUpdated:
-        case sseReady:
-        case sseRelatedGroups:
-        case sseServerConfigChanged:
-        case sseUserJoinedGroup:
-        case sseUserLeavedGroup:
-        case sseUsersLog:
-        case sseUserSettings:
-        case sseUserSettingsChanged:
-        case sseUsersSnapshot:
-        case sseUsersState:
-        case sseUsersStateChanged:
-          sseQueue.add(event);
+        case chatEvent:
+        case groupChangedEvent:
+        case joinedGroupEvent:
+        case kickFromGroupEvent:
+        case messageClearedEvent:
+        case pinnedMessageUpdatedEvent:
+        case readyEvent:
+        case relatedGroupsEvent:
+        case serverConfigChangedEvent:
+        case userJoinedGroupEvent:
+        case userLeavedGroupEvent:
+        case usersLogEvent:
+        case userSettingsEvent:
+        case userSettingsChangedEvent:
+        case usersSnapshotEvent:
+        case usersStateEvent:
+        case usersStateChangedEvent:
+          eventQueue.add(event);
           break;
 
         default:
@@ -453,62 +461,62 @@ class VoceChatService {
   }
 
   /// Handles SSE Stream data types
-  Future<void> handleSseStream(dynamic event) async {
+  Future<void> handleEventStream(dynamic event) async {
     try {
       final map = json.decode(event) as Map<String, dynamic>;
       final type = map["type"];
 
       // Following methods listed in alphabetical order.
       switch (type) {
-        case sseChat:
+        case chatEvent:
           await _handleChatMsg(map);
           break;
-        case sseGroupChanged:
+        case groupChangedEvent:
           await _handleGroupChanged(map);
           break;
-        case sseJoinedGroup:
+        case joinedGroupEvent:
           await _handleJoinedGroup(map);
           break;
-        case sseKickFromGroup:
+        case kickFromGroupEvent:
           await _handleKickFromGroup(map);
           break;
-        case sseMessageCleared:
+        case messageClearedEvent:
           await _handleMessageCleared(map);
           break;
-        case ssePinnedMessageUpdated:
+        case pinnedMessageUpdatedEvent:
           await _handlePinnedMessageUpdated(map);
           break;
-        case sseReady:
+        case readyEvent:
           await _handleReady();
           break;
-        case sseRelatedGroups:
+        case relatedGroupsEvent:
           await _handleRelatedGroups(map);
           break;
-        case sseServerConfigChanged:
+        case serverConfigChangedEvent:
           await _handleServerConfigChanged(map);
           break;
-        case sseUserJoinedGroup:
+        case userJoinedGroupEvent:
           await _handleUserJoinedGroup(map);
           break;
-        case sseUserLeavedGroup:
+        case userLeavedGroupEvent:
           await _handleUserLeavedGroup(map);
           break;
-        case sseUsersLog:
+        case usersLogEvent:
           await _handleUsersLog(map);
           break;
-        case sseUserSettings:
+        case userSettingsEvent:
           await _handleUserSettings(map);
           break;
-        case sseUserSettingsChanged:
+        case userSettingsChangedEvent:
           await _handleUserSettingsChanged(map);
           break;
-        case sseUsersSnapshot:
+        case usersSnapshotEvent:
           await _handleUsersSnapshot(map);
           break;
-        case sseUsersState:
+        case usersStateEvent:
           await _handleUsersState(map);
           break;
-        case sseUsersStateChanged:
+        case usersStateChangedEvent:
           await _handleUsersStateChanged(map);
           break;
 
@@ -521,7 +529,7 @@ class VoceChatService {
   }
 
   Future<void> _handleChatMsg(Map<String, dynamic> chatJson) async {
-    assert(chatJson.containsKey("type") && chatJson["type"] == sseChat);
+    assert(chatJson.containsKey("type") && chatJson["type"] == chatEvent);
 
     ChatMsg chatMsg = ChatMsg.fromJson(chatJson);
 
@@ -628,7 +636,7 @@ class VoceChatService {
   }
 
   Future<void> _handleGroupChanged(Map<String, dynamic> map) async {
-    assert(map["type"] == sseGroupChanged);
+    assert(map["type"] == groupChangedEvent);
 
     try {
       final gid = map["gid"] as int;
@@ -652,7 +660,7 @@ class VoceChatService {
   }
 
   Future<void> _handleJoinedGroup(Map<String, dynamic> joinedGroupJson) async {
-    assert(joinedGroupJson["type"] == sseJoinedGroup);
+    assert(joinedGroupJson["type"] == joinedGroupEvent);
 
     try {
       final Map<String, dynamic> groupMap = joinedGroupJson["group"];
@@ -669,7 +677,7 @@ class VoceChatService {
   }
 
   Future<void> _handleKickFromGroup(Map<String, dynamic> map) async {
-    assert(map['type'] == sseKickFromGroup);
+    assert(map['type'] == kickFromGroupEvent);
     try {
       await GroupInfoDao().removeByGid(map["gid"]).then((value) {
         if (value != null) {
@@ -682,7 +690,7 @@ class VoceChatService {
   }
 
   Future<void> _handleMessageCleared(Map<String, dynamic> map) async {
-    assert(map["type"] == sseMessageCleared);
+    assert(map["type"] == messageClearedEvent);
 
     try {
       final latestDeletedMid = map["latest_deleted_mid"] as int;
@@ -712,7 +720,7 @@ class VoceChatService {
   }
 
   Future<void> _handlePinnedMessageUpdated(Map<String, dynamic> map) async {
-    assert(map["type"] == ssePinnedMessageUpdated);
+    assert(map["type"] == pinnedMessageUpdatedEvent);
 
     // Keep old pin updates in groupInfo
     try {
@@ -752,7 +760,7 @@ class VoceChatService {
 
     afterReady = true;
 
-    App.app.statusService?.fireSseLoading(SseStatus.successful);
+    App.app.statusService?.fireSseLoading(PersConnStatus.successful);
     fireReady();
   }
 
@@ -838,7 +846,7 @@ class VoceChatService {
 
   Future<void> _handleRelatedGroups(Map<String, dynamic> relatedGroups) async {
     assert(relatedGroups.containsKey("type") &&
-        relatedGroups["type"] == sseRelatedGroups);
+        relatedGroups["type"] == relatedGroupsEvent);
 
     final channels = await GroupInfoDao().getAllGroupList();
     Set<int> localGids = {};
@@ -889,7 +897,7 @@ class VoceChatService {
   }
 
   Future<void> _handleServerConfigChanged(Map<String, dynamic> map) async {
-    assert(map['type'] == sseServerConfigChanged);
+    assert(map['type'] == serverConfigChangedEvent);
 
     String? organizationName;
     String? organizationDescription;
@@ -957,7 +965,7 @@ class VoceChatService {
   }
 
   Future<void> _handleUserJoinedGroup(Map<String, dynamic> map) async {
-    assert(map['type'] == sseUserJoinedGroup);
+    assert(map['type'] == userJoinedGroupEvent);
 
     try {
       final gid = map["gid"] as int;
@@ -974,7 +982,7 @@ class VoceChatService {
   }
 
   Future<void> _handleUserLeavedGroup(Map<String, dynamic> map) async {
-    assert(map['type'] == sseUserLeavedGroup);
+    assert(map['type'] == userLeavedGroupEvent);
 
     try {
       final gid = map["gid"] as int;
@@ -1003,7 +1011,7 @@ class VoceChatService {
   }
 
   Future<void> _handleUsersLog(Map<String, dynamic> usersLog) async {
-    assert(usersLog.containsKey("type") && usersLog["type"] == sseUsersLog);
+    assert(usersLog.containsKey("type") && usersLog["type"] == usersLogEvent);
 
     try {
       final List<dynamic> usersMap = usersLog["logs"];
@@ -1073,7 +1081,7 @@ class VoceChatService {
   }
 
   Future<void> _handleUserSettings(Map<String, dynamic> map) async {
-    assert(map["type"] == sseUserSettings);
+    assert(map["type"] == userSettingsEvent);
 
     UserSettings userSettings = UserSettings();
 
@@ -1206,7 +1214,7 @@ class VoceChatService {
   }
 
   Future<void> _handleUserSettingsChanged(Map<String, dynamic> map) async {
-    assert(map['type'] == sseUserSettingsChanged);
+    assert(map['type'] == userSettingsChangedEvent);
 
     final currentUserSettings = await UserSettingsDao().getSettings();
     if (currentUserSettings == null) return;
@@ -1491,7 +1499,7 @@ class VoceChatService {
 
   Future<void> _handleUsersSnapshot(Map<String, dynamic> usersSnapshot) async {
     assert(usersSnapshot.containsKey("type") &&
-        usersSnapshot["type"] == sseUsersSnapshot);
+        usersSnapshot["type"] == usersSnapshotEvent);
 
     final dao = UserInfoDao();
 
@@ -1541,7 +1549,7 @@ class VoceChatService {
   }
 
   Future<void> _handleUsersStateChanged(Map<String, dynamic> map) async {
-    assert(map["type"] == sseUsersStateChanged);
+    assert(map["type"] == usersStateChangedEvent);
 
     try {
       final uid = map["uid"] as int;

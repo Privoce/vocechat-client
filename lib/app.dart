@@ -47,7 +47,7 @@ class App {
     await Future.doWhile(
       () async {
         await Future.delayed(Duration(milliseconds: 500));
-        return App.app.chatService.sseQueue.isProcessing;
+        return App.app.chatService.eventQueue.isProcessing;
       },
     );
 
@@ -89,7 +89,7 @@ class App {
     // connect
     if (authService != null) {
       if (await SharedFuncs.renewAuthToken()) {
-        chatService.initSse();
+        await chatService.initPersistentConnection();
       }
     }
   }

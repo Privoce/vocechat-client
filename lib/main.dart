@@ -24,7 +24,6 @@ import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
-import 'package:vocechat_client/services/sse/sse.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -435,9 +434,8 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           if (await SharedFuncs.renewAuthToken(
               forceRefresh: _firstTimeRefreshSinceAppOpens)) {
             _firstTimeRefreshSinceAppOpens = false;
-            App.app.chatService.initSse();
+            await App.app.chatService.initPersistentConnection();
           } else {
-            // Sse.sse.close();
             VoceWebSocket().close();
           }
         }

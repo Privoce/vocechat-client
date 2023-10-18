@@ -3,14 +3,14 @@ import 'dart:collection';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 
-class SseQueue {
+class EventQueue {
   final queue = Queue<dynamic>();
 
   final Future Function(dynamic sseMsg) closure;
   Future<dynamic> Function()? afterTaskCheck;
   bool enableStatusDisplay;
 
-  SseQueue(
+  EventQueue(
       {required this.closure,
       this.afterTaskCheck,
       this.enableStatusDisplay = true});

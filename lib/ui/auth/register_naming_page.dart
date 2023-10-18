@@ -271,7 +271,7 @@ class _RegisterNamingPageState extends State<RegisterNamingPage> {
         Navigator.of(context).pushNamedAndRemoveUntil(
             ChatsMainPage.route, (route) => false,
             arguments: widget.invitationLink);
-        App.app.chatService.initSse();
+        await App.app.chatService.initPersistentConnection();
         return true;
       } else {
         App.logger.severe(res.statusCode);

@@ -11,7 +11,8 @@ class ConnectionStatusPage extends StatefulWidget {
 }
 
 class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
-  final ValueNotifier<SseStatus> sseNotifier = ValueNotifier(SseStatus.init);
+  final ValueNotifier<PersConnStatus> sseNotifier =
+      ValueNotifier(PersConnStatus.init);
 
   final ValueNotifier<TokenStatus> tokenNotifier =
       ValueNotifier(TokenStatus.init);
@@ -57,7 +58,7 @@ class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text("SSE Status:"),
-              ValueListenableBuilder<SseStatus>(
+              ValueListenableBuilder<PersConnStatus>(
                   valueListenable: sseNotifier,
                   builder: (context, status, _) {
                     return Text(status.name);
@@ -82,7 +83,7 @@ class _ConnectionStatusPageState extends State<ConnectionStatusPage> {
     );
   }
 
-  Future<void> _onSseStatus(SseStatus status) async {
+  Future<void> _onSseStatus(PersConnStatus status) async {
     sseNotifier.value = status;
   }
 

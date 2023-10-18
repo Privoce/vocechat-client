@@ -1,50 +1,59 @@
-import 'dart:async';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
-import 'package:vocechat_client/dao/org_dao/userdb.dart';
-import 'package:vocechat_client/services/sse/sse.dart';
-import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/services/persistent_connection/persistent_connection.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-class VoceWebSocket {
+class VoceWebSocket extends PersistentConnection {
   static final VoceWebSocket _singleton = VoceWebSocket._internal();
-  VoceWebSocket._internal();
 
-  final Set<ServerEventAware> serverEventListeners = {};
-  final Set<ServerEventReadyAware> readyListeners = {};
+  VoceWebSocket._internal() {
+    type = PersistentConnectionType.websocket;
+  }
 
   factory VoceWebSocket() {
     return _singleton;
   }
 
-  bool isConnecting = false;
-
   WebSocketChannel? channel;
 
-  // Reconnect interval starts from 1 second, and grows exponentially up to
-  // 32 seconds.
-  int reconnectSec = 1;
-  Timer? _reconnectTimer;
+  @override
+  Future<bool> checkAvailability() async {
+    final url = await prepareConnectionUrl(type);
 
-  void connect() async {
+    try {
+      final testChannel = WebSocketChannel.connect(Uri.parse(url));
+      await testChannel.stream.first;
+      await testChannel.sink.close();
+
+      return true;
+    } catch (e) {
+      App.logger.severe(e);
+      return false;
+    }
+  }
+
+  @override
+  Future<void> connect() async {
     if (isConnecting) return;
 
     isConnecting = true;
     fireAfterReady(false);
-    close();
+    await close();
 
-    final url = await prepareUrl();
+    final url = await prepareConnectionUrl(type);
     App.logger.info("Connecting WebSocket: $url");
-    App.app.statusService?.fireSseLoading(SseStatus.connecting);
+    App.app.statusService?.fireSseLoading(PersConnStatus.connecting);
 
     try {
       channel = WebSocketChannel.connect(Uri.parse(url));
 
       channel?.stream.listen((event) {
-        App.app.statusService?.fireSseLoading(SseStatus.successful);
-        reconnectSec = 1;
-        cancelReconnectionDelay();
+        App.app.statusService?.fireSseLoading(PersConnStatus.successful);
+        App.logger.info(event);
+
+        isConnected = true;
         isConnecting = false;
+        resetReconnectionDelay();
 
         fireServerEvent(event);
       }, onError: (error) {
@@ -53,101 +62,17 @@ class VoceWebSocket {
     } catch (error) {
       onError(error);
     }
+
+    return;
   }
 
-  void onError(dynamic e) {
-    App.logger.info("Error connecting to websocket: $e");
-    App.app.statusService?.fireSseLoading(SseStatus.disconnected);
-    isConnecting = false;
-    close();
-    tryReconnection();
-  }
-
-  void tryReconnection() async {
-    _reconnectTimer = Timer(Duration(seconds: reconnectSec), () async {
-      if (await SharedFuncs.renewAuthToken(forceRefresh: true)) {
-        connect();
-      }
-
-      reconnectSec *= 2;
-      if (reconnectSec >= 32) {
-        reconnectSec = 32;
-      }
-    });
-  }
-
-  void cancelReconnectionDelay() {
-    _reconnectTimer?.cancel();
-  }
-
-  void close() {
-    channel?.sink.close();
-  }
-
-  Future<String> prepareUrl() async {
-    final uri = Uri.parse(App.app.chatServerM.fullUrl);
-    String scheme = uri.scheme == "https" ? "wss" : "ws";
-
-    String url = "$scheme://${uri.host}:${uri.port}/api/user/events_ws?";
-
-    final afterMid = await UserDbMDao.dao.getMaxMid(App.app.userDb!.id);
-    if (afterMid > -1) {
-      url += "after_mid=$afterMid";
+  @override
+  Future<void> close() async {
+    if (channel != null) {
+      await channel?.sink.close();
+      channel = null;
     }
 
-    final usersVersion = App.app.userDb!.usersVersion;
-    if (usersVersion > 0) {
-      url += "&users_version=$usersVersion";
-    }
-
-    url += "&api-key=${App.app.userDb!.token}";
-
-    return url;
-  }
-
-  void subscribeServerEvent(ServerEventAware aware) {
-    unsubscribeAllSseEvents();
-    serverEventListeners.add(aware);
-  }
-
-  void unsubscribeServerEvent(ServerEventAware aware) {
-    serverEventListeners.remove(aware);
-  }
-
-  void unsubscribeAllSseEvents() {
-    serverEventListeners.clear();
-  }
-
-  void subscribeReady(ServerEventReadyAware aware) {
-    unsubscribeReady(aware);
-    readyListeners.add(aware);
-  }
-
-  void unsubscribeReady(ServerEventReadyAware aware) {
-    readyListeners.remove(aware);
-  }
-
-  void unsubscribeAllReadyListeners() {
-    readyListeners.clear();
-  }
-
-  void fireServerEvent(dynamic event) {
-    for (ServerEventAware sseEventAware in serverEventListeners) {
-      try {
-        sseEventAware(event);
-      } catch (e) {
-        App.logger.severe(e);
-      }
-    }
-  }
-
-  void fireAfterReady(bool afterReady) {
-    for (ServerEventReadyAware aware in readyListeners) {
-      try {
-        aware(afterReady);
-      } catch (e) {
-        App.logger.severe(e);
-      }
-    }
+    await generalClose();
   }
 }

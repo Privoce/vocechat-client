@@ -13,6 +13,7 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
+import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -62,7 +63,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _ChatsBarState extends State<ChatsBar> {
   final double _tileHeight = 50;
-  late SseStatus _sseStatus;
+  late PersConnStatus _sseStatus;
   late TokenStatus _tokenStatus;
   late LoadingStatus _taskStatus;
 
@@ -80,7 +81,7 @@ class _ChatsBarState extends State<ChatsBar> {
 
     _initServerInfoWidgets();
 
-    _sseStatus = SseStatus.successful;
+    _sseStatus = PersConnStatus.successful;
     _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
     App.app.statusService?.subscribeSseLoading(_onSse);
@@ -112,7 +113,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.statusService?.unsubscribeTaskLoading(_onTask);
     App.app.chatService.unsubscribeChatServer(_onServerInfo);
 
-    _sseStatus = SseStatus.successful;
+    _sseStatus = PersConnStatus.successful;
     _tokenStatus = TokenStatus.successful;
     _taskStatus = LoadingStatus.success;
     App.app.statusService?.subscribeSseLoading(_onSse);
@@ -121,7 +122,7 @@ class _ChatsBarState extends State<ChatsBar> {
     App.app.chatService.subscribeChatServer(_onServerInfo);
   }
 
-  Future<void> _onSse(SseStatus status) async {
+  Future<void> _onSse(PersConnStatus status) async {
     if (mounted) {
       setState(() {
         _sseStatus = status;
@@ -283,6 +284,11 @@ class _ChatsBarState extends State<ChatsBar> {
       ),
       centerTitle: false,
       actions: [
+        // TextButton(
+        //     onPressed: () {
+        //       print("${VoceWebSocket().isConnected}");
+        //     },
+        //     child: Text("test")),
         Padding(
             padding: const EdgeInsets.only(right: 10),
             child: PopupMenuButton(
@@ -421,23 +427,24 @@ class _ChatsBarState extends State<ChatsBar> {
   }
 
   bool _isInitial() {
-    return _sseStatus == SseStatus.init && _tokenStatus == TokenStatus.init;
+    return _sseStatus == PersConnStatus.init &&
+        _tokenStatus == TokenStatus.init;
   }
 
   bool _isSuccessful() {
-    return _sseStatus == SseStatus.successful &&
+    return _sseStatus == PersConnStatus.successful &&
         _tokenStatus == TokenStatus.successful &&
         _taskStatus == LoadingStatus.success;
   }
 
   bool _isConnecting() {
-    return _sseStatus == SseStatus.connecting ||
+    return _sseStatus == PersConnStatus.connecting ||
         _tokenStatus == TokenStatus.connecting ||
         _taskStatus == LoadingStatus.loading;
   }
 
   bool _isDisconnected() {
-    return _sseStatus == SseStatus.disconnected ||
+    return _sseStatus == PersConnStatus.disconnected ||
         _tokenStatus == TokenStatus.disconnected ||
         _taskStatus == LoadingStatus.disconnected;
   }
