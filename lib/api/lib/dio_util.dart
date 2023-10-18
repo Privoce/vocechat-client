@@ -51,22 +51,21 @@ class DioUtil {
     }
     _dio.options.baseUrl = baseUrl;
 
+    // The following [badCertificateCallback] and [validateCertificate] are never called.
+    // Needs more investigation into Flutter SSL implementation and possible
+    // methods of bypassing SSL verification.
     _dio.httpClientAdapter = IOHttpClientAdapter(
       createHttpClient: () {
-        // print("************** createHttpClient");
-        // Don't trust any certificate just because their root cert is trusted.
         final HttpClient client =
             HttpClient(context: SecurityContext(withTrustedRoots: false));
-        // You can test the intermediate / root cert here. We just ignore it.
+
         client.badCertificateCallback = (cert, host, port) {
-          // print("************** badCertificateCallback");
           return true;
         };
 
         return client;
       },
       validateCertificate: (certificate, host, port) {
-        // print("************** validateCertificate");
         return true;
       },
     );
