@@ -21,6 +21,7 @@ class VoceWebSocket extends PersistentConnection {
     final url = await prepareConnectionUrl(type);
 
     try {
+      await channel?.sink.close();
       final testChannel = WebSocketChannel.connect(Uri.parse(url));
       await testChannel.stream.first;
       await testChannel.sink.close();
