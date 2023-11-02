@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.108", "build_num": 78},
+    "latest": {"version": "0.2.109", "build_num": 79},
     "logs":  [
+        {"time": 1698950211491, "version": "0.2.109", "build_num": 79, "updates": [
+            "- add: WebSocket migration."
+            ]},
         {"time": 1694224576381, "version": "0.2.108", "build_num": 78, "updates": [
             "- attempt fix: potential contact list crash.",
             "- fix: username overflow in message tiles.",
