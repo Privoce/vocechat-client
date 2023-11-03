@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'agora_token_response.dart';
+part of 'agora_basic_info.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-AgoraTokenResponse _$AgoraTokenResponseFromJson(Map<String, dynamic> json) =>
-    AgoraTokenResponse(
+AgoraBasicInfoModel _$AgoraBasicInfoModelFromJson(Map<String, dynamic> json) =>
+    AgoraBasicInfoModel(
       agoraToken: json['agora_token'] as String,
       appId: json['app_id'] as String,
       uid: json['uid'] as int,
@@ -15,7 +15,8 @@ AgoraTokenResponse _$AgoraTokenResponseFromJson(Map<String, dynamic> json) =>
       expiredIn: json['expired_in'] as int,
     );
 
-Map<String, dynamic> _$AgoraTokenResponseToJson(AgoraTokenResponse instance) =>
+Map<String, dynamic> _$AgoraBasicInfoModelToJson(
+        AgoraBasicInfoModel instance) =>
     <String, dynamic>{
       'agora_token': instance.agoraToken,
       'app_id': instance.appId,
