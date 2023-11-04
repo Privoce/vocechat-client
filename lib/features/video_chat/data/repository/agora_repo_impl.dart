@@ -3,6 +3,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/core/resources/data_state.dart';
 import 'package:vocechat_client/features/video_chat/data/data_sources/remote/agora_apis.dart';
 import 'package:vocechat_client/features/video_chat/data/models/agora_basic_info.dart';
+import 'package:vocechat_client/features/video_chat/domain/entities/agora_error.dart';
 import 'package:vocechat_client/features/video_chat/domain/repository/agora_repo.dart';
 
 class AgoraRepoImpl implements AgoraRepository {
@@ -29,18 +30,22 @@ class AgoraRepoImpl implements AgoraRepository {
   ///
   /// [uid] or [gid] is the target user/group that I want to chat with.
   ///
-  /// Must check if Agora is enabled [isAgoraEnabled] in the server before calling this method.
+  /// [isAgoraEnabled] has been included into this method to avoid further
+  /// callings to uninitialized servers. [InternalError] will be returned with
+  /// messages in String.
+
   @override
   Future<DataState<AgoraBasicInfoModel>> getAgoraBasicInfo(
       {int? uid, int? gid}) async {
     try {
       if (!(await isAgoraEnabled())) {
-        return InternalError(AppError("Agora is not enabled in this server."));
+        return DataFailed.error(
+            AgoraNotEnabledError("Agora is not enabled in this server."));
       }
 
       if ((uid == null && gid == null) || (uid != null && gid != null)) {
-        return InternalError(
-            AppError("only one of uid or gid should be provided."));
+        return DataFailed.error(
+            VideoChatError("only one of uid or gid should be provided."));
       }
 
       final res = await _agoraApis.getAgoraBasicInfo(uid: uid, gid: gid);
@@ -48,41 +53,16 @@ class AgoraRepoImpl implements AgoraRepository {
         final data = res.data as AgoraBasicInfoModel;
         return DataSuccess(data);
       } else {
-        return DataFailed(DioException(
+        return DataFailed.network(DioException(
             error: res.statusMessage,
             response: res,
             type: DioExceptionType.badResponse,
             requestOptions: res.requestOptions));
       }
     } on DioException catch (e) {
-      return DataFailed(e);
+      return DataFailed.network(e);
     } catch (e) {
-      return InternalError(AppError(e.toString()));
+      return DataFailed.error(VideoChatError(e.toString()));
     }
-  }
-
-  @override
-  void askForAudioPermission() {
-    // TODO: implement askForAudioPermission
-  }
-
-  @override
-  void askForVideoPermission() {
-    // TODO: implement askForVideoPermission
-  }
-
-  @override
-  void initAgoraEngine() {
-    // TODO: implement initAgoraEngine
-  }
-
-  @override
-  void joinChannel() {
-    // TODO: implement joinChannel
-  }
-
-  @override
-  void leaveAndRelease() {
-    // TODO: implement leaveAndRelease
   }
 }

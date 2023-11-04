@@ -18,15 +18,4 @@ abstract class AgoraRepository {
   /// [uid] or [gid] is the target user/group that I want to chat with.
   Future<DataState<AgoraBasicInfoEntity>> getAgoraBasicInfo(
       {int? uid, int? gid});
-
-  // TODO: to be refined
-  void askForAudioPermission();
-
-  void askForVideoPermission();
-
-  void initAgoraEngine();
-
-  void joinChannel();
-
-  void leaveAndRelease();
 }
