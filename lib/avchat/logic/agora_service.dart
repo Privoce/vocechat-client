@@ -1,9 +1,9 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/helpers/avchat/avchat_api.dart';
-import 'package:vocechat_client/helpers/avchat/model/agora_basic_info.dart';
-import 'package:vocechat_client/helpers/avchat/model/exceptions.dart';
+import 'package:vocechat_client/avchat/logic/avchat_api.dart';
+import 'package:vocechat_client/avchat/model/agora_basic_info.dart';
+import 'package:vocechat_client/avchat/model/exceptions.dart';
 
 class AgoraService {
   final int? uid;
