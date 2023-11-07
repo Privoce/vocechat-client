@@ -6,8 +6,8 @@ part of 'agora_basic_info.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-AgoraBasicInfoModel _$AgoraBasicInfoModelFromJson(Map<String, dynamic> json) =>
-    AgoraBasicInfoModel(
+AgoraBasicInfo _$AgoraBasicInfoFromJson(Map<String, dynamic> json) =>
+    AgoraBasicInfo(
       agoraToken: json['agora_token'] as String,
       appId: json['app_id'] as String,
       uid: json['uid'] as int,
@@ -15,8 +15,7 @@ AgoraBasicInfoModel _$AgoraBasicInfoModelFromJson(Map<String, dynamic> json) =>
       expiredIn: json['expired_in'] as int,
     );
 
-Map<String, dynamic> _$AgoraBasicInfoModelToJson(
-        AgoraBasicInfoModel instance) =>
+Map<String, dynamic> _$AgoraBasicInfoToJson(AgoraBasicInfo instance) =>
     <String, dynamic>{
       'agora_token': instance.agoraToken,
       'app_id': instance.appId,
