@@ -126,6 +126,7 @@ class VoceChatService {
     } else {
       await _initSse();
     }
+    // await _initSse();
   }
 
   Future<void> _initWebSocket() async {
