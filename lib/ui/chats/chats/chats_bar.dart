@@ -13,8 +13,6 @@ import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/event_bus_objects/user_change_event.dart';
 import 'package:vocechat_client/globals.dart';
-import 'package:vocechat_client/services/persistent_connection/sse.dart';
-import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -285,14 +283,14 @@ class _ChatsBarState extends State<ChatsBar> {
       ),
       centerTitle: false,
       actions: [
-        TextButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(
-                    "WS: ${VoceWebSocket().isConnected}, SSE: ${VoceSse().isConnected}"),
-              ));
-            },
-            child: Text("test")),
+        // TextButton(
+        //     onPressed: () {
+        //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //         content: Text(
+        //             "WS: ${VoceWebSocket().isConnected}, SSE: ${VoceSse().isConnected}"),
+        //       ));
+        //     },
+        //     child: Text("test")),
         Padding(
             padding: const EdgeInsets.only(right: 10),
             child: PopupMenuButton(

@@ -79,7 +79,7 @@ class VoceChatService {
     mainTaskQueue.cancel();
     eventQueue.clear();
     readIndexTimer.cancel();
-    VoceWebSocket().close();
+    // VoceWebSocket().close();
     VoceSse().close();
   }
 
@@ -120,13 +120,13 @@ class VoceChatService {
   }
 
   Future<void> initPersistentConnection() async {
-    final isWSAvailable = await VoceWebSocket().checkAvailability();
-    if (isWSAvailable) {
-      await _initWebSocket();
-    } else {
-      await _initSse();
-    }
-    // await _initSse();
+    // final isWSAvailable = await VoceWebSocket().checkAvailability();
+    // if (isWSAvailable) {
+    //   await _initWebSocket();
+    // } else {
+    //   await _initSse();
+    // }
+    await _initSse();
   }
 
   Future<void> _initWebSocket() async {
