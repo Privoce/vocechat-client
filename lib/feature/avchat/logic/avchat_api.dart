@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/avchat/model/agora_basic_info.dart';
+import 'package:vocechat_client/feature/avchat/model/agora_basic_info.dart';
 import 'package:vocechat_client/resource/exceptions/api_exception.dart';
 import 'package:vocechat_client/resource/exceptions/unexpected_exception.dart';
 

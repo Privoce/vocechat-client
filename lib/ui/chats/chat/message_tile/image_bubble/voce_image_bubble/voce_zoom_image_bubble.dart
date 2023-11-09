@@ -35,7 +35,7 @@ class VoceZoomImageBubble extends StatefulWidget {
 
 class _VoceZoomImageBubbleState extends State<VoceZoomImageBubble> {
   File? _imageFile;
-  ValueNotifier<double> _progressNotifier = ValueNotifier(0);
+  final ValueNotifier<double> _progressNotifier = ValueNotifier(0);
   final ValueNotifier<DataLoadingStatus> _loadingStatus =
       ValueNotifier(DataLoadingStatus.init);
 
