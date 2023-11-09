@@ -12,6 +12,7 @@ import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
@@ -19,13 +20,12 @@ import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
+import 'package:vocechat_client/ui/widgets/buttons/v_icon_text_button.dart';
 
 class ContactDetailPage extends StatefulWidget {
-  // static const route = "/contacts/detail";
-
   final UserInfoM userInfoM;
 
-  ContactDetailPage({required this.userInfoM});
+  const ContactDetailPage({super.key, required this.userInfoM});
 
   @override
   State<ContactDetailPage> createState() => _ContactDetailPageState();
@@ -81,6 +81,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
                   return ListView(
                     children: [
                       _buildUserInfo(userInfoM),
+                      _buildUserActions(userInfoM),
                       _buildSettings(userInfoM, context)
                     ],
                   );
@@ -103,6 +104,50 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     );
   }
 
+  Widget _buildUserActions(UserInfoM userInfoM) {
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: VIconTextButton(
+                  onPressed: () {
+                    onTapDm(userInfoM, context);
+                  },
+                  text: AppLocalizations.of(context)!.message,
+                  icon: AppIcons.chat),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: VIconTextButton(
+                  onPressed: () {},
+                  text: AppLocalizations.of(context)!.call,
+                  icon: AppIcons.chat),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: VIconTextButton(
+                  onPressed: () {},
+                  text: AppLocalizations.of(context)!.video,
+                  icon: AppIcons.chat),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildUserInfo(UserInfoM userInfoM) {
     final userInfo = userInfoM.userInfo;
     return AvatarInfoTile(
@@ -116,51 +161,47 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   }
 
   Widget _buildSettings(UserInfoM userInfoM, BuildContext context) {
-    final titleText = userInfoM.contactStatusStr != ContactStatus.blocked.name
-        ? AppLocalizations.of(context)!.sendMessage
-        : AppLocalizations.of(context)!.viewChatHistory;
-    // final titleText = AppLocalizations.of(context)!.sendMessage;
+    // final titleText = userInfoM.contactStatusStr != ContactStatus.blocked.name
+    //     ? AppLocalizations.of(context)!.sendMessage
+    //     : AppLocalizations.of(context)!.viewChatHistory;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        children: [
-          AppBannerButton(
-              title: titleText,
-              textColor: AppColors.primaryBlue,
-              onTap: () {
-                onTapDm(userInfoM, context);
-              }),
-          ValueListenableBuilder<bool>(
-              valueListenable: enableContact,
-              builder: (context, enableContact, _) {
-                if (enableContact) {
-                  return _buildRemoveBtn(context);
-                } else {
-                  return SizedBox.shrink();
-                }
-              }),
-          ValueListenableBuilder<bool>(
-              valueListenable: enableContact,
-              builder: (context, enableContact, _) {
-                if (enableContact) {
-                  return _buildBlockBtn(context);
-                } else {
-                  return SizedBox.shrink();
-                }
-              }),
-          if (isAdmin())
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: AppBannerButton(
-                  title: AppLocalizations.of(context)!.removeFromServer,
-                  textColor: AppColors.systemRed,
-                  onTap: () {
-                    onTapRemoveUserFromServer(userInfoM, context);
-                  }),
-            ),
-        ],
-      ),
+    return Column(
+      children: [
+        // AppBannerButton(
+        //     title: titleText,
+        //     textColor: AppColors.primaryBlue,
+        //     onTap: () {
+        //       onTapDm(userInfoM, context);
+        //     }),
+        ValueListenableBuilder<bool>(
+            valueListenable: enableContact,
+            builder: (context, enableContact, _) {
+              if (enableContact) {
+                return _buildRemoveBtn(context);
+              } else {
+                return SizedBox.shrink();
+              }
+            }),
+        ValueListenableBuilder<bool>(
+            valueListenable: enableContact,
+            builder: (context, enableContact, _) {
+              if (enableContact) {
+                return _buildBlockBtn(context);
+              } else {
+                return SizedBox.shrink();
+              }
+            }),
+        if (isAdmin())
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: AppBannerButton(
+                title: AppLocalizations.of(context)!.removeFromServer,
+                textColor: AppColors.systemRed,
+                onTap: () {
+                  onTapRemoveUserFromServer(userInfoM, context);
+                }),
+          ),
+      ],
     );
   }
 

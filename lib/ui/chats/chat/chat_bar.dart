@@ -4,6 +4,7 @@ import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
+import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_settings_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/dm/dm_settings_page.dart';
@@ -198,13 +199,11 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildChannelActions(BuildContext context) {
     return [
-      // Builder(builder: (context) {
-      //   return CupertinoButton(
-      //       padding: EdgeInsets.zero,
-      //       onPressed: () => _startAudioCall(context),
-      //       child:
-      //           Icon(AppIcons.headphone, size: 20, color: AppColors.grey500));
-      // }),
+      CupertinoButton(
+          padding: EdgeInsets.zero,
+          // onPressed: () => _startAudioCall(context),
+          onPressed: () {},
+          child: Icon(AppIcons.headphone, size: 20, color: AppColors.grey500)),
       CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () async {
@@ -221,6 +220,14 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildDmActions(BuildContext context) {
     return [
+      CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {},
+          child: Icon(AppIcons.audio, size: 20, color: AppColors.grey500)),
+      CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {},
+          child: Icon(AppIcons.video, size: 20, color: AppColors.grey500)),
       CupertinoButton(
           onPressed: () async {
             Navigator.push(

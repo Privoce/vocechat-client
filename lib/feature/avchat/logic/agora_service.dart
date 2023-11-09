@@ -1,9 +1,9 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/avchat/logic/avchat_api.dart';
-import 'package:vocechat_client/avchat/model/agora_basic_info.dart';
-import 'package:vocechat_client/avchat/model/exceptions.dart';
+import 'package:vocechat_client/feature/avchat/logic/avchat_api.dart';
+import 'package:vocechat_client/feature/avchat/model/agora_basic_info.dart';
+import 'package:vocechat_client/feature/avchat/model/exceptions.dart';
 
 class AgoraService {
   final int? uid;
@@ -65,6 +65,8 @@ class AgoraService {
     }
   }
 
+  /// This channel is not the VoceChat channel, but the agora channel, basically
+  /// a chat room.
   Future<void> _joinChannel(
       AgoraBasicInfo basicInfo, bool isGroupChat, bool enableVideo) async {
     try {
