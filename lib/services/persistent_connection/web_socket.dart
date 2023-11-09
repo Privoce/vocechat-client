@@ -48,18 +48,24 @@ class VoceWebSocket extends PersistentConnection {
     try {
       channel = WebSocketChannel.connect(Uri.parse(url));
 
-      channel?.stream.listen((event) {
-        App.app.statusService?.fireSseLoading(PersConnStatus.successful);
-        App.logger.info(event);
+      channel?.stream.listen(
+        (event) {
+          App.app.statusService?.fireSseLoading(PersConnStatus.successful);
+          App.logger.info(event);
 
-        isConnected = true;
-        isConnecting = false;
-        resetReconnectionDelay();
+          isConnected = true;
+          isConnecting = false;
+          resetReconnectionDelay();
 
-        fireServerEvent(event);
-      }, onError: (error) {
-        onError(error);
-      });
+          fireServerEvent(event);
+        },
+        onError: (error) {
+          onError(error);
+        },
+        onDone: () {
+          onError("Connection closed.");
+        },
+      );
     } catch (error) {
       onError(error);
     }

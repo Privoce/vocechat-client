@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.109", "build_num": 79},
+    "latest": {"version": "0.2.110", "build_num": 80},
     "logs":  [
+        {"time": 1699415857043, "version": "0.2.110", "build_num": 80, "updates": [
+            "- fix: temporarily disable WebSocket due to unstable connection."
+            ]},
         {"time": 1698950211491, "version": "0.2.109", "build_num": 79, "updates": [
             "- add: WebSocket migration."
             ]},

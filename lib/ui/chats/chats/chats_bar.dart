@@ -285,7 +285,10 @@ class _ChatsBarState extends State<ChatsBar> {
       actions: [
         // TextButton(
         //     onPressed: () {
-        //       print("${VoceWebSocket().isConnected}");
+        //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //         content: Text(
+        //             "WS: ${VoceWebSocket().isConnected}, SSE: ${VoceSse().isConnected}"),
+        //       ));
         //     },
         //     child: Text("test")),
         Padding(
