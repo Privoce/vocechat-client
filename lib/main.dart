@@ -23,6 +23,7 @@ import 'package:vocechat_client/firebase_options.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/services/db.dart';
+import 'package:vocechat_client/services/persistent_connection/sse.dart';
 import 'package:vocechat_client/services/persistent_connection/web_socket.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
@@ -61,8 +62,8 @@ Future<void> main() async {
       await initCurrentDb(App.app.userDb!.dbName);
 
       if (userDb.loggedIn != 1) {
-        // Sse.sse.close();
-        VoceWebSocket().close();
+        VoceSse().close();
+        // VoceWebSocket().close();
         defaultHome = await SharedFuncs.getDefaultHomePage();
       } else {
         final chatServerM =
