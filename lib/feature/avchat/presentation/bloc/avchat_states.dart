@@ -1,42 +1,51 @@
-abstract class AvchatState {}
+import 'package:equatable/equatable.dart';
+import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
 
-/// A general error states for all Agora related errors
-class AgoraError extends AvchatState {
-  final Error? error;
-  final String? message;
-
-  AgoraError({this.error, this.message});
-}
+abstract class AvchatState extends Equatable {}
 
 // ------------------ AvchatAvailabilityCheckBloc ------------------ //
-abstract class AvailabilityState extends AvchatState {}
+abstract class AvchatAvailabilityState extends AvchatState {
+  @override
+  List<Object?> get props => [];
+}
 
-class AvailabilityStateInitial extends AvailabilityState {}
+class AvchatAvailabilityInitialState extends AvchatAvailabilityState {}
 
-class CheckingAvchatAvailability extends AvailabilityState {}
+class CheckingAvchatAvailability extends AvchatAvailabilityState {}
 
-class AvchatAvailable extends AvailabilityState {}
+class AvchatAvailable extends AvchatAvailabilityState {}
 
-class AvchatUnavailable extends AvailabilityState {
+class AvchatUnavailable extends AvchatAvailabilityState {
   final String? message;
 
   AvchatUnavailable({this.message});
 }
 
-class AvchatAvailabilityCheckError extends AgoraError {
-  AvchatAvailabilityCheckError({super.error, super.message});
+class AvchatAvailabilityCheckFail extends AvchatAvailabilityState {
+  final Object? error;
+
+  AvchatAvailabilityCheckFail(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
 
 // ------------------ AvchatPermissionCheckBloc ------------------ //
-abstract class AvchatPermissionState extends AvchatState {}
+abstract class AvchatPermissionState extends AvchatState {
+  @override
+  List<Object?> get props => [];
+}
 
 class AvchatPermissionEnabled extends AvchatPermissionState {
   final bool isMicPermissionEnabled;
-  final bool isCameraPermissionEnabled;
+  final bool? isCameraPermissionEnabled;
 
   AvchatPermissionEnabled(
-      {required this.isMicPermissionEnabled,
-      required this.isCameraPermissionEnabled});
+      {required this.isMicPermissionEnabled, this.isCameraPermissionEnabled});
+
+  @override
+  List<Object?> get props =>
+      [isMicPermissionEnabled, isCameraPermissionEnabled];
 }
 
 class AvchatPermissionDisabled extends AvchatPermissionState {
@@ -46,26 +55,101 @@ class AvchatPermissionDisabled extends AvchatPermissionState {
   AvchatPermissionDisabled(
       {required this.isMicPermissionRequired,
       required this.isCameraPermissionRequired});
+
+  @override
+  List<Object?> get props =>
+      [isMicPermissionRequired, isCameraPermissionRequired];
 }
 
-class AvchatPermissionCheckError extends AgoraError {
-  AvchatPermissionCheckError({super.error, super.message});
+class AvchatPermissionCheckFail extends AvchatPermissionState {
+  final Object? error;
+
+  AvchatPermissionCheckFail(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+// ------------------ AvchatTokenInfoBloc ------------------ //
+abstract class AvchatTokenInfoState extends AvchatState {
+  @override
+  List<Object?> get props => [];
+}
+
+class AvchatTokenInfoReceived extends AvchatTokenInfoState {
+  final AgoraTokenInfo info;
+
+  AvchatTokenInfoReceived(this.info);
+
+  @override
+  List<Object?> get props => [info];
+}
+
+class AvchatTokenInfoFail extends AvchatTokenInfoState {
+  final Object? error;
+
+  AvchatTokenInfoFail(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }
 
 // ------------------ AgoraInitBloc ------------------ //
-class AgoraInitilizing extends AvchatState {}
+class AgoraInitState extends AvchatState {
+  AgoraInitState();
 
-class AgoraInitialized extends AvchatState {}
-
-class AgoraInitError extends AgoraError {
-  AgoraInitError({super.error, super.message});
+  @override
+  List<Object?> get props => [];
 }
 
-// ------------------ AgoraJoinChannelBloc ------------------ //
-class AgoraJoiningChannel extends AvchatState {}
+class AgoraInitializing extends AgoraInitState {}
 
-class AgoraChannelJoined extends AvchatState {}
+class AgoraInitialized extends AgoraInitState {}
 
-class AgoraJoinChannelError extends AgoraError {
-  AgoraJoinChannelError({super.error, super.message});
+class AgoraInitFail extends AgoraInitState {
+  final Object? error;
+  AgoraInitFail(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+// ------------------ AgoraJoinBloc ------------------ //
+class AgoraJoinState extends AvchatState {
+  AgoraJoinState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class AgoraJoiningChannel extends AgoraJoinState {}
+
+class AgoraChannelJoined extends AgoraJoinState {}
+
+class AgoraJoinFail extends AgoraJoinState {
+  final Object? error;
+
+  AgoraJoinFail(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
+// ------------------ AgoraLeaveBloc ------------------ //
+class AgoraLeaveState extends AvchatState {
+  AgoraLeaveState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class AgoraLeftChannel extends AgoraLeaveState {}
+
+class AgoraLeaveFail extends AgoraLeaveState {
+  final Object? error;
+
+  AgoraLeaveFail(this.error);
+
+  @override
+  List<Object?> get props => [error];
 }

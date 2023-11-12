@@ -2,7 +2,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/feature/avchat/logic/avchat_api.dart';
-import 'package:vocechat_client/feature/avchat/model/agora_basic_info.dart';
+import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
 import 'package:vocechat_client/feature/avchat/model/exceptions.dart';
 
 class AgoraService {
@@ -21,8 +21,8 @@ class AgoraService {
     return _api.isAgoraEnabled();
   }
 
-  Future<AgoraBasicInfo?> getAgoraBasicInfo() async {
-    return _api.getAgoraToken(uid: uid, gid: gid);
+  Future<AgoraTokenInfo?> getAgoraBasicInfo() async {
+    return _api.getAgoraTokenInfo(uid: uid, gid: gid);
   }
 
   /// Only include audio (microphone) permission request.
@@ -46,7 +46,7 @@ class AgoraService {
   ///
   /// Throws [AvchatEngineInitException] if failed to init/create agora engine.
   Future<void> _initAgoraEngine(
-      AgoraBasicInfo basicInfo, bool isGroupChat) async {
+      AgoraTokenInfo basicInfo, bool isGroupChat) async {
     try {
       _engine = createAgoraRtcEngine();
 
@@ -68,7 +68,7 @@ class AgoraService {
   /// This channel is not the VoceChat channel, but the agora channel, basically
   /// a chat room.
   Future<void> _joinChannel(
-      AgoraBasicInfo basicInfo, bool isGroupChat, bool enableVideo) async {
+      AgoraTokenInfo basicInfo, bool isGroupChat, bool enableVideo) async {
     try {
       await _engine?.joinChannel(
           token: basicInfo.agoraToken,
