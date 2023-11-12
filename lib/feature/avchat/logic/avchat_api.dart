@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/feature/avchat/model/agora_basic_info.dart';
+import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
 import 'package:vocechat_client/resource/exceptions/api_exception.dart';
 import 'package:vocechat_client/resource/exceptions/unexpected_exception.dart';
 
@@ -33,11 +33,11 @@ class AvchatApi {
 
   /// Generates an agora token, together with some basic info.
   ///
-  /// Data model is defined in [AgoraBasicInfo]
+  /// Data model is defined in [AgoraTokenInfo]
   ///
   /// Must provide either [uid] or [gid], but not both.
   /// Must check availability first, using [isAgoraEnabled].
-  Future<AgoraBasicInfo?> getAgoraToken({int? uid, int? gid}) async {
+  Future<AgoraTokenInfo?> getAgoraTokenInfo({int? uid, int? gid}) async {
     if (!((uid != null) ^ (gid != null))) {
       throw ArgumentError();
     }
@@ -48,7 +48,7 @@ class AvchatApi {
           .post("/agora/token", queryParameters: {"uid": uid, "gid": gid});
 
       if (res.statusCode == 200 && res.data != null) {
-        return AgoraBasicInfo.fromJson(res.data);
+        return AgoraTokenInfo.fromJson(res.data);
       }
     } catch (e) {
       if (e is DioException) {
