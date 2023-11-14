@@ -8,10 +8,9 @@ import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.d
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
 
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
-  bool isVideoCall = false;
-
-  final int? uid;
-  final int? gid;
+  final isVideoCall = false;
+  late final int? uid;
+  late final int? gid;
 
   bool get isOneToOneCall => uid != null;
   bool get isGroupChat => gid != null;
@@ -21,10 +20,17 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   RtcEngine? _agoraEngine;
   AgoraTokenInfo? _agoraTokenInfo;
 
-  AvchatBloc({required this.isVideoCall, this.uid, this.gid})
-      : super(AvchatAvailabilityInitialState()) {
+  // TODO: chat timer
+  // TODO: microphone, camera, speaker state.
+
+  AvchatBloc() : super(AvchatAvailabilityInitialState()) {
     assert((uid != null) ^ (gid != null));
 
+    on<AvchatInitRequest>((event, emit) {
+      uid = event.uid;
+      gid = event.gid;
+      add(AvchatAvailabilityCheckRequest());
+    });
     on<AvchatAvailabilityCheckRequest>(_onAvailabilityCheckRequest);
     on<AvchatTokenInfoRequest>(_onTokenInfoRequest);
     on<AvchatPermissionCheckRequest>(_onAvchatPermissionCheckRequest);

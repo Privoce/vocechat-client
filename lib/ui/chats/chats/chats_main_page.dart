@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -48,46 +50,53 @@ class _ChatsMainPageState extends State<ChatsMainPage> {
       eventBus.fire(PrivateChannelInvitationLinkEvent(invitationLink));
     }
 
-    return ValueListenableBuilder<bool>(
-        valueListenable: disableGesture,
-        builder: (context, disableGesture, _) {
-          return AbsorbPointer(
-            absorbing: disableGesture,
-            child: Scaffold(
-              drawer: SharedFuncs.hasPreSetServerUrl()
-                  ? null
-                  : _buildServerSwitchDrawer(),
-              body: CupertinoTabScaffold(
-                  tabBar: CupertinoTabBar(
-                      height: 60,
-                      activeColor: widget._activeColor,
-                      inactiveColor: widget._defaultColor,
-                      items: [
-                        _buildChatsIcon(),
-                        BottomNavigationBarItem(
-                          icon: Padding(
-                            padding: const EdgeInsets.only(
-                                top: 8, left: 4, right: 4),
-                            child:
-                                Icon(AppIcons.contact, size: widget._iconsize),
-                          ),
-                          label: AppLocalizations.of(context)!.tabContacts,
-                        ),
-                        BottomNavigationBarItem(
-                          icon: Padding(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AvchatBloc>(
+          create: (context) => AvchatBloc(),
+        ),
+      ],
+      child: ValueListenableBuilder<bool>(
+          valueListenable: disableGesture,
+          builder: (context, disableGesture, _) {
+            return AbsorbPointer(
+              absorbing: disableGesture,
+              child: Scaffold(
+                drawer: SharedFuncs.hasPreSetServerUrl()
+                    ? null
+                    : _buildServerSwitchDrawer(),
+                body: CupertinoTabScaffold(
+                    tabBar: CupertinoTabBar(
+                        height: 60,
+                        activeColor: widget._activeColor,
+                        inactiveColor: widget._defaultColor,
+                        items: [
+                          _buildChatsIcon(),
+                          BottomNavigationBarItem(
+                            icon: Padding(
                               padding: const EdgeInsets.only(
                                   top: 8, left: 4, right: 4),
-                              child: Icon(AppIcons.setting,
-                                  size: widget._iconsize)),
-                          label: AppLocalizations.of(context)!.tabSettings,
-                        ),
-                      ]),
-                  tabBuilder: (context, index) {
-                    return _pageOptions[index];
-                  }),
-            ),
-          );
-        });
+                              child: Icon(AppIcons.contact,
+                                  size: widget._iconsize),
+                            ),
+                            label: AppLocalizations.of(context)!.tabContacts,
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 8, left: 4, right: 4),
+                                child: Icon(AppIcons.setting,
+                                    size: widget._iconsize)),
+                            label: AppLocalizations.of(context)!.tabSettings,
+                          ),
+                        ]),
+                    tabBuilder: (context, index) {
+                      return _pageOptions[index];
+                    }),
+              ),
+            );
+          }),
+    );
   }
 
   BottomNavigationBarItem _buildChatsIcon() {

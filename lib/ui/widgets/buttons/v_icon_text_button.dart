@@ -13,9 +13,9 @@ class VIconTextButton extends StatelessWidget {
   final double? width;
   final double? radius;
   final EdgeInsets? padding;
-  final bool? enable;
+  final bool enable;
 
-  const VIconTextButton(
+  VIconTextButton(
       {Key? key,
       required this.onPressed,
       required this.text,
@@ -28,13 +28,15 @@ class VIconTextButton extends StatelessWidget {
       this.width,
       this.radius,
       this.padding,
-      this.enable})
+      this.enable = true})
       : super(key: key);
+
+  final Color? _textColor = Colors.grey[600];
 
   @override
   Widget build(BuildContext context) {
     return CupertinoButton(
-      onPressed: enable == true ? onPressed : null,
+      onPressed: enable ? onPressed : null,
       color: color ?? Colors.grey[100],
       borderRadius: BorderRadius.circular(radius ?? 4),
       padding: padding ?? EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -43,16 +45,16 @@ class VIconTextButton extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: textColor ?? Colors.grey[500],
+            color: textColor ?? _textColor,
             size: iconSize ?? 24,
           ),
-          SizedBox(width: 4),
+          SizedBox(height: 4),
           Text(
             text,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-                color: textColor ?? Colors.grey[500], fontSize: fontSize ?? 12),
+                color: textColor ?? _textColor, fontSize: fontSize ?? 12),
           )
         ],
       ),
