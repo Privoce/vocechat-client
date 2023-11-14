@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/admin_user_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
@@ -7,8 +8,8 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/feature/avchat/presentation/helpers/avchat_overlay_manager.dart';
-import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_floating_overlay.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
 import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_page.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
@@ -16,6 +17,7 @@ import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+import 'package:vocechat_client/ui/bottom_up_route.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
@@ -132,22 +134,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               padding: const EdgeInsets.all(8.0),
               child: VIconTextButton(
                   onPressed: () {
-                    // final entry = OverlayEntry(builder: (context) {
-                    //   return AvchatFloatingOverlay();
-                    //   // return Positioned(
-                    //   //   left: 10,
-                    //   //   top: 10,
-                    //   //   child: Container(
-                    //   //     color: Colors.amber,
-                    //   //     height: 40,
-                    //   //     width: 40,
-                    //   //     child: Text("here"),
-                    //   //   ),
-                    //   // );
-                    // });
-                    // Overlay.of(context).insert(entry);
-                    // // showOverlay(context);
-                    AvchatFloatingOverlayManager.showOverlay(context);
+                    _startCall();
                   },
                   text: AppLocalizations.of(context)!.call,
                   icon: AppIcons.audio),
@@ -430,6 +417,17 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               Navigator.pop(context);
               await removeContact();
             }));
+  }
+
+  void _startCall() {
+    final route = gBottomUpRoute((context, _, __) {
+      return AvchatPage();
+    });
+    Navigator.of(context).push(route);
+
+    final avchatBloc = BlocProvider.of<AvchatBloc>(context);
+    avchatBloc
+        .add(AvchatInitRequest(isVideoCall: false, uid: widget.userInfoM.uid));
   }
 
   /// Adds contact to contact list.

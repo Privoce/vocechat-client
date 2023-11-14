@@ -9,7 +9,6 @@ class AvchatFloatingOverlayManager {
 
   static bool _isDragging = false;
 
-  // TODO: add position memory in database (maybe shared preferences)
   static void showOverlay(BuildContext context, {Offset? initialOffset}) {
     // the floating window size is 64, and the point should be at the center, so
     // the offset is set as 32.
@@ -39,13 +38,12 @@ class AvchatFloatingOverlayManager {
                 _isDragging = false;
                 _adjustPosition(context);
               },
-              child: GestureDetector(
-                  onDoubleTap: () {
-                    // Just a temp testing method.
-                    print("here");
-                    removeOverlay();
-                  },
-                  child: AvchatFloatingOverlay())));
+              onDoubleTap: () {
+                // For temp testing only.
+                print("here");
+                removeOverlay();
+              },
+              child: AvchatFloatingOverlay()));
     });
 
     if (_overlayEntry != null) {
@@ -65,10 +63,11 @@ class AvchatFloatingOverlayManager {
     double adjustedX;
     double adjustedY;
 
-    if (_offset!.dx < horizontalOffset) {
+    if (_offset!.dx < horizontalOffset || _offset!.dx < screenSize.width / 2) {
       adjustedX = horizontalOffset - positionOffset;
-    } else if (_offset!.dx > screenSize.width - horizontalOffset) {
-      adjustedX = (screenSize.width - horizontalOffset) - positionOffset;
+    } else if (_offset!.dx > screenSize.width - horizontalOffset ||
+        _offset!.dx >= screenSize.width / 2) {
+      adjustedX = screenSize.width - horizontalOffset - positionOffset;
     } else {
       adjustedX = _offset!.dx;
     }
