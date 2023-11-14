@@ -7,6 +7,9 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/feature/avchat/presentation/helpers/avchat_overlay_manager.dart';
+import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_floating_overlay.dart';
+import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_page.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -128,9 +131,26 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: VIconTextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // final entry = OverlayEntry(builder: (context) {
+                    //   return AvchatFloatingOverlay();
+                    //   // return Positioned(
+                    //   //   left: 10,
+                    //   //   top: 10,
+                    //   //   child: Container(
+                    //   //     color: Colors.amber,
+                    //   //     height: 40,
+                    //   //     width: 40,
+                    //   //     child: Text("here"),
+                    //   //   ),
+                    //   // );
+                    // });
+                    // Overlay.of(context).insert(entry);
+                    // // showOverlay(context);
+                    AvchatFloatingOverlayManager.showOverlay(context);
+                  },
                   text: AppLocalizations.of(context)!.call,
-                  icon: AppIcons.chat),
+                  icon: AppIcons.audio),
             ),
           ),
           Expanded(
@@ -140,7 +160,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
               child: VIconTextButton(
                   onPressed: () {},
                   text: AppLocalizations.of(context)!.video,
-                  icon: AppIcons.chat),
+                  icon: AppIcons.video),
             ),
           ),
         ],

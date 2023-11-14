@@ -1,5 +1,15 @@
 abstract class AvchatEvent {}
 
+class AvchatInitRequest extends AvchatEvent {
+  final bool isVideoCall;
+  final int? uid;
+  final int? gid;
+
+  AvchatInitRequest({this.uid, this.gid, required this.isVideoCall}) {
+    assert((uid != null) ^ (gid != null));
+  }
+}
+
 class AvchatAvailabilityCheckRequest extends AvchatEvent {}
 
 class AvchatTokenInfoRequest extends AvchatEvent {}
