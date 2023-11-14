@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 
 class AvchatFloatingOverlay extends StatefulWidget {
+  final double size = 64;
+
   const AvchatFloatingOverlay({Key? key}) : super(key: key);
 
   @override
@@ -13,8 +15,8 @@ class _AvchatFloatingOverlayState extends State<AvchatFloatingOverlay> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 64,
-      height: 64,
+      width: widget.size,
+      height: widget.size,
       decoration: BoxDecoration(
           color: Colors.grey, borderRadius: BorderRadius.circular(8)),
       child: _buildContents(),
