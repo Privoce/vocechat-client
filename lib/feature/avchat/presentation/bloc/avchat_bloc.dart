@@ -24,19 +24,20 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   // TODO: microphone, camera, speaker state.
 
   AvchatBloc() : super(AvchatAvailabilityInitialState()) {
-    assert((uid != null) ^ (gid != null));
-
-    on<AvchatInitRequest>((event, emit) {
-      uid = event.uid;
-      gid = event.gid;
-      add(AvchatAvailabilityCheckRequest());
-    });
+    on<AvchatInitRequest>(_onInitialRequest);
     on<AvchatAvailabilityCheckRequest>(_onAvailabilityCheckRequest);
     on<AvchatTokenInfoRequest>(_onTokenInfoRequest);
     on<AvchatPermissionCheckRequest>(_onAvchatPermissionCheckRequest);
     on<AvchatEngineInitRequest>(_onAvchatEngineInitRequest);
     on<AvchatJoinRequest>(_onAvchatJoinRequest);
     on<AvchatLeaveRequest>(_onAvchatLeaveRequest);
+  }
+
+  Future<void> _onInitialRequest(
+      AvchatInitRequest event, Emitter<AvchatState> emit) async {
+    uid = event.uid;
+    gid = event.gid;
+    add(AvchatAvailabilityCheckRequest());
   }
 
   Future<void> _onAvailabilityCheckRequest(

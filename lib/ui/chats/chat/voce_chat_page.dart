@@ -791,12 +791,6 @@ class _VoceChatPageState extends State<VoceChatPage>
             }
             final tileData = widget.controller.tileDataList[index];
 
-            // return VoceContextMenu(
-            //   actions: _buildPressDownActions(tileData),
-            //   child:
-            //       SingleChildScrollView(child: VoceMsgTile(tileData: tileData)),
-            // );
-
             final ani = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
               parent: animation,
               curve: Interval(
