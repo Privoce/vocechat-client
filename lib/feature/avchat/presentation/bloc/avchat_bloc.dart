@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -9,8 +11,8 @@ import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.d
 
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   final isVideoCall = false;
-  late final int? uid;
-  late final int? gid;
+  int? uid;
+  int? gid;
 
   bool get isOneToOneCall => uid != null;
   bool get isGroupChat => gid != null;
@@ -20,7 +22,8 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   RtcEngine? _agoraEngine;
   AgoraTokenInfo? _agoraTokenInfo;
 
-  // TODO: chat timer
+  Timer? _chatTimer;
+
   // TODO: microphone, camera, speaker state.
 
   AvchatBloc() : super(AvchatAvailabilityInitialState()) {
@@ -30,6 +33,8 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatPermissionCheckRequest>(_onAvchatPermissionCheckRequest);
     on<AvchatEngineInitRequest>(_onAvchatEngineInitRequest);
     on<AvchatJoinRequest>(_onAvchatJoinRequest);
+    on<AvchatLocalInitRequest>(_onLocalInitRequest);
+    on<AvchatTimerUpdate>(_onTimerUpdate);
     on<AvchatLeaveRequest>(_onAvchatLeaveRequest);
   }
 
@@ -47,6 +52,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       final isEnabled = await _api.isAgoraEnabled();
       if (isEnabled) {
         emit(AvchatAvailable());
+        App.logger.info("Agora is enabled at server side");
         add(AvchatTokenInfoRequest());
       } else {
         emit(AvchatUnavailable(message: "Agora is not enabled"));
@@ -67,6 +73,9 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       if (tokenInfo != null) {
         _agoraTokenInfo = tokenInfo;
         emit(AvchatTokenInfoReceived(tokenInfo));
+        App.logger
+            .info("Agora token info received, info: ${tokenInfo.toJson()}");
+
         add(AvchatPermissionCheckRequest());
       } else {
         emit(AvchatTokenInfoFail("Failed to get agora token info"));
@@ -87,8 +96,11 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
           emit(AvchatPermissionDisabled(
               isMicPermissionRequired: true,
               isCameraPermissionRequired: false));
+          App.logger.info("Mic permission not granted");
         } else {
           emit(AvchatPermissionEnabled(isMicPermissionEnabled: true));
+          App.logger.info("Mic permission granted");
+
           add(AvchatEngineInitRequest());
         }
       } else {
@@ -101,9 +113,12 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
               isMicPermissionRequired: micStatus != PermissionStatus.granted,
               isCameraPermissionRequired:
                   camStatus != PermissionStatus.granted));
+          App.logger.info(
+              "Mic or camera permission not granted: $micStatus, $camStatus");
         } else {
           emit(AvchatPermissionEnabled(
               isMicPermissionEnabled: true, isCameraPermissionEnabled: true));
+          App.logger.info("Mic and camera permission granted");
           add(AvchatEngineInitRequest());
         }
       }
@@ -119,6 +134,8 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
 
     if (_agoraTokenInfo == null) {
       emit(AgoraInitFail("Agora token info is null"));
+      App.logger.info("Agora token info is null");
+
       return;
     }
 
@@ -127,9 +144,13 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
 
       await _agoraEngine?.initialize(RtcEngineContext(
           appId: _agoraTokenInfo!.appId,
-          channelProfile: ChannelProfileType.channelProfileLiveBroadcasting));
+          channelProfile: isOneToOneCall
+              ? ChannelProfileType.channelProfileCommunication
+              : ChannelProfileType.channelProfileLiveBroadcasting));
 
       emit(AgoraInitialized());
+      App.logger.info("Agora engine initialized");
+
       add(AvchatJoinRequest());
     } catch (e) {
       App.logger.severe(e);
@@ -143,17 +164,48 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       emit(AgoraJoinFail("Agora engine or token info is null"));
       return;
     }
+    try {
+      if (isVideoCall) {
+        // await _agoraEngine?.enableVideo();
+      } else {
+        await _agoraEngine?.joinChannel(
+            token: _agoraTokenInfo!.agoraToken,
+            channelId: _agoraTokenInfo!.channelName,
+            uid: _agoraTokenInfo!.uid,
+            options: ChannelMediaOptions(
+                clientRoleType: ClientRoleType.clientRoleBroadcaster));
+        emit(AgoraChannelJoined());
 
-    if (isVideoCall) {
-      // await _agoraEngine?.enableVideo();
-    } else {
-      await _agoraEngine?.joinChannel(
-          token: _agoraTokenInfo!.agoraToken,
-          channelId: _agoraTokenInfo!.channelName,
-          uid: _agoraTokenInfo!.uid,
-          options: ChannelMediaOptions(
-              clientRoleType: ClientRoleType.clientRoleBroadcaster));
+        App.logger.info("Agora channel joined");
+
+        add(AvchatLocalInitRequest());
+      }
+    } catch (e) {
+      App.logger.severe(e);
+      emit(AgoraJoinFail(e));
     }
+  }
+
+  Future<void> _onLocalInitRequest(
+      AvchatLocalInitRequest event, Emitter<AvchatState> emit) async {
+    if (_agoraEngine == null) {
+      emit(AgoraJoinFail("Agora engine is null"));
+      return;
+    }
+
+    try {
+      _chatTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+        add(AvchatTimerUpdate(timer.tick));
+      });
+    } catch (e) {
+      App.logger.severe(e);
+      emit(AgoraCallingFail(e));
+    }
+  }
+
+  Future<void> _onTimerUpdate(
+      AvchatTimerUpdate event, Emitter<AvchatState> emit) async {
+    emit(AgoraCallOnGoing(event.seconds));
   }
 
   Future<void> _onAvchatLeaveRequest(
@@ -164,12 +216,26 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     }
 
     try {
-      await _agoraEngine?.leaveChannel();
-      await _agoraEngine?.release();
+      await _clear();
+
+      App.logger.info("Agora channel left; engine released");
       emit(AgoraLeftChannel());
+      emit(AvchatAvailabilityInitialState());
     } catch (e) {
       App.logger.severe(e);
       emit(AgoraLeaveFail(e));
+      emit(AvchatAvailabilityInitialState());
+
+      await _clear();
     }
+  }
+
+  Future<void> _clear() async {
+    await _agoraEngine?.leaveChannel();
+    await _agoraEngine?.release();
+    _chatTimer?.cancel();
+    _chatTimer = null;
+    uid = null;
+    gid = null;
   }
 }

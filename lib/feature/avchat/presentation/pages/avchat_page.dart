@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_appbar.dart';
+import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_status_text.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/round_button.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
@@ -51,7 +52,7 @@ class _AvchatPageState extends State<AvchatPage> {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           Text("on going call"),
-          Text("time")
+          AvchatStatusText()
         ],
       ),
     );

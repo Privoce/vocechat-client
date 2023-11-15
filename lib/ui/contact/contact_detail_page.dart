@@ -420,12 +420,15 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   }
 
   void _startCall() {
+    final avchatBloc = BlocProvider.of<AvchatBloc>(context);
+
     final route = gBottomUpRoute((context, _, __) {
       return AvchatPage();
     });
-    Navigator.of(context).push(route);
+    Navigator.of(context).push(route).then((_) {
+      avchatBloc.add(AvchatLeaveRequest());
+    });
 
-    final avchatBloc = BlocProvider.of<AvchatBloc>(context);
     avchatBloc
         .add(AvchatInitRequest(isVideoCall: false, uid: widget.userInfoM.uid));
   }

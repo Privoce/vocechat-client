@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
-import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_floating_overlay.dart';
+import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_floating_overlay.dart';
 
-class AvchatFloatingOverlayManager {
+class AvchatFloatingManager {
   static Offset? _offset;
   static OverlayEntry? _overlayEntry;
 
@@ -9,7 +9,7 @@ class AvchatFloatingOverlayManager {
 
   static bool _isDragging = false;
 
-  static void showOverlay(BuildContext context, {Offset? initialOffset}) {
+  static void showOverlay(BuildContext context) {
     // the floating window size is 64, and the point should be at the center, so
     // the offset is set as 32.
     const double positionOffset = 32;
@@ -37,11 +37,6 @@ class AvchatFloatingOverlayManager {
               onPanEnd: (details) {
                 _isDragging = false;
                 _adjustPosition(context);
-              },
-              onDoubleTap: () {
-                // For temp testing only.
-                print("here");
-                removeOverlay();
               },
               child: AvchatFloatingOverlay()));
     });
