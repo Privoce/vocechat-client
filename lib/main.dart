@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_portal/flutter_portal.dart';
@@ -19,6 +20,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/event_bus_objects/push_to_chat_event.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/firebase_options.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/auth_service.dart';
@@ -229,53 +231,60 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Portal(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        navigatorKey: navigatorKey,
-        title: 'VoceChat',
-        routes: {
-          // Auth
-          // ServerPage.route: (context) => ServerPage(),
-          // LoginPage.route: (context) => LoginPage(),
-          // Chats
-          ChatsMainPage.route: (context) => ChatsMainPage(),
-          ChatsPage.route: (context) => ChatsPage(),
-          // Contacts
-          ContactsPage.route: (context) => ContactsPage(),
-          // ContactDetailPage.route: (context) => ContactDetailPage(),
-          // Settings
-          SettingPage.route: (context) => SettingPage(),
-        },
-        theme: ThemeData(
-            // canvasColor: Colors.transparent,
-            splashFactory: NoSplash.splashFactory,
-            splashColor: Colors.transparent,
-            highlightColor: AppColors.grey200,
-            fontFamily: 'Inter',
-            primarySwatch: Colors.blue,
-            dividerTheme: DividerThemeData(thickness: 0.5, space: 1),
-            textTheme: TextTheme(
-                // headline6:
-                // Chats tile title, contacts
-                // titleSmall: ,
-                // titleMedium:
-                //     TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                // All AppBar titles
-                titleLarge:
-                    TextStyle(fontSize: 17, fontWeight: FontWeight.w600))),
-        // theme: ThemeData.dark(),
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AvchatBloc>(
+            create: (context) => AvchatBloc(),
+          ),
         ],
-        locale: _locale,
-        supportedLocales: const [
-          Locale('en', ''), // English, no country code
-          Locale('zh', ''),
-        ],
-        home: _defaultHome,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
+          title: 'VoceChat',
+          routes: {
+            // Auth
+            // ServerPage.route: (context) => ServerPage(),
+            // LoginPage.route: (context) => LoginPage(),
+            // Chats
+            ChatsMainPage.route: (context) => ChatsMainPage(),
+            ChatsPage.route: (context) => ChatsPage(),
+            // Contacts
+            ContactsPage.route: (context) => ContactsPage(),
+            // ContactDetailPage.route: (context) => ContactDetailPage(),
+            // Settings
+            SettingPage.route: (context) => SettingPage(),
+          },
+          theme: ThemeData(
+              // canvasColor: Colors.transparent,
+              splashFactory: NoSplash.splashFactory,
+              splashColor: Colors.transparent,
+              highlightColor: AppColors.grey200,
+              fontFamily: 'Inter',
+              primarySwatch: Colors.blue,
+              dividerTheme: DividerThemeData(thickness: 0.5, space: 1),
+              textTheme: TextTheme(
+                  // headline6:
+                  // Chats tile title, contacts
+                  // titleSmall: ,
+                  // titleMedium:
+                  //     TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  // All AppBar titles
+                  titleLarge:
+                      TextStyle(fontSize: 17, fontWeight: FontWeight.w600))),
+          // theme: ThemeData.dark(),
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          locale: _locale,
+          supportedLocales: const [
+            Locale('en', ''), // English, no country code
+            Locale('zh', ''),
+          ],
+          home: _defaultHome,
+        ),
       ),
     );
   }

@@ -45,10 +45,4 @@ class _AvchatFloatingOverlayState extends State<AvchatFloatingOverlay> {
       ),
     );
   }
-
-  String _formatTime(int seconds) {
-    int minutes = seconds ~/ 60;
-    int secondsLeft = seconds % 60;
-    return "$minutes:$secondsLeft";
-  }
 }

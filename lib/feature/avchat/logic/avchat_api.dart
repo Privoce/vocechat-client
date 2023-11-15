@@ -10,13 +10,13 @@ class AvchatApi {
 
   AvchatApi({String? serverUrl}) {
     final url = serverUrl ?? App.app.chatServerM.fullUrl;
-    _baseUrl = "$url/api/admin/system";
+    _baseUrl = "$url/api/admin";
   }
 
   Future<bool> isAgoraEnabled() async {
     try {
       final dio = DioUtil(baseUrl: _baseUrl);
-      final res = await dio.get("/agora/enable");
+      final res = await dio.get("/agora/enabled");
 
       if (res.statusCode == 200 && res.data != null) {
         return res.data;
@@ -44,8 +44,8 @@ class AvchatApi {
 
     try {
       final dio = DioUtil.token(baseUrl: _baseUrl);
-      final res = await dio
-          .post("/agora/token", queryParameters: {"uid": uid, "gid": gid});
+      final res =
+          await dio.post("/agora/token", data: {"uid": uid, "gid": gid});
 
       if (res.statusCode == 200 && res.data != null) {
         return AgoraTokenInfo.fromJson(res.data);

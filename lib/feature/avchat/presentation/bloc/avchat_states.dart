@@ -135,8 +135,34 @@ class AgoraJoinFail extends AgoraJoinState {
   List<Object?> get props => [error];
 }
 
+// ------------------ AgoraLocalInitBloc ------------------ //
+abstract class AgoraCallingState extends AvchatState {
+  AgoraCallingState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class AgoraCallOnGoing extends AgoraCallingState {
+  final int seconds;
+
+  AgoraCallOnGoing(this.seconds);
+
+  @override
+  List<Object?> get props => [seconds];
+}
+
+class AgoraCallingFail extends AgoraCallingState {
+  final Object? error;
+
+  AgoraCallingFail(this.error);
+
+  @override
+  List<Object?> get props => [error];
+}
+
 // ------------------ AgoraLeaveBloc ------------------ //
-class AgoraLeaveState extends AvchatState {
+abstract class AgoraLeaveState extends AvchatState {
   AgoraLeaveState();
 
   @override

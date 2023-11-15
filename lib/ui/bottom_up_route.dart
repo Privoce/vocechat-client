@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 PageRouteBuilder gBottomUpRoute(
-    Widget Function(BuildContext, Animation<double>, Animation<double>)
+    Widget Function(BuildContext context, Animation<double>, Animation<double>)
         pageBuilder) {
   return PageRouteBuilder(
     pageBuilder: pageBuilder,
