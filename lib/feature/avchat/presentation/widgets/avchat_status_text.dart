@@ -4,6 +4,8 @@ import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dar
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
 
 class AvchatStatusText extends StatefulWidget {
+  const AvchatStatusText({super.key});
+
   @override
   State<AvchatStatusText> createState() => _AvchatStatusTextState();
 }
@@ -82,7 +84,7 @@ class _AvchatStatusTextState extends State<AvchatStatusText> {
           statusText = "Agora Leave Fail";
           break;
         default:
-          statusText = "";
+        // statusText = "";
       }
       return Text(statusText);
     });

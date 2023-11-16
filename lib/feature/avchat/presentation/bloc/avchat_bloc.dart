@@ -42,7 +42,8 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatRemoteJoinedEvent>(_onRemoteJoined);
     on<AvchatUserOfflineEvent>(_onUserOffline);
     on<AvchatTimerUpdate>(_onTimerUpdate);
-    on<AvchatLeaveRequest>(_onAvchatLeaveRequest);
+    on<AvchatMicBtnPressed>(_onMicBtnPressed);
+    on<AvchatEndCallBtnPressed>(_onAvchatLeaveRequest);
   }
 
   Future<void> _onInitialRequest(
@@ -81,8 +82,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       if (tokenInfo != null) {
         _agoraTokenInfo = tokenInfo;
         emit(AvchatTokenInfoReceived(tokenInfo));
-        App.logger
-            .info("Agora token info received, info: ${tokenInfo.toJson()}");
+        App.logger.info("Agora token info received.}");
 
         add(AvchatPermissionCheckRequest());
       } else {
@@ -202,7 +202,6 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     try {
       _agoraEngine?.registerEventHandler(RtcEngineEventHandler(
         onJoinChannelSuccess: (connection, elapsed) async {
-          // await _onJoinChannelSuccess(connection, elapsed, emit);
           add(AvchatSelfJoinedEvent());
         },
         onUserJoined: (connection, remoteUid, elapsed) async {
@@ -210,6 +209,10 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
         },
         onUserOffline: (connection, remoteUid, reason) async {
           add(AvchatUserOfflineEvent(remoteUid, reason));
+        },
+        onUserMuteAudio: (connection, remoteUid, muted) async {
+          // add(AvchatMicBtnPressed());
+          print("onUserMuteAudio: $remoteUid, $muted");
         },
       ));
     } catch (e) {
@@ -280,7 +283,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   }
 
   Future<void> _onAvchatLeaveRequest(
-      AvchatLeaveRequest event, Emitter<AvchatState> emit) async {
+      AvchatEndCallBtnPressed event, Emitter<AvchatState> emit) async {
     if (_agoraEngine == null) {
       emit(AgoraLeaveFail("Agora engine is null"));
       return;
@@ -299,6 +302,13 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
 
       await _clear();
     }
+  }
+
+  void _onMicBtnPressed(
+      AvchatMicBtnPressed event, Emitter<AvchatState> emit) async {
+    final isMuted = event.toMute;
+    emit(AvchatMicBtnState(isMuted));
+    await _agoraEngine?.muteLocalAudioStream(isMuted);
   }
 
   void _startTimer() {

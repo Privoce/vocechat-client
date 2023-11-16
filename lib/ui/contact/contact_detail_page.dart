@@ -426,7 +426,8 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
       return AvchatPage();
     });
     Navigator.of(context).push(route).then((_) {
-      avchatBloc.add(AvchatLeaveRequest());
+      // TODO: for temp test only. should be changed to small window.
+      avchatBloc.add(AvchatEndCallBtnPressed());
     });
 
     avchatBloc.add(

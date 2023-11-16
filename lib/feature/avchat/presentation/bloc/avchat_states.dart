@@ -202,3 +202,42 @@ class AgoraLeaveFail extends AgoraLeaveState {
   @override
   List<Object?> get props => [error];
 }
+
+// ------------------ AvchatBtnBloc ------------------ //
+abstract class AvchatBtnState extends AvchatState {
+  AvchatBtnState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class AvchatCamBtnState extends AvchatBtnState {
+  final bool isCamEnabled;
+
+  AvchatCamBtnState(this.isCamEnabled);
+
+  @override
+  List<Object?> get props => [isCamEnabled];
+}
+
+class AvchatSpeakerBtnState extends AvchatBtnState {
+  final bool isSpeakerEnabled;
+
+  AvchatSpeakerBtnState(this.isSpeakerEnabled);
+
+  @override
+  List<Object?> get props => [isSpeakerEnabled];
+}
+
+class AvchatMicBtnState extends AvchatBtnState {
+  final bool isMuted;
+
+  AvchatMicBtnState(this.isMuted);
+
+  @override
+  List<Object?> get props => [isMuted];
+}
+
+class AvchatEndCallBtnState extends AvchatBtnState {
+  AvchatEndCallBtnState();
+}
