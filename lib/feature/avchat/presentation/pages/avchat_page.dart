@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_appbar.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_status_text.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/round_button.dart';
@@ -59,21 +63,57 @@ class _AvchatPageState extends State<AvchatPage> {
   }
 
   Widget _buildBottomBar(BuildContext context) {
+    // final bloc = BlocProvider.of(context).read<AvchatBloc>();
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+
+    final enabledForeground = Colors.grey.shade800;
+    final enabledBackground = Colors.grey.shade100;
+    final disabledForground = Colors.grey.shade100;
+    final disabledBackground = Colors.grey.shade600;
 
     return Container(
       color: Colors.grey[800],
       padding: EdgeInsets.only(bottom: bottomSafeArea, top: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: const [
+        children: [
           RoundButton(icon: AppIcons.video),
           RoundButton(icon: AppIcons.video),
-          RoundButton(icon: AppIcons.video),
+          BlocSelector<AvchatBloc, AvchatState, bool>(
+            selector: (state) {
+              return (state is AvchatMicBtnState) && state.isMuted;
+            },
+            builder: (context, isMuted) {
+              if (isMuted) {
+                return RoundButton(
+                  icon: AppIcons.mic_off,
+                  foregroundColor: disabledForground,
+                  backgroundColor: disabledBackground,
+                  onPressed: () {
+                    context.read<AvchatBloc>().add(AvchatMicBtnPressed(false));
+                  },
+                );
+              } else {
+                return RoundButton(
+                  icon: AppIcons.mic,
+                  foregroundColor: enabledForeground,
+                  backgroundColor: enabledBackground,
+                  onPressed: () {
+                    context.read<AvchatBloc>().add(AvchatMicBtnPressed(true));
+                  },
+                );
+              }
+            },
+          ),
           RoundButton(
-              icon: AppIcons.call_end,
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.red)
+            icon: AppIcons.call_end,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.red,
+            onPressed: () {
+              context.read<AvchatBloc>().add(AvchatEndCallBtnPressed());
+              Navigator.of(context).pop();
+            },
+          )
         ],
       ),
     );

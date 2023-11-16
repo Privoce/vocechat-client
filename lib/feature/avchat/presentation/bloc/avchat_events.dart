@@ -49,4 +49,14 @@ class AvchatTimerUpdate extends AvchatEvent {
   AvchatTimerUpdate(this.seconds);
 }
 
-class AvchatLeaveRequest extends AvchatEvent {}
+class AvchatCamBtnPressed extends AvchatEvent {}
+
+class AvchatSpeakerBtnPressed extends AvchatEvent {}
+
+class AvchatMicBtnPressed extends AvchatEvent {
+  final bool toMute;
+
+  AvchatMicBtnPressed(this.toMute);
+}
+
+class AvchatEndCallBtnPressed extends AvchatEvent {}
