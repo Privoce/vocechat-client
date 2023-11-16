@@ -429,8 +429,8 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
       avchatBloc.add(AvchatLeaveRequest());
     });
 
-    avchatBloc
-        .add(AvchatInitRequest(isVideoCall: false, uid: widget.userInfoM.uid));
+    avchatBloc.add(
+        AvchatInitRequest(isVideoCall: false, userInfoM: widget.userInfoM));
   }
 
   /// Adds contact to contact list.
