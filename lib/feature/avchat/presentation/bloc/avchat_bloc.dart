@@ -12,7 +12,7 @@ import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.d
 
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   final isVideoCall = false;
-  // int? uid;
+
   UserInfoM? userInfoM;
   int? gid;
 
@@ -43,6 +43,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatUserOfflineEvent>(_onUserOffline);
     on<AvchatTimerUpdate>(_onTimerUpdate);
     on<AvchatMicBtnPressed>(_onMicBtnPressed);
+    on<AvchatSpeakerBtnPressed>(_onSpeakerBtnPressed);
     on<AvchatEndCallBtnPressed>(_onAvchatLeaveRequest);
   }
 
@@ -224,6 +225,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   void _onSelfJoined(
       AvchatSelfJoinedEvent event, Emitter<AvchatState> emit) async {
     emit(AgoraSelfJoined());
+
     if (isOneToOneCall && _guests.isEmpty) {
       emit(AgoraWaitingForPeer());
     }
@@ -306,9 +308,16 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
 
   void _onMicBtnPressed(
       AvchatMicBtnPressed event, Emitter<AvchatState> emit) async {
-    final isMuted = event.toMute;
-    emit(AvchatMicBtnState(isMuted));
-    await _agoraEngine?.muteLocalAudioStream(isMuted);
+    final toMute = event.toMute;
+    emit(AvchatMicBtnState(toMute));
+    await _agoraEngine?.muteLocalAudioStream(toMute);
+  }
+
+  void _onSpeakerBtnPressed(
+      AvchatSpeakerBtnPressed event, Emitter<AvchatState> emit) async {
+    final toMute = event.toMute;
+    emit(AvchatSpeakerBtnState(toMute));
+    await _agoraEngine?.muteAllRemoteAudioStreams(toMute);
   }
 
   void _startTimer() {
@@ -324,5 +333,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     _chatTimer = null;
     userInfoM = null;
     gid = null;
+
+    _guests.clear();
   }
 }
