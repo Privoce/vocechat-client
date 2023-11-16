@@ -1,11 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
+import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_page.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/bottom_up_route.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_settings_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/dm/dm_settings_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
@@ -222,12 +227,13 @@ class _ChatBarState extends State<ChatBar> {
     return [
       CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: () {},
+          onPressed: _startCall,
           child: Icon(AppIcons.audio, size: 20, color: AppColors.grey500)),
-      CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {},
-          child: Icon(AppIcons.video, size: 20, color: AppColors.grey500)),
+      // TODO: uncomment when video call is implemented
+      // CupertinoButton(
+      //     padding: EdgeInsets.zero,
+      //     onPressed: () {},
+      //     child: Icon(AppIcons.video, size: 20, color: AppColors.grey500)),
       CupertinoButton(
           onPressed: () async {
             Navigator.push(
@@ -239,5 +245,20 @@ class _ChatBarState extends State<ChatBar> {
           },
           child: Icon(Icons.more_horiz, size: 20, color: AppColors.grey500))
     ];
+  }
+
+  void _startCall() {
+    final avchatBloc = BlocProvider.of<AvchatBloc>(context);
+
+    final route = gBottomUpRoute((context, _, __) {
+      return AvchatPage(userInfoM: widget.userInfoNotifier!.value);
+    });
+    Navigator.of(context).push(route).then((_) {
+      // TODO: for temp test only. should be changed to small window.
+      avchatBloc.add(AvchatEndCallBtnPressed());
+    });
+
+    avchatBloc.add(AvchatInitRequest(
+        isVideoCall: false, userInfoM: widget.userInfoNotifier!.value));
   }
 }

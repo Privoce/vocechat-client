@@ -221,12 +221,12 @@ class AvchatCamBtnState extends AvchatBtnState {
 }
 
 class AvchatSpeakerBtnState extends AvchatBtnState {
-  final bool isSpeakerEnabled;
+  final bool isMuted;
 
-  AvchatSpeakerBtnState(this.isSpeakerEnabled);
+  AvchatSpeakerBtnState(this.isMuted);
 
   @override
-  List<Object?> get props => [isSpeakerEnabled];
+  List<Object?> get props => [isMuted];
 }
 
 class AvchatMicBtnState extends AvchatBtnState {

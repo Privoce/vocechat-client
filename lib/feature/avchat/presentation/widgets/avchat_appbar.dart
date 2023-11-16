@@ -32,7 +32,7 @@ class AvchatAppBar extends StatelessWidget implements PreferredSizeWidget {
           onPressed: backButtonPressed,
         ),
       ),
-      title: Text('name'),
+      // title: Text('name'),
     );
   }
 

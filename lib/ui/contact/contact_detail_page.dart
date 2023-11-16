@@ -140,16 +140,17 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
                   icon: AppIcons.audio),
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: VIconTextButton(
-                  onPressed: () {},
-                  text: AppLocalizations.of(context)!.video,
-                  icon: AppIcons.video),
-            ),
-          ),
+          // TODO: uncomment this when video call is ready.
+          // Expanded(
+          //   flex: 1,
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(8.0),
+          //     child: VIconTextButton(
+          //         onPressed: () {},
+          //         text: AppLocalizations.of(context)!.video,
+          //         icon: AppIcons.video),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -168,18 +169,8 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   }
 
   Widget _buildSettings(UserInfoM userInfoM, BuildContext context) {
-    // final titleText = userInfoM.contactStatusStr != ContactStatus.blocked.name
-    //     ? AppLocalizations.of(context)!.sendMessage
-    //     : AppLocalizations.of(context)!.viewChatHistory;
-
     return Column(
       children: [
-        // AppBannerButton(
-        //     title: titleText,
-        //     textColor: AppColors.primaryBlue,
-        //     onTap: () {
-        //       onTapDm(userInfoM, context);
-        //     }),
         ValueListenableBuilder<bool>(
             valueListenable: enableContact,
             builder: (context, enableContact, _) {
@@ -423,7 +414,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     final avchatBloc = BlocProvider.of<AvchatBloc>(context);
 
     final route = gBottomUpRoute((context, _, __) {
-      return AvchatPage();
+      return AvchatPage(userInfoM: widget.userInfoM);
     });
     Navigator.of(context).push(route).then((_) {
       // TODO: for temp test only. should be changed to small window.
