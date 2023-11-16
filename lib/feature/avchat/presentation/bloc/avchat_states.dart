@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
 
 abstract class AvchatState extends Equatable {}
@@ -124,18 +125,19 @@ class AgoraJoinState extends AvchatState {
 
 class AgoraJoiningChannel extends AgoraJoinState {}
 
-class AgoraChannelJoined extends AgoraJoinState {}
+class AgoraSelfJoined extends AgoraJoinState {}
 
-class AgoraJoinFail extends AgoraJoinState {
+class AgoraSelfJoinFail extends AgoraJoinState {
   final Object? error;
 
-  AgoraJoinFail(this.error);
+  AgoraSelfJoinFail(this.error);
 
   @override
   List<Object?> get props => [error];
 }
 
-// ------------------ AgoraLocalInitBloc ------------------ //
+// ------------------ AgoraCallingInitBloc ------------------ //
+/// Calling means on-going call, not the act of calling.
 abstract class AgoraCallingState extends AvchatState {
   AgoraCallingState();
 
@@ -150,6 +152,27 @@ class AgoraCallOnGoing extends AgoraCallingState {
 
   @override
   List<Object?> get props => [seconds];
+}
+
+/// Only used for one-to-one call.
+class AgoraWaitingForPeer extends AgoraCallingState {}
+
+class AgoraGuestJoined extends AgoraJoinState {
+  final UserInfoM userInfoM;
+
+  AgoraGuestJoined(this.userInfoM);
+
+  @override
+  List<Object?> get props => [userInfoM];
+}
+
+class AgoraGuestLeft extends AgoraJoinState {
+  final UserInfoM userInfoM;
+
+  AgoraGuestLeft(this.userInfoM);
+
+  @override
+  List<Object?> get props => [userInfoM];
 }
 
 class AgoraCallingFail extends AgoraCallingState {

@@ -4,6 +4,7 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/feature/avchat/logic/avchat_api.dart';
 import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
@@ -11,10 +12,11 @@ import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.d
 
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   final isVideoCall = false;
-  int? uid;
+  // int? uid;
+  UserInfoM? userInfoM;
   int? gid;
 
-  bool get isOneToOneCall => uid != null;
+  bool get isOneToOneCall => userInfoM != null;
   bool get isGroupChat => gid != null;
 
   final _api = AvchatApi();
@@ -23,6 +25,8 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   AgoraTokenInfo? _agoraTokenInfo;
 
   Timer? _chatTimer;
+
+  List<UserInfoM> _guests = [];
 
   // TODO: microphone, camera, speaker state.
 
@@ -34,13 +38,16 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatEngineInitRequest>(_onAvchatEngineInitRequest);
     on<AvchatJoinRequest>(_onAvchatJoinRequest);
     on<AvchatLocalInitRequest>(_onLocalInitRequest);
+    on<AvchatSelfJoinedEvent>(_onSelfJoined);
+    on<AvchatRemoteJoinedEvent>(_onRemoteJoined);
+    on<AvchatUserOfflineEvent>(_onUserOffline);
     on<AvchatTimerUpdate>(_onTimerUpdate);
     on<AvchatLeaveRequest>(_onAvchatLeaveRequest);
   }
 
   Future<void> _onInitialRequest(
       AvchatInitRequest event, Emitter<AvchatState> emit) async {
-    uid = event.uid;
+    userInfoM = event.userInfoM;
     gid = event.gid;
     add(AvchatAvailabilityCheckRequest());
   }
@@ -69,7 +76,8 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   Future<void> _onTokenInfoRequest(
       AvchatTokenInfoRequest event, Emitter<AvchatState> emit) async {
     try {
-      final tokenInfo = await _api.getAgoraTokenInfo(uid: uid, gid: gid);
+      final tokenInfo =
+          await _api.getAgoraTokenInfo(uid: userInfoM!.uid, gid: gid);
       if (tokenInfo != null) {
         _agoraTokenInfo = tokenInfo;
         emit(AvchatTokenInfoReceived(tokenInfo));
@@ -161,10 +169,11 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   Future<void> _onAvchatJoinRequest(
       AvchatJoinRequest event, Emitter<AvchatState> emit) async {
     if (_agoraEngine == null || _agoraTokenInfo == null) {
-      emit(AgoraJoinFail("Agora engine or token info is null"));
+      emit(AgoraSelfJoinFail("Agora engine or token info is null"));
       return;
     }
     try {
+      emit(AgoraJoiningChannel());
       if (isVideoCall) {
         // await _agoraEngine?.enableVideo();
       } else {
@@ -174,29 +183,91 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
             uid: _agoraTokenInfo!.uid,
             options: ChannelMediaOptions(
                 clientRoleType: ClientRoleType.clientRoleBroadcaster));
-        emit(AgoraChannelJoined());
-
-        App.logger.info("Agora channel joined");
 
         add(AvchatLocalInitRequest());
       }
     } catch (e) {
       App.logger.severe(e);
-      emit(AgoraJoinFail(e));
+      emit(AgoraSelfJoinFail(e));
     }
   }
 
   Future<void> _onLocalInitRequest(
       AvchatLocalInitRequest event, Emitter<AvchatState> emit) async {
     if (_agoraEngine == null) {
-      emit(AgoraJoinFail("Agora engine is null"));
+      emit(AgoraSelfJoinFail("Agora engine is null"));
       return;
     }
 
     try {
-      _chatTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-        add(AvchatTimerUpdate(timer.tick));
-      });
+      _agoraEngine?.registerEventHandler(RtcEngineEventHandler(
+        onJoinChannelSuccess: (connection, elapsed) async {
+          // await _onJoinChannelSuccess(connection, elapsed, emit);
+          add(AvchatSelfJoinedEvent());
+        },
+        onUserJoined: (connection, remoteUid, elapsed) async {
+          add(AvchatRemoteJoinedEvent(remoteUid));
+        },
+        onUserOffline: (connection, remoteUid, reason) async {
+          add(AvchatUserOfflineEvent(remoteUid, reason));
+        },
+      ));
+    } catch (e) {
+      App.logger.severe(e);
+      emit(AgoraCallingFail(e));
+    }
+  }
+
+  void _onSelfJoined(
+      AvchatSelfJoinedEvent event, Emitter<AvchatState> emit) async {
+    emit(AgoraSelfJoined());
+    if (isOneToOneCall && _guests.isEmpty) {
+      emit(AgoraWaitingForPeer());
+    }
+    App.logger.info("Agora channel joined");
+  }
+
+  void _onRemoteJoined(
+      AvchatRemoteJoinedEvent event, Emitter<AvchatState> emit) async {
+    final remoteUid = event.uid;
+    App.logger.info("Agora user joined: $remoteUid");
+
+    try {
+      final userInfoM = await UserInfoDao().getUserByUid(remoteUid);
+      if (userInfoM == null) {
+        App.logger.warning("User info not found, uid: $remoteUid");
+        emit(AgoraCallingFail("User info not found, uid: $remoteUid"));
+      } else {
+        _guests.add(userInfoM);
+        emit(AgoraGuestJoined(userInfoM));
+        App.logger.info("Agora guest joined: ${userInfoM.uid}");
+
+        if (isOneToOneCall) {
+          _startTimer();
+        }
+      }
+    } catch (e) {
+      App.logger.severe(e);
+      emit(AgoraCallingFail(e));
+    }
+  }
+
+  void _onUserOffline(
+      AvchatUserOfflineEvent event, Emitter<AvchatState> emit) async {
+    final remoteUid = event.uid;
+    final reason = event.reason;
+
+    App.logger.info("Agora user left: $remoteUid due to $reason");
+
+    try {
+      final userInfoM = await UserInfoDao().getUserByUid(remoteUid);
+      if (userInfoM == null) {
+        emit(AgoraCallingFail("User info not found, uid: $remoteUid"));
+      } else {
+        _guests.remove(userInfoM);
+        emit(AgoraGuestJoined(userInfoM));
+        App.logger.info("Agora guest left: ${userInfoM.uid}");
+      }
     } catch (e) {
       App.logger.severe(e);
       emit(AgoraCallingFail(e));
@@ -230,12 +301,18 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     }
   }
 
+  void _startTimer() {
+    _chatTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      add(AvchatTimerUpdate(timer.tick));
+    });
+  }
+
   Future<void> _clear() async {
     await _agoraEngine?.leaveChannel();
     await _agoraEngine?.release();
     _chatTimer?.cancel();
     _chatTimer = null;
-    uid = null;
+    userInfoM = null;
     gid = null;
   }
 }

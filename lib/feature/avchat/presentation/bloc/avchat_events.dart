@@ -1,12 +1,16 @@
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:vocechat_client/dao/init_dao/user_info.dart';
+
 abstract class AvchatEvent {}
 
 class AvchatInitRequest extends AvchatEvent {
   final bool isVideoCall;
-  final int? uid;
+  // final int? uid;
+  final UserInfoM? userInfoM;
   final int? gid;
 
-  AvchatInitRequest({this.uid, this.gid, required this.isVideoCall}) {
-    assert((uid != null) ^ (gid != null));
+  AvchatInitRequest({this.userInfoM, this.gid, required this.isVideoCall}) {
+    assert((userInfoM != null) ^ (gid != null));
   }
 }
 
@@ -23,6 +27,21 @@ class AvchatEngineInitRequest extends AvchatEvent {}
 class AvchatJoinRequest extends AvchatEvent {}
 
 class AvchatLocalInitRequest extends AvchatEvent {}
+
+class AvchatSelfJoinedEvent extends AvchatEvent {}
+
+class AvchatUserOfflineEvent extends AvchatEvent {
+  final int uid;
+  final UserOfflineReasonType reason;
+
+  AvchatUserOfflineEvent(this.uid, this.reason);
+}
+
+class AvchatRemoteJoinedEvent extends AvchatEvent {
+  final int uid;
+
+  AvchatRemoteJoinedEvent(this.uid);
+}
 
 class AvchatTimerUpdate extends AvchatEvent {
   final int seconds;

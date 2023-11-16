@@ -54,15 +54,26 @@ class _AvchatStatusTextState extends State<AvchatStatusText> {
         case AgoraJoiningChannel:
           statusText = "Agora Joining";
           break;
-        case AgoraChannelJoined:
+        case AgoraSelfJoined:
           statusText = "Agora Joined";
           break;
-        case AgoraJoinFail:
+        case AgoraSelfJoinFail:
           statusText = "Agora Join Fail";
           break;
         case AgoraCallOnGoing:
           final seconds = (state as AgoraCallOnGoing).seconds;
           statusText = _formatTime(seconds);
+          break;
+        case AgoraWaitingForPeer:
+          statusText = "Agora Waiting For Peer";
+          break;
+        case AgoraGuestJoined:
+          final uid = (state as AgoraGuestJoined).userInfoM.uid;
+          statusText = "Agora Guest Joined, uid: $uid";
+          break;
+        case AgoraGuestLeft:
+          final uid = (state as AgoraGuestJoined).userInfoM.uid;
+          statusText = "Agora Guest Left, uid: $uid";
           break;
         case AgoraLeftChannel:
           statusText = "Agora Left";
