@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_status_text.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 
 class AvchatFloatingOverlay extends StatefulWidget {
@@ -18,7 +19,7 @@ class _AvchatFloatingOverlayState extends State<AvchatFloatingOverlay> {
       width: widget.size,
       height: widget.size,
       decoration: BoxDecoration(
-          color: Colors.grey, borderRadius: BorderRadius.circular(8)),
+          color: Colors.grey.shade400, borderRadius: BorderRadius.circular(8)),
       child: _buildContents(),
     );
   }
@@ -28,18 +29,11 @@ class _AvchatFloatingOverlayState extends State<AvchatFloatingOverlay> {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(AppIcons.audio),
+        children: [
+          Icon(AppIcons.audio, size: 28, color: Colors.grey.shade800),
           SizedBox(height: 4),
           Flexible(
-            child: Text("time",
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                    decoration: TextDecoration.none)),
+            child: AvchatStatusText(),
           )
         ],
       ),

@@ -1,4 +1,7 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
+import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_floating_overlay.dart';
 
 class AvchatFloatingManager {
@@ -9,7 +12,12 @@ class AvchatFloatingManager {
 
   static bool _isDragging = false;
 
+  static bool _isOnScreen = false;
+
   static void showOverlay(BuildContext context) {
+    if (_isOnScreen) {
+      return;
+    }
     // the floating window size is 64, and the point should be at the center, so
     // the offset is set as 32.
     const double positionOffset = 32;
@@ -24,25 +32,34 @@ class AvchatFloatingManager {
               : Duration(milliseconds: 100),
           top: _offset!.dy,
           left: _offset!.dx,
-          child: GestureDetector(
-              onPanDown: (_) {
-                _isDragging = true;
-              },
-              onPanUpdate: (details) {
-                _isDragging = true;
-                _offset = Offset(details.globalPosition.dx - positionOffset,
-                    details.globalPosition.dy - positionOffset);
-                _overlayEntry?.markNeedsBuild();
-              },
-              onPanEnd: (details) {
-                _isDragging = false;
-                _adjustPosition(context);
-              },
-              child: AvchatFloatingOverlay()));
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: () {
+              context.read<AvchatBloc>().add(
+                  AvchatMinimizeRequest(toMinimize: false, context: context));
+            },
+            child: GestureDetector(
+                onPanDown: (_) {
+                  _isDragging = true;
+                },
+                onPanUpdate: (details) {
+                  _isDragging = true;
+                  _offset = Offset(details.globalPosition.dx - positionOffset,
+                      details.globalPosition.dy - positionOffset);
+                  _overlayEntry?.markNeedsBuild();
+                },
+                onPanEnd: (details) {
+                  _isDragging = false;
+                  _adjustPosition(context);
+                },
+                child: AvchatFloatingOverlay()),
+          ));
     });
 
     if (_overlayEntry != null) {
       Overlay.of(context).insert(_overlayEntry!);
+
+      _isOnScreen = true;
     }
   }
 
@@ -82,5 +99,6 @@ class AvchatFloatingManager {
   static void removeOverlay() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+    _isOnScreen = false;
   }
 }

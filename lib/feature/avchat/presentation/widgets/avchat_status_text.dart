@@ -1,10 +1,15 @@
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
 
 class AvchatStatusText extends StatefulWidget {
-  const AvchatStatusText({super.key});
+  final TextStyle? style;
+
+  const AvchatStatusText({super.key, this.style});
 
   @override
   State<AvchatStatusText> createState() => _AvchatStatusTextState();
@@ -48,45 +53,54 @@ class _AvchatStatusTextState extends State<AvchatStatusText> {
           statusText = "Agora Initializing";
           break;
         case AgoraInitialized:
-          statusText = "Agora Initialized";
+          statusText = " Initialized";
           break;
         case AgoraInitFail:
-          statusText = "Agora Init Fail";
+          statusText = " Init Fail";
           break;
         case AgoraJoiningChannel:
-          statusText = "Agora Joining";
+          statusText = " Joining";
           break;
         case AgoraSelfJoined:
-          statusText = "Agora Joined";
+          statusText = " Joined";
           break;
         case AgoraSelfJoinFail:
-          statusText = "Agora Join Fail";
+          statusText = " Join Fail";
           break;
         case AgoraCallOnGoing:
           final seconds = (state as AgoraCallOnGoing).seconds;
           statusText = _formatTime(seconds);
           break;
         case AgoraWaitingForPeer:
-          statusText = "Agora Waiting For Peer";
+          statusText = " Waiting For Peer";
           break;
         case AgoraGuestJoined:
           final uid = (state as AgoraGuestJoined).userInfoM.uid;
-          statusText = "Agora Guest Joined, uid: $uid";
+          statusText = " Guest Joined, uid: $uid";
           break;
         case AgoraGuestLeft:
           final uid = (state as AgoraGuestJoined).userInfoM.uid;
-          statusText = "Agora Guest Left, uid: $uid";
+          statusText = " Guest Left, uid: $uid";
           break;
         case AgoraLeftChannel:
-          statusText = "Agora Left";
+          statusText = " Left";
           break;
         case AgoraLeaveFail:
-          statusText = "Agora Leave Fail";
+          statusText = " Leave Fail";
           break;
         default:
         // statusText = "";
       }
-      return Text(statusText);
+      return Text(statusText,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: widget.style ??
+              TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade800,
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: const [FontFeature.tabularFigures()]));
     });
   }
 

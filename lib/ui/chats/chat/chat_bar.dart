@@ -248,10 +248,7 @@ class _ChatBarState extends State<ChatBar> {
     final route = gBottomUpRoute((context, _, __) {
       return AvchatPage(userInfoM: widget.userInfoNotifier!.value);
     });
-    Navigator.of(context).push(route).then((_) {
-      // TODO: for temp test only. should be changed to small window.
-      avchatBloc.add(AvchatEndCallBtnPressed());
-    });
+    Navigator.of(context).push(route);
 
     avchatBloc.add(AvchatInitRequest(
         isVideoCall: false, userInfoM: widget.userInfoNotifier!.value));

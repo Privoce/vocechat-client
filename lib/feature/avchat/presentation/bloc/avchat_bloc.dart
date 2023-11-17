@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app.dart';
@@ -9,6 +10,9 @@ import 'package:vocechat_client/feature/avchat/logic/avchat_api.dart';
 import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
+import 'package:vocechat_client/feature/avchat/presentation/helpers/avchat_floating_manager.dart';
+import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_page.dart';
+import 'package:vocechat_client/ui/bottom_up_route.dart';
 
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   final isVideoCall = false;
@@ -47,6 +51,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatTimerUpdate>(_onTimerUpdate);
     on<AvchatMicBtnPressed>(_onMicBtnPressed);
     on<AvchatSpeakerBtnPressed>(_onSpeakerBtnPressed);
+    on<AvchatMinimizeRequest>(_onAvchatMinimizeRequest);
     on<AvchatEndCallBtnPressed>(_onAvchatLeaveRequest);
   }
 
@@ -321,6 +326,23 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     final toMute = event.toMute;
     emit(AvchatSpeakerBtnState(toMute));
     await _agoraEngine?.muteAllRemoteAudioStreams(toMute);
+  }
+
+  void _onAvchatMinimizeRequest(
+      AvchatMinimizeRequest event, Emitter<AvchatState> emit) async {
+    final toMinimize = event.toMinimize;
+    final context = event.context;
+
+    if (toMinimize) {
+      AvchatFloatingManager.showOverlay(context);
+    } else {
+      AvchatFloatingManager.removeOverlay();
+      final route = gBottomUpRoute((context, _, __) {
+        // TODO: null check userInfoM in group chats.
+        return AvchatPage(userInfoM: userInfoM!);
+      });
+      Navigator.of(context).push(route);
+    }
   }
 
   void _startTimer() {

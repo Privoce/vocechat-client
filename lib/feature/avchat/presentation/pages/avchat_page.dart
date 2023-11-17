@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
@@ -42,6 +44,9 @@ class _AvchatPageState extends State<AvchatPage> {
       appBar: AvchatAppBar(
         backButtonPressed: () {
           Navigator.of(context).pop();
+          context
+              .read<AvchatBloc>()
+              .add(AvchatMinimizeRequest(toMinimize: true, context: context));
         },
       ),
       body: _buildBody(),
@@ -55,7 +60,7 @@ class _AvchatPageState extends State<AvchatPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           VoceUserAvatar.user(
-              userInfoM: widget.userInfoM, size: 56, enableOnlineStatus: false),
+              userInfoM: widget.userInfoM, size: 64, enableOnlineStatus: false),
           SizedBox(height: 16),
           Text(
             widget.userInfoM.userInfo.name,
@@ -63,15 +68,19 @@ class _AvchatPageState extends State<AvchatPage> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          Text("on going call"),
-          AvchatStatusText()
+          SizedBox(height: 8),
+          AvchatStatusText(
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey.shade800,
+                  fontWeight: FontWeight.w400,
+                  fontFeatures: const [FontFeature.tabularFigures()]))
         ],
       ),
     );
   }
 
   Widget _buildBottomBar(BuildContext context) {
-    // final bloc = BlocProvider.of(context).read<AvchatBloc>();
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
 
     return Container(
@@ -82,15 +91,7 @@ class _AvchatPageState extends State<AvchatPage> {
         children: [
           // _buildSpeakerBtn(),
           _buildMicBtn(),
-          RoundButton(
-            icon: AppIcons.call_end,
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.red,
-            onPressed: () {
-              context.read<AvchatBloc>().add(AvchatEndCallBtnPressed());
-              Navigator.of(context).pop();
-            },
-          )
+          _buildEndCallBtn(context)
         ],
       ),
     );
@@ -150,6 +151,18 @@ class _AvchatPageState extends State<AvchatPage> {
             },
           );
         }
+      },
+    );
+  }
+
+  RoundButton _buildEndCallBtn(BuildContext context) {
+    return RoundButton(
+      icon: AppIcons.call_end,
+      foregroundColor: Colors.white,
+      backgroundColor: Colors.red,
+      onPressed: () {
+        context.read<AvchatBloc>().add(AvchatEndCallBtnPressed());
+        Navigator.of(context).pop();
       },
     );
   }

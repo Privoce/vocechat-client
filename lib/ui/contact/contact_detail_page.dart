@@ -416,10 +416,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     final route = gBottomUpRoute((context, _, __) {
       return AvchatPage(userInfoM: widget.userInfoM);
     });
-    Navigator.of(context).push(route).then((_) {
-      // TODO: for temp test only. should be changed to small window.
-      avchatBloc.add(AvchatEndCallBtnPressed());
-    });
+    Navigator.of(context).push(route);
 
     avchatBloc.add(
         AvchatInitRequest(isVideoCall: false, userInfoM: widget.userInfoM));
