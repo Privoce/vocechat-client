@@ -71,7 +71,7 @@ class AvchatMinimizeRequest extends AvchatEvent {
   final bool toMinimize;
   final BuildContext context;
 
-  AvchatMinimizeRequest(this.toMinimize, this.context);
+  AvchatMinimizeRequest({required this.toMinimize, required this.context});
 }
 
 class AvchatEnableButtonRequest extends AvchatEvent {
