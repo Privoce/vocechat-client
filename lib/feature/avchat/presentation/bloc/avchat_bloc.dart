@@ -28,6 +28,9 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
 
   List<UserInfoM> _guests = [];
 
+  bool isMicMuted = false;
+  bool isSpeakerMuted = false;
+
   // TODO: microphone, camera, speaker state.
 
   AvchatBloc() : super(AvchatAvailabilityInitialState()) {
@@ -335,5 +338,8 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     gid = null;
 
     _guests.clear();
+
+    isMicMuted = false;
+    isSpeakerMuted = false;
   }
 }

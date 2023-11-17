@@ -29,20 +29,14 @@ class _AvchatPageState extends State<AvchatPage> {
   bool _isSpeakerMuted = false;
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: Duration(seconds: 1),
-      transitionBuilder: (child, animation) {
-        return ScaleTransition(
-          scale: animation,
-          child: child,
-        );
-      },
-      child: _buildChild(context),
-    );
+  initState() {
+    super.initState();
+    _isMicMuted = context.read<AvchatBloc>().isMicMuted;
+    _isSpeakerMuted = context.read<AvchatBloc>().isSpeakerMuted;
   }
 
-  Widget _buildChild(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey,
       appBar: AvchatAppBar(
