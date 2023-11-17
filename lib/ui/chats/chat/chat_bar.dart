@@ -206,11 +206,6 @@ class _ChatBarState extends State<ChatBar> {
     return [
       CupertinoButton(
           padding: EdgeInsets.zero,
-          // onPressed: () => _startAudioCall(context),
-          onPressed: () {},
-          child: Icon(AppIcons.headphone, size: 20, color: AppColors.grey500)),
-      CupertinoButton(
-          padding: EdgeInsets.zero,
           onPressed: () async {
             Navigator.push(
                 context,

@@ -1,4 +1,5 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:flutter/widgets.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
 abstract class AvchatEvent {}
@@ -49,6 +50,7 @@ class AvchatTimerUpdate extends AvchatEvent {
   AvchatTimerUpdate(this.seconds);
 }
 
+// ------------------ UI Events ------------------ //
 class AvchatCamBtnPressed extends AvchatEvent {}
 
 class AvchatSpeakerBtnPressed extends AvchatEvent {
@@ -64,3 +66,16 @@ class AvchatMicBtnPressed extends AvchatEvent {
 }
 
 class AvchatEndCallBtnPressed extends AvchatEvent {}
+
+class AvchatMinimizeRequest extends AvchatEvent {
+  final bool toMinimize;
+  final BuildContext context;
+
+  AvchatMinimizeRequest(this.toMinimize, this.context);
+}
+
+class AvchatEnableButtonRequest extends AvchatEvent {
+  final bool toEnable;
+
+  AvchatEnableButtonRequest(this.toEnable);
+}
