@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
+import 'package:vocechat_client/feature/avchat/model/avchat_user.dart';
 
 abstract class AvchatState extends Equatable {}
 
@@ -240,4 +241,13 @@ class AvchatMicBtnState extends AvchatBtnState {
 
 class AvchatEndCallBtnState extends AvchatBtnState {
   AvchatEndCallBtnState();
+}
+
+class AvchatUserChangeState extends AvchatState {
+  final Map<int, AvchatUser> users;
+
+  AvchatUserChangeState(this.users);
+
+  @override
+  List<Object?> get props => [users];
 }

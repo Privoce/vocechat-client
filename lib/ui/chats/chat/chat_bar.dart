@@ -222,7 +222,7 @@ class _ChatBarState extends State<ChatBar> {
     return [
       CupertinoButton(
           padding: EdgeInsets.zero,
-          onPressed: _startCall,
+          onPressed: _startDmCall,
           child: Icon(AppIcons.audio, size: 20, color: AppColors.grey500)),
       // TODO: uncomment when video call is implemented
       // CupertinoButton(
@@ -242,7 +242,7 @@ class _ChatBarState extends State<ChatBar> {
     ];
   }
 
-  void _startCall() {
+  void _startDmCall() {
     final avchatBloc = BlocProvider.of<AvchatBloc>(context);
 
     final route = gBottomUpRoute((context, _, __) {
@@ -251,6 +251,8 @@ class _ChatBarState extends State<ChatBar> {
     Navigator.of(context).push(route);
 
     avchatBloc.add(AvchatInitRequest(
-        isVideoCall: false, userInfoM: widget.userInfoNotifier!.value));
+      oneToOneCallParams: OneToOneCallParams(
+          userInfoM: widget.userInfoNotifier!.value, isVideoCall: false),
+    ));
   }
 }

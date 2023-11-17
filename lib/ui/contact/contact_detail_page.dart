@@ -418,8 +418,9 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     });
     Navigator.of(context).push(route);
 
-    avchatBloc.add(
-        AvchatInitRequest(isVideoCall: false, userInfoM: widget.userInfoM));
+    avchatBloc.add(AvchatInitRequest(
+        oneToOneCallParams: OneToOneCallParams(
+            userInfoM: widget.userInfoM, isVideoCall: false)));
   }
 
   /// Adds contact to contact list.

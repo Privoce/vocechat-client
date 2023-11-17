@@ -2,16 +2,30 @@ import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:flutter/widgets.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 
+class OneToOneCallParams {
+  final UserInfoM userInfoM;
+  final bool isVideoCall;
+
+  OneToOneCallParams({required this.userInfoM, required this.isVideoCall});
+}
+
+class GroupCallParams {
+  final int gid;
+  final bool isVideoCall;
+
+  GroupCallParams({required this.gid, required this.isVideoCall});
+}
+
 abstract class AvchatEvent {}
 
 class AvchatInitRequest extends AvchatEvent {
-  final bool isVideoCall;
-  // final int? uid;
-  final UserInfoM? userInfoM;
-  final int? gid;
+  final OneToOneCallParams? oneToOneCallParams;
+  final GroupCallParams? groupCallParams;
 
-  AvchatInitRequest({this.userInfoM, this.gid, required this.isVideoCall}) {
-    assert((userInfoM != null) ^ (gid != null));
+  bool get isOneToOneCall => (oneToOneCallParams != null);
+
+  AvchatInitRequest({this.oneToOneCallParams, this.groupCallParams}) {
+    assert((oneToOneCallParams != null) ^ (groupCallParams != null));
   }
 }
 
@@ -78,4 +92,12 @@ class AvchatEnableButtonRequest extends AvchatEvent {
   final bool toEnable;
 
   AvchatEnableButtonRequest(this.toEnable);
+}
+
+// ------------------ AvchatUserBloc ------------------ //
+class AvchatUserChanged extends AvchatEvent {
+  final int uid;
+  final bool muted;
+
+  AvchatUserChanged({required this.uid, required this.muted});
 }
