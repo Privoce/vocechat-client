@@ -60,6 +60,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatMicBtnPressed>(_onMicBtnPressed);
     on<AvchatSpeakerBtnPressed>(_onSpeakerBtnPressed);
     on<AvchatMinimizeRequest>(_onAvchatMinimizeRequest);
+    on<AvchatConnectionStateChangeRequest>(_onAvchatConnectionChanged);
     on<AvchatEndCallBtnPressed>(_onAvchatEndRequest);
 
     on<AvchatUserChanged>(_onUserChanged);
@@ -283,6 +284,12 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
         onUserMuteAudio: (connection, remoteUid, muted) async {
           add(AvchatUserChanged(uid: remoteUid, muted: muted));
         },
+        onActiveSpeaker: (connection, uid) {
+          // TODO: add active speaker logic
+        },
+        onConnectionStateChanged: (connection, state, reason) {
+          // TODO: add connection state changed logic
+        },
       ));
     } catch (e) {
       App.logger.severe(e);
@@ -418,6 +425,17 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       });
       Navigator.of(context).push(route);
     }
+  }
+
+  void _onAvchatConnectionChanged(AvchatConnectionStateChangeRequest event,
+      Emitter<AvchatState> emit) async {
+    final uid = event.uid;
+    final state = event.state;
+    final reason = event.reason;
+
+    App.logger.info("Agora user connection changed: $uid, $state, $reason");
+
+    emit(AvchatConnectionStateChanged(uid: uid, state: state, reason: reason));
   }
 
   void _onUserChanged(

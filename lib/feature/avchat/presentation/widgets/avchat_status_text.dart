@@ -88,6 +88,11 @@ class _AvchatStatusTextState extends State<AvchatStatusText> {
         case AgoraLeaveFail:
           statusText = " Leave Fail";
           break;
+        case AvchatConnectionStateChanged:
+          final connectionState = state as AvchatConnectionStateChanged;
+          statusText =
+              "Connection State Changed, uid: ${connectionState.uid}, state: ${connectionState.state}, reason: ${connectionState.reason}";
+          break;
         default:
         // statusText = "";
       }
