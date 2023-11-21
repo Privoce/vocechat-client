@@ -18,6 +18,8 @@ import 'package:vocechat_client/ui/bottom_up_route.dart';
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   final isVideoCall = false;
 
+  bool isChatOnGoing = false;
+
   OneToOneCallParams? oneToOneCallParams;
   GroupCallParams? groupCallParams;
 
@@ -32,7 +34,13 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   Timer? _chatTimer;
 
   // List<UserInfoM> _guests = [];
-  Map<int, AvchatUser> _users = {};
+  AvchatUser? _myself;
+  Map<int, AvchatUser> _guests = {};
+
+  List<AvchatUser> get userList {
+    if (_myself == null) return [];
+    return [_myself!, ..._guests.values];
+  }
 
   bool isMicMuted = false;
   bool isSpeakerMuted = false;
@@ -52,14 +60,26 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatMicBtnPressed>(_onMicBtnPressed);
     on<AvchatSpeakerBtnPressed>(_onSpeakerBtnPressed);
     on<AvchatMinimizeRequest>(_onAvchatMinimizeRequest);
-    on<AvchatEndCallBtnPressed>(_onAvchatLeaveRequest);
+    on<AvchatEndCallBtnPressed>(_onAvchatEndRequest);
 
     on<AvchatUserChanged>(_onUserChanged);
   }
 
   Future<void> _onInitialRequest(
       AvchatInitRequest event, Emitter<AvchatState> emit) async {
-    // Add myself to user list anyway.
+    // Navigate to avChatPage in uI.
+    if (isChatOnGoing) {
+      return;
+    }
+
+    isChatOnGoing = true;
+
+    final route = gBottomUpRoute((context, _, __) {
+      return AvchatPage();
+    });
+    Navigator.of(event.context).push(route);
+
+    // Add myself to _myself variable.
     final myUid = App.app.userDb?.uid;
     if (myUid == null) {
       emit(AgoraCallingFail("User uid is null"));
@@ -72,27 +92,27 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       return;
     }
 
-    _users.addAll({
-      myUid: AvchatUser(
-          userInfoM: me,
-          state: AvchatUserConnectionState.connected,
-          muted: false)
-    });
+    _myself = AvchatUser(
+        userInfoM: me,
+        connectState: AvchatUserConnectionState.connected,
+        audioState: AvchatUserAudioState.unmuted,
+        muted: false);
 
     if (event.isOneToOneCall) {
       // Add peer to user list for one to one call, with connecting state.
       oneToOneCallParams = event.oneToOneCallParams;
-      _users.addAll({
+      _guests.addAll({
         oneToOneCallParams!.userInfoM.uid: AvchatUser(
             userInfoM: oneToOneCallParams!.userInfoM,
-            state: AvchatUserConnectionState.connecting,
+            audioState: AvchatUserAudioState.unmuted,
+            connectState: AvchatUserConnectionState.connecting,
             muted: false)
       });
     } else {
       groupCallParams = event.groupCallParams;
     }
 
-    emit(AvchatUserChangeState(_users));
+    emit(AvchatUserChangeState(_guests));
 
     add(AvchatAvailabilityCheckRequest());
   }
@@ -261,8 +281,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
           add(AvchatUserOfflineEvent(remoteUid, reason));
         },
         onUserMuteAudio: (connection, remoteUid, muted) async {
-          // add(AvchatMicBtnPressed());
-          print("onUserMuteAudio: $remoteUid, $muted");
+          add(AvchatUserChanged(uid: remoteUid, muted: muted));
         },
       ));
     } catch (e) {
@@ -275,7 +294,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       AvchatSelfJoinedEvent event, Emitter<AvchatState> emit) async {
     emit(AgoraSelfJoined());
 
-    if (isOneToOneCall && _users.isEmpty) {
+    if (_oneToOneOnlySelfLeft()) {
       emit(AgoraWaitingForPeer());
     }
     App.logger.info("Agora channel joined");
@@ -292,10 +311,11 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
         App.logger.warning("User info not found, uid: $remoteUid");
         emit(AgoraCallingFail("User info not found, uid: $remoteUid"));
       } else {
-        _users.addAll({
+        _guests.addAll({
           userInfoM.uid: AvchatUser(
               userInfoM: userInfoM,
-              state: AvchatUserConnectionState.connected,
+              audioState: AvchatUserAudioState.unmuted,
+              connectState: AvchatUserConnectionState.connected,
               muted: false)
         });
         emit(AgoraGuestJoined(userInfoM));
@@ -323,9 +343,19 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       if (userInfoM == null) {
         emit(AgoraCallingFail("User info not found, uid: $remoteUid"));
       } else {
-        _users.remove(userInfoM.uid);
-        emit(AgoraGuestJoined(userInfoM));
+        if (isOneToOneCall) {
+          _guests[userInfoM.uid] = _guests[userInfoM.uid]!
+              .copyWith(connectState: AvchatUserConnectionState.disconnected);
+        } else {
+          _guests.remove(userInfoM.uid);
+        }
+        emit(AgoraGuestLeft(userInfoM));
         App.logger.info("Agora guest left: ${userInfoM.uid}");
+
+        if (_oneToOneOnlySelfLeft()) {
+          _cancelTimer();
+          emit(AgoraWaitingForPeer());
+        }
       }
     } catch (e) {
       App.logger.severe(e);
@@ -338,7 +368,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     emit(AgoraCallOnGoing(event.seconds));
   }
 
-  Future<void> _onAvchatLeaveRequest(
+  Future<void> _onAvchatEndRequest(
       AvchatEndCallBtnPressed event, Emitter<AvchatState> emit) async {
     if (_agoraEngine == null) {
       emit(AgoraLeaveFail("Agora engine is null"));
@@ -384,8 +414,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     } else {
       AvchatFloatingManager.removeOverlay();
       final route = gBottomUpRoute((context, _, __) {
-        // TODO: null check userInfoM in group chats.
-        return AvchatPage(userInfoM: oneToOneCallParams!.userInfoM);
+        return AvchatPage();
       });
       Navigator.of(context).push(route);
     }
@@ -393,20 +422,32 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
 
   void _onUserChanged(
       AvchatUserChanged event, Emitter<AvchatState> emit) async {
+    App.logger.info("Agora user changed: ${event.uid}, muted: ${event.muted}");
     final uid = event.uid;
 
-    if (_users.containsKey(uid)) {
-      _users[uid] = _users[uid]!.copyWith(muted: event.muted);
+    if (_guests.containsKey(uid)) {
+      _guests[uid] = _guests[uid]!.copyWith(muted: event.muted);
     }
 
-    emit(AvchatUserChangeState(_users));
+    emit(AvchatUserChangeState(_guests));
+  }
+
+  bool _oneToOneOnlySelfLeft() {
+    return isOneToOneCall &&
+        _guests.values.toList().every((element) =>
+            element.connectState != AvchatUserConnectionState.connected);
   }
 
   void _startTimer() {
-    _chatTimer?.cancel();
+    _cancelTimer();
     _chatTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       add(AvchatTimerUpdate(timer.tick));
     });
+  }
+
+  void _cancelTimer() {
+    _chatTimer?.cancel();
+    _chatTimer = null;
   }
 
   Future<void> _clear() async {
@@ -417,9 +458,11 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     oneToOneCallParams = null;
     groupCallParams = null;
 
-    _users.clear();
+    _guests.clear();
 
     isMicMuted = false;
     isSpeakerMuted = false;
+
+    isChatOnGoing = false;
   }
 }

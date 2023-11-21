@@ -2,20 +2,17 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_appbar.dart';
+import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_audio_wrap.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_status_text.dart';
 import 'package:vocechat_client/feature/avchat/presentation/widgets/round_button.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
-import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class AvchatPage extends StatefulWidget {
-  final UserInfoM userInfoM;
-
-  const AvchatPage({Key? key, required this.userInfoM}) : super(key: key);
+  const AvchatPage({Key? key}) : super(key: key);
 
   @override
   State<AvchatPage> createState() => _AvchatPageState();
@@ -59,15 +56,7 @@ class _AvchatPageState extends State<AvchatPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          VoceUserAvatar.user(
-              userInfoM: widget.userInfoM, size: 64, enableOnlineStatus: false),
-          SizedBox(height: 16),
-          Text(
-            widget.userInfoM.userInfo.name,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          AvchatAudioWrap(),
           SizedBox(height: 8),
           AvchatStatusText(
               style: TextStyle(

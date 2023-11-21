@@ -19,12 +19,14 @@ class GroupCallParams {
 abstract class AvchatEvent {}
 
 class AvchatInitRequest extends AvchatEvent {
+  final BuildContext context;
   final OneToOneCallParams? oneToOneCallParams;
   final GroupCallParams? groupCallParams;
 
   bool get isOneToOneCall => (oneToOneCallParams != null);
 
-  AvchatInitRequest({this.oneToOneCallParams, this.groupCallParams}) {
+  AvchatInitRequest(
+      {required this.context, this.oneToOneCallParams, this.groupCallParams}) {
     assert((oneToOneCallParams != null) ^ (groupCallParams != null));
   }
 }
