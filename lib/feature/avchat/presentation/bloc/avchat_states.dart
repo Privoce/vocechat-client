@@ -1,3 +1,4 @@
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
@@ -174,6 +175,18 @@ class AgoraGuestLeft extends AgoraJoinState {
 
   @override
   List<Object?> get props => [userInfoM];
+}
+
+class AvchatConnectionStateChanged extends AgoraCallingState {
+  final int uid;
+  final ConnectionStateType state;
+  final ConnectionChangedReasonType reason;
+
+  AvchatConnectionStateChanged(
+      {required this.uid, required this.state, required this.reason});
+
+  @override
+  List<Object?> get props => [uid, state, reason];
 }
 
 class AgoraCallingFail extends AgoraCallingState {

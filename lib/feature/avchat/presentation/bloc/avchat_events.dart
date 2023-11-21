@@ -66,6 +66,15 @@ class AvchatTimerUpdate extends AvchatEvent {
   AvchatTimerUpdate(this.seconds);
 }
 
+class AvchatConnectionStateChangeRequest extends AvchatEvent {
+  final int uid;
+  final ConnectionStateType state;
+  final ConnectionChangedReasonType reason;
+
+  AvchatConnectionStateChangeRequest(
+      {required this.uid, required this.state, required this.reason});
+}
+
 // ------------------ UI Events ------------------ //
 class AvchatCamBtnPressed extends AvchatEvent {}
 
