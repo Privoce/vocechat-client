@@ -79,7 +79,7 @@ class _AvchatStatusTextState extends State<AvchatStatusText> {
           statusText = " Guest Joined, uid: $uid";
           break;
         case AgoraGuestLeft:
-          final uid = (state as AgoraGuestJoined).userInfoM.uid;
+          final uid = (state as AgoraGuestLeft).userInfoM.uid;
           statusText = " Guest Left, uid: $uid";
           break;
         case AgoraLeftChannel:

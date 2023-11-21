@@ -7,18 +7,32 @@ enum AvchatUserConnectionState {
   connected,
 }
 
+enum AvchatUserAudioState {
+  muted,
+  unmuted,
+}
+
 class AvchatUser extends Equatable {
   final UserInfoM userInfoM;
-  final AvchatUserConnectionState state;
+  final AvchatUserConnectionState connectState;
+  final AvchatUserAudioState audioState;
   final bool muted;
 
   const AvchatUser(
-      {required this.userInfoM, required this.state, required this.muted});
+      {required this.userInfoM,
+      required this.connectState,
+      required this.audioState,
+      required this.muted});
 
-  AvchatUser copyWith({UserInfoM? userInfoM, bool? muted}) {
+  AvchatUser copyWith(
+      {UserInfoM? userInfoM,
+      AvchatUserConnectionState? connectState,
+      AvchatUserAudioState? audioState,
+      bool? muted}) {
     return AvchatUser(
         userInfoM: userInfoM ?? this.userInfoM,
-        state: state,
+        connectState: connectState ?? this.connectState,
+        audioState: audioState ?? this.audioState,
         muted: muted ?? this.muted);
   }
 

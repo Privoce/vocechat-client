@@ -6,11 +6,9 @@ import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
-import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_page.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
-import 'package:vocechat_client/ui/bottom_up_route.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/channel/channel_settings_page.dart';
 import 'package:vocechat_client/ui/chats/chat/chat_setting/dm/dm_settings_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
@@ -244,15 +242,9 @@ class _ChatBarState extends State<ChatBar> {
 
   void _startDmCall() {
     final avchatBloc = BlocProvider.of<AvchatBloc>(context);
-
-    final route = gBottomUpRoute((context, _, __) {
-      return AvchatPage(userInfoM: widget.userInfoNotifier!.value);
-    });
-    Navigator.of(context).push(route);
-
     avchatBloc.add(AvchatInitRequest(
-      oneToOneCallParams: OneToOneCallParams(
-          userInfoM: widget.userInfoNotifier!.value, isVideoCall: false),
-    ));
+        context: context,
+        oneToOneCallParams: OneToOneCallParams(
+            userInfoM: widget.userInfoNotifier!.value, isVideoCall: false)));
   }
 }

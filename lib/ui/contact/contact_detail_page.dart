@@ -10,14 +10,12 @@ import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
-import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_page.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
-import 'package:vocechat_client/ui/bottom_up_route.dart';
 import 'package:vocechat_client/ui/chats/chat/input_field/app_mentions.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_chat_page.dart';
 import 'package:vocechat_client/ui/widgets/app_banner_button.dart';
@@ -412,13 +410,8 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
 
   void _startCall() {
     final avchatBloc = BlocProvider.of<AvchatBloc>(context);
-
-    final route = gBottomUpRoute((context, _, __) {
-      return AvchatPage(userInfoM: widget.userInfoM);
-    });
-    Navigator.of(context).push(route);
-
     avchatBloc.add(AvchatInitRequest(
+        context: context,
         oneToOneCallParams: OneToOneCallParams(
             userInfoM: widget.userInfoM, isVideoCall: false)));
   }
