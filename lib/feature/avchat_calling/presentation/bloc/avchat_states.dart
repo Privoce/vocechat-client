@@ -1,8 +1,9 @@
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
-import 'package:vocechat_client/feature/avchat/model/avchat_user.dart';
+
+import '../../model/agora_token_info.dart';
+import '../../model/avchat_user.dart';
 
 abstract class AvchatState extends Equatable {}
 

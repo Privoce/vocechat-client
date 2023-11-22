@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/feature/avchat/model/avchat_user.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
+
+import '../../model/avchat_user.dart';
 
 class AvchatUserAudioTile extends StatefulWidget {
   const AvchatUserAudioTile({Key? key, required this.user}) : super(key: key);

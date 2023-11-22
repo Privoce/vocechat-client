@@ -6,7 +6,7 @@ part of 'agora_token_info.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-AgoraTokenInfo _$AgoraBasicInfoFromJson(Map<String, dynamic> json) =>
+AgoraTokenInfo _$AgoraTokenInfoFromJson(Map<String, dynamic> json) =>
     AgoraTokenInfo(
       agoraToken: json['agora_token'] as String,
       appId: json['app_id'] as String,
@@ -15,7 +15,7 @@ AgoraTokenInfo _$AgoraBasicInfoFromJson(Map<String, dynamic> json) =>
       expiredIn: json['expired_in'] as int,
     );
 
-Map<String, dynamic> _$AgoraBasicInfoToJson(AgoraTokenInfo instance) =>
+Map<String, dynamic> _$AgoraTokenInfoToJson(AgoraTokenInfo instance) =>
     <String, dynamic>{
       'agora_token': instance.agoraToken,
       'app_id': instance.appId,

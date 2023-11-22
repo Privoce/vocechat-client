@@ -20,7 +20,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/event_bus_objects/push_to_chat_event.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
+import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/firebase_options.dart';
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/services/auth_service.dart';

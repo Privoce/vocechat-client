@@ -6,14 +6,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
-import 'package:vocechat_client/feature/avchat/logic/avchat_api.dart';
-import 'package:vocechat_client/feature/avchat/model/agora_token_info.dart';
-import 'package:vocechat_client/feature/avchat/model/avchat_user.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
-import 'package:vocechat_client/feature/avchat/presentation/helpers/avchat_floating_manager.dart';
-import 'package:vocechat_client/feature/avchat/presentation/pages/avchat_page.dart';
 import 'package:vocechat_client/ui/bottom_up_route.dart';
+
+import '../../logic/avchat_api.dart';
+import '../../model/agora_token_info.dart';
+import '../../model/avchat_user.dart';
+import '../helpers/avchat_floating_manager.dart';
+import '../pages/avchat_page.dart';
+import 'avchat_events.dart';
+import 'avchat_states.dart';
 
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   final isVideoCall = false;
@@ -32,6 +33,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   AgoraTokenInfo? _agoraTokenInfo;
 
   Timer? _chatTimer;
+  Timer? _callInTimer;
 
   // List<UserInfoM> _guests = [];
   AvchatUser? _myself;
@@ -64,6 +66,16 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatEndCallBtnPressed>(_onAvchatEndRequest);
 
     on<AvchatUserChanged>(_onUserChanged);
+
+    _initCallInTimer();
+  }
+
+  void _initCallInTimer() {
+    _callInTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
+      print("here");
+      final channelInfo = await _api.getChannels();
+      print(channelInfo?.toJson());
+    });
   }
 
   Future<void> _onInitialRequest(
