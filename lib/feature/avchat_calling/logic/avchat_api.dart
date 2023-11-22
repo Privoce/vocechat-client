@@ -4,7 +4,7 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/resource/exceptions/api_exception.dart';
 import 'package:vocechat_client/resource/exceptions/unexpected_exception.dart';
 
-import '../model/agora_channel_info.dart';
+import '../../avchat_call_in/model/agora_channel_info.dart';
 import '../model/agora_token_info.dart';
 
 class AvchatApi {
@@ -69,6 +69,25 @@ class AvchatApi {
 
       if (res.statusCode == 200 && res.data != null) {
         return AgoraChannelInfo.fromJson(res.data);
+      }
+    } catch (e) {
+      if (e is DioException) {
+        throw ApiException(dioException: e);
+      }
+      throw UnexpectedException(error: e);
+    }
+    return null;
+  }
+
+  Future<dynamic> getChannelUsers(String channelName,
+      {bool hostsOnly = false}) async {
+    try {
+      final dio = DioUtil.token(baseUrl: _baseUrl);
+      final res =
+          await dio.get("/channel/$channelName/users?hostsOnly=$hostsOnly");
+
+      if (res.statusCode == 200 && res.data != null) {
+        return res.data;
       }
     } catch (e) {
       if (e is DioException) {
