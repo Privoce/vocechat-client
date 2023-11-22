@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:vocechat_client/feature/avchat_calling/model/agora_channel.dart';
+import 'agora_channel.dart';
 
 part 'agora_channel_data.g.dart';
 
