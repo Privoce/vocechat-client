@@ -8,6 +8,9 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_bloc.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_events.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_states.dart';
 import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_events.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
@@ -45,6 +48,8 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   @override
   void initState() {
     super.initState();
+
+    context.read<AvchatCallinBloc>().add(AvchatCallinEnableRequest());
 
     _userInfoMNotifier.value = widget.userInfoM;
 
@@ -126,18 +131,27 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
                   icon: AppIcons.chat),
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: VIconTextButton(
-                  onPressed: () {
-                    _startCall();
-                  },
-                  text: AppLocalizations.of(context)!.call,
-                  icon: AppIcons.audio),
-            ),
-          ),
+          BlocBuilder<AvchatCallinBloc, AvchatCallInState>(
+              buildWhen: (previous, current) {
+            return current is AvchatCallEnabled;
+          }, builder: (context, state) {
+            if (state is AvchatCallEnabled && state.enabled) {
+              return Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: VIconTextButton(
+                      onPressed: () {
+                        _startCall();
+                      },
+                      text: AppLocalizations.of(context)!.call,
+                      icon: AppIcons.audio),
+                ),
+              );
+            } else {
+              return SizedBox.shrink();
+            }
+          }),
           // TODO: uncomment this when video call is ready.
           // Expanded(
           //   flex: 1,

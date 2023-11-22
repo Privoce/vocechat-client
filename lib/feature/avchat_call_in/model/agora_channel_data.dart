@@ -6,10 +6,12 @@ part 'agora_channel_data.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class AgoraChannelData extends Equatable {
-  final List<AgoraChannel> channels;
+  late final List<AgoraChannel> channels;
   final int totalSize;
 
-  const AgoraChannelData({required this.channels, required this.totalSize});
+  AgoraChannelData({required List<dynamic> channels, required this.totalSize}) {
+    this.channels = channels.map((e) => AgoraChannel.fromJson(e)).toList();
+  }
 
   factory AgoraChannelData.fromJson(Map<String, dynamic> json) =>
       _$AgoraChannelDataFromJson(json);

@@ -20,6 +20,7 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/dao/org_dao/status.dart';
 import 'package:vocechat_client/dao/org_dao/userdb.dart';
 import 'package:vocechat_client/event_bus_objects/push_to_chat_event.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_bloc.dart';
 import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/firebase_options.dart';
 import 'package:vocechat_client/globals.dart';
@@ -236,6 +237,10 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           BlocProvider<AvchatBloc>(
             create: (context) => AvchatBloc(),
           ),
+          BlocProvider<AvchatCallinBloc>(
+            lazy: false,
+            create: (context) => AvchatCallinBloc(),
+          )
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,

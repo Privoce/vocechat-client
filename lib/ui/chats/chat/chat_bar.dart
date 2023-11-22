@@ -4,6 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/group_info.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_bloc.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_events.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_states.dart';
 import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_events.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
@@ -50,6 +53,8 @@ class _ChatBarState extends State<ChatBar> {
   @override
   void initState() {
     super.initState();
+
+    context.read<AvchatCallinBloc>().add(AvchatCallinEnableRequest());
   }
 
   @override
@@ -218,10 +223,19 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildDmActions(BuildContext context) {
     return [
-      CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _startDmCall,
-          child: Icon(AppIcons.audio, size: 20, color: AppColors.grey500)),
+      BlocBuilder<AvchatCallinBloc, AvchatCallInState>(
+          buildWhen: (previous, current) {
+        return current is AvchatCallEnabled;
+      }, builder: (context, state) {
+        if (state is AvchatCallEnabled && state.enabled) {
+          return CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: _startDmCall,
+              child: Icon(AppIcons.audio, size: 20, color: AppColors.grey500));
+        } else {
+          return SizedBox.shrink();
+        }
+      }),
       // TODO: uncomment when video call is implemented
       // CupertinoButton(
       //     padding: EdgeInsets.zero,

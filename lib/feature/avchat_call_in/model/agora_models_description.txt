@@ -1,0 +1,27 @@
+1.  use /admin/agora/channel/page_no/page_size API to get a list of channels.
+    the data model example is:
+    (AgoraChannelInfo)
+    {  
+        success: true, 
+        data:   (AgoraChannelData)
+            {   channels: 
+                    [   (AgoraChannel)
+                        {   channel_name: vocechat:dm:xxx, 
+                            user_count: 1
+                        }
+                    ], 
+                total_size: 1
+        }
+    }
+
+2. Use admin/agora/channel/user/channel_name/host_only to get channel detail
+    for each channel_name.
+    {
+        "data": (AgoraChannelDetail)
+            {   "channel_exist":true,
+                "mode":1,
+                "total":1,
+                "users":[1671]
+            },
+        "success":true
+    }

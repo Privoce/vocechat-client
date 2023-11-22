@@ -5,6 +5,16 @@ abstract class AvchatCallinEvent extends Equatable {
   const AvchatCallinEvent();
 }
 
+class AvchatCallinInit extends AvchatCallinEvent {
+  @override
+  List<Object?> get props => [];
+}
+
+class AvchatCallinEnableRequest extends AvchatCallinEvent {
+  @override
+  List<Object?> get props => [];
+}
+
 class AvchatCallinInfoReceived extends AvchatCallinEvent {
   final AgoraChannelData channelData;
 
@@ -12,4 +22,13 @@ class AvchatCallinInfoReceived extends AvchatCallinEvent {
 
   @override
   List<Object?> get props => [channelData];
+}
+
+class AgoraCallinReceivingFailEvent extends AvchatCallinEvent {
+  final Object error;
+
+  const AgoraCallinReceivingFailEvent({required this.error});
+
+  @override
+  List<Object?> get props => [error];
 }
