@@ -27,17 +27,13 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   bool get isOneToOneCall => oneToOneCallParams != null;
   bool get isGroupCall => groupCallParams != null;
 
-  final _api = AvchatApi();
-
   RtcEngine? _agoraEngine;
   AgoraTokenInfo? _agoraTokenInfo;
 
   Timer? _chatTimer;
-  Timer? _callInTimer;
 
-  // List<UserInfoM> _guests = [];
   AvchatUser? _myself;
-  Map<int, AvchatUser> _guests = {};
+  final Map<int, AvchatUser> _guests = {};
 
   List<AvchatUser> get userList {
     if (_myself == null) return [];
@@ -66,16 +62,6 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     on<AvchatEndCallBtnPressed>(_onAvchatEndRequest);
 
     on<AvchatUserChanged>(_onUserChanged);
-
-    _initCallInTimer();
-  }
-
-  void _initCallInTimer() {
-    _callInTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
-      print("here");
-      final channelInfo = await _api.getChannels();
-      print(channelInfo?.toJson());
-    });
   }
 
   Future<void> _onInitialRequest(
@@ -134,7 +120,7 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
       AvchatAvailabilityCheckRequest event, Emitter<AvchatState> emit) async {
     emit(CheckingAvchatAvailability());
     try {
-      final isEnabled = await _api.isAgoraEnabled();
+      final isEnabled = await AvchatApi().isAgoraEnabled();
       if (isEnabled) {
         emit(AvchatAvailable());
         App.logger.info("Agora is enabled at server side");
@@ -156,10 +142,11 @@ class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
     try {
       AgoraTokenInfo? tokenInfo;
       if (isOneToOneCall) {
-        tokenInfo = await _api.getAgoraTokenInfo(
-            uid: oneToOneCallParams!.userInfoM.uid);
+        tokenInfo = await AvchatApi()
+            .getAgoraTokenInfo(uid: oneToOneCallParams!.userInfoM.uid);
       } else if (isGroupCall) {
-        tokenInfo = await _api.getAgoraTokenInfo(gid: groupCallParams!.gid);
+        tokenInfo =
+            await AvchatApi().getAgoraTokenInfo(gid: groupCallParams!.gid);
       }
 
       if (tokenInfo != null) {

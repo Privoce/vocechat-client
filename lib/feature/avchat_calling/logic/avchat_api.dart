@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:vocechat_client/api/lib/dio_util.dart';
 import 'package:vocechat_client/app.dart';
+import 'package:vocechat_client/feature/avchat_call_in/model/agora_channel_detail.dart';
 import 'package:vocechat_client/resource/exceptions/api_exception.dart';
 import 'package:vocechat_client/resource/exceptions/unexpected_exception.dart';
 
@@ -79,15 +80,18 @@ class AvchatApi {
     return null;
   }
 
-  Future<dynamic> getChannelUsers(String channelName,
+  Future<AgoraChannelDetail?> getChannelUsers(String channelName,
       {bool hostsOnly = false}) async {
     try {
       final dio = DioUtil.token(baseUrl: _baseUrl);
-      final res =
-          await dio.get("/channel/$channelName/users?hostsOnly=$hostsOnly");
+      final res = await dio.get("/channel/user/$channelName/$hostsOnly");
 
       if (res.statusCode == 200 && res.data != null) {
-        return res.data;
+        if (res.data["success"] == true &&
+            res.data["data"]["channel_exist"] == true) {
+          final detail = res.data["data"] as List<dynamic>;
+          return AgoraChannelDetail.fromJson(detail.first);
+        }
       }
     } catch (e) {
       if (e is DioException) {
