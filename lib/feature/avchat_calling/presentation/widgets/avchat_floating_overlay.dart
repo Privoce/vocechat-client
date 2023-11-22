@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_status_text.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
+
+import 'avchat_status_text.dart';
 
 class AvchatFloatingOverlay extends StatefulWidget {
   final double size = 64;

@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
-import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_floating_overlay.dart';
+
+import '../bloc/avchat_bloc.dart';
+import '../bloc/avchat_events.dart';
+import '../widgets/avchat_floating_overlay.dart';
 
 class AvchatFloatingManager {
   static Offset? _offset;

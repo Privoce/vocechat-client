@@ -2,17 +2,19 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_bloc.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_events.dart';
-import 'package:vocechat_client/feature/avchat/presentation/bloc/avchat_states.dart';
-import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_appbar.dart';
-import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_audio_wrap.dart';
-import 'package:vocechat_client/feature/avchat/presentation/widgets/avchat_status_text.dart';
-import 'package:vocechat_client/feature/avchat/presentation/widgets/round_button.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 
+import '../bloc/avchat_bloc.dart';
+import '../bloc/avchat_events.dart';
+import '../bloc/avchat_states.dart';
+import '../widgets/avchat_appbar.dart';
+import '../widgets/avchat_audio_wrap.dart';
+import '../widgets/avchat_status_text.dart';
+import '../widgets/round_button.dart';
+
 class AvchatPage extends StatefulWidget {
-  const AvchatPage({Key? key}) : super(key: key);
+  final bool isCallIn;
+  const AvchatPage({Key? key, this.isCallIn = false}) : super(key: key);
 
   @override
   State<AvchatPage> createState() => _AvchatPageState();

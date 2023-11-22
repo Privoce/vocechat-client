@@ -19,9 +19,9 @@ class AgoraTokenInfo extends Equatable {
       required this.expiredIn});
 
   factory AgoraTokenInfo.fromJson(Map<String, dynamic> json) =>
-      _$AgoraBasicInfoFromJson(json);
+      _$AgoraTokenInfoFromJson(json);
 
-  Map<String, dynamic> toJson() => _$AgoraBasicInfoToJson(this);
+  Map<String, dynamic> toJson() => _$AgoraTokenInfoToJson(this);
 
   @override
   List<Object?> get props => [agoraToken, appId, uid, channelName, expiredIn];
