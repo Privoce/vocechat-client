@@ -115,6 +115,11 @@ dependency_overrides:
       url: https://github.com/Privoce/voce_widgets.git
       ref: master
 
+  vocechat_models:
+    git:
+      url: https://github.com/Privoce/vocechat_models
+      ref: master
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
