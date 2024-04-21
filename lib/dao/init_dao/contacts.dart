@@ -46,7 +46,7 @@ class ContactM with M {
     return m;
   }
 
-  static const F_tableName = "contacts";
+  static const F_tableName = "old_contacts";
   static const F_id = "id";
   static const F_uid = "uid";
   static const F_status = "status";
