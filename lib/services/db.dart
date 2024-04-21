@@ -134,6 +134,14 @@ Future<void> initDb({String? dbFileName}) async {
                 App.logger.warning(e);
               }
             }
+
+            // if (oldVersion < newVersion && oldVersion < 6) {
+            //   try {
+            //     db.execute("ALTER TABLE contacts RENAME TO old_contacts");
+            //   } catch (e) {
+            //     App.logger.warning(e);
+            //   }
+            // }
           },
         ),
       );

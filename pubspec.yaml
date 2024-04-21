@@ -96,6 +96,12 @@ dependencies:
   video_thumbnail: ^0.5.3
   web_socket_channel: ^2.4.0
   flutter_bloc: ^8.1.5
+  floor: ^1.4.2
+ 
+  vocechat_models:
+    git:
+        url: https://github.com/Privoce/vocechat_models.git
+        ref: master
   
   
 
@@ -116,16 +122,14 @@ dependency_overrides:
       url: https://github.com/Privoce/voce_widgets.git
       ref: master
 
-  vocechat_models:
-    git:
-      url: https://github.com/Privoce/vocechat_models
-      ref: master
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   json_serializable: ^6.1.4
+  floor_generator: ^1.4.2
   build_runner: ^2.1.7
 
   # The "flutter_lints" package below contains a set of recommended lints to
