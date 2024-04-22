@@ -1022,7 +1022,7 @@ class VoceChatService {
 
           switch (action) {
             case "create":
-              UserInfo userInfo = UserInfo.fromJson(userMap);
+              OldUserInfo userInfo = OldUserInfo.fromJson(userMap);
               UserInfoM userInfoM = UserInfoM.fromUserInfo(userInfo, "");
 
               final oldUserInfoM =
@@ -1041,8 +1041,8 @@ class VoceChatService {
               UserInfoUpdate update = UserInfoUpdate.fromJson(userMap);
               final old = await UserInfoDao().getUserByUid(update.uid);
               if (old != null) {
-                final oldInfo = UserInfo.fromJson(json.decode(old.info));
-                final newInfo = UserInfo.getUpdated(oldInfo, update);
+                final oldInfo = OldUserInfo.fromJson(json.decode(old.info));
+                final newInfo = OldUserInfo.getUpdated(oldInfo, update);
                 final newUserInfoM =
                     UserInfoM.fromUserInfo(newInfo, old.propertiesStr);
 
@@ -1507,7 +1507,7 @@ class VoceChatService {
     try {
       final List<dynamic> userMaps = usersSnapshot["users"];
       final userInfoMList = userMaps.map((e) {
-        final userInfo = UserInfo.fromJson(e);
+        final userInfo = OldUserInfo.fromJson(e);
         return UserInfoM.fromUserInfo(userInfo, "");
       }).toList();
 

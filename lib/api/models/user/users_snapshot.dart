@@ -16,7 +16,7 @@ part 'users_snapshot.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UsersSnapshot {
-  final List<UserInfo>? users;
+  final List<OldUserInfo>? users;
   final int version;
 
   UsersSnapshot({required this.version, this.users});

@@ -10,7 +10,7 @@ UsersSnapshot _$UsersSnapshotFromJson(Map<String, dynamic> json) =>
     UsersSnapshot(
       version: json['version'] as int,
       users: (json['users'] as List<dynamic>?)
-          ?.map((e) => UserInfo.fromJson(e as Map<String, dynamic>))
+          ?.map((e) => OldUserInfo.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 

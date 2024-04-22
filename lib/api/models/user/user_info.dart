@@ -4,7 +4,7 @@ import 'package:vocechat_client/api/models/user/user_info_update.dart';
 part 'user_info.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
-class UserInfo {
+class OldUserInfo {
   int uid;
   String? email;
   String name;
@@ -16,7 +16,7 @@ class UserInfo {
   int avatarUpdatedAt;
   String? createBy;
 
-  UserInfo(
+  OldUserInfo(
       {required this.uid,
       required this.email,
       required this.name,
@@ -28,7 +28,7 @@ class UserInfo {
       required this.avatarUpdatedAt,
       required this.createBy});
 
-  UserInfo.deleted(
+  OldUserInfo.deleted(
       {this.uid = -1,
       this.email = "",
       this.name = "Deleted User",
@@ -40,13 +40,13 @@ class UserInfo {
       this.avatarUpdatedAt = 0,
       this.createBy = ""});
 
-  factory UserInfo.fromJson(Map<String, dynamic> json) =>
-      _$UserInfoFromJson(json);
+  factory OldUserInfo.fromJson(Map<String, dynamic> json) =>
+      _$OldUserInfoFromJson(json);
 
-  Map<String, dynamic> toJson() => _$UserInfoToJson(this);
+  Map<String, dynamic> toJson() => _$OldUserInfoToJson(this);
 
-  static UserInfo getUpdated(UserInfo oldInfo, UserInfoUpdate update) {
-    return UserInfo(
+  static OldUserInfo getUpdated(OldUserInfo oldInfo, UserInfoUpdate update) {
+    return OldUserInfo(
         uid: update.uid,
         email: update.email ?? oldInfo.email,
         name: update.name ?? oldInfo.name,

@@ -7,7 +7,7 @@ part 'user_contact.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class UserContact {
   final int targetUid;
-  final UserInfo targetInfo;
+  final OldUserInfo targetInfo;
   final ContactInfo contactInfo;
 
   UserContact(

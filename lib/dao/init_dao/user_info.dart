@@ -58,8 +58,8 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
 
   ValueNotifier<bool> onlineNotifier = ValueNotifier(false);
 
-  UserInfo get userInfo {
-    return UserInfo.fromJson(jsonDecode(info));
+  OldUserInfo get userInfo {
+    return OldUserInfo.fromJson(jsonDecode(info));
   }
 
   UserProperties get properties {
@@ -87,7 +87,7 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   );
 
   UserInfoM.fromUserInfo(
-    UserInfo userInfo,
+    OldUserInfo userInfo,
     this._properties,
   ) {
     uid = userInfo.uid;
@@ -95,7 +95,7 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
   }
 
   UserInfoM.deleted() {
-    info = json.encode(UserInfo.deleted());
+    info = json.encode(OldUserInfo.deleted());
   }
 
   static UserInfoM fromMap(Map<String, dynamic> map) {
@@ -119,7 +119,7 @@ class UserInfoM extends ISuspensionBean with M, EquatableMixin {
     return m;
   }
 
-  static const F_tableName = 'user_info';
+  static const F_tableName = 'old_user_info';
   static const F_uid = 'uid';
   static const F_info = 'info';
   static const F_properties = 'properties';

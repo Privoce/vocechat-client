@@ -53,7 +53,7 @@ class ChatsBar extends StatefulWidget implements PreferredSizeWidget {
       required this.showDrawer,
       Key? key})
       : super(key: key) {
-    _isAdmin = UserInfo.fromJson(jsonDecode(App.app.userDb!.info)).isAdmin;
+    _isAdmin = OldUserInfo.fromJson(jsonDecode(App.app.userDb!.info)).isAdmin;
   }
 
   @override

@@ -9,7 +9,7 @@ class LoginResponse {
   final String token;
   final String refreshToken;
   final int expiredIn;
-  final UserInfo user;
+  final OldUserInfo user;
 
   LoginResponse(
       this.serverId, this.token, this.refreshToken, this.expiredIn, this.user);

@@ -12,7 +12,7 @@ LoginResponse _$LoginResponseFromJson(Map<String, dynamic> json) =>
       json['token'] as String,
       json['refresh_token'] as String,
       json['expired_in'] as int,
-      UserInfo.fromJson(json['user'] as Map<String, dynamic>),
+      OldUserInfo.fromJson(json['user'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$LoginResponseToJson(LoginResponse instance) =>

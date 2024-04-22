@@ -9,7 +9,7 @@ part of 'user_contact.dart';
 UserContact _$UserContactFromJson(Map<String, dynamic> json) => UserContact(
       targetUid: json['target_uid'] as int,
       targetInfo:
-          UserInfo.fromJson(json['target_info'] as Map<String, dynamic>),
+          OldUserInfo.fromJson(json['target_info'] as Map<String, dynamic>),
       contactInfo:
           ContactInfo.fromJson(json['contact_info'] as Map<String, dynamic>),
     );

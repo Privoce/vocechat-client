@@ -238,12 +238,12 @@ class UserApi {
     return newRes;
   }
 
-  Future<Response<UserInfo>> getUserByUid(int uid) async {
+  Future<Response<OldUserInfo>> getUserByUid(int uid) async {
     final dio = DioUtil(baseUrl: _baseUrl);
 
     final res = await dio.get("/$uid");
 
-    var newRes = Response<UserInfo>(
+    var newRes = Response<OldUserInfo>(
         headers: res.headers,
         requestOptions: res.requestOptions,
         isRedirect: res.isRedirect,
@@ -253,7 +253,7 @@ class UserApi {
         extra: res.extra);
 
     if (res.statusCode == 200 && res.data != null) {
-      final data = UserInfo.fromJson(res.data!);
+      final data = OldUserInfo.fromJson(res.data!);
       newRes.data = data;
     }
     return newRes;
@@ -440,7 +440,7 @@ class UserApi {
         data: {"action": status.name, "target_uid": uid});
   }
 
-  Future<Response<UserInfo?>> search(
+  Future<Response<OldUserInfo?>> search(
       ContactSearchType type, String keyword) async {
     final dio = DioUtil.token(baseUrl: _baseUrl, enableRetry: false);
     dio.options.headers["content-type"] = "application/json";
@@ -448,7 +448,7 @@ class UserApi {
     final res = await dio
         .post("/search", data: {"search_type": type.name, "keyword": keyword});
 
-    var newRes = Response<UserInfo?>(
+    var newRes = Response<OldUserInfo?>(
         headers: res.headers,
         requestOptions: res.requestOptions,
         isRedirect: res.isRedirect,
@@ -458,7 +458,7 @@ class UserApi {
         extra: res.extra);
 
     if (res.statusCode == 200 && res.data != null) {
-      final userInfo = UserInfo.fromJson(res.data);
+      final userInfo = OldUserInfo.fromJson(res.data);
       newRes.data = userInfo;
     }
     return newRes;

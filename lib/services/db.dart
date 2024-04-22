@@ -156,7 +156,7 @@ Future<void> initCurrentDb(String dbName) async {
         .create(recursive: true); // App will terminate if create fails.
     db = await databaseFactory.openDatabase(path,
         options: OpenDatabaseOptions(
-          version: 9,
+          version: 10,
           onCreate: (db, version) async {
             // Multiple sql strings are not supported in Android, thus change to single
             // sql string and execute one after another.
@@ -280,6 +280,14 @@ CREATE TABLE IF NOT EXISTS user_settings (
             if (oldVersion < newVersion && oldVersion < 9) {
               try {
                 db.execute("ALTER TABLE contacts RENAME TO old_contacts");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+
+            if (oldVersion < newVersion && oldVersion < 10) {
+              try {
+                db.execute("ALTER TABLE user_info RENAME TO old_user_info");
               } catch (e) {
                 App.logger.warning(e);
               }

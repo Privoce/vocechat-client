@@ -48,8 +48,8 @@ class UserDbM with M {
 
   int maxMid = 0;
 
-  UserInfo get userInfo {
-    return UserInfo.fromJson(jsonDecode(info));
+  OldUserInfo get userInfo {
+    return OldUserInfo.fromJson(jsonDecode(info));
   }
 
   UserDbProperties get properties {
@@ -195,7 +195,7 @@ class UserDbMDao extends OrgDao<UserDbM> {
 
   /// Use both chat_server_id and uid to define a user.
   Future<UserDbM?> updateUserInfo(
-    UserInfo userInfo,
+    OldUserInfo userInfo,
   ) async {
     if (userInfo.uid != App.app.userDb?.uid) {
       return null;

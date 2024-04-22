@@ -34,7 +34,7 @@ class _UserInfoDetailSettingPageState extends State<UserInfoDetailSettingPage> {
   final ValueNotifier<bool> _doneBtnNotifier = ValueNotifier(false);
   final ValueNotifier<bool> _uploadNotifier = ValueNotifier(false);
 
-  late final UserInfo? _userInfo;
+  late final OldUserInfo? _userInfo;
   late bool _nameChanged;
 
   @override
