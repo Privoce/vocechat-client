@@ -69,6 +69,7 @@ class _SettingPageState extends State<SettingPage> {
                   _buildUserInfo(),
                   _buildServer(context),
                   _buildLanguage(context),
+                  _buildNotification(context),
                   _buildAbout(),
                   // if (App.app.userDb?.userInfo.isAdmin ?? false)
                   //   _buildConfigs(context),
@@ -229,6 +230,19 @@ class _SettingPageState extends State<SettingPage> {
         header: AppLocalizations.of(context)!.settingsPageConfig,
         footer: AppLocalizations.of(context)!.settingsPageConfigFooter,
         title: AppLocalizations.of(context)!.settingsPageConfigFirebase);
+  }
+
+  Widget _buildNotification(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: BannerTile(
+          onTap: () {
+
+            // TODO: push to notification settings page.
+          },
+          title:
+              AppLocalizations.of(context)!.settingsPageNotificationSettings),
+    );
   }
 
   Widget _buildAbout() {
