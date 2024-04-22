@@ -2,6 +2,7 @@ library globals;
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:vocechat_client/dao/init_dao/properties_models/user_settings/user_settings.dart';
 
 // To use globals, import package as follow:
@@ -22,3 +23,5 @@ bool enablePublicChannels = true;
 final ValueNotifier<UserSettings> userSettings = ValueNotifier(UserSettings());
 
 EventBus eventBus = EventBus();
+
+final BehaviorSubject<bool> isInForeground = BehaviorSubject.seeded(false);

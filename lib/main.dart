@@ -178,6 +178,7 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.resumed:
         App.logger.info('App lifecycle: app resumed');
+        isInForeground.add(true);
 
         onResume();
 
@@ -186,16 +187,21 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
         break;
       case AppLifecycleState.paused:
         App.logger.info('App lifecycle: app paused');
+        isInForeground.add(false);
 
         shouldRefresh = true;
 
         break;
       case AppLifecycleState.inactive:
         App.logger.info('App lifecycle: app inactive');
+        isInForeground.add(false);
         break;
       case AppLifecycleState.detached:
+        isInForeground.add(false);
+        break;
       default:
         App.logger.info('App lifecycle: app detached');
+        isInForeground.add(false);
 
         shouldRefresh = true;
 
