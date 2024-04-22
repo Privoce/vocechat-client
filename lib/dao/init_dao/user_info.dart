@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:sqflite/utils/utils.dart';
 import 'package:vocechat_client/api/models/user/contact_info.dart';
-import 'package:vocechat_client/api/models/user/user_info.dart';
+import 'package:vocechat_client/api/models/user/old_user_info.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';

@@ -7,7 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
-import 'package:vocechat_client/api/models/user/user_info.dart';
+import 'package:vocechat_client/api/models/user/old_user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/user_info.dart';

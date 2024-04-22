@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:vocechat_client/api/models/user/user_info.dart';
+import 'package:vocechat_client/api/models/user/old_user_info.dart';
 
 part 'login_response.g.dart';
 

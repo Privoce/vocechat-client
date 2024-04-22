@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:vocechat_client/api/models/user/user_info.dart';
+import 'package:vocechat_client/api/models/user/old_user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/dao.dart';
 import 'package:simple_logger/simple_logger.dart';

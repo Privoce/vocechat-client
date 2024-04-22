@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:vocechat_client/api/models/user/user_info_update.dart';
 
-part 'user_info.g.dart';
+part 'old_user_info.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake)
 class OldUserInfo {
