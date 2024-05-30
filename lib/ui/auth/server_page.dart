@@ -21,7 +21,7 @@ import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
 import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
-import 'package:vocechat_client/ui/auth/password_register_page.dart';
+import 'package:vocechat_client/ui/auth/register/register_password_page.dart';
 import 'package:vocechat_client/ui/auth/server_account_tile.dart';
 import 'package:vocechat_client/ui/chats/chats/server_account_data.dart';
 import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';

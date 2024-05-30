@@ -95,6 +95,7 @@ dependencies:
   photo_view: ^0.14.0
   video_thumbnail: ^0.5.3
   web_socket_channel: ^2.4.0
+  flutter_bloc: ^8.1.5
   
   
 

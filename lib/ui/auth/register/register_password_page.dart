@@ -10,9 +10,8 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
-import 'package:vocechat_client/ui/auth/register_naming_page.dart';
+import 'package:vocechat_client/ui/auth/register/register_naming_page.dart';
 
-// ignore: must_be_immutable
 class PasswordRegisterPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
   ChatServerM chatServer;
