@@ -248,7 +248,7 @@ class SharedFuncs {
         case InvitationLinkPreparationStatus.successful:
           final route = PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                PasswordRegisterPage(
+                RegisterPasswordPage(
                     chatServer: res.chatServerM!,
                     magicToken: res.magicToken!,
                     invitationLink: res.uri),
@@ -310,7 +310,7 @@ class SharedFuncs {
           case InvitationLinkPreparationStatus.successful:
             final route = PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
-                  PasswordRegisterPage(
+                  RegisterPasswordPage(
                       chatServer: res.chatServerM!,
                       magicToken: res.magicToken!,
                       invitationLink: res.uri),

@@ -228,7 +228,7 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(
             fullscreenDialog: true,
             builder: (context) {
-              return PasswordRegisterPage(chatServer: chatServerM);
+              return RegisterPasswordPage(chatServer: chatServerM);
             }));
   }
 

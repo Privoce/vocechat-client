@@ -12,13 +12,13 @@ import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/auth/register/register_naming_page.dart';
 
-class PasswordRegisterPage extends StatefulWidget {
+class RegisterPasswordPage extends StatefulWidget {
   late final BoxDecoration _bgDeco;
   ChatServerM chatServer;
   String? magicToken;
   Uri? invitationLink;
 
-  PasswordRegisterPage(
+  RegisterPasswordPage(
       {Key? key,
       required this.chatServer,
       this.magicToken,
@@ -41,10 +41,10 @@ class PasswordRegisterPage extends StatefulWidget {
   }
 
   @override
-  State<PasswordRegisterPage> createState() => _PasswordRegisterPageState();
+  State<RegisterPasswordPage> createState() => _RegisterPasswordPageState();
 }
 
-class _PasswordRegisterPageState extends State<PasswordRegisterPage> {
+class _RegisterPasswordPageState extends State<RegisterPasswordPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _pswdController = TextEditingController();
   final TextEditingController _confirmPswdController = TextEditingController();

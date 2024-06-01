@@ -598,7 +598,7 @@ class _ServerPageState extends State<ServerPage> {
         case InvitationLinkPreparationStatus.successful:
           _isBusy.value = false;
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => PasswordRegisterPage(
+              builder: (context) => RegisterPasswordPage(
                   chatServer: res.chatServerM!,
                   magicToken: res.magicToken!,
                   invitationLink: res.uri)));
