@@ -55,6 +55,27 @@ class ChatServerM with M {
     return url0;
   }
 
+  ChatServerM copywith({
+    Uint8List? logo,
+    String? url,
+    int? port,
+    int? tls,
+    String? serverId,
+    int? createdAt,
+    int? updatedAt,
+    String? properties,
+  }) {
+    return ChatServerM.item(
+      logo ?? this.logo,
+      url ?? this.url,
+      port ?? this.port,
+      tls ?? this.tls,
+      createdAt ?? this.createdAt,
+      updatedAt ?? this.updatedAt,
+      properties ?? _properties,
+    );
+  }
+
   ChatServerProperties get properties {
     return ChatServerProperties.fromJson(jsonDecode(_properties));
   }
@@ -267,18 +288,4 @@ class ChatServerDao extends OrgDao<ChatServerM> {
   Future<ChatServerM?> getServerById(String id) async {
     return super.get(id);
   }
-
-  // Future<ChatServerM?> currentServer() async {
-  //   ChatServerM? chatServer = await get(await OrgSettingDao.dao.getCurrentServerId());
-  //   return chatServer;
-  // }
-
-  // Future<void> updateCompanyFromServer(ChatServerM m) async {
-  //   ChatClient chat = createChatClient(createClientChannel(m.tls.toTrue(), m.url, m.port));
-  //   Company res = await chat.companyGet(EmptyReq(token: ""));
-  //   m.serverName = res.name;
-  //   m.logo = imageWebStringToBytes(res.logo);
-  //   await get(await OrgSettingDao.dao.getCurrentServerId());
-  //   return;
-  // }
 }
