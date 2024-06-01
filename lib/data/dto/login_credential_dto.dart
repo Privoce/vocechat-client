@@ -4,7 +4,7 @@ part 'login_credential_dto.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LoginCredentialDto {
-  String? type;
+  final String? type;
 
   LoginCredentialDto({this.type});
 

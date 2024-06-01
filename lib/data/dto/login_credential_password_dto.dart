@@ -6,8 +6,8 @@ part 'login_credential_password_dto.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LoginCredentialPasswordDto extends LoginCredentialDto {
-  String? email;
-  String? password;
+  final String? email;
+  final String? password;
 
   LoginCredentialPasswordDto({
     this.email,
@@ -19,5 +19,6 @@ class LoginCredentialPasswordDto extends LoginCredentialDto {
   factory LoginCredentialPasswordDto.fromJson(Map<String, dynamic> json) =>
       _$LoginCredentialPasswordDtoFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$LoginCredentialPasswordDtoToJson(this);
 }

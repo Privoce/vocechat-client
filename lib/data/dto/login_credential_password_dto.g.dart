@@ -11,12 +11,11 @@ LoginCredentialPasswordDto _$LoginCredentialPasswordDtoFromJson(
     LoginCredentialPasswordDto(
       email: json['email'] as String?,
       password: json['password'] as String?,
-    )..type = json['type'] as String?;
+    );
 
 Map<String, dynamic> _$LoginCredentialPasswordDtoToJson(
         LoginCredentialPasswordDto instance) =>
     <String, dynamic>{
-      'type': instance.type,
       'email': instance.email,
       'password': instance.password,
     };
