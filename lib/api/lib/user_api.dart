@@ -307,6 +307,14 @@ class UserApi {
     return dio.get("/check_email?email=$email");
   }
 
+  Future<bool> checkEmailNew(String email) async {
+    final dio = DioUtil(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
+
+    final res = await dio.get<bool>("/check_email?email=$email");
+    return res.data!;
+  }
+
   Future<Response<bool>> checkMagicToken(String magicToken,
       {bool enableRetry = false}) async {
     final dio = DioUtil(baseUrl: _baseUrl, enableRetry: enableRetry);

@@ -395,5 +395,10 @@
     "settingsPageMyInfo":"My Info",
     "settingsPageAccountSettings": "Account Settings",
     "settingsPageAbout": "About",
-    "settingsPageLogout": "Logout"
+    "settingsPageLogout": "Logout",
+
+    
+    "generalErrorUnknownError": "Unknown Error occurred.",
+    "networkErrorServerError": "Server Error occurred.",
+    "authErrorEmailAlreadyExists": "Email already exists."
 }

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 
 typedef RetryEvaluator = FutureOr<bool> Function(
-    DioError error, ErrorInterceptorHandler handler);
+    DioException error, ErrorInterceptorHandler handler);
 
 class RetryOptions {
   /// The number of retry in case of an error

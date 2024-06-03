@@ -399,5 +399,9 @@
     "settingsPageMyInfo":"我的信息",
     "settingsPageAccountSettings": "账号设置",
     "settingsPageAbout": "关于我们",
-    "settingsPageLogout": "退出登录"
+    "settingsPageLogout": "退出登录",
+
+    "generalErrorUnknownError": "发生未知错误。",
+    "networkErrorServerError": "服务端发生错误。",
+    "authErrorEmailAlreadyExists": "邮箱已经存在。"
 }
