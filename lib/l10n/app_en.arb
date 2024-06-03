@@ -398,7 +398,8 @@
     "settingsPageLogout": "Logout",
 
     
-    "generalErrorUnknownError": "Unknown Error occurred.",
-    "networkErrorServerError": "Server Error occurred.",
+    "generalErrorUnknownError": "Unknown error occurred.",
+    "networkErrorNetworkError": "Network error occurred.",
+    "networkErrorServerError": "Server error occurred.",
     "authErrorEmailAlreadyExists": "Email already exists."
 }

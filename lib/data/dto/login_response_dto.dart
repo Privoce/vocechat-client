@@ -6,11 +6,11 @@ part 'login_response_dto.g.dart';
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LoginResponseDto {
   @JsonKey(name: 'server_id')
-  final String? serverId;
-  final String? token;
-  final String? refreshToken;
-  final int? expiredIn;
-  final UserInfoDto? user;
+  String? serverId;
+  String? token;
+  String? refreshToken;
+  int? expiredIn;
+  UserInfoDto? user;
 
   LoginResponseDto({
     this.serverId,

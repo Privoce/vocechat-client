@@ -6,8 +6,8 @@ part 'login_credential_password_dto.g.dart';
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class LoginCredentialPasswordDto extends LoginCredentialDto {
-  final String? email;
-  final String? password;
+  String? email;
+  String? password;
 
   LoginCredentialPasswordDto({
     this.email,

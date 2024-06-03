@@ -8,7 +8,9 @@ class VoceAuthError extends VoceError {
   static const String emailAlreadyExists = 'authEmailAlreadyExists';
 }
 
-class VoceNetworkError {}
+class VoceNetworkError {
+  static const String networkError = 'networkError';
+}
 
 class VoceGeneralError {
   static const String unknownError = 'unknownError';
@@ -23,6 +25,9 @@ void showError(String errorKey) {
   switch (errorKey) {
     case VoceAuthError.emailAlreadyExists:
       errorMessage = AppLocalizations.of(context)!.authErrorEmailAlreadyExists;
+      break;
+    case VoceNetworkError.networkError:
+      errorMessage = AppLocalizations.of(context)!.networkErrorNetworkError;
       break;
     case VoceGeneralError.unknownError:
       errorMessage = AppLocalizations.of(context)!.generalErrorUnknownError;

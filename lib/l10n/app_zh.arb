@@ -402,6 +402,7 @@
     "settingsPageLogout": "退出登录",
 
     "generalErrorUnknownError": "发生未知错误。",
+    "networkErrorNetworkError": "发生网络错误。",
     "networkErrorServerError": "服务端发生错误。",
     "authErrorEmailAlreadyExists": "邮箱已经存在。"
 }

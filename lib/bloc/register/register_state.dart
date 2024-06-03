@@ -11,7 +11,20 @@ class RegisterInitial extends RegisterState {}
 
 class RegisterInProgress extends RegisterState {}
 
-class RegisterSuccess extends RegisterState {}
+class RegisterToNextPage extends RegisterState {
+  final String email;
+  final String password;
+  final bool rememberMe;
+
+  const RegisterToNextPage({
+    required this.email,
+    required this.password,
+    required this.rememberMe,
+  });
+
+  @override
+  List<Object> get props => [email, password, rememberMe];
+}
 
 class RegisterFailure extends RegisterState {
   final String error;
