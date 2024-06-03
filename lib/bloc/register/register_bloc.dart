@@ -4,7 +4,6 @@ import 'package:vocechat_client/api/lib/user_api.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/extensions.dart';
-import 'package:vocechat_client/util/error/error_code.dart';
 import 'package:vocechat_client/util/error/voce_error.dart';
 
 part 'register_event.dart';
