@@ -7,27 +7,27 @@ import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_calli
 import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_states.dart';
 import 'package:vocechat_client/feature/avchat_calling/logic/avchat_api.dart';
 
-class AvchatCallinBloc extends Bloc<AvchatCallinEvent, AvchatCallInState> {
+class AvchatCallInBloc extends Bloc<AvchatCallInEvent, AvchatCallInState> {
   Timer? _timer;
 
   bool _agoraEnabled = false;
   bool get agoraEnabled => _agoraEnabled;
 
-  AvchatCallinBloc() : super(AvchatCallInInitialState()) {
-    on<AvchatCallinInit>(_onInit);
-    on<AvchatCallinEnableRequest>((event, emit) {
+  AvchatCallInBloc() : super(AvchatCallInInitialState()) {
+    on<AvchatCallInInit>(_onInit);
+    on<AvchatCallInEnableRequest>((event, emit) {
       emit(AvchatCallEnabled(enabled: agoraEnabled));
     });
-    on<AvchatCallinInfoReceived>(_onCallinInfoReceived);
-    on<AgoraCallinReceivingFailEvent>((event, emit) {
-      emit(AgoraCallinReceivingFailed(error: event.error));
+    on<AvchatCallInInfoReceived>(_onCallinInfoReceived);
+    on<AgoraCallInReceivingFailEvent>((event, emit) {
+      emit(AgoraCallInReceivingFailed(error: event.error));
     });
 
-    add(AvchatCallinInit());
+    add(AvchatCallInInit());
   }
 
   Future<void> _onInit(
-      AvchatCallinInit event, Emitter<AvchatCallInState> emit) async {
+      AvchatCallInInit event, Emitter<AvchatCallInState> emit) async {
     try {
       final enabled = await AvchatApi().isAgoraEnabled();
       _agoraEnabled = enabled;
@@ -44,11 +44,11 @@ class AvchatCallinBloc extends Bloc<AvchatCallinEvent, AvchatCallInState> {
             if (channels != null && totalSize != null) {
               final channelData =
                   AgoraChannelData(channels: channels, totalSize: totalSize);
-              add(AvchatCallinInfoReceived(channelData: channelData));
+              add(AvchatCallInInfoReceived(channelData: channelData));
             } else {
               final error = "Invalid channel info: $channelInfo";
               App.logger.severe(error);
-              add(AgoraCallinReceivingFailEvent(error: error));
+              add(AgoraCallInReceivingFailEvent(error: error));
             }
           }
         });
@@ -60,7 +60,7 @@ class AvchatCallinBloc extends Bloc<AvchatCallinEvent, AvchatCallInState> {
   }
 
   Future<void> _onCallinInfoReceived(
-      AvchatCallinInfoReceived event, Emitter<AvchatCallInState> emit) async {
+      AvchatCallInInfoReceived event, Emitter<AvchatCallInState> emit) async {
     final channelData = event.channelData;
     List<int> uids = [];
 

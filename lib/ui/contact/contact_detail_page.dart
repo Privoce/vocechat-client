@@ -48,7 +48,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
   void initState() {
     super.initState();
 
-    context.read<AvchatCallinBloc>().add(AvchatCallinEnableRequest());
+    context.read<AvchatCallInBloc>().add(AvchatCallInEnableRequest());
 
     _userInfoMNotifier.value = widget.userInfoM;
 
@@ -130,7 +130,7 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
                   icon: AppIcons.chat),
             ),
           ),
-          BlocBuilder<AvchatCallinBloc, AvchatCallInState>(
+          BlocBuilder<AvchatCallInBloc, AvchatCallInState>(
               buildWhen: (previous, current) {
             return current is AvchatCallEnabled;
           }, builder: (context, state) {

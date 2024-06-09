@@ -99,6 +99,7 @@ dependencies:
   get_it: ^7.6.4
   flutter_hooks: ^0.20.3
   agora_rtc_engine: ^6.2.4
+  voce_widgets: ^0.0.12
   
   
 

@@ -237,9 +237,9 @@ class _VoceChatAppState extends State<VoceChatApp> with WidgetsBindingObserver {
           BlocProvider<AvchatBloc>(
             create: (context) => AvchatBloc(),
           ),
-          BlocProvider<AvchatCallinBloc>(
+          BlocProvider<AvchatCallInBloc>(
             lazy: false,
-            create: (context) => AvchatCallinBloc(),
+            create: (context) => AvchatCallInBloc(),
           )
         ],
         child: MaterialApp(

@@ -1,33 +1,33 @@
 import 'package:equatable/equatable.dart';
 import 'package:vocechat_client/feature/avchat_call_in/model/agora_channel_data.dart';
 
-abstract class AvchatCallinEvent extends Equatable {
-  const AvchatCallinEvent();
+abstract class AvchatCallInEvent extends Equatable {
+  const AvchatCallInEvent();
 }
 
-class AvchatCallinInit extends AvchatCallinEvent {
+class AvchatCallInInit extends AvchatCallInEvent {
   @override
   List<Object?> get props => [];
 }
 
-class AvchatCallinEnableRequest extends AvchatCallinEvent {
+class AvchatCallInEnableRequest extends AvchatCallInEvent {
   @override
   List<Object?> get props => [];
 }
 
-class AvchatCallinInfoReceived extends AvchatCallinEvent {
+class AvchatCallInInfoReceived extends AvchatCallInEvent {
   final AgoraChannelData channelData;
 
-  const AvchatCallinInfoReceived({required this.channelData});
+  const AvchatCallInInfoReceived({required this.channelData});
 
   @override
   List<Object?> get props => [channelData];
 }
 
-class AgoraCallinReceivingFailEvent extends AvchatCallinEvent {
+class AgoraCallInReceivingFailEvent extends AvchatCallInEvent {
   final Object error;
 
-  const AgoraCallinReceivingFailEvent({required this.error});
+  const AgoraCallInReceivingFailEvent({required this.error});
 
   @override
   List<Object?> get props => [error];

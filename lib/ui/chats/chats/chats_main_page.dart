@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/event_bus_objects/private_channel_link_event.dart';
+import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_bloc.dart';
+import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
 import 'package:vocechat_client/globals.dart' as globals;
 import 'package:vocechat_client/globals.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -12,20 +15,39 @@ import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contacts_page.dart';
 import 'package:vocechat_client/ui/settings/settings_page.dart';
 
-class ChatsMainPage extends StatefulWidget {
+class ChatsMainPage extends StatelessWidget {
   static const route = '/chats';
 
-  ChatsMainPage({Key? key}) : super(key: key);
+  const ChatsMainPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AvchatBloc(),
+        ),
+        BlocProvider(
+          create: (context) => AvchatCallInBloc(),
+        ),
+      ],
+      child: ChatsMainPageWidget(),
+    );
+  }
+}
+
+class ChatsMainPageWidget extends StatefulWidget {
+  ChatsMainPageWidget({Key? key}) : super(key: key);
 
   final double _iconsize = 30;
   final Color _defaultColor = Colors.grey.shade400;
   final Color _activeColor = Colors.grey.shade800;
 
   @override
-  State<ChatsMainPage> createState() => _ChatsMainPageState();
+  State<ChatsMainPageWidget> createState() => _ChatsMainPageWidgetState();
 }
 
-class _ChatsMainPageState extends State<ChatsMainPage> {
+class _ChatsMainPageWidgetState extends State<ChatsMainPageWidget> {
   final List<Widget> _pageOptions = <Widget>[
     const ChatsPage(),
     const ContactsPage(),

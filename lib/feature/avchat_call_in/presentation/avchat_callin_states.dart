@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:vocechat_client/feature/avchat_call_in/model/agora_channel.dart';
 
 abstract class AvchatCallInState extends Equatable {}
 
@@ -17,10 +16,10 @@ class AvchatCallEnabled extends AvchatCallInState {
   List<Object?> get props => [enabled];
 }
 
-class AgoraCallinReceivingFailed extends AvchatCallInState {
+class AgoraCallInReceivingFailed extends AvchatCallInState {
   final Object error;
 
-  AgoraCallinReceivingFailed({required this.error});
+  AgoraCallInReceivingFailed({required this.error});
 
   @override
   List<Object?> get props => [error];

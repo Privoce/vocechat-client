@@ -53,7 +53,7 @@ class _ChatBarState extends State<ChatBar> {
   void initState() {
     super.initState();
 
-    context.read<AvchatCallinBloc>().add(AvchatCallinEnableRequest());
+    context.read<AvchatCallInBloc>().add(AvchatCallInEnableRequest());
   }
 
   @override
@@ -222,7 +222,7 @@ class _ChatBarState extends State<ChatBar> {
 
   List<Widget> _buildDmActions(BuildContext context) {
     return [
-      BlocBuilder<AvchatCallinBloc, AvchatCallInState>(
+      BlocBuilder<AvchatCallInBloc, AvchatCallInState>(
           buildWhen: (previous, current) {
         return current is AvchatCallEnabled;
       }, builder: (context, state) {

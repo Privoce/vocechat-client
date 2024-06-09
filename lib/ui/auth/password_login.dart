@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/app.dart';
-import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
+import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/services/auth_service.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:voce_widgets/voce_widgets.dart';
 
 class PasswordLogin extends StatefulWidget {
   final ChatServerM chatServer;
