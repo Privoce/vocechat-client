@@ -14,19 +14,15 @@ class AvchatCallInBloc extends Bloc<AvchatCallInEvent, AvchatCallInState> {
   bool get agoraEnabled => _agoraEnabled;
 
   AvchatCallInBloc() : super(AvchatCallInInitialState()) {
-    on<AvchatCallInInit>(_onInit);
-    on<AvchatCallInEnableRequest>((event, emit) {
-      emit(AvchatCallEnabled(enabled: agoraEnabled));
-    });
+    on<AvchatCallInInit>(_onAvchatCallInInit);
+    on<AvchatCallInEnableRequest>(_onAvchatCallInEnableRequest);
     on<AvchatCallInInfoReceived>(_onCallinInfoReceived);
-    on<AgoraCallInReceivingFailEvent>((event, emit) {
-      emit(AgoraCallInReceivingFailed(error: event.error));
-    });
+    on<AgoraCallInReceivingFailEvent>(_onAgoraCallInReceivingFailEvent);
 
     add(AvchatCallInInit());
   }
 
-  Future<void> _onInit(
+  Future<void> _onAvchatCallInInit(
       AvchatCallInInit event, Emitter<AvchatCallInState> emit) async {
     try {
       final enabled = await AvchatApi().isAgoraEnabled();
@@ -59,6 +55,11 @@ class AvchatCallInBloc extends Bloc<AvchatCallInEvent, AvchatCallInState> {
     }
   }
 
+  void _onAvchatCallInEnableRequest(
+      AvchatCallInEnableRequest event, Emitter<AvchatCallInState> emit) {
+    emit(AvchatCallEnabled(enabled: agoraEnabled));
+  }
+
   Future<void> _onCallinInfoReceived(
       AvchatCallInInfoReceived event, Emitter<AvchatCallInState> emit) async {
     final channelData = event.channelData;
@@ -77,6 +78,11 @@ class AvchatCallInBloc extends Bloc<AvchatCallInEvent, AvchatCallInState> {
     }
 
     emit(AvchatOngoingCalls(uids: uids, gids: const []));
+  }
+
+  void _onAgoraCallInReceivingFailEvent(
+      AgoraCallInReceivingFailEvent event, Emitter<AvchatCallInState> emit) {
+    emit(AgoraCallInReceivingFailed(error: event.error));
   }
 
   void clear() {
