@@ -7,8 +7,10 @@ import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/data/dto/login_credential_password_dto.dart';
 import 'package:vocechat_client/data/dto/login_request_dto.dart';
+import 'package:vocechat_client/data/dto/register_request_dto.dart';
 import 'package:vocechat_client/extensions.dart';
 import 'package:vocechat_client/util/error/voce_error.dart';
+import 'package:vocechat_client/util/helpers/fcm_helper.dart';
 
 part 'register_event.dart';
 part 'register_state.dart';
@@ -67,10 +69,24 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(RegisterInProgress());
 
     try {
-      // final RegisterRequest
+      // Get FCM token.
+      String deviceToken = await FcmHelper.getFcmToken();
+      if (deviceToken.isEmpty) {
+        emit(RegisterInitial());
+      }
+
+      final requestDto = RegisterRequestDto(
+        email: event.email,
+        password: event.password,
+        name: event.username,
+      );
+
+      final responseDto = await UserApi().registerNew(requestDto);
     } on DioException catch (e) {
-      App.logger.severe(e);
-      emit(RegisterFailure(VoceNetworkError.networkError));
+      // Need to handle 200, 409, 412.
+      // App.logger.severe(e);
+      // emit(RegisterFailure(VoceNetworkError.networkError));
+      // if (e.response?.statusCode == )
     } catch (e) {
       emit(RegisterFailure(VoceGeneralError.unknownError));
     }

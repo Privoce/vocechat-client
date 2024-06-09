@@ -13,6 +13,8 @@ import 'package:vocechat_client/api/models/user/user_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
+import 'package:vocechat_client/data/dto/login_response_dto.dart';
+import 'package:vocechat_client/data/dto/register_request_dto.dart';
 import 'package:vocechat_client/ui/contact/contacts_add_segmented_control.dart';
 
 class UserApi {
@@ -359,6 +361,13 @@ class UserApi {
       newRes.data = data;
     }
     return newRes;
+  }
+
+  Future<LoginResponseDto> registerNew(RegisterRequestDto req) async {
+    final dio = DioUtil(baseUrl: _baseUrl);
+
+    final res = await dio.post("/register", data: req.toJson());
+    return res.data as LoginResponseDto;
   }
 
   Future<Response> postBurnAfterReadingSetting(

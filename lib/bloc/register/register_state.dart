@@ -9,6 +9,8 @@ abstract class RegisterState extends Equatable {
 
 class RegisterInitial extends RegisterState {}
 
+class RegisterNoFcmToken extends RegisterState {}
+
 class RegisterInProgress extends RegisterState {}
 
 class RegisterToNextPage extends RegisterState {
