@@ -12,7 +12,6 @@ import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_calli
 import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_events.dart';
 import 'package:vocechat_client/feature/avchat_call_in/presentation/avchat_callin_states.dart';
 import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
-import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_events.dart';
 import 'package:vocechat_client/models/ui_models/chat_page_controller.dart';
 import 'package:vocechat_client/services/voce_chat_service.dart';
 import 'package:vocechat_client/shared_funcs.dart';

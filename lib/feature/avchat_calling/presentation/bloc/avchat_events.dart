@@ -1,6 +1,4 @@
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
-import 'package:flutter/widgets.dart';
-import 'package:vocechat_client/dao/init_dao/user_info.dart';
+part of 'avchat_bloc.dart';
 
 class OneToOneCallParams {
   final UserInfoM userInfoM;

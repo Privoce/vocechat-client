@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,8 +14,9 @@ import '../../model/agora_token_info.dart';
 import '../../model/avchat_user.dart';
 import '../helpers/avchat_floating_manager.dart';
 import '../pages/avchat_page.dart';
-import 'avchat_events.dart';
-import 'avchat_states.dart';
+
+part 'avchat_events.dart';
+part 'avchat_states.dart';
 
 class AvchatBloc extends Bloc<AvchatEvent, AvchatState> {
   final isVideoCall = false;

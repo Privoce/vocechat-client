@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
 
-import '../bloc/avchat_bloc.dart';
-import '../bloc/avchat_states.dart';
 import 'avchat_user_audio_tile.dart';
 
 class AvchatAudioWrap extends StatelessWidget {

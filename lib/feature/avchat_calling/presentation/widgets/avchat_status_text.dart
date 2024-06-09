@@ -1,10 +1,6 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-import '../bloc/avchat_bloc.dart';
-import '../bloc/avchat_states.dart';
+import 'package:vocechat_client/feature/avchat_calling/presentation/bloc/avchat_bloc.dart';
 
 class AvchatStatusText extends StatefulWidget {
   final TextStyle? style;
