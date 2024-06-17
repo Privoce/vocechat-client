@@ -116,10 +116,6 @@ class _NewChannelPageState extends State<NewChannelPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 36),
       child: Center(
-          // child: ChannelAvatar(
-          //     isPublic: !isPrivate,
-          //     avatarSize: VoceAvatarSize.s60,
-          //     avatarBytes: Uint8List(0)),
           child: isPrivate
               ? VoceChannelAvatar.defaultPrivateChannel(
                   size: VoceAvatarSize.s60)
@@ -217,7 +213,7 @@ class _NewChannelPageState extends State<NewChannelPage> {
       if (serverVersionRes.statusCode == 200) {
         final serverVersion = serverVersionRes.data!;
 
-        if ("0.3.3".compareTo(serverVersion) > 0) {
+        if (isVersionAGreaterThanB('0.3.3', serverVersion)) {
           await _createGroupBfe033(req);
         } else {
           await _createGroupAft033(req);
@@ -228,6 +224,17 @@ class _NewChannelPageState extends State<NewChannelPage> {
     } catch (e) {
       App.logger.severe(e);
     }
+  }
+
+  bool isVersionAGreaterThanB(String a, String b) {
+    List<String> currentV = b.split(".");
+    List<String> newV = a.split(".");
+    bool result = false;
+    for (var i = 0; i <= 2; i++) {
+      result = int.parse(newV[i]) > int.parse(currentV[i]);
+      if (int.parse(newV[i]) != int.parse(currentV[i])) break;
+    }
+    return result;
   }
 
   Future<int?> createGroupBfe033(GroupCreateRequest req) async {
