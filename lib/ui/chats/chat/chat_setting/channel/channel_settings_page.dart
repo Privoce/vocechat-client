@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/group_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/api/models/admin/system/sys_common_ext_settings.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/chat_msg.dart';
@@ -100,12 +101,13 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
                 _buildSwitches(),
                 // _buildPin(),
                 _buildBurnAfterReading(context),
-                ValueListenableBuilder<GroupInfoM>(
-                    valueListenable: widget.groupInfoNotifier,
-                    builder: (context, groupInfoM, _) {
-                      return SettingMembersTile(
-                          groupInfoMNotifier: widget.groupInfoNotifier);
-                    }),
+                if (shouldShowMemberTile())
+                  ValueListenableBuilder<GroupInfoM>(
+                      valueListenable: widget.groupInfoNotifier,
+                      builder: (context, groupInfoM, _) {
+                        return SettingMembersTile(
+                            groupInfoMNotifier: widget.groupInfoNotifier);
+                      }),
                 _buildChannelVisibiliy(),
                 _buildBtns()
               ],
@@ -566,6 +568,21 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
             ],
           );
         });
+  }
+
+  /// SHOW member tile if
+  /// 1. I am an admin, OR
+  /// 2. I am the channel owner, OR
+  /// 3. the onlyAdminCanSeeChannelMembers flag is FALSE.
+  bool shouldShowMemberTile() {
+    if (App.app.userDb?.userInfo.isAdmin == true ||
+        widget.groupInfoNotifier.value.groupInfo.owner ==
+            App.app.userDb?.userInfo.uid) {
+      return true;
+    }
+    final extSettings = AdminSystemCommonExtSettings.fromJson(jsonDecode(
+        App.app.chatServerM.properties.commonInfo?.extSettings ?? ""));
+    return extSettings.onlyAdminCanSeeChannelMembers != true;
   }
 
   void _onLeave(bool isOwner) async {
