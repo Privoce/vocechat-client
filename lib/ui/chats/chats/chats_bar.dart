@@ -283,14 +283,6 @@ class _ChatsBarState extends State<ChatsBar> {
       ),
       centerTitle: false,
       actions: [
-        // TextButton(
-        //     onPressed: () {
-        //       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        //         content: Text(
-        //             "WS: ${VoceWebSocket().isConnected}, SSE: ${VoceSse().isConnected}"),
-        //       ));
-        //     },
-        //     child: Text("test")),
         Padding(
             padding: const EdgeInsets.only(right: 10),
             child: PopupMenuButton(
@@ -402,30 +394,28 @@ class _ChatsBarState extends State<ChatsBar> {
                 }
               },
               itemBuilder: (context) {
-                return [
-                  _buildItem(
-                      Icon(AppIcons.channel, color: AppColors.grey97),
-                      AppLocalizations.of(context)!.chatsBarNewChannel,
-                      AddActions.channel),
-                  _buildItem(
-                      Icon(AppIcons.dm, color: AppColors.grey97),
-                      AppLocalizations.of(context)!.chatsBarNewDm,
-                      AddActions.dm),
-                  _buildItem(
-                      Icon(AppIcons.member_add, color: AppColors.grey97),
-                      AppLocalizations.of(context)!.inviteNewUsers,
-                      AddActions.user),
-                  _buildItem(
-                      Icon(Icons.qr_code_scanner, color: AppColors.grey97),
-                      AppLocalizations.of(context)!.scanQrCode,
-                      AddActions.scan)
-                ];
+                return _buildAddItems();
               },
             ))
       ],
-      // bottom: tabBar
-      // bottom: AppSearchField(AppLocalizations.of(context)!.chatsPageSearchHint),
     );
+  }
+
+  List<PopupMenuItem> _buildAddItems() {
+    return [
+      if (App.app.chatServerM.properties.commonInfo?.onlyAdminCanCreateGroup !=
+          true)
+        _buildItem(
+            Icon(AppIcons.channel, color: AppColors.grey97),
+            AppLocalizations.of(context)!.chatsBarNewChannel,
+            AddActions.channel),
+      _buildItem(Icon(AppIcons.dm, color: AppColors.grey97),
+          AppLocalizations.of(context)!.chatsBarNewDm, AddActions.dm),
+      _buildItem(Icon(AppIcons.member_add, color: AppColors.grey97),
+          AppLocalizations.of(context)!.inviteNewUsers, AddActions.user),
+      _buildItem(Icon(Icons.qr_code_scanner, color: AppColors.grey97),
+          AppLocalizations.of(context)!.scanQrCode, AddActions.scan)
+    ];
   }
 
   bool _isInitial() {
