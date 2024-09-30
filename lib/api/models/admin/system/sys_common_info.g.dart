@@ -15,7 +15,7 @@ AdminSystemCommonInfo _$AdminSystemCommonInfoFromJson(
       chatLayoutMode: json['chat_layout_mode'] as String? ?? "Left",
       maxFileExpiryMode: json['max_file_expiry_mode'] as String? ?? "Off",
       onlyAdminCanCreateGroup: json['only_admin_can_create_group'] as bool?,
-      extSetting: json['ext_setting'] as String?,
+      extSettings: json['ext_settings'] as String?,
     );
 
 Map<String, dynamic> _$AdminSystemCommonInfoToJson(
@@ -26,5 +26,5 @@ Map<String, dynamic> _$AdminSystemCommonInfoToJson(
       'chat_layout_mode': instance.chatLayoutMode,
       'max_file_expiry_mode': instance.maxFileExpiryMode,
       'only_admin_can_create_group': instance.onlyAdminCanCreateGroup,
-      'ext_setting': instance.extSetting,
+      'ext_settings': instance.extSettings,
     };

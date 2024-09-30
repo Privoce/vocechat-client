@@ -226,7 +226,7 @@ class ChatServerDao extends OrgDao<ChatServerM> {
             commonInfo.maxFileExpiryMode ?? oldInfo?.maxFileExpiryMode,
         onlyAdminCanCreateGroup: commonInfo.onlyAdminCanCreateGroup ??
             oldInfo?.onlyAdminCanCreateGroup,
-        extSetting: commonInfo.extSetting ?? oldInfo?.extSetting,
+        extSettings: commonInfo.extSettings ?? oldInfo?.extSettings,
       );
 
       old.properties = old.properties..commonInfo = newInfo;

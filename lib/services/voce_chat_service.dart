@@ -908,7 +908,7 @@ class VoceChatService {
     String? chatLayoutMode;
     String? maxFileExpiryMode;
     bool? onlyAdminCanCreateGroup;
-    String? extSetting;
+    String? extSettings;
 
     try {
       organizationName = map["organization_name"] as String?;
@@ -919,7 +919,7 @@ class VoceChatService {
       chatLayoutMode = map["chat_layout_mode"] as String?;
       maxFileExpiryMode = map["max_file_expiry_mode"] as String?;
       onlyAdminCanCreateGroup = map["only_admin_can_create_group"] as bool?;
-      extSetting = map["ext_setting"] as String?;
+      extSettings = map["ext_settings"] as String?;
 
       // This server id is not the backend one, but the id of local database.
       final serverId = App.app.userDb?.chatServerId;
@@ -957,7 +957,7 @@ class VoceChatService {
             maxFileExpiryMode ?? properties.commonInfo?.maxFileExpiryMode,
         onlyAdminCanCreateGroup: onlyAdminCanCreateGroup ??
             properties.commonInfo?.onlyAdminCanCreateGroup,
-        extSetting: extSetting ?? properties.commonInfo?.extSetting,
+        extSettings: extSettings ?? properties.commonInfo?.extSettings,
       );
 
       properties.commonInfo = newCommonInfo;

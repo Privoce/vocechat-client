@@ -9,7 +9,7 @@ class AdminSystemCommonInfo {
   final String? chatLayoutMode;
   final String? maxFileExpiryMode;
   final bool? onlyAdminCanCreateGroup;
-  final String? extSetting;
+  final String? extSettings;
 
   AdminSystemCommonInfo({
     this.showUserOnlineStatus = true,
@@ -17,7 +17,7 @@ class AdminSystemCommonInfo {
     this.chatLayoutMode = "Left",
     this.maxFileExpiryMode = "Off",
     this.onlyAdminCanCreateGroup,
-    this.extSetting,
+    this.extSettings,
   });
 
   factory AdminSystemCommonInfo.fromJson(Map<String, dynamic> json) =>
