@@ -190,17 +190,36 @@ class _NewPrivateChannelSelectPageState
     if (gid == null || gid == -1) {
       App.logger.severe("Group Creation (before 0.3.4) Failed");
     } else {
-      GroupInfo groupInfo = GroupInfo(gid, App.app.userDb!.uid, req.name,
-          req.description, req.members, false, 0, []);
+      GroupInfo groupInfo = GroupInfo(
+        gid,
+        App.app.userDb!.uid,
+        req.name,
+        req.description,
+        req.members,
+        false,
+        0,
+        [],
+        true,
+        true,
+        false,
+        true,
+        null,
+      );
       GroupInfoM groupInfoM = GroupInfoM.item(
-          gid,
-          "",
-          jsonEncode(groupInfo),
-          // Uint8List(0),
-          "",
-          0,
-          1,
-          DateTime.now().millisecondsSinceEpoch);
+        gid,
+        "",
+        jsonEncode(groupInfo),
+        // Uint8List(0),
+        "",
+        0,
+        1,
+        DateTime.now().millisecondsSinceEpoch,
+        1,
+        1,
+        0,
+        1,
+        "",
+      );
 
       try {
         await GroupInfoDao()
@@ -219,22 +238,35 @@ class _NewPrivateChannelSelectPageState
       App.logger.severe("Group Creation (after 0.3.4) Failed");
     } else {
       GroupInfo groupInfo = GroupInfo(
-          groupCreateResponse.gid,
-          App.app.userDb!.uid,
-          req.name,
-          req.description,
-          req.members,
-          false,
-          0, []);
+        groupCreateResponse.gid,
+        App.app.userDb!.uid,
+        req.name,
+        req.description,
+        req.members,
+        false,
+        0,
+        [],
+        true,
+        true,
+        false,
+        true,
+        null,
+      );
       GroupInfoM groupInfoM = GroupInfoM.item(
-          groupCreateResponse.gid,
-          "",
-          jsonEncode(groupInfo),
-          // Uint8List(0),
-          "",
-          0,
-          1,
-          groupCreateResponse.createdAt);
+        groupCreateResponse.gid,
+        "",
+        jsonEncode(groupInfo),
+        // Uint8List(0),
+        "",
+        0,
+        1,
+        groupCreateResponse.createdAt,
+        1,
+        1,
+        0,
+        1,
+        "",
+      );
 
       try {
         await GroupInfoDao()

@@ -644,12 +644,14 @@ class VoceChatService {
 
       final oldGroupInfoM = await GroupInfoDao().getGroupByGid(gid);
       if (oldGroupInfoM != null) {
-        final newGroupInfoM = await GroupInfoDao().updateGroup(map["gid"],
-            description: map["description"],
-            name: map["name"],
-            owner: map["owner"],
-            avatarUpdatedAt: map["avatar_updated_at"],
-            isPublic: map["is_public"]);
+        final newGroupInfoM = await GroupInfoDao().updateGroup(
+          map["gid"],
+          description: map["description"],
+          name: map["name"],
+          owner: map["owner"],
+          avatarUpdatedAt: map["avatar_updated_at"],
+          isPublic: map["is_public"],
+        );
 
         if (oldGroupInfoM != newGroupInfoM && newGroupInfoM != null) {
           fireChannel(newGroupInfoM, EventActions.update, afterReady);

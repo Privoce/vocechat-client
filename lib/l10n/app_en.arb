@@ -183,6 +183,8 @@
     "oldPassword":"Old Password",
     "open":"Open",
     "openWithOtherApps":"Open with other Apps",
+    "onlyAndAdminCanSendMessage": "Only owner and admin can send message",
+    
     "paste": "Paste",
     "password": "Password",
     "confirmPassword": "Confirm Password",

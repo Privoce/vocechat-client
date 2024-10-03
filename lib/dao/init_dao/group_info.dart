@@ -19,6 +19,11 @@ class GroupInfoM extends Equatable with M {
   int _isPublic = 1;
   int _isActive = 1;
   int updatedAt = 0;
+  int addFriend = 0;
+  int dmToMember = 0;
+  int onlyOwnerCanSendMsg = 0;
+  int showEmail = 0;
+  String extSettings = "";
 
   bool get isPublic => _isPublic == 1;
   bool get isActive => _isActive == 1;
@@ -37,8 +42,20 @@ class GroupInfoM extends Equatable with M {
     }
   }
 
-  GroupInfoM.item(this.gid, this.lastLocalMid, this.info, this._properties,
-      this._isPublic, this._isActive, this.updatedAt);
+  GroupInfoM.item(
+    this.gid,
+    this.lastLocalMid,
+    this.info,
+    this._properties,
+    this._isPublic,
+    this._isActive,
+    this.updatedAt,
+    this.addFriend,
+    this.dmToMember,
+    this.onlyOwnerCanSendMsg,
+    this.showEmail,
+    this.extSettings,
+  );
 
   GroupInfoM.fromGroupInfo(
     GroupInfo groupInfo,
@@ -48,6 +65,10 @@ class GroupInfoM extends Equatable with M {
     info = jsonEncode(groupInfo.toJson());
     _isPublic = groupInfo.isPublic ? 1 : 0;
     _isActive = isActive ? 1 : 0;
+    addFriend = groupInfo.addFriend ? 1 : 0;
+    dmToMember = groupInfo.dmToMember ? 1 : 0;
+    onlyOwnerCanSendMsg = groupInfo.onlyOwnerCanSendMsg ? 1 : 0;
+    showEmail = groupInfo.showEmail ? 1 : 0;
   }
 
   static GroupInfoM fromMap(Map<String, dynamic> map) {
@@ -79,6 +100,9 @@ class GroupInfoM extends Equatable with M {
     if (map.containsKey(F_updatedAt)) {
       m.updatedAt = map[F_updatedAt];
     }
+    if (map.containsKey(F_updatedAt)) {
+      m.updatedAt = map[F_updatedAt];
+    }
 
     return m;
   }
@@ -92,6 +116,11 @@ class GroupInfoM extends Equatable with M {
   static const F_isActive = 'is_active';
   static const F_createdAt = 'created_at';
   static const F_updatedAt = 'updated_at';
+  static const F_addFriend = 'add_friend';
+  static const F_dmToMember = 'dm_to_member';
+  static const F_onlyOwnerCanSendMsg = 'only_owner_can_send_msg';
+  static const F_showEmail = 'show_email';
+  static const F_extSettings = 'ext_settings';
 
   @override
   Map<String, Object> get values => {
@@ -103,14 +132,31 @@ class GroupInfoM extends Equatable with M {
         GroupInfoM.F_isActive: _isActive,
         GroupInfoM.F_createdAt: createdAt,
         GroupInfoM.F_updatedAt: updatedAt,
+        GroupInfoM.F_addFriend: addFriend,
+        GroupInfoM.F_dmToMember: dmToMember,
+        GroupInfoM.F_onlyOwnerCanSendMsg: onlyOwnerCanSendMsg,
+        GroupInfoM.F_showEmail: showEmail,
+        GroupInfoM.F_extSettings: extSettings,
       };
 
   static MMeta meta = MMeta.fromType(GroupInfoM, GroupInfoM.fromMap)
     ..tableName = F_tableName;
 
   @override
-  List<Object?> get props =>
-      [gid, lastLocalMid, info, _properties, _isPublic, _isActive, createdAt];
+  List<Object?> get props => [
+        gid,
+        lastLocalMid,
+        info,
+        _properties,
+        _isPublic,
+        _isActive,
+        createdAt,
+        addFriend,
+        dmToMember,
+        onlyOwnerCanSendMsg,
+        showEmail,
+        extSettings,
+      ];
 }
 
 class GroupInfoDao extends Dao<GroupInfoM> {
@@ -208,12 +254,14 @@ class GroupInfoDao extends Dao<GroupInfoM> {
   //   return old;
   // }
 
-  Future<GroupInfoM?> updateGroup(int gid,
-      {String? description,
-      String? name,
-      int? owner,
-      int? avatarUpdatedAt,
-      bool? isPublic}) async {
+  Future<GroupInfoM?> updateGroup(
+    int gid, {
+    String? description,
+    String? name,
+    int? owner,
+    int? avatarUpdatedAt,
+    bool? isPublic,
+  }) async {
     GroupInfoM? old =
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
     if (old != null) {
