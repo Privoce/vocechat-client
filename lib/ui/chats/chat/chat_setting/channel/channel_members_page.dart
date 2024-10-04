@@ -13,7 +13,10 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 class ChannelMembersPage extends StatelessWidget {
   final GroupInfoM groupInfoM;
 
-  ChannelMembersPage(this.groupInfoM);
+  const ChannelMembersPage(
+    this.groupInfoM, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +47,10 @@ class ChannelMembersPage extends StatelessWidget {
                 onTap: (user) {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => ContactDetailPage(userInfoM: user),
+                      builder: (context) => ContactDetailPage(
+                        userInfoM: user,
+                        groupInfo: groupInfoM.groupInfo,
+                      ),
                     ),
                   );
                   ;

@@ -12,8 +12,11 @@ class VoceChatTile extends StatelessWidget {
   final ChatTileData tileData;
   final void Function(ChatTileData tileData) onTap;
 
-  const VoceChatTile({Key? key, required this.tileData, required this.onTap})
-      : super(key: key);
+  const VoceChatTile({
+    Key? key,
+    required this.tileData,
+    required this.onTap,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

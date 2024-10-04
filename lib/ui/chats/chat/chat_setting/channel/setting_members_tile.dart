@@ -20,7 +20,7 @@ import 'package:vocechat_client/ui/widgets/banner_tile/banner_tile.dart';
 class SettingMembersTile extends StatefulWidget {
   final ValueNotifier<GroupInfoM> groupInfoMNotifier;
 
-  SettingMembersTile({required this.groupInfoMNotifier});
+  const SettingMembersTile({super.key, required this.groupInfoMNotifier});
 
   @override
   State<SettingMembersTile> createState() => _SettingMembersTileState();
@@ -197,23 +197,16 @@ class _SettingMembersTileState extends State<SettingMembersTile> {
                               onTap: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (context) =>
-                                        ContactDetailPage(userInfoM: user),
+                                    builder: (context) => ContactDetailPage(
+                                        userInfoM: user,
+                                        groupInfo: widget.groupInfoMNotifier
+                                            .value.groupInfo),
                                   ),
                                 );
-                                ;
                               },
                               child: Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8),
-                                // child: UserAvatar(
-                                //   avatarSize: VoceAvatarSize.s36,
-                                //   uid: user.uid,
-                                //   name: user.userInfo.name,
-                                //   avatarBytes: user.avatarBytes,
-                                //   enableOnlineStatus: true,
-                                //   isSelf: SharedFuncs.isSelf(user.uid),
-                                // ),
                                 child: VoceUserAvatar.user(
                                     userInfoM: user, size: VoceAvatarSize.s36),
                               ),
