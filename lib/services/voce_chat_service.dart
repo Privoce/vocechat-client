@@ -644,12 +644,19 @@ class VoceChatService {
 
       final oldGroupInfoM = await GroupInfoDao().getGroupByGid(gid);
       if (oldGroupInfoM != null) {
-        final newGroupInfoM = await GroupInfoDao().updateGroup(map["gid"],
-            description: map["description"],
-            name: map["name"],
-            owner: map["owner"],
-            avatarUpdatedAt: map["avatar_updated_at"],
-            isPublic: map["is_public"]);
+        final newGroupInfoM = await GroupInfoDao().updateGroup(
+          map["gid"],
+          description: map["description"],
+          name: map["name"],
+          owner: map["owner"],
+          avatarUpdatedAt: map["avatar_updated_at"],
+          isPublic: map["is_public"],
+          addFriend: map["add_friend"],
+          dmToMember: map["dm_to_member"],
+          onlyOwnerCanSendMsg: map["only_owner_can_send_msg"],
+          showEmail: map["show_email"],
+          extSettings: map["ext_settings"],
+        );
 
         if (oldGroupInfoM != newGroupInfoM && newGroupInfoM != null) {
           fireChannel(newGroupInfoM, EventActions.update, afterReady);
@@ -907,6 +914,8 @@ class VoceChatService {
     bool? contactVerificationEnable;
     String? chatLayoutMode;
     String? maxFileExpiryMode;
+    bool? onlyAdminCanCreateGroup;
+    String? extSettings;
 
     try {
       organizationName = map["organization_name"] as String?;
@@ -916,6 +925,8 @@ class VoceChatService {
       contactVerificationEnable = map["contact_verification_enable"] as bool?;
       chatLayoutMode = map["chat_layout_mode"] as String?;
       maxFileExpiryMode = map["max_file_expiry_mode"] as String?;
+      onlyAdminCanCreateGroup = map["only_admin_can_create_group"] as bool?;
+      extSettings = map["ext_settings"] as String?;
 
       // This server id is not the backend one, but the id of local database.
       final serverId = App.app.userDb?.chatServerId;
@@ -951,6 +962,9 @@ class VoceChatService {
         chatLayoutMode: chatLayoutMode ?? properties.commonInfo?.chatLayoutMode,
         maxFileExpiryMode:
             maxFileExpiryMode ?? properties.commonInfo?.maxFileExpiryMode,
+        onlyAdminCanCreateGroup: onlyAdminCanCreateGroup ??
+            properties.commonInfo?.onlyAdminCanCreateGroup,
+        extSettings: extSettings ?? properties.commonInfo?.extSettings,
       );
 
       properties.commonInfo = newCommonInfo;

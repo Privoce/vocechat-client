@@ -13,9 +13,27 @@ class GroupInfo {
   int avatarUpdatedAt;
   List<PinnedMsg> pinnedMessages;
   bool isPublic;
+  bool addFriend;
+  bool dmToMember;
+  bool onlyOwnerCanSendMsg;
+  bool showEmail;
+  String? extSettings;
 
-  GroupInfo(this.gid, this.owner, this.name, this.description, this.members,
-      this.isPublic, this.avatarUpdatedAt, this.pinnedMessages);
+  GroupInfo(
+    this.gid,
+    this.owner,
+    this.name,
+    this.description,
+    this.members,
+    this.isPublic,
+    this.avatarUpdatedAt,
+    this.pinnedMessages,
+    this.addFriend,
+    this.dmToMember,
+    this.onlyOwnerCanSendMsg,
+    this.showEmail,
+    this.extSettings,
+  );
 
   factory GroupInfo.fromJson(Map<String, dynamic> json) =>
       _$GroupInfoFromJson(json);

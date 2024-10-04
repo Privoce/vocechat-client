@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:vocechat_client/api/lib/admin_user_api.dart';
 import 'package:vocechat_client/api/lib/user_api.dart';
+import 'package:vocechat_client/api/models/group/group_info.dart';
 import 'package:vocechat_client/app.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/dao/init_dao/contacts.dart';
@@ -21,11 +22,19 @@ import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 import 'package:vocechat_client/ui/widgets/avatar_info_tile.dart';
 
 class ContactDetailPage extends StatefulWidget {
-  // static const route = "/contacts/detail";
-
   final UserInfoM userInfoM;
+  final GroupInfo? groupInfo;
 
-  ContactDetailPage({required this.userInfoM});
+  late final bool isOwner;
+
+  ContactDetailPage({
+    super.key,
+    required this.userInfoM,
+    this.groupInfo,
+  }) {
+    isOwner = groupInfo?.owner != null &&
+        groupInfo?.owner == App.app.userDb?.userInfo.uid;
+  }
 
   @override
   State<ContactDetailPage> createState() => _ContactDetailPageState();
@@ -105,13 +114,18 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
 
   Widget _buildUserInfo(UserInfoM userInfoM) {
     final userInfo = userInfoM.userInfo;
+    final showEmail = widget.groupInfo == null ||
+        isAdmin() ||
+        widget.isOwner ||
+        widget.groupInfo?.showEmail == true;
+
     return AvatarInfoTile(
       avatar: VoceUserAvatar.user(
           userInfoM: userInfoM,
           size: VoceAvatarSize.s84,
           enableOnlineStatus: true),
       title: userInfo.name,
-      subtitle: userInfo.email,
+      subtitle: showEmail ? userInfo.email : null,
     );
   }
 
@@ -119,36 +133,48 @@ class _ContactDetailPageState extends State<ContactDetailPage> {
     final titleText = userInfoM.contactStatusStr != ContactStatus.blocked.name
         ? AppLocalizations.of(context)!.sendMessage
         : AppLocalizations.of(context)!.viewChatHistory;
-    // final titleText = AppLocalizations.of(context)!.sendMessage;
+
+    final enableAddFriend = widget.groupInfo == null ||
+        isAdmin() ||
+        widget.isOwner ||
+        widget.groupInfo?.addFriend == true;
+
+    final enableDm = widget.groupInfo == null ||
+        isAdmin() ||
+        widget.isOwner ||
+        widget.groupInfo?.dmToMember == true;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         children: [
-          AppBannerButton(
-              title: titleText,
-              textColor: AppColors.primaryBlue,
-              onTap: () {
-                onTapDm(userInfoM, context);
-              }),
-          ValueListenableBuilder<bool>(
-              valueListenable: enableContact,
-              builder: (context, enableContact, _) {
-                if (enableContact) {
-                  return _buildRemoveBtn(context);
-                } else {
-                  return SizedBox.shrink();
-                }
-              }),
-          ValueListenableBuilder<bool>(
-              valueListenable: enableContact,
-              builder: (context, enableContact, _) {
-                if (enableContact) {
-                  return _buildBlockBtn(context);
-                } else {
-                  return SizedBox.shrink();
-                }
-              }),
+          if (enableDm)
+            AppBannerButton(
+                title: titleText,
+                textColor: AppColors.primaryBlue,
+                onTap: () {
+                  onTapDm(userInfoM, context);
+                }),
+          if (enableAddFriend)
+            ValueListenableBuilder<bool>(
+                valueListenable: enableContact,
+                builder: (context, enableContact, _) {
+                  if (enableContact) {
+                    return _buildRemoveBtn(context);
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                }),
+          if (enableDm)
+            ValueListenableBuilder<bool>(
+                valueListenable: enableContact,
+                builder: (context, enableContact, _) {
+                  if (enableContact) {
+                    return _buildBlockBtn(context);
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                }),
           if (isAdmin())
             Padding(
               padding: const EdgeInsets.only(top: 8),

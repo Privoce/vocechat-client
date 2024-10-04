@@ -34,6 +34,7 @@ import 'package:vocechat_client/ui/chats/chat/input_field/chat_textfield.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_sheet.dart';
 import 'package:vocechat_client/ui/chats/chat/msg_actions/msg_action_tile.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_msg_tile.dart';
+import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/app_busy_dialog.dart';
 import 'package:vocechat_client/ui/widgets/channel_start.dart';
 import 'package:vocechat_client/ui/widgets/chat_selection_sheet.dart';
@@ -200,6 +201,8 @@ class _VoceChatPageState extends State<VoceChatPage>
                     } else {
                       if (widget.userInfoNotifier != null) {
                         return _buildUserTextField();
+                      } else if (widget.groupInfoNotifier != null) {
+                        return _buildChannelTextField();
                       } else {
                         return _buildTextField();
                       }
@@ -537,6 +540,21 @@ class _VoceChatPageState extends State<VoceChatPage>
         });
   }
 
+  Widget _buildChannelTextField() {
+    return ValueListenableBuilder<GroupInfoM>(
+      valueListenable: widget.groupInfoNotifier!,
+      builder: (context, groupInfoM, _) {
+        final groupInfo = groupInfoM.groupInfo;
+        if (groupInfo.onlyOwnerCanSendMsg &&
+            groupInfo.owner != App.app.userDb?.userInfo.uid &&
+            App.app.userDb?.userInfo.isAdmin != true) {
+          return SizedBox.shrink();
+        }
+        return _buildTextField();
+      },
+    );
+  }
+
   /// Copy texts to clipboard.
   ///
   /// Only executes for text and markdown messages.
@@ -828,6 +846,17 @@ class _VoceChatPageState extends State<VoceChatPage>
                   },
                 );
               },
+              onTapAvatar: tileData.userInfoM.deleted
+                  ? null
+                  : () {
+                      Navigator.of(context)
+                          .push(MaterialPageRoute(builder: (context) {
+                        return ContactDetailPage(
+                          userInfoM: tileData.userInfoM,
+                          groupInfo: widget.groupInfoNotifier?.value.groupInfo,
+                        );
+                      }));
+                    },
             );
 
             return GestureDetector(

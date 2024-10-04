@@ -185,6 +185,7 @@
     "oldPassword":"旧密码",
     "ok": "好",
     "other":"其他",
+    "onlyAndAdminCanSendMessage": "只有群主和管理员可以发送消息",
 
     "paste": "粘贴",
     "password": "密码",

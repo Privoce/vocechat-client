@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -27,29 +26,26 @@ import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_markdown_bubble
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_reply_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_text_bubble.dart';
 import 'package:vocechat_client/ui/chats/chat/voce_msg_tile/voce_video_bubble.dart';
-import 'package:vocechat_client/ui/contact/contact_detail_page.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_avatar_size.dart';
 import 'package:vocechat_client/ui/widgets/avatar/voce_user_avatar.dart';
 
 class VoceMsgTile extends StatefulWidget {
   final MsgTileData tileData;
   final Animation<double> sizeFactor;
+  final void Function()? onTapAvatar;
 
   // Selection
   final ValueNotifier<bool>? enableSelection;
   final void Function(MsgTileData tileData, bool selected)? onSelectChange;
 
-  VoceMsgTile({
+  const VoceMsgTile({
     Key? key,
     required this.tileData,
     required this.sizeFactor,
     this.enableSelection,
     this.onSelectChange,
-  }) : super(key: key) {
-    // selfRightLayout = SharedFuncs.isSelf(tileData.userInfoM.userInfo.uid) &&
-    //     App.app.chatServerM.properties.commonInfo?.chatLayoutMode ==
-    //         ChatLayoutMode.SelfRight.name;
-  }
+    this.onTapAvatar,
+  }) : super(key: key);
 
   @override
   State<VoceMsgTile> createState() => _VoceMsgTileState();
@@ -242,15 +238,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
         height: avatarSize,
         child: CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: widget.tileData.userInfoM.deleted
-                ? null
-                : () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return ContactDetailPage(
-                          userInfoM: widget.tileData.userInfoM);
-                    }));
-                  },
+            onPressed: widget.onTapAvatar,
             child: VoceUserAvatar.file(
               name: widget.tileData.name,
               uid: widget.tileData.userInfoM.uid,
