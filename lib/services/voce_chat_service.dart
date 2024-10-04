@@ -651,6 +651,11 @@ class VoceChatService {
           owner: map["owner"],
           avatarUpdatedAt: map["avatar_updated_at"],
           isPublic: map["is_public"],
+          addFriend: map["add_friend"],
+          dmToMember: map["dm_to_member"],
+          onlyOwnerCanSendMsg: map["only_owner_can_send_msg"],
+          showEmail: map["show_email"],
+          extSettings: map["ext_settings"],
         );
 
         if (oldGroupInfoM != newGroupInfoM && newGroupInfoM != null) {

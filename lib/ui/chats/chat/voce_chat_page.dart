@@ -200,6 +200,8 @@ class _VoceChatPageState extends State<VoceChatPage>
                     } else {
                       if (widget.userInfoNotifier != null) {
                         return _buildUserTextField();
+                      } else if (widget.groupInfoNotifier != null) {
+                        return _buildChannelTextField();
                       } else {
                         return _buildTextField();
                       }
@@ -535,6 +537,21 @@ class _VoceChatPageState extends State<VoceChatPage>
           }
           return _buildTextField();
         });
+  }
+
+  Widget _buildChannelTextField() {
+    return ValueListenableBuilder<GroupInfoM>(
+      valueListenable: widget.groupInfoNotifier!,
+      builder: (context, groupInfoM, _) {
+        final groupInfo = groupInfoM.groupInfo;
+        if (groupInfo.onlyOwnerCanSendMsg &&
+            groupInfo.owner != App.app.userDb?.userInfo.uid &&
+            App.app.userDb?.userInfo.isAdmin != true) {
+          return SizedBox.shrink();
+        }
+        return _buildTextField();
+      },
+    );
   }
 
   /// Copy texts to clipboard.

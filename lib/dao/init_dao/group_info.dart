@@ -244,16 +244,6 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     return old;
   }
 
-  // Future<GroupInfoM?> updateAvatar(int gid, Uint8List avatarBytes) async {
-  //   GroupInfoM? old =
-  //       await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
-  //   if (old != null) {
-  //     old.avatar = avatarBytes;
-  //     await super.update(old);
-  //   }
-  //   return old;
-  // }
-
   Future<GroupInfoM?> updateGroup(
     int gid, {
     String? description,
@@ -261,6 +251,11 @@ class GroupInfoDao extends Dao<GroupInfoM> {
     int? owner,
     int? avatarUpdatedAt,
     bool? isPublic,
+    bool? addFriend,
+    bool? dmToMember,
+    bool? onlyOwnerCanSendMsg,
+    bool? showEmail,
+    String? extSettings,
   }) async {
     GroupInfoM? old =
         await first(where: '${GroupInfoM.F_gid} = ?', whereArgs: [gid]);
@@ -272,9 +267,6 @@ class GroupInfoDao extends Dao<GroupInfoM> {
       if (name != null) {
         oldInfo.name = name;
       }
-      // if (owner != null) {
-      //   oldInfo.owner = owner;
-      // }
       if (avatarUpdatedAt != null) {
         oldInfo.avatarUpdatedAt = avatarUpdatedAt;
       }
@@ -287,6 +279,21 @@ class GroupInfoDao extends Dao<GroupInfoM> {
         } else {
           oldInfo.owner = owner;
         }
+      }
+      if (addFriend != null) {
+        oldInfo.addFriend = addFriend;
+      }
+      if (dmToMember != null) {
+        oldInfo.dmToMember = dmToMember;
+      }
+      if (onlyOwnerCanSendMsg != null) {
+        oldInfo.onlyOwnerCanSendMsg = onlyOwnerCanSendMsg;
+      }
+      if (showEmail != null) {
+        oldInfo.showEmail = showEmail;
+      }
+      if (extSettings != null) {
+        oldInfo.extSettings = extSettings;
       }
 
       old.info = jsonEncode(oldInfo);
