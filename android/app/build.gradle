@@ -59,7 +59,7 @@ android {
         //minSdkVersion flutter.minSdkVersion
         multiDexEnabled true
         // manifestPlaceholders += [pdftronLicenseKey:PDFTRON_LICENSE_KEY]
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
          minSdkVersion 21
