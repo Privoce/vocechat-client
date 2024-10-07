@@ -26,7 +26,7 @@ class PinnedMsgPage extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         title: Text(AppLocalizations.of(pageContext)!.pin,
-            style: Theme.of(pageContext).textTheme.headline6),
+            style: Theme.of(pageContext).textTheme.headlineSmall),
         centerTitle: true,
         leading: CupertinoButton(
             onPressed: () {

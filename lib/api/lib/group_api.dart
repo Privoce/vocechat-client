@@ -19,6 +19,7 @@ class GroupApi {
 
   Future<Response<int>> createBfe033(GroupCreateRequest req) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
 
     final res = await dio.post("", data: req);
 
@@ -41,6 +42,7 @@ class GroupApi {
   Future<Response<GroupCreateResponse>> createAft033(
       GroupCreateRequest req) async {
     final dio = DioUtil.token(baseUrl: _baseUrl);
+    dio.options.headers["content-type"] = "application/json";
 
     final res = await dio.post("", data: req);
 

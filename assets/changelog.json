@@ -1,6 +1,9 @@
 {   
     "latest": {"version": "0.2.110", "build_num": 80},
     "logs":  [
+        {"time": 1719630263663, "version": "0.2.111", "build_num": 81, "updates": [
+            "- fix: potential failure when creating channels."
+            ]},
         {"time": 1699415857043, "version": "0.2.110", "build_num": 80, "updates": [
             "- fix: temporarily disable WebSocket due to unstable connection."
             ]},
