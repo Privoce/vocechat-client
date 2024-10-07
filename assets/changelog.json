@@ -1,6 +1,9 @@
 {   
-    "latest": {"version": "0.2.110", "build_num": 80},
+    "latest": {"version": "0.2.112", "build_num": 82},
     "logs":  [
+        {"time": 1728305438570, "version": "0.2.112", "build_num": 82, "updates": [
+            "- add: some server and channel setting items."
+            ]},
         {"time": 1719630263663, "version": "0.2.111", "build_num": 81, "updates": [
             "- fix: potential failure when creating channels."
             ]},
