@@ -17,6 +17,11 @@ GroupInfo _$GroupInfoFromJson(Map<String, dynamic> json) => GroupInfo(
       (json['pinned_messages'] as List<dynamic>)
           .map((e) => PinnedMsg.fromJson(e as Map<String, dynamic>))
           .toList(),
+      json['add_friend'] as bool,
+      json['dm_to_member'] as bool,
+      json['only_owner_can_send_msg'] as bool,
+      json['show_email'] as bool,
+      json['ext_settings'] as String?,
     );
 
 Map<String, dynamic> _$GroupInfoToJson(GroupInfo instance) => <String, dynamic>{
@@ -29,4 +34,9 @@ Map<String, dynamic> _$GroupInfoToJson(GroupInfo instance) => <String, dynamic>{
       'pinned_messages':
           instance.pinnedMessages.map((e) => e.toJson()).toList(),
       'is_public': instance.isPublic,
+      'add_friend': instance.addFriend,
+      'dm_to_member': instance.dmToMember,
+      'only_owner_can_send_msg': instance.onlyOwnerCanSendMsg,
+      'show_email': instance.showEmail,
+      'ext_settings': instance.extSettings,
     };

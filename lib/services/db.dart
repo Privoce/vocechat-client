@@ -156,7 +156,7 @@ Future<void> initCurrentDb(String dbName) async {
         .create(recursive: true); // App will terminate if create fails.
     db = await databaseFactory.openDatabase(path,
         options: OpenDatabaseOptions(
-          version: 8,
+          version: 9,
           onCreate: (db, version) async {
             // Multiple sql strings are not supported in Android, thus change to single
             // sql string and execute one after another.
@@ -272,6 +272,23 @@ CREATE TABLE IF NOT EXISTS user_settings (
   created_at INTEGER NOT NULL
 )
 ''');
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+
+            if (oldVersion < newVersion && oldVersion < 9) {
+              try {
+                await db.execute(
+                    "ALTER TABLE group_info ADD COLUMN add_friend INTEGER NOT NULL DEFAULT 1");
+                await db.execute(
+                    "ALTER TABLE group_info ADD COLUMN dm_to_member INTEGER NOT NULL DEFAULT 1");
+                await db.execute(
+                    "ALTER TABLE group_info ADD COLUMN only_owner_can_send_msg INTEGER NOT NULL DEFAULT 0");
+                await db.execute(
+                    "ALTER TABLE group_info ADD COLUMN show_email INTEGER NOT NULL DEFAULT 1");
+                await db.execute(
+                    "ALTER TABLE group_info ADD COLUMN ext_settings TEXT NOT NULL DEFAULT ''");
               } catch (e) {
                 App.logger.warning(e);
               }

@@ -19,8 +19,14 @@ CREATE TABLE IF NOT EXISTS group_info (
   is_public integer NOT NULL,
   is_active integer NOT NULL,
   created_at integer NOT NULL,
-  updated_at integer NOT NULL
+  updated_at integer NOT NULL,
+  add_friend integer NOT NULL,
+  dm_to_member integer NOT NULL,
+  only_owner_can_send_msg integer NOT NULL,
+  show_email integer NOT NULL,
+  ext_settings TEXT NOT NULL
 );
+
 CREATE UNIQUE INDEX IF NOT EXISTS index_gid ON group_info(gid);
 
 CREATE TABLE IF NOT EXISTS dm_info (
