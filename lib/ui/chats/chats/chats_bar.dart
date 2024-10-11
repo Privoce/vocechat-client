@@ -403,8 +403,7 @@ class _ChatsBarState extends State<ChatsBar> {
 
   List<PopupMenuItem> _buildAddItems() {
     return [
-      if (App.app.chatServerM.properties.commonInfo?.onlyAdminCanCreateGroup !=
-          true)
+      if (_showCreateNewChannel())
         _buildItem(
             Icon(AppIcons.channel, color: AppColors.grey97),
             AppLocalizations.of(context)!.chatsBarNewChannel,
@@ -549,5 +548,11 @@ class _ChatsBarState extends State<ChatsBar> {
             )
           ],
         ));
+  }
+
+  bool _showCreateNewChannel() {
+    return App.app.userDb?.userInfo.isAdmin == true ||
+        App.app.chatServerM.properties.commonInfo?.onlyAdminCanCreateGroup !=
+            true;
   }
 }
