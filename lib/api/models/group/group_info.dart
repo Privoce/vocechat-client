@@ -13,10 +13,10 @@ class GroupInfo {
   int avatarUpdatedAt;
   List<PinnedMsg> pinnedMessages;
   bool isPublic;
-  bool addFriend;
-  bool dmToMember;
-  bool onlyOwnerCanSendMsg;
-  bool showEmail;
+  bool? addFriend;
+  bool? dmToMember;
+  bool? onlyOwnerCanSendMsg;
+  bool? showEmail;
   String? extSettings;
 
   GroupInfo(

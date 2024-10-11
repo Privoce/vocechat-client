@@ -64,11 +64,11 @@ class GroupInfoM extends Equatable with M {
     gid = groupInfo.gid;
     info = jsonEncode(groupInfo.toJson());
     _isPublic = groupInfo.isPublic ? 1 : 0;
-    _isActive = isActive ? 1 : 0;
-    addFriend = groupInfo.addFriend ? 1 : 0;
-    dmToMember = groupInfo.dmToMember ? 1 : 0;
-    onlyOwnerCanSendMsg = groupInfo.onlyOwnerCanSendMsg ? 1 : 0;
-    showEmail = groupInfo.showEmail ? 1 : 0;
+    _isActive = isActive == true ? 1 : 0;
+    addFriend = groupInfo.addFriend == true ? 1 : 0;
+    dmToMember = groupInfo.dmToMember == true ? 1 : 0;
+    onlyOwnerCanSendMsg = groupInfo.onlyOwnerCanSendMsg == true ? 1 : 0;
+    showEmail = groupInfo.showEmail == true ? 1 : 0;
   }
 
   static GroupInfoM fromMap(Map<String, dynamic> map) {

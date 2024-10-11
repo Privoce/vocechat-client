@@ -17,10 +17,10 @@ GroupInfo _$GroupInfoFromJson(Map<String, dynamic> json) => GroupInfo(
       (json['pinned_messages'] as List<dynamic>)
           .map((e) => PinnedMsg.fromJson(e as Map<String, dynamic>))
           .toList(),
-      json['add_friend'] as bool,
-      json['dm_to_member'] as bool,
-      json['only_owner_can_send_msg'] as bool,
-      json['show_email'] as bool,
+      json['add_friend'] as bool?,
+      json['dm_to_member'] as bool?,
+      json['only_owner_can_send_msg'] as bool?,
+      json['show_email'] as bool?,
       json['ext_settings'] as String?,
     );
 
