@@ -580,9 +580,16 @@ class _ChannelSettingsPageState extends State<ChannelSettingsPage> {
             App.app.userDb?.userInfo.uid) {
       return true;
     }
-    final extSettings = AdminSystemCommonExtSettings.fromJson(jsonDecode(
-        App.app.chatServerM.properties.commonInfo?.extSettings ?? ""));
-    return extSettings.onlyAdminCanSeeChannelMembers != true;
+
+    try {
+      final extSettings = AdminSystemCommonExtSettings.fromJson(jsonDecode(
+          App.app.chatServerM.properties.commonInfo?.extSettings ?? ""));
+      return extSettings.onlyAdminCanSeeChannelMembers != true;
+    } catch (e) {
+      App.logger.warning("Json decode failed, return FALSE by default.");
+    }
+
+    return false;
   }
 
   void _onLeave(bool isOwner) async {
