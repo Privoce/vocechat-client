@@ -545,7 +545,7 @@ class _VoceChatPageState extends State<VoceChatPage>
       valueListenable: widget.groupInfoNotifier!,
       builder: (context, groupInfoM, _) {
         final groupInfo = groupInfoM.groupInfo;
-        if (groupInfo.onlyOwnerCanSendMsg &&
+        if (groupInfo.onlyOwnerCanSendMsg == true &&
             groupInfo.owner != App.app.userDb?.userInfo.uid &&
             App.app.userDb?.userInfo.isAdmin != true) {
           return SizedBox.shrink();
