@@ -3,7 +3,7 @@ extension StringExt on String {
   // All other RegExes should be put here.
 
   static const emailRegEx =
-      r"^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$";
+      r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$";
   static const serverUrlRegEx =
       r"^https?:\/\/\w+(\.\w+)*(:[0-9]+)?\/?(\/[.\w]*)*$";
   static const hasNumberRegEx = r"[0-9]+";

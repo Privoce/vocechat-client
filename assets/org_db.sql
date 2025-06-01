@@ -5,6 +5,7 @@ create table if not exists chat_server (
     id text primary key,
     logo BLOB NOT NULL,
     url text not null,
+    original_url text not null,
     port integer not null,
     tls integer not null,
     server_id text not null,

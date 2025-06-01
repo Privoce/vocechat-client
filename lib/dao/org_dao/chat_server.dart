@@ -15,6 +15,9 @@ class ChatServerM with M {
 
   // ip or url, without port number.
   String url = '';
+  
+  // 原始URL，用于存储用户输入的URL，不进行处理
+  String originalUrl = '';
 
   int port = -1;
 
@@ -44,6 +47,40 @@ class ChatServerM with M {
     }
     return url0;
   }
+  
+  /// 获取原始URL的完整形式
+  String get fullOriginalUrl {
+    if (originalUrl.isEmpty) {
+      return fullUrl; // 如果原始URL为空，返回计算的URL
+    }
+    
+    // 如果原始URL已经包含协议，直接返回
+    if (originalUrl.startsWith("http://") || originalUrl.startsWith("https://")) {
+      return originalUrl;
+    }
+    
+    // 检查原始URL是否包含端口号
+    if (originalUrl.contains(":")) {
+      // 分析出主机名和端口号
+      final parts = originalUrl.split(":");
+      if (parts.length >= 2 && int.tryParse(parts[1]) != null) {
+        // URL已经包含端口号，只需添加协议
+        if (tls == 0) {
+          return 'http://$originalUrl';
+        } else {
+          return 'https://$originalUrl';
+        }
+      }
+    }
+    
+    // URL不包含端口号，添加协议和可能的端口号
+    // 对于标准端口号（http=80, https=443）不添加
+    if (tls == 0) {
+      return port == 80 ? 'http://$originalUrl' : 'http://$originalUrl:$port';
+    } else {
+      return port == 443 ? 'https://$originalUrl' : 'https://$originalUrl:$port';
+    }
+  }
 
   String get fullUrlWithoutPort {
     String url0 = url;
@@ -67,7 +104,7 @@ class ChatServerM with M {
 
   ChatServerM();
 
-  ChatServerM.item(this.logo, this.url, this.port, this.tls, this.createdAt,
+  ChatServerM.item(this.logo, this.url, this.originalUrl, this.port, this.tls, this.createdAt,
       this.updatedAt, this._properties);
 
   static ChatServerM fromMap(Map<String, dynamic> map) {
@@ -80,6 +117,9 @@ class ChatServerM with M {
     }
     if (map.containsKey(F_url)) {
       m.url = map[F_url];
+    }
+    if (map.containsKey(F_originalUrl)) {
+      m.originalUrl = map[F_originalUrl];
     }
     if (map.containsKey(F_port)) {
       m.port = map[F_port];
@@ -103,6 +143,7 @@ class ChatServerM with M {
   static const F_tableName = 'chat_server';
   static const F_logo = "logo";
   static const F_url = "url";
+  static const F_originalUrl = "original_url";
   static const F_port = "port";
   static const F_tls = "tls";
   static const F_serverId = "server_id";
@@ -114,6 +155,7 @@ class ChatServerM with M {
   Map<String, Object> get values => {
         ChatServerM.F_logo: logo,
         ChatServerM.F_url: url,
+        ChatServerM.F_originalUrl: originalUrl,
         ChatServerM.F_port: port,
         ChatServerM.F_tls: tls,
         ChatServerM.F_serverId: serverId,
@@ -127,11 +169,16 @@ class ChatServerM with M {
 
   bool setByUrl(String url) {
     try {
+      // 保存原始URL，但只有当originalUrl为空时
+      if (originalUrl.isEmpty) {
+        originalUrl = url;
+      }
+      
       Uri uri = Uri.parse(url);
       if (uri.host.isEmpty) {
         return false;
       }
-      // name = url;
+      
       this.url = uri.host;
       if (url.isEmpty) {
         url = '127.0.0.1';
@@ -142,7 +189,16 @@ class ChatServerM with M {
       } else {
         tls = 0;
       }
-      // id = url;
+      
+      // 如果端口号是默认值，自动设置
+      if (port <= 0) {
+        if (tls == 1) {
+          port = 443;
+        } else {
+          port = 80;
+        }
+      }
+      
       createdAt = DateTime.now().millisecondsSinceEpoch;
       return true;
     } catch (e) {
@@ -160,12 +216,31 @@ class ChatServerDao extends OrgDao<ChatServerM> {
   }
 
   Future<ChatServerM> addOrUpdate(ChatServerM m) async {
-    ChatServerM? old =
-        await first(where: '${ChatServerM.F_url} = ?', whereArgs: [m.url]);
+    // 首先尝试根据serverId查找
+    ChatServerM? old;
+    if (m.serverId.isNotEmpty) {
+      old = await first(where: '${ChatServerM.F_serverId} = ?', whereArgs: [m.serverId]);
+    }
+    
+    // 如果没有找到且有id，则尝试根据id查找
+    if (old == null && m.id.isNotEmpty) {
+      old = await get(m.id);
+    }
+    
+    // 如果仍未找到，则尝试根据url查找
+    if (old == null) {
+      old = await first(where: '${ChatServerM.F_url} = ?', whereArgs: [m.url]);
+    }
+    
     if (old != null) {
       m.id = old.id;
       m.createdAt = old.createdAt;
-      m.serverId = old.serverId;
+      m.serverId = old.serverId.isNotEmpty ? old.serverId : m.serverId;
+
+      // 保留原始URL，如果新URL没有原始URL但旧URL有
+      if (m.originalUrl.isEmpty && old.originalUrl.isNotEmpty) {
+        m.originalUrl = old.originalUrl;
+      }
 
       if (m.logo.isEmpty) {
         m.logo = old.logo;
@@ -236,13 +311,34 @@ class ChatServerDao extends OrgDao<ChatServerM> {
   }
 
   Future<ChatServerM> updateUpdatedAt(ChatServerM m, int updatedAt) async {
-    ChatServerM? old =
-        await first(where: '${ChatServerM.F_url} = ?', whereArgs: [m.url]);
+    // 首先尝试根据serverId查找
+    ChatServerM? old;
+    if (m.serverId.isNotEmpty) {
+      old = await first(where: '${ChatServerM.F_serverId} = ?', whereArgs: [m.serverId]);
+    }
+    
+    // 如果没有找到且有id，则尝试根据id查找
+    if (old == null && m.id.isNotEmpty) {
+      old = await get(m.id);
+    }
+    
+    // 如果仍未找到，则尝试根据url查找
+    if (old == null) {
+      old = await first(where: '${ChatServerM.F_url} = ?', whereArgs: [m.url]);
+    }
+    
     if (old != null) {
       m.id = old.id;
       m.createdAt = old.createdAt;
       m.updatedAt = updatedAt;
       m._properties = old._properties;
+      m.serverId = old.serverId.isNotEmpty ? old.serverId : m.serverId;
+      
+      // 保留原始URL
+      if (m.originalUrl.isEmpty && old.originalUrl.isNotEmpty) {
+        m.originalUrl = old.originalUrl;
+      }
+      
       if (m.logo.isEmpty) {
         m.logo = old.logo;
       }

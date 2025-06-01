@@ -12,6 +12,7 @@ import 'package:vocechat_client/services/db.dart';
 import 'package:vocechat_client/services/status_service.dart';
 import 'package:simple_logger/simple_logger.dart';
 import 'package:vocechat_client/shared_funcs.dart';
+import 'package:vocechat_client/services/url_redirect_service.dart';
 
 import 'UI/chats/chats/chats_main_page.dart';
 
@@ -62,8 +63,44 @@ class App {
     await StatusMDao.dao.removeAll();
     await StatusMDao.dao.addOrReplace(statusM);
 
-    chatServerM =
+    ChatServerM chatServerM =
         (await ChatServerDao.dao.getServerById(userDbM.chatServerId))!;
+        
+    // 如果有原始URL，切换用户时重新进行重定向处理
+    if (chatServerM.originalUrl.isNotEmpty) {
+      try {
+        // 使用URL重定向服务获取最新的重定向URL
+        final redirectService = UrlRedirectService();
+        final redirectedUrl = await redirectService.getRedirectedUrl(
+            chatServerM.fullOriginalUrl);
+        
+        // 如果重定向URL与现有URL不同，更新chatServerM
+        if (redirectedUrl != chatServerM.fullUrl) {
+          // 解析新URL并更新chatServerM
+          ChatServerM newChatServerM = ChatServerM();
+          if (newChatServerM.setByUrl(redirectedUrl)) {
+            // 保留原始URL和其他重要信息
+            newChatServerM.originalUrl = chatServerM.originalUrl;
+            newChatServerM.id = chatServerM.id;
+            newChatServerM.serverId = chatServerM.serverId;
+            newChatServerM.logo = chatServerM.logo;
+            newChatServerM.createdAt = chatServerM.createdAt;
+            newChatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
+            newChatServerM.properties = chatServerM.properties;
+            
+            // 保存更新后的chatServerM
+            await ChatServerDao.dao.addOrUpdate(newChatServerM);
+            chatServerM = newChatServerM;
+            
+            App.logger.info('切换用户时URL重定向: ${chatServerM.fullUrl} -> ${newChatServerM.fullUrl}');
+          }
+        }
+      } catch (e) {
+        App.logger.warning('切换用户时URL重定向失败: $e');
+      }
+    }
+    
+    this.chatServerM = chatServerM;
 
     // Update Services
     authService?.dispose();

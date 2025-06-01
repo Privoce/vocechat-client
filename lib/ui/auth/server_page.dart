@@ -19,6 +19,7 @@ import 'package:vocechat_client/ui/app_alert_dialog.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/app_icons_icons.dart';
 import 'package:vocechat_client/ui/app_text_styles.dart';
+import 'package:vocechat_client/ui/auth/chat_server_helper.dart';
 import 'package:vocechat_client/ui/auth/invitation_link_paste_page.dart';
 import 'package:vocechat_client/ui/auth/login_page.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
@@ -234,8 +235,15 @@ class _ServerPageState extends State<ServerPage> {
                         textInputAction: TextInputAction.go,
                         scrollPadding: EdgeInsets.only(bottom: 100),
                         onChanged: (url) {
-                          // _isUrlValid.value = isUrlValid(url);
-                          // _showUrlWarning.value = shouldShowUrlAlert(url);
+                          // 尝试标准化URL以便更容易验证
+                          String normalizedUrl = url.isNotEmpty ? normalizeUrl(url) : url;
+                          
+                          // 更新URL验证状态
+                          _isUrlValid.value = url.isNotEmpty;
+                          _showUrlWarning.value = shouldShowUrlAlert(normalizedUrl);
+                          
+                          // 记录URL验证状态
+                          App.logger.info('URL: $url, 标准化: $normalizedUrl, 有效: ${normalizedUrl.isUrl}');
                         },
                       ),
                     ),
@@ -418,9 +426,14 @@ class _ServerPageState extends State<ServerPage> {
     final password = await storage.read(key: dbName);
 
     if (mounted) {
+      // 优先使用显示URL，它已经是优先考虑原始URL的结果
+      String connectUrl = data.serverUrl;
+      
+      App.logger.info('使用历史记录登录: $connectUrl');
+      
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => LoginPage(
-                baseUrl: data.serverUrl,
+                baseUrl: connectUrl,
                 email: data.userEmail,
                 password: password,
               )));
@@ -453,11 +466,15 @@ class _ServerPageState extends State<ServerPage> {
         continue;
       }
 
+      final displayUrl = chatServer.originalUrl.isNotEmpty ? 
+          chatServer.fullOriginalUrl : chatServer.fullUrl;
+
       serverAccountList.add(ServerAccountData(
           serverAvatarBytes: chatServer.logo,
           userAvatarBytes: avatarBytes ?? Uint8List(0),
           serverName: chatServer.properties.serverName,
-          serverUrl: chatServer.fullUrl,
+          serverUrl: displayUrl,
+          actualServerUrl: chatServer.fullUrl,
           username: userDb.userInfo.name,
           userEmail: userDb.userInfo.email!,
           selected: false,
@@ -486,19 +503,27 @@ class _ServerPageState extends State<ServerPage> {
   bool isUrlValid(String url) {
     return url.isNotEmpty && url.isUrl;
   }
+  
+  /// 尝试处理不完整的URL格式，使其更容易被验证通过
+  String normalizeUrl(String url) {
+    // 如果URL已经以http://或https://开头，则不需要处理
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // 如果URL没有协议前缀，添加https://
+    return 'https://$url';
+  }
 
   void _getServerList() async {
     try {
       final serverList = await ChatServerDao.dao.getServerList();
       if (serverList != null && serverList.isNotEmpty) {
         final latest = serverList.first;
-        String u = latest.url;
-        if (latest.tls == 0) {
-          u = 'http://' + u;
-        } else {
-          u = 'https://' + u;
-        }
-
+        
+        String displayUrl = latest.originalUrl.isNotEmpty ? 
+            latest.fullOriginalUrl : latest.fullUrl;
+        
         for (var server in serverList) {
           if (_serverIdSet.contains(server.id)) {
             continue;
@@ -510,7 +535,12 @@ class _ServerPageState extends State<ServerPage> {
 
       _serverListNotifier.value
           .sort((s1, s2) => s2.updatedAt.compareTo(s1.updatedAt));
-      _urlController.text = _serverListNotifier.value.first.fullUrl;
+      
+      if (_serverListNotifier.value.isNotEmpty) {
+        final server = _serverListNotifier.value.first;
+        _urlController.text = server.originalUrl.isNotEmpty ? 
+            server.fullOriginalUrl : server.fullUrl;
+      }
 
       _isUrlValid.value = isUrlValid(_urlController.text);
       _showUrlWarning.value = shouldShowUrlAlert(_urlController.text);
@@ -528,8 +558,40 @@ class _ServerPageState extends State<ServerPage> {
   /// Server information will be saved into App object.
   /// Only successful server visits will be saved.
   Future<bool> _onUrlSubmit(String url) async {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (context) => LoginPage(baseUrl: url)));
+    // 将API路径移除，只传入基本URL
+    String baseUrl = url.endsWith("/api") ? url.substring(0, url.length - 4) : url;
+    
+    // 标准化URL格式
+    if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+      baseUrl = normalizeUrl(baseUrl);
+    }
+    
+    // 保存用户输入的原始URL
+    String originalUrl = baseUrl;
+    
+    App.logger.info('提交URL: $baseUrl');
+    
+    // 使用ChatServerHelper处理URL重定向
+    final chatServerM = await ChatServerHelper().prepareChatServerM(baseUrl, showAlert: true);
+    
+    if (chatServerM != null) {
+      // 确保原始URL被设置
+      if (chatServerM.originalUrl.isEmpty) {
+        chatServerM.originalUrl = originalUrl;
+        // 保存更新后的服务器记录
+        await ChatServerDao.dao.addOrUpdate(chatServerM);
+      }
+      
+      // 使用显示URL进行登录页面的显示
+      String displayUrl = chatServerM.originalUrl.isNotEmpty ? 
+          chatServerM.fullOriginalUrl : chatServerM.fullUrl;
+      
+      App.logger.info('使用URL登录: $displayUrl (原始: $originalUrl, 重定向: ${chatServerM.fullUrl})');
+      
+      // 跳转到登录页面
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => LoginPage(baseUrl: displayUrl)));
+    }
 
     return true;
   }
@@ -588,6 +650,9 @@ class _ServerPageState extends State<ServerPage> {
       await _onInvitationLinkDetected(modifiedUri);
     } else {
       _urlController.text = data;
+      // 更新URL有效性和警告状态
+      _isUrlValid.value = isUrlValid(data);
+      _showUrlWarning.value = shouldShowUrlAlert(data);
     }
   }
 

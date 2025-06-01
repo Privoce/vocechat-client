@@ -75,7 +75,7 @@ Future<void> initDb({String? dbFileName}) async {
       orgDb = await databaseFactory.openDatabase(
         path,
         options: OpenDatabaseOptions(
-          version: 5,
+          version: 6,
           onCreate: (db, version) async {
             // Check if db table has been created.
             int? count = firstIntValue(await db.query('sqlite_master',
@@ -130,6 +130,15 @@ Future<void> initDb({String? dbFileName}) async {
               try {
                 db.execute(
                     "ALTER TABLE chat_server ADD COLUMN server_id TEXT NOT NULL DEFAULT ''");
+              } catch (e) {
+                App.logger.warning(e);
+              }
+            }
+
+            if (oldVersion < newVersion && oldVersion < 6) {
+              try {
+                db.execute(
+                    "ALTER TABLE chat_server ADD COLUMN original_url TEXT NOT NULL DEFAULT ''");
               } catch (e) {
                 App.logger.warning(e);
               }

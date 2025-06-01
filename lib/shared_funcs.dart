@@ -178,7 +178,7 @@ class SharedFuncs {
         if (chatServer != null) {
           final route = PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
-                LoginPage(baseUrl: serverUrl),
+                LoginPage(baseUrl: chatServer.fullUrl),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 1.0);

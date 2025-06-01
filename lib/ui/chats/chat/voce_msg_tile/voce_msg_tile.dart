@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -550,7 +551,7 @@ class _VoceMsgTileState extends State<VoceMsgTile> {
                               style: TextStyle(
                                 color: AppColors.grey400,
                                 fontSize: 14,
-                                fontFeatures: const [
+                                fontFeatures: [
                                   FontFeature.tabularFigures()
                                 ],
                               ),

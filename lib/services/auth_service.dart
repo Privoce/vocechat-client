@@ -171,6 +171,9 @@ class AuthService {
       [bool isReLogin = false]) async {
     String errorContent = "";
     try {
+      // 添加日志记录URL信息
+      App.logger.info('开始登录 - 服务器URL: ${chatServerM.fullUrl}, 原始URL: ${chatServerM.originalUrl}');
+      
       final tokenApi = TokenApi(serverUrl: chatServerM.fullUrl);
 
       final req = await _preparePswdLoginRequest(email, pswd);
@@ -209,6 +212,7 @@ class AuthService {
         }
       } else if (res.statusCode == 200 && res.data != null) {
         final data = res.data!;
+        App.logger.info('登录成功，准备初始化服务');
         if (await initServices(data, rememberPswd,
             rememberPswd ? req.credential.password : null)) {
           await App.app.chatService.initPersistentConnection();
@@ -264,6 +268,19 @@ class AuthService {
       }
 
       final chatServerId = App.app.chatServerM.id;
+      
+      // 记录当前的URL信息
+      App.logger.info('登录服务初始化 - 当前URL: ${App.app.chatServerM.fullUrl}, 原始URL: ${App.app.chatServerM.originalUrl}');
+      
+      // 确保保存原始URL
+      if (App.app.chatServerM.originalUrl.isEmpty) {
+        // 如果originalUrl为空，尝试使用url作为原始URL
+        App.app.chatServerM.originalUrl = App.app.chatServerM.url;
+        App.logger.info('登录服务 - 设置原始URL: ${App.app.chatServerM.originalUrl}');
+      }
+      
+      // 立即保存更新后的chatServerM
+      await ChatServerDao.dao.addOrUpdate(App.app.chatServerM);
 
       final old = await UserDbMDao.dao.first(
           where: '${UserDbM.F_chatServerId} = ? AND ${UserDbM.F_uid} = ?',
@@ -313,12 +330,22 @@ class AuthService {
       final userInfoM = UserInfoM.fromUserInfo(userInfo, "");
       await UserInfoDao().addOrReplace(userInfoM);
 
-      // Update chatServerM
-      await ChatServerDao.dao.updateServerId(serverId).then((value) {
-        if (value != null) {
-          App.app.chatServerM = value;
+      // 在更新服务器ID后获取更新的chatServerM
+      ChatServerM? updatedChatServerM = await ChatServerDao.dao.updateServerId(serverId);
+      if (updatedChatServerM != null) {
+        // 保存当前原始URL，以免被覆盖
+        String originalUrl = App.app.chatServerM.originalUrl;
+        
+        // 检查是否需要保留原始URL
+        if (updatedChatServerM.originalUrl.isEmpty && originalUrl.isNotEmpty) {
+          App.logger.info('保留原始URL: $originalUrl');
+          updatedChatServerM.originalUrl = originalUrl;
+          await ChatServerDao.dao.addOrUpdate(updatedChatServerM);
         }
-      });
+        
+        App.app.chatServerM = updatedChatServerM;
+        App.logger.info('更新后的服务器信息 - URL: ${updatedChatServerM.fullUrl}, 原始URL: ${updatedChatServerM.originalUrl}');
+      }
 
       App.app.chatService = VoceChatService();
       App.app.statusService = StatusService();

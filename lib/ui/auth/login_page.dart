@@ -1,5 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:vocechat_client/api/lib/token_api.dart';
+import 'package:vocechat_client/api/models/token/token_login_request.dart';
+import 'package:vocechat_client/app.dart';
 import 'package:voce_widgets/voce_widgets.dart';
 import 'package:vocechat_client/app_consts.dart';
 import 'package:vocechat_client/shared_funcs.dart';
@@ -12,7 +17,6 @@ import 'package:vocechat_client/dao/org_dao/chat_server.dart';
 import 'package:vocechat_client/ui/app_colors.dart';
 import 'package:vocechat_client/ui/auth/password_register_page.dart';
 import 'package:vocechat_client/ui/widgets/banner_button.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   // static const route = '/auth/login';
@@ -369,9 +373,9 @@ class _LoginPageState extends State<LoginPage> {
                           color: AppColors.grey500));
 
                 default:
-                  String? url = _chatServerM?.fullUrl;
-                  if (url == null || url.isEmpty) {
-                    url = widget.baseUrl;
+                  String url = widget.baseUrl;
+                  if (_chatServerM != null && _chatServerM!.originalUrl.isNotEmpty) {
+                    url = _chatServerM!.fullOriginalUrl;
                   }
                   return Text(url,
                       style: TextStyle(
@@ -452,14 +456,30 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<ChatServerM?> _getChatServerM() async {
     serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.fetching;
-    final chatServerM =
-        await ChatServerHelper().prepareChatServerM(widget.baseUrl);
-    if (chatServerM != null) {
-      _chatServerM = chatServerM;
-      serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.done;
-
-      return chatServerM;
-    } else {
+    
+    // 保存用户输入的原始URL
+    String originalUrl = widget.baseUrl;
+    
+    try {
+      final chatServerM =
+          await ChatServerHelper().prepareChatServerM(widget.baseUrl);
+      if (chatServerM != null) {
+        _chatServerM = chatServerM;
+        
+        // 确保原始URL被设置
+        if (chatServerM.originalUrl.isEmpty) {
+          chatServerM.originalUrl = originalUrl;
+          // 保存更新后的服务器记录
+          await ChatServerDao.dao.addOrUpdate(chatServerM);
+        }
+        
+        serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.done;
+        return chatServerM;
+      } else {
+        _chatServerM = null;
+        serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.error;
+      }
+    } catch (e) {
       _chatServerM = null;
       serverInfoFetchingStatus.value = _ServerInfoFetchingStatus.error;
     }

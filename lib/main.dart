@@ -32,6 +32,7 @@ import 'package:vocechat_client/ui/chats/chats/chats_main_page.dart';
 import 'package:vocechat_client/ui/chats/chats/chats_page.dart';
 import 'package:vocechat_client/ui/contact/contacts_page.dart';
 import 'package:vocechat_client/ui/settings/settings_page.dart';
+import 'package:vocechat_client/services/url_redirect_service.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -71,6 +72,48 @@ Future<void> main() async {
           defaultHome = await SharedFuncs.getDefaultHomePage();
         } else {
           App.app.chatServerM = chatServerM;
+          
+          // 如果有原始URL，在重启应用时重新进行重定向处理
+          if (chatServerM.originalUrl.isNotEmpty) {
+            try {
+              // 使用URL重定向服务获取最新的重定向URL
+              final redirectService = UrlRedirectService();
+              final redirectedUrl = await redirectService.getRedirectedUrl(
+                  chatServerM.fullOriginalUrl);
+              
+              // 如果重定向URL与现有URL不同，更新chatServerM
+              if (redirectedUrl != chatServerM.fullUrl) {
+                // 解析新URL并更新chatServerM
+                ChatServerM newChatServerM = ChatServerM();
+                if (newChatServerM.setByUrl(redirectedUrl)) {
+                  // 保留原始URL和其他重要信息
+                  newChatServerM.originalUrl = chatServerM.originalUrl;
+                  newChatServerM.id = chatServerM.id;
+                  newChatServerM.serverId = chatServerM.serverId;
+                  newChatServerM.logo = chatServerM.logo;
+                  newChatServerM.createdAt = chatServerM.createdAt;
+                  newChatServerM.updatedAt = DateTime.now().millisecondsSinceEpoch;
+                  newChatServerM.properties = chatServerM.properties;
+                  
+                  // 保存更新后的chatServerM
+                  await ChatServerDao.dao.addOrUpdate(newChatServerM);
+                  App.app.chatServerM = newChatServerM;
+                  
+                  App.logger.info('应用启动时URL重定向: ${chatServerM.fullUrl} -> ${newChatServerM.fullUrl}');
+                } else {
+                  // 如果解析失败，继续使用原来的chatServerM
+                  App.app.chatServerM = chatServerM;
+                }
+              } else {
+                App.app.chatServerM = chatServerM;
+              }
+            } catch (e) {
+              App.logger.warning('应用启动时URL重定向失败: $e');
+              App.app.chatServerM = chatServerM;
+            }
+          } else {
+            App.app.chatServerM = chatServerM;
+          }
 
           App.app.statusService = StatusService();
           App.app.authService = AuthService(chatServerM: App.app.chatServerM);
